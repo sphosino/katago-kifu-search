@@ -1,0 +1,151 @@
+#module 
+#deffunc find_tags_bytag str s1, str tag, array result, int start
+
+// find_tags_bytag 対象の文字列, 対象のタグ, 結果を受け取る配列, オフセット(0)
+
+ //現状<a href="">など　<のすぐ後にタグ名や閉じタグ名がある場合のみ対応。
+ //< a href="">とかだと動作しない。
+ //必要になれば対応する。
+ 
+	point = start
+	s = s1
+	sdim result
+	repeat
+		p = instr(s,point,"<" + tag) //タグ検索
+		if p < 0: break
+		left = point + p
+		point += p + strlen(tag) + 2
+		p2 = instr(s,point,"</"+ tag + ">")　//終了タグ検索
+		
+		if p2 < 0{
+			
+			//まずタグを登録　"<>の形式になってなければ終了"
+			tmp = instr(s,left,">")
+			if tmp < 0: break
+			
+			//閉じタグはないタグ（<br>など）として登録
+			result(cnt) = strmid(s,point-strlen(tag)-2, tmp + 2)
+			point += strlen(result(cnt))
+			p = instr(s,point,"<" + tag)
+			if p >= 0: continue
+			
+		}else{
+			point += p2 + strlen(tag) + 3
+			//閉じタグまでを登録 <div> ----- </div>
+			result(cnt) = strmid(s,left, point - left)
+		}
+	loop
+	return
+	
+#deffunc find_attribute_byname str s1, str name, array result, int start
+	point = start
+	s = s1
+	sdim result
+	point = -1
+	token_start = 0 ; トークン開始位置
+	mode = 2: ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
+	mode2 = 0; 0 = トークン開始位置検索中, 1 = トークン開始済み
+	get = 0;属性名を見つけたかどうか
+	hit = 0;対象の属性名を見つけたかどうか
+	
+	sdim r
+	split s," ", r
+
+	result = ""
+	repeat
+		point++
+		if point >= strlen(s): break
+		a = peek(s,point)
+
+		switch a
+		case '<'
+		swbreak
+		case '>'
+		case ' '
+		case '='
+			if mode = 0{;属性名
+				if a = '>'{
+					mode = 2
+				}
+				if a = ' ' || a = '='{
+					if mode2 = 1{
+						if name == strmid(s, token_start, point-token_start){
+							hit = 1
+						}
+						get = 1
+					}
+					if a = '=': mode = 1
+				}
+			}else: if mode = 2{;タグ名
+				mode = 0
+			}else: if mode = 1{;属性値
+				if mode2 && hit{
+					result = strmid(s, token_start,point - token_start)
+					break
+				}
+				mode = 0
+			}
+			mode2 = 0
+		swbreak
+		case '"'
+			if mode = 1{
+				mlen = instr(s, point+1,"\"")
+				if hit{
+					result = strmid(s,point+1,mlen)
+					break
+				}
+				point += mlen + 2
+			}
+		swbreak
+		default
+			if (a >='a' && a <= 'z') || (a >= 'A' &&  a <= 'Z') || (a >='0' && a <= '9'){
+				if mode2 = 0{
+					token_start = point
+					mode2 = 1
+				}
+			}
+			
+		swbreak
+		swend
+	loop
+	return
+	
+#defcfunc get_string str s1
+	result = ""
+	s = s1
+	left =  instr(s,0,">") + 1
+	if left{
+		l = instr(s,left,"<") 
+		if l >= 0{
+			result = strmid(s,left,l)
+		}
+		
+	}
+	return result
+#global
+
+
+#if 0
+screen ,800
+
+a={"
+<table class="table mt-3">
+  <tr>
+    <th> Network <i class="fas fa-info-circle" tabindex="-1" title="b = number of blocks, c = number of channels, s = number of training sample steps, d = latest data rows in the run this net trained on"></i> </th>
+    <th class="has-text-right"> Training Games </th>
+    <th class="has-text-right"> Rating Games </th>
+  </tr>
+  
+  <tr>
+    <td> kata1-b28c512nbt-s7532815104-d4414804730 </td>
+    <td class="has-text-right"> <a href="/networks/kata1/kata1-b28c512nbt-s7532815104-d4414804730/training-games/"> 143869 training games </td>
+    <td class="has-text-right"> <a href="/networks/kata1/kata1-b28c512nbt-s7532815104-d4414804730/rating-games/"> 915 rating games </td>
+  </tr>
+</table>
+"}
+
+find_tags_bytag a,"a",r
+
+
+#endif
+

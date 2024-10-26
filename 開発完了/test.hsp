@@ -1,0 +1,19 @@
+#ifndef hoge
+#module hoge
+
+#deffunc test int p1, int p2
+		mes "test -> " + p1 * p2
+	return
+#global
+
+#endif
+
+
+//----モジュール単体テストコードをここに書いておいて、他のファイルからincludeされた時には実行しないようにしたい。
+// #ifthis みたいなのが欲しいっす。
+
+test 7, 8
+test 3, 3
+test 9, 9
+test 10, 10
+

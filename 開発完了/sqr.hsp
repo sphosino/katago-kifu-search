@@ -1,0 +1,74 @@
+#include "hsp3dish.as"
+#include "beautifulsoup.hsp"
+
+#module
+#deffunc 棋譜取得 int max
+
+	dim result
+	now_dir = dir_cur
+	
+	url = "https://katagotraining.org"
+	url2 = url + "/games"
+	
+	dirname = "C:/Users/owner/Desktop/hsp/棋譜"
+	
+	chdir dirname
+
+
+	httpload url2
+	if stat : goto *bad	; 正しくリクエストができなかった
+	gosub*通信待ち
+	httpinfo buf,HTTPINFO_DATA
+	httpinfo size,HTTPINFO_SIZE
+
+	find_tags_bytag buf,"table", result
+	find_tags_bytag result,"a", r
+	find_attribute_byname r.1, "href", f
+
+	httpload url + f
+	if stat: goto*bad
+	gosub *通信待ち
+	httpinfo buf,HTTPINFO_DATA
+	httpinfo size,HTTPINFO_SIZE
+
+	find_tags_bytag buf,"a", result
+
+	foreach result
+		tmp = result(cnt)
+		
+		if get_string(tmp) == "[SGF]"{
+			
+			find_attribute_byname result(cnt), "href", t
+
+			httpload url + t
+			if stat: goto*bad
+			gosub *通信待ち
+			httpinfo buf,HTTPINFO_DATA
+			httpinfo size,HTTPINFO_SIZE
+			
+			count++
+			bsave dirname + "/" + count + ".sgf",buf,size
+
+			if count >= max:break
+			
+		}
+	loop
+
+	chdir now_dir
+	return
+
+*通信待ち
+	;	結果待ちのためのループ
+	httpinfo res,HTTPINFO_MODE
+	if res = HTTPMODE_READY : return
+	if res <= HTTPMODE_NONE : goto *bad
+	await 50
+	goto *通信待ち
+
+*bad
+	;	エラー
+	httpinfo estr,HTTPINFO_ERROR
+	dialog "ERROR "+estr
+	stop
+	
+#global

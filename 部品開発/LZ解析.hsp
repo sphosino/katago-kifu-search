@@ -1,0 +1,60 @@
+#module
+
+//区切り文字の文字コード
+#define スペース 32
+#define タブコード 9
+#define 日本語スペース 16513
+#define 改行コード 2573
+
+////////////結果を受け取る配列, 文字列
+#deffunc get_token array token, str s1, local tn, local index
+
+	s = s1
+	wordstart = -1
+
+	while index < strlen(s)
+		
+		t1 = peek(s, index)
+		t2 = wpeek(s, index)
+		
+		if t2 == 改行コード || t2 == 日本語スペース || t1 == タブコード || t1 == スペース{
+			
+			gosub *add_token
+			index += (t2 == 改行コード || t2 == 日本語スペース)
+			
+		}else: if wordstart < 0{
+			
+			wordstart = index
+			
+		}
+		
+		index++
+	wend
+	
+*add_token
+	if wordstart >= 0{
+		token(tn) = strmid(s, wordstart, index - wordstart)
+		tn++
+		wordstart = -1
+	}
+	return tn
+#global
+
+get_token token,{"
+KataGo18blocks 46.6 17k 0.4 14.6
+move D16 visits 2203 winrate 5336 prior 4437 scoreMean 0.38 pv D16 C17 C16 D17 E16 F18 Q4 D4 P17 R3 Q15 R15 Q14 R13 
+info move D4 visits 1998 winrate 5328 prior 2325 scoreMean 0.36 pv D4 C16 R4 P3 Q5 P16 E17 D15 O16 P17 H17 C3 D3 C4
+info move Q4 visits 1941 winrate 5335 prior 1609 scoreMean 0.38 pv Q4 C16 C4 E16 P17 Q15 F16 E17 M17 E3 O3 D6 E4
+info move D17 visits 944 winrate 5202 prior 240 scoreMean 0.25 pv D17 D4 Q4 C15 E16 R3  Q3  R4  R6  R5 Q5 S6 C3 D3
+info move C4 visits 962 winrate 5232 prior 176 scoreMean 0.28 pv C4 D16 Q4 R3 Q3 R4 Q5 S6 C17 D17 C16 D15 B14 P16 
+info move R4 visits 995 winrate 5223 prior 142 scoreMean 0.29 pv R4 D4 D16 P3 Q5 C17 D17 C16 C14 C15 D15 B14 P17 Q14
+info move C16 visits 918 winrate 5180 prior 185 scoreMean 0.25 pv C16 Q4 D4 E17 D15 C3 D3 C4 C6 B6 Q16 Q17 P17 
+info move Q3 visits 901 winrate 5226 prior 124 scoreMean 0.28 pv Q3 D16 D4 R5 C17 P4 P3 O4 N3 C16 D17 F17 E17 E16 
+info move D3 visits 841 winrate 5163 prior 164 scoreMean 0.21 pv D3 D16 Q4 C5 P17 Q15 F17 E4 E3 F4 G3 M17 O16 M15
+"}
+
+title""+stat
+
+repeat stat
+	mes token.cnt	
+loop

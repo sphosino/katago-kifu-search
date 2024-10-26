@@ -1,0 +1,335 @@
+
+#module
+;	矢印描画モジュール
+;使い方：lineと同じです。
+#deffunc arrow_ int x1, int y1, int x2, int y2
+	t = sin(deg2rad(15))
+	x = double(x2-x1) / 10.0
+	y = double(y2-y1) / 10.0
+	xx = x * cos(t) - y * sin(t)
+	yy = y * cos(t) + x * sin(t)
+	line x1, y1, x1+xx, y1+yy
+	xx = x * cos(-t) - y * sin(-t)
+	yy = y * cos(-t) + x * sin(-t)
+	line x1, y1, x1+xx, y1+yy
+	line x1, y1, x2, y2
+	return
+
+#define global arrow(%1,%2,%3=ginfo_cx,%4=ginfo_cy) arrow_ %1,%2,%3,%4
+#global
+
+#define global ctype in_area(%1, %2, %3, %4 = mousex, %5 = mousey) ( (%1) <= (%4) && (%2) <= (%5) && (%1) + (%3) >= (%4) && (%2) + (%3) >= (%5) )
+#module graph_node x,y,s,c,cn, w, p, pn,探索済み
+
+#modinit int _x, int _y, int _s, local i
+	x = _x
+	y = _y
+	s = _s
+	mref i, 2
+	return i
+	
+#modcfunc get_id local i
+	mref i, 2
+	return i
+	
+#modfunc set_size int p1
+	s = p1
+	return
+
+#modfunc get_xy_graphnode array a
+	a = x,y
+	return
+#modcfunc get_size local i
+	return s
+
+
+#modfunc  set_parent var v
+
+	p(pn) = get_id(v)
+	pn++
+	
+	return
+#modfunc cut_parent var v, local i
+	for i,,pn
+		if p(i) == get_id(v){
+			pn--
+			p(i) = p(pn)
+			return
+		}
+	next
+	dialog "ERROR"
+
+#modfunc set_child var v, double _w, local i
+
+	for i,,cn
+		if c(i) == get_id(v): return
+	next
+	
+	c(cn) = get_id(v)
+	w(cn) = _w
+	cn++
+
+	set_parent v, thismod
+
+	return
+	
+#modfunc cut_child var v, int p1, local i
+
+	for i,,cn
+		if c(i) == get_id(v){
+			cn--
+			c(i) = c(cn)
+			w(i) = w(cn)
+			if p1 == 0: cut_parent v, thismod
+			return
+		}
+	next
+
+	return
+
+#modfunc del_thisnode array a
+
+	repeat pn
+		cut_child a(p(cnt)), thismod, 1
+	loop
+	
+	repeat cn
+		cut_child thismod, a(c(cnt))
+	loop
+
+	delmod thismod
+	
+	return
+	
+#modfunc get_xy array a
+	a = x,y
+	return
+#modfunc set_xy int p1, int p2
+	x = p1
+	y = p2
+	return
+#modfunc clear_探索済み
+	探索済み = 0
+	return
+#deffunc clear_探索済み_all array a
+	foreach a
+		clear_探索済み a(cnt)
+	loop
+	mouse_result = -1
+	return
+
+#modfunc draw_node int p1
+	
+	color 225,225,225
+	circle x,y,x+s,y+s
+	
+	mref t, 2
+	if t == p1{ ;カレントノード処理
+		color 90,230,100
+		circle x+s/4,y+s/4,x+s*3/4,y+s*3/4
+	}
+
+	//
+	color 20,100,80
+	pos x + s/2, y + s/2
+	mes t
+	;*/
+	
+	mouse_result = -1
+	if in_area(x,y,s){
+		mouse_result = t
+	}	
+
+	return mouse_result
+	
+#modfunc draw_nodeline array a, local i
+	
+	if 探索済み{
+		return
+	}
+	
+	探索済み++
+
+	for i,,cn
+		get_xy a(c(i)), tmp
+		color 255
+		arrow tmp + s/2, tmp.1 + s/2,x + s/2,y + s/2
+		pos (tmp+s/2 + x + s / 2) / 2, (tmp.1+s/2 + y + s / 2) /2
+		mes int(w)
+		draw_nodeline a(c(i)), a
+	next
+	
+	return
+	
+#modcfunc has_child var v, local i
+	repeat cn
+		if c(cnt) == get_id(v): i = 1: break
+	loop
+	return i
+	
+#modcfunc 関係取得 var v
+	t = has_child(thismod, v)
+	t2 = has_child(v,thismod)
+	if t&t2: return 0
+	if t:return 1
+	if t2: return 2
+	return 3
+	
+#modfunc 連結 var v, int p2, double _w
+
+	if p2 == 0{
+		set_child thismod, v, _w
+		set_child v, thismod, _w
+		return
+	}
+	if p2 == 1{
+		set_child thismod, v, _w
+		return
+	}
+	if p2 == 2{
+		set_child v, thismod, _w
+		return
+	}
+
+#modcfunc get_distance var v, local i
+	get_xy_graphnode v, i
+	return sqrt((i-x)*(i-x) + (i.1-y)*(i.1-y))
+
+#defcfunc get_mouse
+	return mouse_result
+#global
+
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+#module graph_mod g
+
+#modinit
+
+	dimtype g,5
+	current_node = -1
+	left_capture_node = -1
+	right_capture_node = -1
+	mouse_id = -1
+	
+	// サンプルグラフ
+	newmod g, graph_node, 200, 200, 32: a = stat
+	newmod g, graph_node, 100, 100, 32: b = stat
+	newmod g, graph_node, 300,50, 32:c = stat
+	newmod g, graph_node, 50,400, 32:d = stat
+	newmod g, graph_node, 150,400, 32:e = stat
+	newmod g, graph_node, 400,350, 32:f = stat
+	
+	連結 g(a), g(b), 0,0 ; (0 = ⇔) (1 = →)　(2 = ←) 
+	連結 g(a), g(c), 0,0
+	連結 g(a), g(d), 0,0
+	連結 g(a), g(e), 0,0
+	連結 g(b), g(f), 0,0
+	連結 g(b), g(a), 0,0
+	連結 g(d), g(b), 0,0
+	連結 g(f), g(c), 0,0
+	;*/
+	return
+
+#modfunc draw_graph
+	clear_探索済み_all g
+
+	m = 0
+	foreach g
+		draw_node g(cnt), current_node
+		if stat >= 0: mouse_id(m) = stat: m++
+	loop
+	foreach g
+		draw_nodeline g(cnt), g
+	loop
+
+	color 100,150,200
+	if right_capture_node >= 0{
+		ss = get_size(g(right_capture_node)) / 2
+		arrow mousex,mousey,p + ss,p.1 + ss
+	}
+	
+	return
+
+	
+#modfunc click_graph
+	if _getkey(1) >= 1{
+		if _getkey(1) == 1 && right_capture_node < 0{
+			if m{ // ノードがクリックされた瞬間
+				left_capture_node = mouse_id
+				current_node = mouse_id
+				get_xy g(left_capture_node), p
+				lx = mousex - p
+				ly = mousey - p.1
+			}
+		}
+		if left_capture_node >= 0{
+			set_xy g(left_capture_node), mousex - lx, mousey - ly
+		}
+	}else{
+		if _getkey(1) == -1{ //クリックが離された瞬間
+			left_capture_node = -1
+		}
+	}
+
+	if _getkey(2) >= 1 {
+		if _getkey(2) == 1 && left_capture_node == -1{
+			if m{ // ノードがクリックされた瞬間
+				right_capture_node = mouse_id
+				get_xy g(right_capture_node), p
+				rx =  p
+				ry =  p.1
+			}
+		}
+
+		if m == 1 && right_capture_node != mouse_id && right_capture_node >= 0{
+			
+			//右ドラッグ中で他のノード上にいる。
+			
+			if _getkey(1) == 1{
+				連結 g(right_capture_node), g(mouse_id), 1, get_distance(g(right_capture_node), g(mouse_id))
+			}
+			if _getkey(1) == getfps(){
+				
+				cut_child g(right_capture_node), g(mouse_id)
+			}
+		}
+
+
+		if getdbl_ms(1,300) && m == 1 && current_node == mouse_id && right_capture_node == mouse_id{
+			title""+mouse_id
+			del_thisnode g(mouse_id),g
+			current_node = -1
+			right_capture_node = -1
+		}
+		
+	}else{
+		if _getkey(2) == -1{
+			right_capture_node = -1
+		}
+	}
+	
+
+	if getdbl_ms(2,300){
+		if m == 0: newmod g, graph_node, mousex, mousey, 32
+	}
+
+	return
+#global
+
+newmod graph, graph_mod
+
+
+*main
+	manage_keyfps
+
+	color:boxf:color  220,220,220
+
+	click_graph graph
+	draw_graph graph
+
+	
+
+	redraw: redraw 2
+	goto*main

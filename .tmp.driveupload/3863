@@ -1,0 +1,204 @@
+;#include "開発完了/treeview.hsp"
+#include "sgf.hsp"
+#include "goban.hsp"
+#include "tree.hsp"
+#include "開発完了/sqr.hsp"
+
+screen 0, 640,480
+sgf = "棋譜/1.sgf"
+set_treeview 50,40
+objsize 80
+pos,30
+
+time = 1000
+input time
+
+jidou = 0
+着手番号表示 = 0
+chkbox "自動再生", jidou: chk_ID = stat
+chkbox "着手番号", 着手番号表示
+
+button gosub "SGFを読み込む", *loadfile
+button gosub "SGFをコピー", *getsgf
+
+await 100
+gosub*loadfile
+await 100
+
+pretime = keyfpstime
+
+*main
+	manage_keyfps
+
+	nownode = Treeview_info()
+	if nownode = -1: nownode = topnode
+	
+	マウスます取得 board,p
+	
+	if _getkey(2) == 1{ objprm chk_ID, jidou^1}
+	if _getkey(1) == 1{
+		dragging_flag = 1
+		get_treeview_position tmp
+		dragstartx = mousex - tmp
+		dragstarty = mousey - tmp.1
+		
+		if treeview_m() >=0{
+			
+			set_current_node stat
+			
+		}else{
+			
+			着手 board,p,p.1
+			
+			if stat{
+				手番 = "B"
+				if 逆手番(get_turn(board)) = 白番:手番 = "W"
+				座標 = "  "
+				poke 座標,0,'a'+p
+				poke 座標,1,'a'+p.1
+	
+				if serch_child_byxy(SGF_NODE@global(nownode),手番,座標) = -1{
+				
+					newmod SGF_NODE@global,SGF_NODE,nownode
+					new = stat
+					set_tree_pos SGF_NODE@global(new), 50,50
+					add_child SGF_NODE@global(nownode), new
+		
+					set_property_data SGF_NODE@global(new), 手番, 座標
+
+					TreeView_InsertItem new, nownode
+					
+				}else{
+					new = stat
+				}
+				set_current_node new
+			}
+		}
+	}else{
+
+		if _getkey(1) < 0 & dragging_flag{
+			dragging_flag = 0
+			dragstartx = 0
+			dragstarty = 0
+		}
+	}
+	
+	mw = mousew
+	if mw < 0 : gosub*move_next
+	if mw > 0 : gosub*move_back
+
+	if dragging_flag{
+		set_treeview_position mousex - dragstartx, mousey - dragstarty
+	}
+
+	if jidou & pretime + time <= keyfpstime{
+		gosub*move_next
+	}
+	
+	if prenode != nownode{
+		prenode = nownode
+		make_board_from_sgf nownode
+	}
+	tmp = get_property_data(SGF_NODE@global(nownode), "C")
+	split tmp," ", c_list
+
+	if stat > 1 {
+		;title "黒の勝率 = "+ strmid(c_list(1),2,2) +" %　　" + 着手番号表示
+	}
+	redraw 2
+		a = double(c_list) * 255
+		color a,a,a
+		boxf
+		碁盤表示 board , 着手番号表示
+		treeview_draw topnode
+	redraw 1
+
+	goto*main
+
+#include "hspext.as"
+
+*getsgf
+	get_node_sgf topnode, a
+	clipset a
+	return
+	
+*loadfile
+	棋譜取得 1
+*load_sgffile
+
+	notesel s
+	noteload sgf
+	
+	load_sgf s,-1 //SGFからツリー作成、トップノードの番号がstatに返る。
+	
+	topnode = stat
+	nownode = topnode
+
+	title""+topnode
+	
+	tmp = get_property_data(SGF_NODE@global(topnode),"SZ")
+	split tmp,":", x, y
+	if stat == 1: y = x
+
+	dim board
+	newmod board, goban, int(x), int(y), 23, 23,150, 40
+
+	stack = topnode ; 現在のノード番号
+	stack_p = -1　　; 親ノード番号
+	stack_f = 0     ; 現在のノードの処理状態
+	sn = 1
+	while sn
+		sn--
+
+		if stack_f(sn){
+			//現ノードは子ノード処理済み。
+			_continue
+		}
+				
+		;現ノードをツリーに追加
+		nnode = stack(sn)
+		pnode = stack_p(sn)
+		TreeView_InsertItem nnode, pnode
+		
+
+		; stack(sn) = nownode
+		; stack_p(sn) = pnode
+		stack_f(sn) == 1 //現ノードを子ノード処理終了待ちに変更して積みなおす。
+		sn++
+
+		//子ノードを全て全部積む。
+		repeat get_childs(SGF_NODE@global(nnode), childlist)
+			stack(sn) = childlist(cnt)
+			stack_p(sn) = nnode
+			stack_f(sn) = 0
+			sn++
+		loop
+
+	wend
+	
+	return
+
+#deffunc make_board_from_sgf int v
+		dim kifu
+		get_nodelist SGF_NODE@global(v), kifu
+		盤面作成 board, kifu
+	return
+
+*move_next
+	set_current_node get_rootnode( SGF_NODE@global(nownode))
+	pretime = keyfpstime
+	gosub *treeview移動
+	return
+	
+*move_back
+	if get_parent(SGF_NODE@global(nownode)) != -1{
+		set_current_node get_parent(SGF_NODE@global(nownode))
+		pretime = keyfpstime
+		gosub *treeview移動
+	}
+	return
+
+*treeview移動
+	get_treeview_node_size ns
+	set_treeview_position -get_手数(board) * ns
+	return
