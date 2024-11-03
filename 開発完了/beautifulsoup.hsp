@@ -40,18 +40,14 @@
 #deffunc find_attribute_byname str s1, str name, array result, int start
 	point = start
 	s = s1
-	sdim result
 	point = -1
 	token_start = 0 ; トークン開始位置
-	mode = 2: ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
-	mode2 = 0; 0 = トークン開始位置検索中, 1 = トークン開始済み
-	get = 0;属性名を見つけたかどうか
-	hit = 0;対象の属性名を見つけたかどうか
-	
-	sdim r
-	split s," ", r
-
+	mode = 2:       ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
+	mode2 = 0       ; 0 = トークン開始位置検索中, 1 = トークン開始済み
+	get = 0         ; 属性名を見つけたかどうか
+	hit = 0         ; 対象の属性名を見つけたかどうか
 	result = ""
+	
 	repeat
 		point++
 		if point >= strlen(s): break

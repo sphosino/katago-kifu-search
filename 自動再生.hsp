@@ -3,10 +3,10 @@
 #include "goban.hsp"
 #include "tree.hsp"
 #include "開発完了/sqr.hsp"
+#include "開発完了/keyfps.hsp"
 
 screen 0, 640,480
 sgf = "棋譜/1.sgf"
-set_treeview 50,40
 objsize 80
 pos,30
 
@@ -17,6 +17,7 @@ jidou = 0
 着手番号表示 = 0
 chkbox "自動再生", jidou: chk_ID = stat
 chkbox "着手番号", 着手番号表示
+tree_direction = 6
 input tree_direction
 
 button gosub "SGFを読み込む", *loadfile
@@ -36,7 +37,13 @@ pretime = keyfpstime
 	
 	マウスます取得 board,p
 	
-	if _getkey(2) == 1{ objprm chk_ID, jidou^1}
+	if _getkey(2) == 1{
+		if treeview_m() >= 0{
+			set_current_node treeview_m()
+			TreeView_toggle_openclose
+
+		}		
+	}
 	if _getkey(1) == 1{
 		dragging_flag = 1
 		get_treeview_position tmp

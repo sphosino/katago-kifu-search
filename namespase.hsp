@@ -1,0 +1,187 @@
+#define HASHTEST
+
+#module 名前空間 data, data_opened_list, data_opened_list_num, hashtable, hashcount,  データ数
+
+#const MAX_KEYS 5000
+
+#enum KEY = 0
+#enum VALUE
+
+#enum ENUM_MAX
+
+
+#defcfunc get_hash str s1
+    #const SEED 0x811C9DC5
+    t = s1
+    s = SEED
+    
+    repeat length(t)
+        s = (s ^ peek(t,cnt)) * 0x01000193
+    loop
+
+    #ifdef HASHTEST
+    s = strlen(s1)/3
+    #endif
+    
+    return (s & 0x7FFFFFFF) \ MAX_KEYS
+
+	
+#modinit
+	sdim data,,MAX_KEYS, ENUM_MAX
+	dim data_opend_list,,MAX_KEYS
+	dim data_opend_list_num
+	
+	dim hashcount, MAX_KEYS
+	dim hashtable, MAX_KEYS
+
+	mref thismod_ID, 2
+	return thismod_ID
+	
+#modfunc set str s1, str s2
+	hash = get_hash(s1)
+
+
+	for i,, hashcount(hash)
+		if data(hashtable(hash,i),KEY) == s1{
+			data(hashtable(hash,i),VALUE) = s2
+			return
+		}
+	next
+	
+	
+	if data_opened_list_num{
+		data_opened_list_num--
+		newid = data_opened_list(data_opened_list_num)
+	}else{
+		newid = データ数
+		データ数++
+	}
+	
+	data(newid, KEY) = s1
+	data(newid, VALUE) = s2
+	hashtable(hash, hashcount(hash)) = newid
+	hashcount(hash)++
+	
+	return
+
+
+#modcfunc get str s1
+
+	hash = get_hash(s1)
+	for i,,hashcount(hash)
+		dataid = (hashtable(hash,i))
+		if data(dataid, KEY) == s1{
+			return data(dataid, VALUE)
+		}
+	next
+
+	return "undefined"
+
+#modfunc del str s1
+
+	hash = get_hash(s1)
+	
+	for i,, hashcount(hash)
+	
+		dup id, hashtable(hash, i)
+		
+		if data(id, KEY) == s1{
+			data_opened_list(data_opened_list_num) == id
+			data_opened_list_num++
+
+			hashcount(hash)--
+			id = hashtable(hash, hashcount(hash))
+
+			データ数--
+			return
+		}
+	next
+	
+	return
+
+#global
+
+
+; テストコード
+#module test
+#deffunc assert_equals str val1, str val2, str message
+    if val1 != val2 {
+        mes "テスト失敗: " + message
+        mes "期待値: " + val2
+        mes "実際の値: " + val1
+        assert
+    }
+    return
+
+#deffunc test_hash_table
+    ; ハッシュテーブルの初期化
+    newmod hinst,名前空間
+    
+    ; テストケース1: 基本的な設定と取得
+    mes "テストケース1: 基本的な設定と取得"
+    set hinst,"key1", "value1"
+    assert_equals get(hinst,"key1"), "value1", "基本的な設定と取得"
+    
+    ; テストケース2: 存在しないキーの取得
+    mes "テストケース2: 存在しないキーの取得"
+    assert_equals get(hinst,"nonexistent"), "undefined", "存在しないキーは undefined を返す"
+    
+    ; テストケース3: 値の上書き
+    mes "テストケース3: 値の上書き"
+    set hinst,"key1", "new_value1"
+    assert_equals get(hinst,"key1"), "new_value1", "値の上書き"
+    
+    ; テストケース4: ハッシュ衝突のテスト（長さが同じ文字列で衝突を発生させる）
+    mes "テストケース4: ハッシュ衝突"
+    set hinst, "abc", "value_abc"  ; 長さ3
+    set hinst, "def", "value_def"  ; 長さ3
+    assert_equals get(hinst,"abc"), "value_abc", "衝突時の1つ目の値"
+    assert_equals get(hinst,"def"), "value_def", "衝突時の2つ目の値"
+    
+    ; テストケース5: 削除のテスト
+    mes "テストケース5: 削除"
+    del hinst,"key1"
+    assert_equals get(hinst,"key1"), "undefined", "削除後は undefined を返す"
+    
+    ; テストケース6: 削除後の再利用
+    mes "テストケース6: 削除後の再利用"
+    set hinst,"new_key", "new_value"
+    assert_equals get(hinst,"new_key"), "new_value", "削除後のスペース再利用"
+    
+    ; テストケース7: 大量のデータ登録と衝突
+    mes "テストケース7: 大量データと衝突"
+    repeat 20
+        key = "key" + cnt
+        value = "value" + cnt
+        set hinst, key, value
+        assert_equals get(hinst,key), value, "大量データ登録 " + cnt
+    loop
+    
+    mes "全てのテストが成功しました！"
+    return
+
+#deffunc test_performance
+    ; パフォーマンステスト
+    mes "パフォーマンステスト開始"
+    
+    ; 時間計測開始
+    start_time = gettime(7)
+    
+    ; 大量のデータを登録
+    repeat 1000
+        key = "perfkey" + cnt
+        value = "perfvalue" + cnt
+        set hinst, key, value
+    loop
+    
+    ; 時間計測終了
+    end_time = gettime(7)
+    mes "1000件の登録にかかった時間: " + (end_time - start_time) + "ms"
+    return
+#global
+
+; テストの実行
+#ifdef HASHTEST
+test_hash_table
+test_performance
+#endif

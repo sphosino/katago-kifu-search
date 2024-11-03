@@ -86,7 +86,6 @@ loop
 #define 試行回数 10000
 
 button gosub "実行",*play
-gosub *play
 stop
 
 *play
@@ -94,9 +93,9 @@ color:boxf:color 200,200,200: pos 100,0
 count = 0
 repeat 試行回数
 	gosub*simulate
-	if (blue * white): count++
+	if (blue * white): count++ //青と白がそれぞれ一個以上あればカウント。
 loop
-mes ""+ (0.+count) * 100/試行回数 + "%"
+mes ""+ 100. * count / 試行回数 + "%"
 
 return
 
@@ -109,9 +108,9 @@ foreach 玉
 	袋に物を一つ入れる 袋,玉(cnt)
 loop
 
+外にある数 = 0
 
 //袋から３個取り出す
-外にある数 = 0
 repeat 3
 	外(外にある数) = 袋からランダムに一つ取り出す(袋)
 	外にある数++

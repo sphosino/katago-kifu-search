@@ -1,0 +1,395 @@
+/*
+%dll
+keyfps
+
+%var
+1.00
+
+%date
+2024/03/09
+
+%group
+入出力制御命令
+
+%*/
+
+//--"keyFPS.hsp"
+	#ifndef keyFPS
+	#module keyFPS
+
+	#uselib "winmm.dll"
+	#cfunc keyFPStimer__ "timeGetTime"
+/*
+%index
+manage_keyfps
+メインループ制御
+
+%inst
+メインループのウェイト、キー取得などを行います
+メインループに一つだけ配置してください。
+
+%*/	
+	#deffunc manage_keyFPS__
+		
+		//FPS変更
+		if fps ! prefps{
+			prefps = fps
+			//新たなFPSでのタイムテーブルを作成
+			pn = table_num
+			lpoke b
+			gosa = 99999.
+			sdim table, fps * FPStime
+			repeat limit(fps * FPStime, 1, 65535), 1
+				a = 1000. * cnt / fps
+				poke table, cnt - 1, b + a
+				b = 0 - a
+				if gosa > a + b{
+					gosa = a + b
+					table_num = cnt
+				}
+			loop
+			if pn ! table_num{
+				sdim time_record, table_num
+				lpoke fps_counter
+				lpoke total_time
+				tm = 1000. * table_num
+			}
+		}
+		
+		i = fps_counter \ table_num
+		fps_counter+
+		
+		//FPS調整(ウェイトを行う)
+		et = pt + peek(table, i) ; 今回の終了予定時刻
+		at = et - keyFPStimer__() ; 余裕時間
+		await at - 1 ; (余裕時間-1)だけ待って
+		*@: if et > keyFPStimer__(): await: goto *@b ; 残りはawaitだけでループを回して時刻を合わせる
+		
+		apt = limit(stat - pt,, 255) ; 前回から今回までの経過時間
+		pt = stat ; 今の時間を記録
+		
+		//FPS計測
+		if fps_counter > table_num{
+			total_time += apt - peek(time_record, i)
+			cfps = tm / total_time
+		}else{
+			logmes fps_counter
+			total_time += apt
+			cfps = 1000. * fps_counter / total_time
+		}
+		poke time_record, i, apt
+		
+		//キー取得
+		if ginfo(2) >= 0{
+			repeat max
+				dup key, keys(cnt)
+				dup c, count(key)
+				getkey j, key
+				if j{
+					if c > 0{
+						c+
+					}else{
+						if flag(key){
+							c-
+						}else{
+							c = 1
+						}
+					}
+				}else{
+					lpoke flag(key)
+					if c > 0{
+						c = -1
+					}else{
+						c-
+					}
+				}
+			loop
+		}else{
+			repeat max
+				dup key, keys(cnt)
+				dup c, count(key)
+				if c > 0{
+					if type(key) = 2{
+						getkey j, key
+						if j{
+							c+
+						}else{
+							c = -1
+							flag(key)+
+						}
+					}else: if type(key) = 1{
+						getkey j, key
+						if j{
+							c+
+						}else{
+							c = -1
+						}
+					}else: if type(key): else{
+						c = -1
+					}
+				}else{
+					if type(key) = 2{
+						c-
+						getkey j, key
+						if j: else: flag(key)+
+					}else: if type(key) = 1{
+						getkey j, key
+						if j{
+							c = 1
+						}else{
+							c-
+						}
+					}else: if type(key): else{
+						c-
+					}
+				}
+			loop
+		}
+		
+		return
+/*
+%index
+setfps
+
+%prm
+p1
+
+%inst
+目標フレームレート(FPS)を設定します。
+少数単位で指定できます。
+
+%index
+getrealfps
+
+%prm
+()
+
+%inst
+
+現在のフレームレート(FPS)
+
+%index
+_getkey
+
+%prm
+p1
+p1 = 取得するキーコード
+
+%inst
+連続で押されている、または押されていないフレーム数が入ります。
+
+押されているとき 1,2,3,4.....
+押されていないとき -1,-2,-3,-4....
+
+また、addkeyで追加されていないキーコードを取得しようとした場合は０が返ります。
+
+%sample
+#include "keyfps.hsp"
+
+setfps 30
+
+repeat
+
+	manage_keyfps ;　キーの監視とウェイト
+	
+	redraw 0
+	color 250,250,250
+	boxf
+	color
+	pos 0, 0
+	if _getkey(1) == 1 : mes "押された瞬間"
+	if _getkey(1) >= 5 : mes "5フレーム以上押されている"
+	if _getkey(1) == -1: mes "離された瞬間"
+	if _getkey(1) < 0  : mes "押されていない"
+	redraw
+loop
+
+
+
+%*/
+/*
+%index
+addkey
+
+%prm
+p1, p2
+
+p1 = 監視に追加するキーコード
+p2 [0-3] (2) = アクティブ、非アクティブに関する動作
+
+%inst
+
+監視するキーを登録します。
+
+p2で画面が非アクティブになったときの動作を設定します。
+
+	; 0 = 非アクティブ時には検出しない
+	; 1 = 非アクティブ時でも検出する
+	; 2 = アクティブ→非アクティブ　一旦離すまでは検出する
+	;     非アクティブ→アクティブ　一旦離すまでは検出しない
+	; 3 = 非アクティブ時は値が変化しない
+%*/
+	#deffunc addkey__ int p1, int p2
+		if count(p1) || p1 <= 0 || p1 >= 256: return
+		keys(max) = p1: max+
+		type(p1) = p2
+		lpoke flag(p1)
+		
+		if ginfo(2) >= 0 || p2 = 1{
+			getkey i, p1
+			count(p1) = (i * 2 - 1) << 1
+		}else{
+			count(p1) = -2
+		}
+		
+		return
+/*
+%index
+delkey
+
+%prm
+p1
+
+p1 = 監視から削除するキーコード
+
+%inst
+
+監視するキーを削除します。
+
+%*/	
+	#deffunc delkey__ int p1
+		repeat max
+			if keys(cnt) ! p1: continue 
+			lpoke count(p1)
+			max-
+			keys(cnt) = keys(max)
+			break
+		loop
+		return
+/*
+%index
+getdbl_ms
+
+%prm
+(p1, p2)
+
+p1 = ダブルクリックを取得するキーコード
+p2(300) = １回目と２回目との間隔(ms)
+
+%inst
+
+p1で指定されたキーコードのダブルクリックを検出します。
+
+ダブルクリックされたフレームは1
+それ以外は0が返ります。
+
+p2で間隔を指定します。この時間以内に２回目が押されると、１を返します。
+この時間を過ぎると１回目の入力がキャンセルされます。
+
+
+%*/		
+	#defcfunc getdbl_ms__ int p1, int p2
+	if ppt(p1) = pt: return peek(dbl_result, p1)
+	if count(p1) = 1{
+		ppt(p1) = pt
+		if pt - dbl_time(p1) <= p2{
+			lpoke dbl_time(p1)
+			poke dbl_result, p1, 1
+			return 1
+		}
+		dbl_time(p1) = pt
+	}
+	poke dbl_result, p1
+	return 0
+		
+	#defcfunc getPhold__ int p1, int p2, int p3
+		if count(p1) = 1: return 1
+	#defcfunc gethold__ int p1, int p2, int p3
+		if count(p1) < p2: return 0
+		if p3: if (count(p1) - p2) \ p3: return 0
+		return 1
+		
+	#deffunc init_keyFPS
+		dim count, 256
+		dim ppt, 256
+		dim dbl_time, 256
+		sdim dbl_result, 256
+		FPStime = 5
+		fps = 60.
+		pt = keyFPStimer__()
+		return
+		
+	#global
+	init_keyFPS
+		
+	//以下インターフェース ( このモジュールで使用可能になる全ての機能です )
+		
+	#define global       manage_keyFPS                   manage_keyFPS__ ; キーの取得とFPSの管理を行う
+		
+	#define global ctype ms_to_frame(%1)                 (%1 * fps@keyFPS / 1000) ; 現在のFPSにおいての ミリ秒→フレーム数を算出
+	#define global ctype frame_to_ms(%1)                 (1000 * %1 / fps@keyFPS) ; 現在のFPSにおいての フレーム数→ミリ秒を算出
+		
+	//FPS関連
+	#define global       setfps(%1)                      fps@keyFPS = limitf(%1, 3.92157, 360); 目標FPSを設定する
+	#define global ctype getfps                          fps@keyFPS ; 目標FPS
+	#define global ctype getrealfpsf                     cfps@keyFPS ; 実現FPS
+	#define global ctype getrealfps                      int(cfps@keyFPS + 0.5)) ; 実現FPS(整数)
+	
+	#define global       setFPStime(%1 = FPStime@keyFPS) FPStime@keyFPS = limitf(%1, 0.1): dim prefps@keyFPS ; FPS精度を設定
+	#define global ctype getFPStime                      FPStime@keyFPS ; FPS精度
+	
+	#define global ctype slowdown                        (at@keyFPS <= 0) ; 処理落ちしているかどうか
+	#define global ctype frametime                       apt@keyFPS ; 前回のフレームにかかった時間
+		
+	//キー状態取得関連
+	#define global ctype _getkey(%1)                     count@keyFPS(%1) ; キーの状態取得
+	//A宗向け(ms単位)
+	#define global ctype getdbl_ms(%1, %2 = 300)           getdbl_ms__(%1, %2) ; Double_Click
+	#define global ctype gethold_ms(%1, %2 = 0, %3 = 0)  gethold__(%1, ms_to_frame(%2), ms_to_frame(%3)) ; Hold
+	#define global ctype getPhold_ms(%1, %2 = 0, %3 = 0) getPhold__(%1, ms_to_frame(%2), ms_to_frame(%3)) ; Press & hold
+	//B宗向け(フレーム単位)
+	#define global ctype getdbl(%1, %2 = 0)              getdbl_ms__(%1, frame_to_ms(%2)) ; Double_Click
+	#define global ctype gethold(%1, %2 = 0, %3 = 0)     gethold__(%1, %2, %3) ; Hold
+	#define global ctype getPhold(%1, %2 = 0, %3 = 0)    getPhold__(%1, %2, %3) ; Press & Hold
+		
+	//監視キー関連
+	#define global       addkey(%1, %2 = 2)              addkey__ %1, %2 ; 指定したキーを登録、%2 = 非アクティブ時の動作
+	#define global       delkey(%1)                      delkey__ %1     ; 指定したキーを削除
+	#define global       addkey_all(%1 = 2)              repeat 255, 1: addkey__ cnt, %1: loop ; 全てのキー登録
+	#define global       delkey_all                      repeat 255, 1: delkey__ cnt    : loop ; 全てのキーを削除
+		
+	#define global       setkey_type(%1, %2)             type@keyFPS(%1) = %2 ; 非アクティブ時の動作設定を行う
+	#define global ctype getkey_type(%1)                 type@keyFPS(%1)      ; 非アクティブ時の動作設定を取得
+		
+	#define global keyFPStime                     keyFPStimer__@keyFPS() ; Windows が起動してからの経過時間 ( timeGettime )
+
+/*
+%index
+addkey_all
+
+%prm
+p1 [0-3](2)
+
+%inst
+
+全てのキーコードを監視します。
+p1で非アクティブ時の動作を設定します。
+詳しくはaddkeyの項目を確認してください
+%href
+addkey
+
+
+%index
+delkey_all
+
+%inst
+
+全てのキーコードを監視から削除します。
+%href
+delkey
+%*/	
+	addkey_all
+	
+	#endif
+	//--"keyFPS.hsp" --End Of File
+

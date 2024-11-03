@@ -1,0 +1,34 @@
+#module function label, values
+#modinit label l,
+	label = l
+	return
+
+#global
+
+#module flame \
+flameid, \
+px, py, sx, sy, \
+is_scrollx, is_scrolly, \
+scrollx, scrolly,
+scrollbar_position,
+draw_labels,
+draw_x, draw_y
+
+#modinit
+	return
+
+#modfunc draw_flame
+	draw_x = -1
+	draw_y = -1
+	foreach draw_labels
+		gosub draw_labels(cnt)
+	loop
+	return
+
+#modfunc set_drawed_size int _x, int _y
+	if draw_x < _x: draw_x = _x
+	if draw_y < _y: draw_y = _y
+	
+	return
+
+#global
