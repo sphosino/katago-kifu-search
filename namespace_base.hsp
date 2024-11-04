@@ -31,7 +31,7 @@
 	return thismod_ID
 
 
-#modfunc hash_set str s1, str s2, int 存在しないとき作成はしない
+#modfunc hash_set str s1, str s2, int 作成はしない
 
 	hash = get_hash(s1)
 
@@ -42,7 +42,7 @@
 		}
 	next
 
-	if 存在しないとき作成はしない: return 0
+	if 作成はしない: return 0
 
 	if data_deleted_list_num{
 		data_deleted_list_num--
@@ -111,7 +111,7 @@
 #deffunc new_namespace
 	//実体を作成
 	newmod data, hash_module
-	thisid = stat
+	this_id = stat
 
 	//スタックに積む
 	namespace_stack(namespace_stack_num) = this_id
@@ -123,7 +123,7 @@
 
 
 	//カレントidを新しいスペースに変更
-	current_id = thisid
+	current_id = this_id
 	
 	//親を設定
 	parent(current_id) == -1
@@ -133,11 +133,13 @@
 	//子ノードリストを初期化
 	init_childs_list childs(current_id)
 	
-	return current_id
+	mes current_id
+	return
 
 #deffunc break_namespace
 	namespace_stack_num--
-	current_id = namespace_stack(namespace_stack_num)
+	current_id = namespace_stack(namespace_stack_num - 1) //一つ下の階層を取り出して設定
+	mes current_id
 	return
 
 #deffunc hash_set_parent int parent_id
@@ -196,7 +198,8 @@
 	dim namespace_stack, MAX_NAMESPACES
 	sdim childs, MAX_NAMESPACES
 	current_id = -1
-	return 
+	new_namespace
+	return
 #global
 init_hash_manager
 
@@ -207,36 +210,30 @@ init_hash_manager
 	return
 #deffunc del_child_id var a, int id, local tokens
 
-	split a,",", tokens
-	
-	a = ""
-	result = 0
-	for i,, length(tokens)
-		if tokens.i == id: result == 1:_continue
-		 a+= "" + tokens.i + ","
-	next
-	return result
+	s = str(id)
+	t = instr(a,,"," + s + ",")
+	if t >= 0{
+		a = strmid(a, 0, t) + strmid(a, t + strlen(s) + 1 , 65535)
+	}
+	return
 	
 #deffunc add_child_id var a, int id
 	if instr(a,,"," + id + "," ) == -1{
 		a += "" + id + ","
-		return 1
+		return
 	}
-	return 0
+	return
 	
 #global
 
 #endif
 
-
 new_namespace
-
 	//変数宣言
 	new_value "A","親の変数１"
 	new_value "B","親の変数２"
 	
 	new_namespace
-
 		//親空間参照
 		mes get_value("A")
 
@@ -249,7 +246,6 @@ new_namespace
 		set_value "B","書き換えたよ" //親に存在する
 
 	break_namespace
-
 	mes get_value("A")
 	mes get_value("B")
 

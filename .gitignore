@@ -1,1 +1,6 @@
 棋譜/
+.tmp.driveupload/
+.vscode/
+obj
+hsptmp
+*.ax

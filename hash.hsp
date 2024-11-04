@@ -1,0 +1,8 @@
+#module afa x,y
+#modinit 
+	mref thismod_ID, 2
+	return thismod_ID
+#global
+
+newmod a,afa
+newmod a,afa:mes stat
