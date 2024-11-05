@@ -133,13 +133,13 @@
 	//子ノードリストを初期化
 	init_childs_list childs(current_id)
 	
-	mes current_id
+	mes "maked_new_namespace : now_spaceID = " + current_id
 	return
 
 #deffunc break_namespace
 	namespace_stack_num--
 	current_id = namespace_stack(namespace_stack_num - 1) //一つ下の階層を取り出して設定
-	mes current_id
+	mes "breaked_namespace : now_spaceID = " + current_id
 	return
 
 #deffunc hash_set_parent int parent_id
@@ -205,9 +205,11 @@ init_hash_manager
 
 
 #module child_list_manager
+
 #deffunc init_childs_list var a
 	a = ","
 	return
+	
 #deffunc del_child_id var a, int id, local tokens
 
 	s = str(id)
@@ -228,8 +230,7 @@ init_hash_manager
 
 #endif
 
-new_namespace
-	//変数宣言
+
 	new_value "A","親の変数１"
 	new_value "B","親の変数２"
 	
@@ -246,7 +247,6 @@ new_namespace
 		set_value "B","書き換えたよ" //親に存在する
 
 	break_namespace
+
 	mes get_value("A")
 	mes get_value("B")
-
-break_namespace

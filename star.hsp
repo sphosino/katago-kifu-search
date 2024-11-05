@@ -1,0 +1,54 @@
+#module stars x,y,sx,sy,colors, speed
+#modinit int p1, int p2, int p3, int p4, int p5
+	x = 0.+p1
+	y = 0.+p2
+	sx = 0.+p3
+	sy = 0.+p4
+	speed = 0.1 * (rnd(6) + 1)
+	colors = p5
+	return
+#modfunc move_left
+	x += speed
+	return
+#modfunc move_up
+	y += speed
+	return
+#modfunc move_right
+	x -= speed
+	return
+#modfunc move_down
+	y -= speed
+	return
+#modfunc draw_star
+	if colors == -1{
+		color rnd(256),rnd(256),rnd(256)
+	}else{
+		color colors >> 16 & 255, colors >> 8 & 255, colors & 255
+	}
+	boxf x, y, x + sx, y + sy
+	return
+#global
+
+repeat 250
+	if rnd(4): c = rnd(256) << 16 | rnd(256) << 8 | rnd(256):else: c = -1
+	newmod a, stars, rnd(640),rnd(480), 2, 2, c
+loop
+
+randomize
+*main
+	manage_keyfps
+
+	
+	color:boxf
+	foreach a
+	if _getkey(37) >= 1: move_left a.cnt
+	if _getkey(38) >= 1: move_up   a.cnt
+	if _getkey(39) >= 1: move_right a.cnt
+	if _getkey(40) >= 1: move_down a.cnt
+	loop
+	foreach a
+	draw_star a.cnt
+	loop
+
+	redraw:redraw 2
+	goto*main
