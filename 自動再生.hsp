@@ -116,14 +116,12 @@ pretime = keyfpstime
 	
 	if prenode != nownode{
 		prenode = nownode
-		make_board_from_sgf get_tree_item_id(treenode@global(nownode)) //ツリービューから実際のSGFノードのIDを取り出して盤面作成
+		//ツリービューから実際のSGFノードのIDを取り出して盤面作成
+		make_board_from_sgf get_tree_item_id(treenode@global(nownode))
 	}
 	tmp = get_property_data(SGF_NODE@global(nownode), "C")
 	split tmp," ", c_list
 
-	if stat > 1 {
-		;title "黒の勝率 = "+ strmid(c_list(1),2,2) +" %　　" + 着手番号表示
-	}
 	redraw 2
 		a = double(c_list) * 255
 		color a,a,a
@@ -221,5 +219,9 @@ pretime = keyfpstime
 
 *treeview移動
 	get_treeview_node_size ns
-	set_treeview_position -get_手数(board) * ns
+	if (get_tree_direction() & 1){
+		set_treeview_position 300, 300 + get_手数(board) * ns.1 * -(((get_tree_direction() & 2) != 0) * 2 - 1)
+	}else{ 
+		set_treeview_position      300 + get_手数(board) * ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1 ),300
+	}
 	return

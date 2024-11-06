@@ -1,23 +1,27 @@
 #module stars x,y,sx,sy,colors, speed
-#modinit int p1, int p2, int p3, int p4, int p5
-	x = 0.+p1
-	y = 0.+p2
-	sx = 0.+p3
-	sy = 0.+p4
+#modinit int star_sizex, int star_sizey,int _collors
+	x = (0. + rnd(stars_areax))
+	y = (0. + rnd(stars_areay))
+	sx = 0.+star_sizex
+	sy = 0.+star_sizey
 	speed = 0.1 * (rnd(6) + 1)
-	colors = p5
+	colors = _collors
 	return
 #modfunc move_left
 	x += speed
+	if x > stars_areax: x-=stars_areax
 	return
 #modfunc move_up
 	y += speed
+	if y > stars_areay: y-=stars_areay
 	return
 #modfunc move_right
 	x -= speed
+	if x < 0: x += stars_areax
 	return
 #modfunc move_down
 	y -= speed
+	if y < 0: y += stars_areay
 	return
 #modfunc draw_star
 	if colors == -1{
@@ -27,11 +31,16 @@
 	}
 	boxf x, y, x + sx, y + sy
 	return
+#deffunc init_stars_module
+	stars_areax = 700
+	stars_areay = 500
+	return
 #global
+init_stars_module
 
-repeat 250
-	if rnd(4): c = rnd(256) << 16 | rnd(256) << 8 | rnd(256):else: c = -1
-	newmod a, stars, rnd(640),rnd(480), 2, 2, c
+repeat 150
+	if rnd(5): c = rnd(256) << 16 | rnd(256) << 8 | rnd(256):else: c = -1
+	newmod a, stars, 2, 2, c
 loop
 
 randomize
@@ -41,13 +50,13 @@ randomize
 	
 	color:boxf
 	foreach a
-	if _getkey(37) >= 1: move_left a.cnt
-	if _getkey(38) >= 1: move_up   a.cnt
-	if _getkey(39) >= 1: move_right a.cnt
-	if _getkey(40) >= 1: move_down a.cnt
+		if _getkey(37) >= 1: move_left a.cnt
+		if _getkey(38) >= 1: move_up   a.cnt
+		if _getkey(39) >= 1: move_right a.cnt
+		if _getkey(40) >= 1: move_down a.cnt
 	loop
 	foreach a
-	draw_star a.cnt
+		draw_star a.cnt
 	loop
 
 	redraw:redraw 2
