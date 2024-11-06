@@ -91,14 +91,14 @@ pretime = keyfpstime
 	}
 
 	if _getkey(17) >= 1{ //CTRL
-		if _getkey('C') == 1 { //CTRL + S
+		if _getkey('C') == 1 { //CTRL + C
 			gosub*getsgf
 		}
 		if _getkey('V') == 1 { //CTRL + V
 			sdim s, $FFFF
 			clipget s, $FFFF
 			title "loading from clipboard"
-			gosub*load_from_clipboard
+			gosub*make_tree_from_SGF
 		}
 	}
 	
@@ -144,16 +144,16 @@ pretime = keyfpstime
 	棋譜取得 1
 	notesel s
 	noteload sgf
+	gosub*make_tree_from_SGF
+	return
 
-*load_from_clipboard
+*make_tree_from_SGF
 	
 	load_sgf s,-1 //SGFからツリー作成、トップノードの番号がstatに返る。
 	
 	topnode = stat
 	nownode = topnode
 	set_current_node topnode
-
-	title""+topnode
 	
 	tmp = get_property_data(SGF_NODE@global(topnode),"SZ")
 	split tmp,":", x, y
@@ -164,32 +164,19 @@ pretime = keyfpstime
 
 	stack = topnode ; 現在のノード番号
 	stack_p = -1　　; 親ノード番号
-	stack_f = 0     ; 現在のノードの処理状態 0 = 子ノード処理前: 1 = 全ての子ノード処理済み
 	sn = 1
 	while sn
 		sn--
 
-		if stack_f(sn){
-			//現ノードは子ノード処理済み。
-			_continue
-		}
-				
 		;現ノードをツリーに追加
 		nnode = stack(sn)
 		pnode = stack_p(sn)
 		TreeView_InsertItem nnode, pnode
 		
-
-		; stack(sn) = nownode
-		; stack_p(sn) = pnode
-		stack_f(sn) == 1 //現ノードを子ノード処理終了待ちに変更して積みなおす。
-		sn++
-
 		//子ノードを全て全部積む。
 		repeat get_childs(SGF_NODE@global(nnode), childlist)
 			stack(sn) = childlist(cnt)
 			stack_p(sn) = nnode
-			stack_f(sn) = 0
 			sn++
 		loop
 
