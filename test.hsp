@@ -1,0 +1,20 @@
+#module testmod x,y
+	#modinit int _x, int MAX_KEYS
+		x=_x
+		y=_y 
+	return
+#modfunc view
+	mes x
+
+	mes y
+	return
+
+	#global
+
+	newmod a, testmod ,100,200
+	newmod b, testmod ,300,300
+
+	dimtype f,5
+
+	f = a
+	f(1) = a

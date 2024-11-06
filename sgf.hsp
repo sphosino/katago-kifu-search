@@ -130,8 +130,8 @@
 	return
 
 #modcfunc get_rootnode
-	if 子ノードの数 = 0{
-		mref i,2
+	if 子ノードの数 == 0{
+		mref i, 2
 		return i
 	}
 	return 子ノード

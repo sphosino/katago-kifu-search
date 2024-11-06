@@ -1,5 +1,5 @@
 #ifndef hash_module
-#module hash_module data, data_opened_list, data_opened_list_num, hashtable, hashcount,  データ数
+#module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  データ数
 
 #const MAX_KEYS 5000
 
@@ -21,8 +21,8 @@
 
 #modinit
 	sdim data,,MAX_KEYS, ENUM_MAX
-	dim data_opend_list,,MAX_KEYS
-	dim data_opend_list_num
+	dim data_deleted_list,,MAX_KEYS
+	dim data_deleted_list_num
 	
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS
@@ -215,7 +215,7 @@ init_hash_manager
 	s = str(id)
 	t = instr(a,,"," + s + ",")
 	if t >= 0{
-		a = strmid(a, 0, t) + strmid(a, t + strlen(s) + 1 , 65535)
+		a = strmid(a, 0, t) + strmid(a, t + strlen(s) + 1 , $FFFF)
 	}
 	return
 	

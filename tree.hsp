@@ -7,7 +7,9 @@ dimtype treenode@global, 5
 	parent = p1
 	item_id = p2
 	openflag = 1
-	set_tree_direction thismod, 2 | 4
+
+	dim childs
+
 	mref i, 2 //自分のインデックス番号がiに入る
 	return i
 #modfunc add_child_treeview int p1, local i
@@ -26,6 +28,12 @@ dimtype treenode@global, 5
 	return
 #modcfunc get_tree_parent
 	return parent
+#modcfunc get_tree_root_child
+	if openflag: if cn : return childs
+	mref this_ID, 2
+	return this_ID
+#modcfunc get_tree_item_id
+	return item_id
 #modfunc set_openflag int p1
 	openflag = p1
 	return
@@ -38,12 +46,7 @@ dimtype treenode@global, 5
 	return
 
 
-#modfunc set_tree_direction int p1
-	xyswap = p1 & 1
-	x_reverse = ((p1 & 3) >> 1) * 2 -1
-	y_reverse = ((p1 & 7) >> 2) * 2 -1
 
-	return
 	
 #define global ctype check_area(%1,%2,%3,%4,%5,%6) ((%5)>=(%1) && (%5)<=(%3) && (%6)>=(%2) && (%6)<=(%4)) 
 
@@ -131,7 +134,7 @@ dimtype treenode@global, 5
 		//ノードにidを表示してみる
 		color 0, 0, 0
 		pos x - sx/2 , y - sy/2
-		mes item_id
+		mes 現在の深さ
 	}else{
 		color 200,30,30
 		circle x-sx/5,y-sy/5,x+sy/5,y+sy/5
@@ -180,8 +183,12 @@ dimtype treenode@global, 5
 #deffunc get_treeview_node_size array a
 	a = node_sizex, node_sizey
 	return
+#deffunc set_tree_direction int p1
+	xyswap = p1 & 1
+	x_reverse = ((p1 & 3) >> 1) * 2 -1
+	y_reverse = ((p1 & 7) >> 2) * 2 -1
+	return
 #global
-set_treeview 30,30
 
 
 
