@@ -65,15 +65,11 @@ pretime = keyfpstime
 				poke 座標,0,'a'+p
 				poke 座標,1,'a'+p.1
 	
-				if serch_child_byxy(SGF_NODE@global(nownode),手番,座標) = -1{
-				
-					newmod SGF_NODE@global,SGF_NODE,nownode
+				if serch_SGFchild_byxy(nownode,手番, 座標) = -1{
+					make_new_SGFnode nownode
 					new = stat
-					set_tree_pos SGF_NODE@global(new), 50,50
-					add_child SGF_NODE@global(nownode), new
-		
-					set_property_data SGF_NODE@global(new), 手番, 座標
-
+					add_SGFchild nownode, new
+					set_property_data new, 手番, 座標
 					TreeView_InsertItem new, nownode
 					
 				}else{
@@ -111,15 +107,15 @@ pretime = keyfpstime
 	}
 
 	if jidou & pretime + time <= keyfpstime{
-		gosub*move_next
+		gosub *move_next
 	}
 	
 	if prenode != nownode{
 		prenode = nownode
 		//ツリービューから実際のSGFノードのIDを取り出して盤面作成
-		make_board_from_sgf get_tree_item_id(treenode@global(nownode))
+		make_board_from_sgf get_tree_item_id(nownode)
 	}
-	tmp = get_property_data(SGF_NODE@global(nownode), "C")
+	tmp = get_property_data(nownode, "C")
 	split tmp," ", c_list
 
 	redraw 2
@@ -155,7 +151,7 @@ pretime = keyfpstime
 	nownode = topnode
 	set_current_node topnode
 	
-	tmp = get_property_data(SGF_NODE@global(topnode),"SZ")
+	tmp = get_property_data(topnode,"SZ")
 	split tmp,":", x, y
 	if stat == 1: y = x
 
@@ -174,7 +170,7 @@ pretime = keyfpstime
 		TreeView_InsertItem nnode, pnode
 		
 		//子ノードを全て全部積む。
-		repeat get_childs(SGF_NODE@global(nnode), childlist)
+		repeat get_SGF_childs(nnode, childlist)
 			stack(sn) = childlist(cnt)
 			stack_p(sn) = nnode
 			sn++
@@ -186,19 +182,19 @@ pretime = keyfpstime
 
 #deffunc make_board_from_sgf int v
 	dim kifu
-	get_nodelist SGF_NODE@global(v), kifu
+	get_nodelist v, kifu
 	盤面作成 board, kifu
 	return
 
 *move_next
-	set_current_node get_tree_root_child(treenode@global(nownode))
+	set_current_node get_tree_root_child(nownode)
 	pretime = keyfpstime
 	gosub *treeview移動
 	return
 	
 *move_back
-	if get_tree_parent(treenode@global(nownode)) != -1{
-		set_current_node get_tree_parent(treenode@global(nownode))
+	if get_tree_parent(nownode) != -1{
+		set_current_node get_tree_parent(nownode)
 		pretime = keyfpstime
 		gosub *treeview移動
 	}

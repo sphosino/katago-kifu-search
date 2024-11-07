@@ -1,6 +1,12 @@
 #ifndef SGF_NODE
+
+dimtype SGF_NODE@global, 5
+
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, 候補手, 候補手の数
 
+#deffunc make_new_SGFnode int p1
+	newmod SGF_NODE@global,SGF_NODE, p1
+	return
 #modinit int parent 
 
 	親ノード = parent
@@ -27,8 +33,11 @@
 		a(1,cnt) = 着手情報(1,cnt)
 	loop
 	return 着手情報の数
-	
-#modcfunc get_property_data str s
+
+#defcfunc get_property_data int p1, str s
+	return _get_property_data(SGF_NODE@global(p1), s)
+
+#modcfunc _get_property_data str s
 	tmp = ""
 	repeat 着手情報の数
 		if 着手情報(0, cnt) = s{
@@ -38,13 +47,18 @@
 	loop
 	return tmp
 
-#modfunc get_nodelist array a, int num
+#deffunc get_nodelist int p1, array a, int num
+	_get_nodelist SGF_NODE@global(p1), a, num
+	return
+#modfunc _get_nodelist array a, int num
 	mref i, 2
 	a(num) = i
-	if 親ノード != -1: get_nodelist SGF_NODE@global(親ノード), a, num + 1
+	if 親ノード != -1: _get_nodelist SGF_NODE@global(親ノード), a, num + 1
 	return
 
-#modcfunc get_childs array a
+#defcfunc get_SGF_childs int p1, array a
+	return _get_SGF_childs(SGF_NODE@global(p1),a)
+#modcfunc _get_SGf_childs array a
 	dim a, 子ノードの数
 	memcpy a,子ノード,子ノードの数*4
 	return 子ノードの数
@@ -67,7 +81,10 @@
 	loop
 	return 候補手の数
 
-#modfunc set_property_data str s, str d
+#deffunc set_property_data int p1, str s, str d
+	_set_property_data SGF_NODE@global(p1),s,d
+	return 
+#modfunc _set_property_data str s, str d
 
 	already_exist = 0
 	repeat 着手情報の数
@@ -102,17 +119,22 @@
 	loop
 	return result
 
-#modcfunc serch_child_byxy str s1, str s2
+#defcfunc serch_SGFchild_byxy int p1, str s1, str s2
+	return _serch_SGFchild_byxy(SGF_NODE@global(p1), s1, s2)
+#modcfunc _serch_SGFchild_byxy str s1, str s2
 	result = -1
 	repeat 子ノードの数
-		if get_property_data(SGF_NODE@global(子ノード(cnt)), s1) == s2{
+		if get_property_data(子ノード(cnt), s1) == s2{
 			result = 子ノード(cnt)
 			break
 		}
 	loop
 	return result
-	
-#modfunc add_child int p1
+
+#deffunc add_SGFchild int p1, int p2
+	_add_SGFchild SGF_NODE@global(p1),p2
+	return
+#modfunc _add_SGFchild int p1
 
 	if serch_child(thismod, p1) == -1{
 		子ノード(子ノードの数) = p1
@@ -226,7 +248,7 @@
 
 			point = 対応する文字まで取得(sgfs, point, "[", P) + 1
 			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
-			set_property_data SGF_NODE@global(nn), P, D
+			set_property_data nn, P, D
 			
 		}else:if token = '('{
 			
@@ -241,7 +263,7 @@
 			stack(nln) = new_id: nln++
 
 			if nn >= 0{
-				add_child SGF_NODE@global(nn), new_id
+				add_SGFchild nn, new_id
 			}
 			nn = new_id
 			point++

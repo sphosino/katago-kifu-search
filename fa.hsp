@@ -1,0 +1,19 @@
+
+#module testmod parent
+#modfunc get_childs__ var a
+	dup childs, a
+	return
+#modcfunc get_parent
+	return parent
+#global
+
+#module testmod1 childs,parent,ws
+#modinit int p1
+	parent = p1
+	return
+
+#global
+
+newmod a,testmod1, 9
+
+mes get_parent(a)

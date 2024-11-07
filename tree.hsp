@@ -1,6 +1,7 @@
+
+#ifndef tree
 //グローバル変数宣言。各モジュール内からは、インデックス番号で管理。
 dimtype treenode@global, 5
-
 
 #module tree parent,　item_id, childs,　cn, openflag
 #modinit int p1, int p2, local i
@@ -26,14 +27,24 @@ dimtype treenode@global, 5
 #modfunc set_tree_parent int p1
 	parent = p1
 	return
-#modcfunc get_tree_parent
+
+#defcfunc get_tree_parent int p1
+	return _get_tree_parent(treenode@global(p1))
+#modcfunc _get_tree_parent
 	return parent
-#modcfunc get_tree_root_child
+
+#defcfunc get_tree_root_child int p1
+	return _get_tree_root_child(treenode@global(p1))
+#modcfunc _get_tree_root_child
 	if openflag: if cn : return childs
 	mref this_ID, 2
 	return this_ID
-#modcfunc get_tree_item_id
+
+#defcfunc get_tree_item_id int p1
+	return _get_tree_item_id(treenode@global(p1))
+#modcfunc _get_tree_item_id
 	return item_id
+
 #modfunc set_openflag int p1
 	openflag = p1
 	return
@@ -46,8 +57,6 @@ dimtype treenode@global, 5
 	return
 
 
-
-	
 #define global ctype check_area(%1,%2,%3,%4,%5,%6) ((%5)>=(%1) && (%5)<=(%3) && (%6)>=(%2) && (%6)<=(%4)) 
 
 
@@ -103,7 +112,6 @@ dimtype treenode@global, 5
 		takasa(現在の深さ) = res - 1
 	}
 
-
 	//確定ノードまで横棒を使わずに戻れるか？
 	result = 現ノードの高さ, 1
 	height = 現ノードの高さ
@@ -131,7 +139,6 @@ dimtype treenode@global, 5
 	circle x-sx/2,y-sy/2,x+sx/2,y+sy/2
 
 	if openflag{
-		//ノードにidを表示してみる
 		color 0, 0, 0
 		pos x - sx/2 , y - sy/2
 		mes 現在の深さ
@@ -225,3 +232,4 @@ dimtype treenode@global, 5
 
 #global
 
+#endif

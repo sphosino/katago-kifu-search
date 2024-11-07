@@ -77,8 +77,8 @@
 
 	clear_board thismod
 	for iii, length(a)-1, -1, -1
-		tmpp = get_property_data(SGF_NODE@global(a(iii)),"B")
-		if tmpp = "": tmpp = get_property_data(SGF_NODE@global(a(iii)),"W")
+		tmpp = get_property_data(a(iii),"B")
+		if tmpp = "": tmpp = get_property_data(a(iii),"W")
 		if tmpp != ""{
 			xxx = peek(tmpp,0) - 'a'
 			yyy = peek(tmpp,1) - 'a'
