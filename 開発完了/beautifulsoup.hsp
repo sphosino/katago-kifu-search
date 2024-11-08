@@ -1,4 +1,6 @@
 #module 
+#deffunc _find_tags_bytag str s1, str tag, array result, int start
+	return
 #deffunc find_tags_bytag str s1, str tag, array result, int start
 
 // find_tags_bytag 対象の文字列, 対象のタグ, 結果を受け取る配列, オフセット(0)
@@ -63,18 +65,18 @@
 				if a = '>'{
 					mode = 2
 				}
-				if a = ' ' || a = '='{
+				if a == ' ' || a == '='{
 					if mode2 = 1{
 						if name == strmid(s, token_start, point-token_start){
 							hit = 1
 						}
 						get = 1
 					}
-					if a = '=': mode = 1
+					if a == '=': mode = 1
 				}
-			}else: if mode = 2{;タグ名
+			}else: if mode == 2{;タグ名
 				mode = 0
-			}else: if mode = 1{;属性値
+			}else: if mode == 1{;属性値
 				if mode2 && hit{
 					result = strmid(s, token_start,point - token_start)
 					break

@@ -13,6 +13,7 @@ dimtype treenode@global, 5
 
 	mref i, 2 //自分のインデックス番号がiに入る
 	return i
+
 #modfunc add_child_treeview int p1, local i
 	for i,,cn
 		if i == p1: return i ; すでにその子を持っている
@@ -24,24 +25,22 @@ dimtype treenode@global, 5
 	set_tree_parent treenode@global(p1), i
 	
 	return cn - 1
+
 #modfunc set_tree_parent int p1
 	parent = p1
 	return
 
-#defcfunc get_tree_parent int p1
-	return _get_tree_parent(treenode@global(p1))
+#define global ctype get_tree_parent(%1) _get_tree_parent(treenode@global(%1))
 #modcfunc _get_tree_parent
 	return parent
 
-#defcfunc get_tree_root_child int p1
-	return _get_tree_root_child(treenode@global(p1))
+#define global ctype get_tree_root_child(%1) _get_tree_root_child(treenode@global(%1))
 #modcfunc _get_tree_root_child
 	if openflag: if cn : return childs
 	mref this_ID, 2
 	return this_ID
 
-#defcfunc get_tree_item_id int p1
-	return _get_tree_item_id(treenode@global(p1))
+#define global ctype get_tree_item_id(%1) _get_tree_item_id(treenode@global(%1))
 #modcfunc _get_tree_item_id
 	return item_id
 

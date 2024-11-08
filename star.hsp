@@ -4,7 +4,7 @@
 	y = (0. + rnd(stars_areay))
 	sx = 0.+star_sizex
 	sy = 0.+star_sizey
-	speed = 0.1 * (rnd(6) + 1)
+	speed = 0.5 * (rnd(6) + 1)
 	colors = _collors
 	return
 #modfunc move_left
@@ -39,8 +39,8 @@
 init_stars_module
 
 repeat 150
-	if rnd(5): c = rnd(256) << 16 | rnd(256) << 8 | rnd(256):else: c = -1
-	newmod a, stars, 2, 2, c
+	if rnd(6): c = rnd(256) << 16 | rnd(256) << 8 | rnd(256):else: c = -1
+	newmod a, stars, 1, 1, c
 loop
 
 randomize
