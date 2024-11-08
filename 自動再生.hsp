@@ -24,9 +24,7 @@ input tree_direction
 button gosub "SGFを読み込む", *loadfile
 button gosub "SGFをコピー", *getsgf
 
-await 100
 gosub *loadfile
-await 100
 
 pretime = keyfpstime
 
@@ -92,8 +90,7 @@ pretime = keyfpstime
 		}
 		if _getkey('V') == 1 { //CTRL + V
 			sdim s, $FFFF
-			clipget s, $FFFF
-			title "loading from clipboard"
+			clipget s, varsize(s)
 			gosub*make_tree_from_SGF
 		}
 	}
@@ -112,7 +109,7 @@ pretime = keyfpstime
 	
 	if prenode != nownode{
 		prenode = nownode
-		//ツリービューから実際のSGFノードのIDを取り出して盤面作成
+		//ツリービューからSGFノードのIDを取り出して盤面作成
 		make_board_from_sgf get_tree_item_id(nownode)
 	}
 	tmp = get_property_data(nownode, "C")
@@ -128,8 +125,6 @@ pretime = keyfpstime
 	redraw 1
 
 	goto*main
-
-
 
 *getsgf
 	get_node_sgf topnode, a

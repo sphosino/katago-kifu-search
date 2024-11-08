@@ -1,9 +1,9 @@
 
 #ifndef tree
-//グローバル変数宣言。各モジュール内からは、インデックス番号で管理。
+
 dimtype treenode@global, 5
 
-#module tree parent,　item_id, childs,　cn, openflag
+#module tree parent, item_id, childs, cn, openflag
 #modinit int p1, int p2, local i
 	parent = p1
 	item_id = p2
@@ -66,7 +66,6 @@ dimtype treenode@global, 5
 	if 現ノードの高さ <= takasa(現在の深さ){//すでにノードがある
 		現ノードの高さ = takasa(現在の深さ) + 1　//現ノードをそのノードの下にする。
 	}
-
 
 	if openflag{
 
@@ -158,7 +157,7 @@ dimtype treenode@global, 5
 
 	return 
 
-#modfunc tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ, array result
+#modfunc tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ
 	
 	dim takasa, 1024
 	foreach takasa
@@ -200,8 +199,6 @@ dimtype treenode@global, 5
 #global
 
 
-
-
 #module
 #deffunc set_current_node int p1
 	current_node = p1
@@ -220,14 +217,13 @@ dimtype treenode@global, 5
 			add_child_treeview treenode@global(it(挿入先item_id)),it(item_id)
 		}
 	}
-    
 	return
 #deffunc treeview_toggle_openclose
 	toggle_openflag treenode@global(current_node)
 	return
 #deffunc treeview_draw int p1
 	
-	tree_view treenode@global(it(p1)), -1,-1,-1,tmp
+	tree_view treenode@global(it(p1)), -1,-1,-1
 	return
 
 #global

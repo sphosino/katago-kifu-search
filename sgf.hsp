@@ -24,7 +24,9 @@ dimtype SGF_NODE@global, 5
 	return i
 	
 //--情報取得
-#modcfunc get_parent
+#defcfunc get_SGFparent int p1
+	return _get_SGFparent(SGF_NODE@global(p1))
+#modcfunc _get_SGFparent
 	return 親ノード
 
 #modfunc get_nodeinfo array a
@@ -132,7 +134,7 @@ dimtype SGF_NODE@global, 5
 	return result
 
 #deffunc add_SGFchild int p1, int p2
-	_add_SGFchild SGF_NODE@global(p1),p2
+	_add_SGFchild SGF_NODE@global(p1), p2
 	return
 #modfunc _add_SGFchild int p1
 
@@ -201,7 +203,7 @@ dimtype SGF_NODE@global, 5
 #modfunc set_root_thisnode
 	mref i, 2
 	set_root SGF_NODE@global(親ノード), i //このノードが親の子ノードリストの最上位になる
-	if get_parent(SGF_NODE@global(親ノード)) ! -1{ //親ノードが親を持っていたら
+	if get_SGFparent(親ノード) ! -1{ //親ノードが親を持っていたら
 		set_root_thisnode SGF_NODE@global(親ノード) //親ノードに対しても繰り返す
 	}
 	return
