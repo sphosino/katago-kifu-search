@@ -6,7 +6,7 @@
 #include "hspext.as"
 
 screen 0, 640,480
-sgf = "棋譜/1.sgf"
+sgf_file = "棋譜/1.sgf"
 objsize 80
 pos,80
 
@@ -15,11 +15,19 @@ input time
 
 jidou = 0
 着手番号表示 = 0
+
 chkbox "自動再生", jidou: chk_ID = stat
 chkbox "着手番号", 着手番号表示
+
+
 set_treeview 30,30
 tree_direction = 6
+
 input tree_direction
+
+newmod t, treebox
+
+newmod board,goban, 19,19,20,20,200,100
 
 button gosub "SGFを読み込む", *loadfile
 button gosub "SGFをコピー", *getsgf
@@ -31,15 +39,14 @@ pretime = keyfpstime
 *main
 	manage_keyfps
 
-	nownode = Treeview_info()
+	nownode = get_current_node(t)
 	if nownode = -1: nownode = topnode
 	
-	マウスます取得 board,p
-	
+
 	if _getkey(2) == 1{
-		if treeview_m() >= 0{
-			set_current_node treeview_m()
-			TreeView_toggle_openclose
+		if treebox_onmouseid(t) >= 0{
+			set_current_node treebox_onmouseid(t)
+			Treebox_toggle_openflag
 		}
 	}
 	if _getkey(1) == 1{
@@ -48,37 +55,33 @@ pretime = keyfpstime
 		dragstartx = mousex - tmp
 		dragstarty = mousey - tmp.1
 		
-		if treeview_m() >=0{
+		if treebox_onmouseid(t) >=0{
 			
-			set_current_node stat
+			set_current_node t, stat
 			
 		}else{
+
+			getBoardCoordinates board, point
+
+			着手 board, point, point.1
 			
-			着手 board,p,p.1
-			
-			if stat{
+			if stat{　//着手成功なら
 				
 				if 逆手番(get_turn(board)) = 白番:手番 = "W": else: 手番 = "B"
-				座標 = "  "
-				poke 座標,0,'a'+p
-				poke 座標,1,'a'+p.1
-	
-				if serch_SGFchild_byxy(nownode,手番, 座標) = -1{
-					make_new_SGFnode nownode
-					new = stat
-					add_SGFchild nownode, new
-					set_property_data new, 手番, 座標
-					TreeView_InsertItem new, nownode
-					
-				}else{
-					new = stat
+
+				make_SGFnode nownode, point, 手番
+
+				new = stat
+
+				if new != nownode{
+					Treebox_InsertItem t, new, nownode
 				}
-				set_current_node new
+				set_current_node t, new
 			}
 		}
 	}
 
-	if _getkey(1) == -1 & dragging_flag{
+	if _getkey(1) == -1 && dragging_flag{
 		dragging_flag = 0
 		dragstartx = 0
 		dragstarty = 0
@@ -91,7 +94,15 @@ pretime = keyfpstime
 		if _getkey('V') == 1 { //CTRL + V
 			sdim s, $FFFF
 			clipget s, varsize(s)
-			gosub*make_tree_from_SGF
+			load_from_sgf t, s
+			topnode = stat
+
+			size = get_property_data(topnode, "SZ")
+			split size,":",x,y
+			if stat = 1: y = x
+			
+			clear_board board , int(x), int(y)
+			
 		}
 	}
 	
@@ -110,7 +121,7 @@ pretime = keyfpstime
 	if prenode != nownode{
 		prenode = nownode
 		//ツリービューからSGFノードのIDを取り出して盤面作成
-		make_board_from_sgf get_tree_item_id(nownode)
+		make_board_from_sgf board, get_tree_item_id(nownode)
 	}
 	tmp = get_property_data(nownode, "C")
 	split tmp," ", c_list
@@ -121,7 +132,7 @@ pretime = keyfpstime
 		boxf 0,80,640,480
 		碁盤表示 board , 着手番号表示
 		set_tree_direction tree_direction
-		treeview_draw topnode
+		treebox_draw t,topnode
 	redraw 1
 
 	goto*main
@@ -132,64 +143,31 @@ pretime = keyfpstime
 	return
 	
 *loadfile
-	棋譜取得 1
+	
+	棋譜取得 1 // katagoホームページから最新棋譜をダウンロード
 	notesel s
-	noteload sgf
-	gosub*make_tree_from_SGF
-	return
-
-*make_tree_from_SGF
-	
-	load_sgf s,-1 //SGFからツリー作成、トップノードの番号がstatに返る。
-	
+	noteload sgf_file
+	load_from_SGF t, s
 	topnode = stat
-	nownode = topnode
-	set_current_node topnode
 	
-	tmp = get_property_data(topnode,"SZ")
-	split tmp,":", x, y
-	if stat == 1: y = x
-
-	dim board
-	newmod board, goban, int(x), int(y), 23, 23,150, 40
-
-	stack = topnode ; 現在のノード番号
-	stack_p = -1　　; 親ノード番号
-	sn = 1
-	while sn
-		sn--
-
-		;現ノードをツリーに追加
-		nnode = stack(sn)
-		pnode = stack_p(sn)
-		TreeView_InsertItem nnode, pnode
-		
-		//子ノードを全て全部積む。
-		repeat get_SGF_childs(nnode, childlist)
-			stack(sn) = childlist(cnt)
-			stack_p(sn) = nnode
-			sn++
-		loop
-
-	wend
+	size = get_property_data(topnode, "SZ")
+	split size,":",x,y
+	if stat = 1: y = x
+	clear_board board , int(x), int(y)
 	
 	return
 
-#deffunc make_board_from_sgf int v
-	dim kifu
-	get_nodelist v, kifu
-	盤面作成 board, kifu
-	return
+
 
 *move_next
-	set_current_node get_tree_root_child(nownode)
+	set_current_node t, get_tree_root_child(nownode)
 	pretime = keyfpstime
 	gosub *treeview移動
 	return
 	
 *move_back
 	if get_tree_parent(nownode) != -1{
-		set_current_node get_tree_parent(nownode)
+		set_current_node t, get_tree_parent(nownode)
 		pretime = keyfpstime
 		gosub *treeview移動
 	}

@@ -1,4 +1,5 @@
 #ifndef goban
+#include "sgf.hsp"
 #const global 空点 0
 #const global 黒番 1
 #const global 白番 2
@@ -72,20 +73,8 @@
 #modfunc getcapture array a
 	a = 黒が取った数,白が取った数
 	return
-	
-#modfunc 盤面作成 array a
 
-	clear_board thismod
-	for iii, length(a)-1, -1, -1
-		tmpp = get_property_data(a(iii),"B")
-		if tmpp = "": tmpp = get_property_data(a(iii),"W")
-		if tmpp != ""{
-			xxx = peek(tmpp,0) - 'a'
-			yyy = peek(tmpp,1) - 'a'
-			着手 thismod, xxx, yyy
-		}
-	next
-	return
+
 
 #defcfunc 打てるかチェック array a, int x, int y,int t
 
@@ -225,14 +214,34 @@
 	
 	return
 *draw_last_move_mark
-	if m == 最後の着手 &&  cnt == 最後の着手.1{
+	if m == 最後の着手 && cnt == 最後の着手.1{
 		color 21,220,21
 		circle posx + masx/5, posy + masy/5, posx + masx*4/5, posy + masy*4/5
 	}
 	return
-#modfunc マウスます取得 array result
+#modfunc getBoardCoordinates array result
 	result = (mousex - px) / masx - (mousex < px), (mousey - py) / masy - (mousey < py)
 	return
+
+
+//use ------sgf.hsp------------
+#modfunc make_board_from_sgf int v
+	dim a
+	get_nodelist v, a
+	
+	clear_board thismod
+	for iii, length(a)-1, -1, -1
+		tmpp = get_property_data(a(iii),"B")
+		if tmpp = "": tmpp = get_property_data(a(iii),"W")
+		if tmpp != ""{
+			xxx = peek(tmpp,0) - 'a'
+			yyy = peek(tmpp,1) - 'a'
+			着手 thismod, xxx, yyy
+		}
+	next
+	return
+//---------------------------
+
 #deffunc board_serch_init
 	sx = 1,0,-1,0
 	sy = 0,-1,0,1

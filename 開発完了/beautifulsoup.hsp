@@ -1,5 +1,6 @@
 #module 
 #deffunc _find_tags_bytag str s1, str tag, array result, int start
+	point = start
 	return
 #deffunc find_tags_bytag str s1, str tag, array result, int start
 

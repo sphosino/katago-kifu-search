@@ -192,7 +192,6 @@ dimtype SGF_NODE@global, 5
 		set_root_thisnode SGF_NODE@global(親ノード) //親ノードに対しても繰り返す
 	}
 	return
-
 #global
 
 #module
@@ -220,12 +219,34 @@ dimtype SGF_NODE@global, 5
 
 
 #module
+#deffunc make_SGFnode int nownode, array coordinate, str 手番
 
-#deffunc load_sgf      str ss, int node, local sgfs, local point, local nn
+	new = nownode
+
+	座標 = "  "
+	poke 座標, 0, 'a' + coordinate
+	poke 座標, 1, 'a' + coordinate.1
+
+	if serch_SGFchild_byxy(nownode, 手番, 座標) = -1{ //ノードが存在しなければ
+	
+		make_new_SGFnode nownode
+		new = stat
+		add_SGFchild nownode, new
+		set_property_data new, 手番, 座標
+		
+	}
+	return new
+	
+#defcfunc load_sgf str ss, int node
 	nln = 0
+	load_sgf_main ss, node
+	return stat
+	
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
 	sgfs = ss
 	nn = node
+
+
 	//解析
 	while strmid(sgfs, point, 1) != ""
 		

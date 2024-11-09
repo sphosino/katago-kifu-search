@@ -1,5 +1,5 @@
 #module
-#defcfunc monty int ドアの数, int 当たりドアの数, int 司会者が開ける当たりドアの数, int 司会者が開ける外れドアの数, int 司会者が開けた後変更する
+#defcfunc montyhall int ドアの数, int 当たりドアの数, int 司会者が開ける当たりドアの数, int 司会者が開ける外れドアの数, int 司会者が開けた後変更する
 
 	repeat ドアの数
 		残りドア.cnt = cnt

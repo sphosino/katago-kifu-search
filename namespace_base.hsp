@@ -210,7 +210,7 @@ init_hash_manager
 	a = ","
 	return
 	
-#deffunc del_child_id var a, int id, local tokens
+#deffunc del_child_id var a, int id
 
 	s = str(id)
 	t = instr(a,,"," + s + ",")
