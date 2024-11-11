@@ -3,8 +3,9 @@
 #include "開発完了/keyfps.hsp"
 #include "hspext.as"
 
+
+dirname = "C:/Users/owner/Desktop/hsp/棋譜"
 screen 0, 640,480
-sgf_file = "棋譜/1.sgf"
 objsize 80
 pos,80
 
@@ -43,8 +44,8 @@ pretime = keyfpstime
 
 	if _getkey(2) == 1{
 		if treebox_onmouseid(t) >= 0{
-			set_current_node treebox_onmouseid(t)
-			Treebox_toggle_openflag
+			set_current_node t, treebox_onmouseid(t)
+			Treebox_toggle_openflag t, treebox_onmouseid(t)
 		}
 	}
 	if _getkey(1) == 1{
@@ -135,9 +136,9 @@ pretime = keyfpstime
 	
 *loadfile
 	
-	棋譜取得 1 // katagoホームページから最新棋譜をダウンロード
+	棋譜取得 dirname, 1 // katagoホームページから最新棋譜をダウンロード
 	notesel s
-	noteload sgf_file
+	noteload dirname + "/1.sgf"
 
 	//SGFからツリー作成
 	load_from_SGF t, s

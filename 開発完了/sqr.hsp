@@ -2,7 +2,7 @@
 #include "beautifulsoup.hsp"
 
 #module
-#deffunc 棋譜取得 int max
+#deffunc 棋譜取得 str dirname, int max
 
 	dim result
 	now_dir = dir_cur
@@ -10,10 +10,7 @@
 	url = "https://katagotraining.org"
 	url2 = url + "/games"
 	
-	dirname = "C:/Users/owner/Desktop/hsp/棋譜"
-	
 	chdir dirname
-
 
 	httpload url2
 	if stat : goto *bad	; 正しくリクエストができなかった
@@ -47,7 +44,7 @@
 			httpinfo size,HTTPINFO_SIZE
 			
 			count++
-			bsave dirname + "/" + count + ".sgf",buf,size
+			bsave dirname + "/" + count + ".sgf", buf, size
 
 			if count >= max:break
 			
@@ -67,7 +64,7 @@
 
 *bad
 	;	エラー
-	httpinfo estr,HTTPINFO_ERROR
+	httpinfo estr, HTTPINFO_ERROR
 	dialog "ERROR "+estr
 	stop
 	
