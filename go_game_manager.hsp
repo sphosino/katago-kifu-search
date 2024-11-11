@@ -1,0 +1,113 @@
+#include "goban.hsp"
+#include "sgf.hsp"
+#include "tree.hsp"
+
+#module
+
+//gobanオブジェクト、表示したいsgfノード
+#deffunc make_board_from_sgf var board, int sgf_node_number
+
+	dim nodelist
+	get_nodelist sgf_node_number, nodelist
+
+	clear_board board //碁盤を初期化
+
+	//表示したいノードまでノードを着手する
+	for i, length(nodelist)-1, -1, -1
+		tmp = get_property_data(nodelist(i),"B")
+		if tmp = "": tmp = get_property_data(nodelist(i), "W")
+		if tmp != ""{
+			x = peek(tmp,0) - 'a'
+			y = peek(tmp,1) - 'a'
+			着手 board, x, y
+		}
+	next
+	
+	return
+
+#deffunc set_board_topnode var board, int topnode
+
+	size = get_property_data(get_tree_item_id(topnode), "SZ")
+	split size,":", x, y
+	if stat = 1: y = x
+	clear_board board , int(x), int(y)
+	
+	return
+#global
+
+#module treebox tree_data, topnode, current_node, treenode_id_list, onmouse_id
+
+#modinit
+	current_node = -1
+	dim tree_node_id_list
+	return
+#modfunc set_current_node int p1
+	current_node = p1
+	return
+	
+#modcfunc get_current_node
+	return current_node
+	
+#modfunc treebox_insertItem int item_id, int parent_item_id
+//　item_id = 任意の番号。識別用
+//  親に設定するid item_idで設定したものを使う
+
+	if parent_item_id >= 0{
+		parent_id = treenode_id_list(parent_item_id)
+	}else{
+		parent_id = -1
+	}
+
+    make_treenode parent_id, item_id
+
+	treenode_id_list(item_id) = stat
+	
+	return item_id
+
+#modfunc treebox_draw int p1
+	tree_view treenode_id_list(p1), -1, -1, -1
+	onmouse_id = treeview_onmouse_id()
+	return
+
+#modcfunc treebox_onmouseid
+	return onmouse_id
+	
+#modfunc treebox_toggle_openflag int p1
+	toggle_openflag treenode_id_list(p1)
+	return
+	
+#modfunc load_from_SGF str s
+
+	//SGFツリーのノード番号をそのまま利用して、treeboxノードを作成する
+
+	dim tree_node_id_list //アイテム情報を初期化
+
+	//SGFからSGFツリー作成、SGFのトップノードの番号を取得。
+	topnode = load_sgf(s, -1)
+
+	stack = topnode ; 現在のノード番号
+	stack_p = -1    ; 親ノード番号
+	sn = 1
+	
+	while sn
+		sn--
+		;現ノードをツリーに追加
+		nnode = stack(sn)
+		pnode = stack_p(sn)
+		Treebox_InsertItem thismod, nnode, pnode
+		
+		//子ノードを全部積む。
+		repeat get_SGF_childs(nnode, childlist)
+			stack(sn) = childlist(cnt)
+			stack_p(sn) = nnode
+			sn++
+		loop
+
+	wend
+
+	//カレントノードをトップノードに移動
+	set_current_node thismod, topnode
+	
+	return topnode
+
+#global

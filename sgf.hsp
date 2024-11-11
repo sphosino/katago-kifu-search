@@ -5,7 +5,7 @@ dimtype SGF_NODE@global, 5
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, 候補手, 候補手の数
 
 #define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
-#modinit int parent 
+#modinit int parent, local thismod_ID
 
 	親ノード = parent
 	
@@ -18,8 +18,8 @@ dimtype SGF_NODE@global, 5
 	sdim 候補手
 	候補手の数 = 0
 	
-	mref i, 2
-	return i
+	mref thismod_ID, 2
+	return thismod_ID
 	
 //--情報取得
 #define global ctype get_SGFparent(%1) _get_SGFparent(SGF_NODE@global(%1))
@@ -45,21 +45,21 @@ dimtype SGF_NODE@global, 5
 	return tmp
 
 #define global get_nodelist(%1, %2, %3 = 0) _get_nodelist SGF_NODE@global(%1), %2, %3
-#modfunc _get_nodelist array a, int num
-	mref i, 2
-	a(num) = i
+#modfunc _get_nodelist array a, int num, local thismod_ID
+	mref thismod_ID, 2
+	a(num) = thismod_ID
 	if 親ノード != -1: _get_nodelist SGF_NODE@global(親ノード), a, num + 1
 	return
 
 #define global ctype get_SGF_childs(%1, %2) _get_SGF_childs(SGF_NODE@global(%1), %2)
 #modcfunc _get_SGf_childs array a
 	dim a, 子ノードの数
-	memcpy a,子ノード,子ノードの数*4
+	memcpy a, 子ノード, 子ノードの数*4
 	return 子ノードの数
 	
-#modfunc cut_node local j
-	for j,, 子ノードの数
-		cut_node SGF_NODE@global(子ノード(j))
+#modfunc cut_node
+	for i,, 子ノードの数
+		cut_node SGF_NODE@global(子ノード(i))
 	next
 	delmod thismod
 	return
@@ -138,10 +138,10 @@ dimtype SGF_NODE@global, 5
 	}
 	return
 
-#modcfunc get_rootnode
+#modcfunc get_rootnode local thismod_ID
 	if 子ノードの数 == 0{
-		mref i, 2
-		return i
+		mref thismod_ID, 2
+		return thismod_ID
 	}
 	return 子ノード
 
@@ -152,7 +152,7 @@ dimtype SGF_NODE@global, 5
 	s += ")"
 	return
 
-#modfunc _get_node_sgf var s, local ii
+#modfunc _get_node_sgf var s
 
 	s += ";"
 
@@ -160,12 +160,12 @@ dimtype SGF_NODE@global, 5
 		s += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
 	loop
 	
-	for ii,0, 子ノードの数
+	for i,0, 子ノードの数
 	
 		if 子ノードの数 >= 2{
 			s+="("
 		}
-		_get_node_sgf SGF_NODE@global(子ノード(ii)), s
+		_get_node_sgf SGF_NODE@global(子ノード(i)), s
 		
 		if 子ノードの数 >= 2{
 			s+=")"
@@ -185,9 +185,9 @@ dimtype SGF_NODE@global, 5
 	
 	return
 
-#modfunc set_root_thisnode
-	mref i, 2
-	set_root SGF_NODE@global(親ノード), i //このノードが親の子ノードリストの最上位になる
+#modfunc set_root_thisnode local thismod_ID
+	mref thismod_ID, 2
+	set_root SGF_NODE@global(親ノード), thismod_ID //このノードが親の子ノードリストの最上位になる
 	if get_SGFparent(親ノード) ! -1{ //親ノードが親を持っていたら
 		set_root_thisnode SGF_NODE@global(親ノード) //親ノードに対しても繰り返す
 	}
@@ -201,7 +201,6 @@ dimtype SGF_NODE@global, 5
 	counter = 0
 	repeat , index
 		t = strmid(s,cnt,1)
-		if t == "["
 		if t == "": dialog "括弧が閉じられていません",1,"SGF解析エラー": end
 		if t == s1: counter++
 		if t == s2: counter--

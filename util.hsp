@@ -6,8 +6,9 @@
 #define global ctype getlen(%1) %1_NUM__
 #define global setlen(%1,%2) %1_NUM__ = %2
 #define global clear(%1) %1_NUM__ = 0
-#define global splice(%1, %2, %3 = $FFFF, %4 = ___TMP___, %5 = -1) _splice %1, %2, %3, %4, %5 * (varptr(___TMP___) !=  varptr(%4)): setlen %1, stat
-#define global show(%1) repeat getlen(%1):mes(%1.cnt):loop
+#define global splice(%1, %2, %3 = $FFFF, %4 = ___TMP___, %5 = -1) _splice %1, %2, %3, %4, %5 * (varptr(___TMP___) !=  varptr(%4)), getlen(%1): setlen %1, stat
+#define global show(%1) repeat getlen(%1): mes(%1.cnt): loop
+
 #defcfunc _pop array a, var b
 	b--
 	return a(b)
@@ -20,6 +21,7 @@
 	loop
 
 	return t
+	
 #deffunc _unshift array a, var b, var value
 	for i, b,,-1
 		a(i) = a(i-1)
@@ -27,33 +29,72 @@
 	a = value
 	b++
 	return
-#deffunc _splice array a, int start, int deleteCount, array additem, int additem_max
-	aimax = additem_max
-	amax = length(a)
 	
+#deffunc _splice array a, int start, int deleteCount, array additem, int additem_max, int _amax
+	amax = _amax
+	aimax = additem_max
+	if amax = 0: amax = length(a)
 	if aimax < 0: aimax = length(additem)
 
-	clear tmp1
-	clear tmp2
+	clear tmp
+	clear deleted_list
 
-	for i,, amax
-		if i < start{
-			push tmp1, a(i)
-		}else:if i >= start + deleteCount{
-			push tmp2, a(i)
+	repeat amax
+		if cnt >= start{
+			if cnt >= start + deleteCount{
+				push tmp, a(cnt)
+			}else{
+				push deleted_list, a(cnt)
+			}
 		}
-	next
+	loop
+
+	setlen a, limit(start,, amax)
 	
-	clear a
-	
-	for i,,getlen(tmp1)
-		push a, tmp1(i)
-	next
-	for i,, aimax
-		push a, additem(i)
-	next
-	for i,,getlen(tmp2)
-		push a, tmp2(i)
-	next
+	repeat aimax
+		push a, additem(cnt)
+	loop
+	repeat getlen(tmp)
+		push a, tmp(cnt)
+	loop
+
 	return getlen(a)
+
+
+#define global spliced_list(%1) _spliced_list %1: setlen %1, stat
+#deffunc _spliced_list array a
+	repeat getlen(deleted_list)
+		a(cnt) = deleted_list.cnt
+	loop
+	return getlen(deleted_list)
+	
 #global
+
+#if 1
+
+	push a,1
+	push a,2
+	push a,3
+	push a,4
+	unshift a, 0
+	push a,5
+	push a,6
+
+
+	mes pop(a)
+	mes shift(a)
+
+	mes 
+	
+	b = 100,200,300,400
+	
+	splice a,2,3,b
+	
+	show a
+
+	mes 
+
+	spliced_list t //’¼‘O‚Ìsplice‚Åíœ‚³‚ê‚½—v‘f‚ğæ“¾
+	show t
+	
+#endif

@@ -1,5 +1,4 @@
 #ifndef goban
-#include "sgf.hsp"
 #const global ‹ó“_ 0
 #const global •”Ô 1
 #const global ”’”Ô 2
@@ -222,25 +221,6 @@
 #modfunc getBoardCoordinates array result
 	result = (mousex - px) / masx - (mousex < px), (mousey - py) / masy - (mousey < py)
 	return
-
-
-//use ------sgf.hsp------------
-#modfunc make_board_from_sgf int v
-	dim a
-	get_nodelist v, a
-	
-	clear_board thismod
-	for iii, length(a)-1, -1, -1
-		tmpp = get_property_data(a(iii),"B")
-		if tmpp = "": tmpp = get_property_data(a(iii),"W")
-		if tmpp != ""{
-			xxx = peek(tmpp,0) - 'a'
-			yyy = peek(tmpp,1) - 'a'
-			’…è thismod, xxx, yyy
-		}
-	next
-	return
-//---------------------------
 
 #deffunc board_serch_init
 	sx = 1,0,-1,0

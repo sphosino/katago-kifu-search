@@ -1,6 +1,4 @@
-#include "sgf.hsp"
-#include "goban.hsp"
-#include "tree.hsp"
+#include "go_game_manager.hsp"
 #include "開発完了/sqr.hsp"
 #include "開発完了/keyfps.hsp"
 #include "hspext.as"
@@ -27,7 +25,7 @@ input tree_direction
 
 newmod t, treebox
 
-newmod board,goban, 19,19,20,20,200,100
+newmod board, goban, 19,19,20,20,200,100
 
 button gosub "SGFを読み込む", *loadfile
 button gosub "SGFをコピー", *getsgf
@@ -96,13 +94,7 @@ pretime = keyfpstime
 			clipget s, varsize(s)
 			load_from_sgf t, s
 			topnode = stat
-
-			size = get_property_data(topnode, "SZ")
-			split size,":",x,y
-			if stat = 1: y = x
-			
-			clear_board board , int(x), int(y)
-			
+			set_board_topnode  board, topnode
 		}
 	}
 	
@@ -132,9 +124,8 @@ pretime = keyfpstime
 		boxf 0,80,640,480
 		碁盤表示 board , 着手番号表示
 		set_tree_direction tree_direction
-		treebox_draw t,topnode
+		treebox_draw t, topnode
 	redraw 1
-
 	goto*main
 
 *getsgf
@@ -147,17 +138,14 @@ pretime = keyfpstime
 	棋譜取得 1 // katagoホームページから最新棋譜をダウンロード
 	notesel s
 	noteload sgf_file
+
+	//SGFからツリー作成
 	load_from_SGF t, s
 	topnode = stat
-	
-	size = get_property_data(topnode, "SZ")
-	split size,":",x,y
-	if stat = 1: y = x
-	clear_board board , int(x), int(y)
+
+	set_board_topnode board, topnode
 	
 	return
-
-
 
 *move_next
 	set_current_node t, get_tree_root_child(nownode)

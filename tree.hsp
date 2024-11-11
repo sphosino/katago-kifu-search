@@ -1,65 +1,87 @@
 
 #ifndef tree
 
-#include "sgf.hsp"
 dimtype treenode@global, 5
 
 #module tree parent, item_id, childs, cn, openflag
-#modinit int p1, int p2, local i
+
+#define global set_tree_parent(%1, %2) _set_tree_parent treenode@global(%1), %2
+#modfunc _set_tree_parent int p1
 	parent = p1
-	item_id = p2
-	openflag = 1
-	dim childs
+	return
 
-	mref i, 2 //自分のインデックス番号がiに入る
-
-	if parent >= 0{
-		add_child_treeview treenode@global(parent), i
-	}
-
-	return i
-
-#modfunc add_child_treeview int p1, local i
+#define global add_child_treeview(%1, %2) _add_child_treeview treenode@global(%1), %2
+#modfunc _add_child_treeview int p1, local i, local thismod_ID
 	for i,,cn
 		if i == p1: return i ; すでにその子を持っている
 	next
 	childs(cn) = p1
 	cn++
 	
-	mref i, 2
-	set_tree_parent treenode@global(p1), i
+	mref thismod_ID, 2
+	set_tree_parent p1, thismod_ID
 	
 	return cn - 1
 
-#modfunc set_tree_parent int p1
+
+#deffunc make_treenode int p1, int p2
+	newmod treenode@global, tree, p1, p2
+	return stat
+#modinit int p1, int p2, local thismod_ID
 	parent = p1
-	return
+	item_id = p2
+	openflag = 1
+	dim childs
+
+	mref thismod_ID, 2
+
+	if parent >= 0{
+		add_child_treeview parent, thismod_ID
+	}
+
+	return thismod_ID
+
+
 
 #define global ctype get_tree_parent(%1) _get_tree_parent(treenode@global(%1))
 #modcfunc _get_tree_parent
 	return parent
 
 #define global ctype get_tree_root_child(%1) _get_tree_root_child(treenode@global(%1))
-#modcfunc _get_tree_root_child
+#modcfunc _get_tree_root_child local thismod_ID
 	if openflag: if cn : return childs
-	mref this_ID, 2
-	return this_ID
+	mref thismod_ID, 2
+	return thismod_ID
 
 #define global ctype get_tree_item_id(%1) _get_tree_item_id(treenode@global(%1))
 #modcfunc _get_tree_item_id
 	return item_id
 
-#modfunc set_openflag int p1
+#define global set_openflag(%1) _set_openflag(treenode@global(%1))
+#modfunc _set_openflag int p1
 	openflag = p1
 	return
-#modfunc toggle_openflag
+
+#define global toggle_openflag(%1) _toggle_openflag(treenode@global(%1))
+#modfunc _toggle_openflag
 	openflag ^ 1
 	return
 
 
-#define global ctype check_area(%1,%2,%3,%4,%5,%6) ((%5)>=(%1) && (%5)<=(%3) && (%6)>=(%2) && (%6)<=(%4)) 
+#define ctype check_area(%1,%2,%3,%4,%5,%6) ((%5)>=(%1) && (%5)<=(%3) && (%6)>=(%2) && (%6)<=(%4)) 
 
+#deffunc tree_view int p1, int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ
+	
+	dim takasa, 1024
+	foreach takasa
+		takasa.cnt = -1
+	loop
+	
+	tree_view_mouse = -1
+	
+	_tree_view treenode@global(p1), 予定高さ, 確定ノードの深さ, 確定ノードの高さ, tmp
 
+	return
 #modfunc _tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ, array result, int 現在の深さ, local 現ノードの高さ, local i, local res
 
 	現ノードの高さ = 予定高さ
@@ -68,7 +90,6 @@ dimtype treenode@global, 5
 	}
 
 	if openflag{
-
 		for i,,cn
 	
 			if i == 0{
@@ -125,6 +146,7 @@ dimtype treenode@global, 5
 
 	next
 
+	//描画
 	//スタートノード以外は親ノードへ向かう線を描画
 	color 250,250,250
 	if 現在の深さ{
@@ -151,25 +173,16 @@ dimtype treenode@global, 5
 
 #deffunc xyswap_line int p1, int p2, int p3, int p4
 	if xyswap{
-		line p1,p2, p1 + p4 * y_reverse, p2 + p3 * x_reverse
+		line p1, p2, p1 + p4 * y_reverse, p2 + p3 * x_reverse
 	}else{
-		line p1,p2, p1 + p3 * x_reverse, p2 + p4 * y_reverse
+		line p1, p2, p1 + p3 * x_reverse, p2 + p4 * y_reverse
 	}
-
-	return 
-
-#modfunc tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ
-	
-	dim takasa, 1024
-	foreach takasa
-		takasa.cnt = -1
-	loop
-	
-	tree_view_mouse = -1
-	
-	_tree_view thismod, 予定高さ, 確定ノードの深さ, 確定ノードの高さ, result
-
 	return
+
+
+//クラスメソッド-----------------------------
+#defcfunc treeview_onmouse_id
+	return tree_view_mouse
 
 #deffunc set_treeview int p1, int p2, int p3, int p4
 	node_sizex = p1
@@ -177,124 +190,30 @@ dimtype treenode@global, 5
 	px = p3
 	py = p4
 	return
-#defcfunc treeview_m
-	return tree_view_mouse
 
 #deffunc set_treeview_position int p1, int p2
 	px = p1
 	py = p2
 	return
+
 #deffunc get_treeview_position array a
 	a = px, py
 	return
+
 #deffunc get_treeview_node_size array a
 	a = node_sizex, node_sizey
 	return
+
 #deffunc set_tree_direction int p1
 	xyswap = p1 & 1
 	x_reverse = ((p1 & 3) >> 1) * 2 -1
 	y_reverse = ((p1 & 7) >> 2) * 2 -1
 	return
+
 #defcfunc get_tree_direction
 	return (x_reverse + 1 >> 1) << 1 | (y_reverse + 1 >> 1) << 2 | xyswap
+//------------------------------------------------------------------------
+
 #global
-
-
-#module treebox tree_data, topnode, current_node, treenode_id_list, onmouse_id
-
-#modinit
-	current_node = -1
-	dim tree_node_id_list
-	return
-#modfunc set_current_node int p1
-	current_node = p1
-	return
-	
-#modcfunc get_current_node
-	return current_node
-
-#modfunc treebox_insertItem int item_id, int 挿入先item_id
-//　item_id = 任意の番号。識別用
-//  親に設定するid item_idで設定したものを使う
-
-	if 挿入先item_id >= 0{
-		parent_id = treenode_id_list(挿入先item_id)
-	}else{
-		parent_id = -1
-	}
-
-    newmod treenode@global, tree, parent_id, item_id
-
-	treenode_id_list(item_id) = stat
-	
-	return item_id
-
-#modfunc treebox_draw int p1
-	tree_view treenode@global(treenode_id_list(p1)), -1, -1, -1
-	onmouse_id = treeview_m()
-	return
-
-#modcfunc treebox_onmouseid
-	return onmouse_id
-	
-#modfunc treebox_toggle_openflag int p1
-	toggle_openflag treenode@global(treenode_id_list(p1))
-	return
-	
-#modfunc load_from_SGF str s
-
-	//SGFツリーのノード番号をそのまま利用して、treeboxノードを作成する
-
-	dim tree_node_id_list //アイテム情報を初期化
-
-	//SGFからSGFツリー作成、SGFのトップノードの番号を取得。
-	topnode = load_sgf(s, -1)
-
-	stack = topnode ; 現在のノード番号
-	stack_p = -1    ; 親ノード番号
-	sn = 1
-	
-	while sn
-		sn--
-		;現ノードをツリーに追加
-		nnode = stack(sn)
-		pnode = stack_p(sn)
-		Treebox_InsertItem thismod, nnode, pnode
-		
-		//子ノードを全部積む。
-		repeat get_SGF_childs(nnode, childlist)
-			stack(sn) = childlist(cnt)
-			stack_p(sn) = nnode
-			sn++
-		loop
-
-	wend
-
-	//カレントノードをトップノードに移動
-	set_current_node thismod, topnode
-	
-	return topnode
-#global
-
 #endif
 
-
-#if 0
-s = {"
-(;GM[1]FF[4]SZ[19]PB[陳祈睿]BR[八段]PW[許皓鋐]WR[九段]KM[6.5]RE[W+R]DT[2024-11-08]GN[第17期棋王戦（台湾）挑戦手合七番勝負第1局];B[pd];W[dp];B[qp];W[dd];B[op];W[nc];B[qf];W[pc];B[qc];W[qb];B[oc];W[pb];B[ob];W[od];B[nb];W[qd];B[pe];W[rd];B[mc];W[nd];B[ld];W[nf];B[of];W[md];B[lc];W[le];B[ke];W[lf];B[kf];W[lg];B[oh];W[kg];B[pj];W[ic];B[jd];W[ig];B[hd];W[gc];B[li];W[oa];B[mb];W[kb];B[fe];W[hc];B[hf];W[ki];B[kj];W[ji];B[de];W[ge];B[gf];W[jf];B[ie];W[fd];B[ee];W[cd];B[ce];W[id];B[je];W[lj];B[mk];W[ci];B[fi];W[fg];B[eg];W[mj];B[nj];W[lk];B[ll];W[kl];B[lm];W[pq];B[oq];W[pp];B[po];W[qq];B[ro];W[km];B[kn];W[jn];B[kk];W[mi];B[ni];W[mh];B[jo];W[im];B[in];W[jm];B[ko];W[eh];B[fh];W[gg];B[hg];W[gh];B[hi];W[dg];B[ef];W[gi];B[gj];W[fj];B[ei];W[hj];B[gk];W[ej];B[dh];W[di];B[eh];W[hh];B[ch];W[ii];B[ff];W[bi];B[hm];W[bd];B[jc];W[jb];B[kc];W[jk];B[ho];W[dm];B[bh];W[ip];B[io];W[gq];B[cq];W[dq];B[cp];W[cn];B[dr];W[er];B[cr];W[ml];B[nk];W[rp];B[qo];W[or];B[nr];W[pr];B[lq];W[rr];B[do];W[co];B[eo];W[fp];B[fo];W[bp];B[bq];W[bo];B[eq];W[ep];B[fr];W[fq];B[gr];W[hr];B[es];W[oo];B[il];W[jj];B[dk];W[dj];B[eq];W[qm];B[pn];W[er];B[ds];W[fs];B[eq];W[ln];B[mm];W[er];B[ed];W[ec];B[eq];W[nm];B[nl];W[er];B[dc];W[cc];B[eq];W[mn];B[ml];W[er];B[gs];W[hs];B[eq];W[on];B[pm];W[er];B[fc];W[fb];B[eq];W[mq];B[mr];W[er];B[fs];W[lr];B[lp];W[jr])
-"}
-
-set_treeview 30,30,200,200
-set_tree_direction 6
-
-newmod t, treebox
-
-load_from_sgf t,s
-
-*main
-	manage_keyfps
-	treebox_draw t,0
-	title""+treebox_onmouseid(t)
-	goto*main
-
-#endif
