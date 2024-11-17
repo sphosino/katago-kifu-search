@@ -1,0 +1,191 @@
+#include "sgf.hsp"
+#module serch_pattern_manager
+
+#enum SERCH_PATTERN_BLACK = 0
+#enum SERCH_PATTERN_WHITE
+#enum SERCH_PATTERN_NONE
+#enum SERCH_PATTERN_BLACK_WHITE
+
+#const 黒番  1
+#const 白番  2
+
+
+#deffunc add_pattern var s, str s2
+	if strmid(s,-1,1) != "@"{
+		s = "@"
+	}
+	s += s2 + "@"
+	return
+	
+#deffunc remove_serch_pattern var s, int p1
+	s = strtrim(s,0,'@')
+	split s,"@", b
+	s = "@"
+	repeat stat
+		if cnt = p1: continue
+		s += b(cnt) + "@"
+	loop
+	return
+	
+#defcfunc get_pattern var s, int p1
+	s = strtrim(s,0,'@')
+	sdim b
+	split s,"@", b
+	
+	return b(p1)
+	
+#defcfunc get_pattern_list var s, var patterns
+	s = strtrim(s,0,'@')
+	split s,"@",patterns
+	return stat
+	
+#defcfunc get_pattern_coordinate str s1, local tmp
+	ss = s1
+	ss = strtrim(ss,0,',')
+	split ss,",",tmp
+	return tmp
+	
+#defcfunc get_pattern_type str s1, local tmp
+	ss = s1
+	ss = strtrim(ss,0,',')
+	split ss,",",tmp
+	return tmp.1
+
+#defcfunc get_pattern_num var s, local tmp
+	s = strtrim(s,0,'@')
+	split s,"@",tmp
+	return stat
+	
+#deffunc SGFxy_to_xy str s1, var result
+	ss = s1
+	result = peek(ss,0) - 'a', peek(ss,1) - 'a'
+	return
+	
+#defcfunc xy_to_SGFxy var a, local tmp
+	tmp = "  "
+	poke tmp, 0, a   + 'a'
+	poke tmp, 1, a.1 + 'a'
+	return tmp
+
+
+#defcfunc count_stone_in_serch_pattern var s, local tmp
+
+	s = strtrim(s,0,'@')
+	split s,"@",tmp
+	r = stat
+	repeat r
+		if int(get_pattern_type(tmp.cnt)) == SERCH_PATTERN_NONE: r--
+	loop
+	return r
+
+
+#defcfunc check_pattern_match var _search_pattern, int 手番, str coordinate
+    // サーチパターンの一致を確認する処理
+    // result =  -1 : サーチパターン内に座標を発見したが色が違う
+    // result =  -2 : サーチパターン内に座標が存在しない
+    // result >= 0 : サーチパターン内に座標を発見して、色も一致。　hitしたサーチパターンの番号が返る
+
+    match_result = -2
+    repeat get_pattern_list(_search_pattern, pattern)
+    
+    	logmes get_pattern_coordinate(pattern.cnt) + " : " + coordinate
+    	
+        if get_pattern_coordinate(pattern.cnt) == coordinate{
+            switch int(get_pattern_type(pattern.cnt))
+                case SERCH_PATTERN_BLACK
+                    if 手番 != 黒番: match_result = -1: break
+                swbreak
+                case SERCH_PATTERN_WHITE
+                    if 手番 != 白番: match_result = -1: break
+				swbreak
+                case SERCH_PATTERN_NONE
+                     match_result = -1: break
+				swbreak
+                case SERCH_PATTERN_BLACK_WHITE
+                swbreak
+                default
+                dialog "ERROR -- unknown serchPattern. "
+                logmes "手番= "+手番+ " SERCHPATTERN= "+int(get_pattern_type(pattern.cnt))
+                stop
+            swend
+            match_result = cnt
+            break
+        }
+    loop
+    return match_result
+
+#defcfunc SGF_serch_pattern int SGF, var _serch_pattern, var result, int max_depth, int serch_branch
+
+	result = -1	
+	count = 0
+
+	serch_pattern_stone_num = count_stone_in_serch_pattern(_serch_pattern)
+
+
+	stack = SGF
+	stack_depth = 1
+	stack_serch_pattern = _serch_pattern
+	stack_count = 0
+	sn = 1
+	
+	while sn
+		sn--
+		n = stack(sn)
+		serch_pattern = stack_serch_pattern(sn)
+		count = stack_count(sn)
+		depth = stack_depth(sn)
+		if depth > max_depth{
+			_continue
+		}
+
+		//手番と座標を取得
+		手番 = get_property_coordinate(n, coordinate)
+		mes coordinate
+
+		r = check_pattern_match(serch_pattern, 手番, coordinate)
+		
+		switch r
+
+		case -1: _continue
+		case -2: swbreak
+		
+		default
+			count++
+			if serch_pattern_stone_num == count{
+				result = n
+				return 1
+			}
+			remove_serch_pattern serch_pattern, r // 一致を確認したパターンを除去
+		swend
+
+		repeat get_SGF_childs(n, childlist)
+			if serch_branch == 0{
+				if cnt > 0{
+					break
+				}
+			}
+			stack(sn) = childlist(cnt)
+			stack_serch_pattern(sn) = serch_pattern
+			stack_count(sn) = count     //一致したパターン数
+			stack_depth(sn) = depth + 1 //手数
+			sn++
+		loop
+	wend
+
+	return 0
+#global
+
+sgf = "(;B[ei];W[kh];B[me](;W[gf];B[jk])(;W[hg])(;W[hj]))"
+
+patterns = ""
+add_pattern patterns,"ei,0"
+add_pattern patterns,"hj,1"
+add_pattern patterns,"me,3"
+
+topnode = load_sgf(sgf, -1)
+
+
+
+mes SGF_serch_pattern(topnode,patterns,res,10,1)
+
+mes res

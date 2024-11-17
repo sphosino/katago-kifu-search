@@ -1,0 +1,138 @@
+
+#ifndef format_string
+#define format_string
+#include "goban.hsp"
+
+#module
+#const global PATTEERN_ANY 0xFFFF
+#const global PATTERN_BLACK 1
+#const global PATTERN_WHITE 1 << 1
+#const global PATTERN_RED   1 << 2
+#const global PATTERN_GREEN 1 << 3
+#const global PATTERN_BLUE  1 << 4
+#const global PATTERN_YELLOW 1 << 5
+#const global PATTERN_ORANGE 1 << 6
+#const global PATTERN_PURPLE 1 << 7
+
+
+#defcfunc bit_to_color_names int color_bits
+    result = ""
+    if color_bits & PATTERN_ANY{
+	    result += "ALL_COLOR"
+	}else{
+	    if color_bits & PATTERN_BLACK  { result += "BLACK," }
+	    if color_bits & PATTERN_WHITE  { result += "WHITE," }
+	    if color_bits & PATTERN_RED    { result += "RED," }
+	    if color_bits & PATTERN_GREEN  { result += "GREEN," }
+	    if color_bits & PATTERN_BLUE   { result += "BLUE," }
+	    if color_bits & PATTERN_YELLOW { result += "YELLOW," }
+	    if color_bits & PATTERN_ORANGE { result += "ORANGE," }
+	    if color_bits & PATTERN_PURPLE { result += "PURPLE," }
+	}
+    return strmid(result, 0, strlen(result) - 1) // 最後のカンマを除去
+    
+#deffunc create_rects var rect_set, array rects, array stones
+	//矩形を作成
+	num_rects = create_rect_from_coordinate_set(rect_set, rects)
+	//矩形に合わせた石情報を初期化
+	sdim stones,, num_rects
+	return
+
+//石情報を追加
+#deffunc add_stone_pattern array rects, array stones, int x, int y, int col
+    /*
+    rects:
+    - 矩形リスト (x1, y1, x2, y2)
+    stones:
+    - 矩形ごとの石情報リスト (初期化済みであること)
+    x, y:
+    - 石の座標
+    col:
+    - 石の色 (整数または文字列として利用可能)
+    */
+
+	stone_info = strf("%02d:%02d:%d", x, y, col)
+	
+	repeat length2(rects)
+	
+		x1 = rects(0,cnt)
+		y1 = rects(1,cnt)
+		x2 = rects(2,cnt)
+		y2 = rects(3,cnt)
+		
+		if x >= x1 && x <= x2 && y >= y1 && y <= y2{
+			if strlen(stones(cnt)) == 0{
+				stones(cnt) = stone_info
+			}else{
+				stones(cnt) += ";" + stone_info
+			}
+			break
+		}
+	loop
+
+	return
+
+//矩形リストと石情報リストからパターンを生成
+#deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
+
+    sdim patterns,,length2(rects),3
+
+    repeat length2(rects)
+    	//矩形データ
+        patterns(cnt,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
+        //石データ(x:y:bits)形式
+        patterns(cnt,1) = stones(cnt)
+        //石数の情報
+		if stones(cnt) == "":{
+			patterns(cnt,2) == "0"
+		}else{
+			split stones(cnt),";",tmp
+			patterns(cnt,2) = str(stat)
+		}
+        
+    loop
+    return
+
+#defcfunc load_stones_from_board var board, array a
+
+	/*
+	board:
+	-ボードオブジェクト
+	a:
+	-(x:y:bits)形式の石情報の結果が返る配列
+	*/
+
+	get_board_data board, b
+
+	dim a, 3,1
+	an = 0
+
+	repeat length(b): m = cnt
+		repeat length2(b)
+			switch b(m,cnt)
+			case 1 //黒石
+				a(0,an) = m,cnt,PATTERN_BLACK
+				an++
+			swbreak
+			case 2 //白石
+				a(0,an) = m,cnt,PATTERN_WHITE
+				an++
+			swbreak
+			swend
+		loop
+	loop
+	
+	return an
+
+#defcfunc patterns_to_notepad array a
+	notesel s
+	s = ""
+	repeat length(a)
+		noteadd a(cnt,0)  + "@" + a(cnt,1) + "@" + a(cnt,2)
+	loop
+	noteunsel
+	return s
+#global
+#endif
+
+

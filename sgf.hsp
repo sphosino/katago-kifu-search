@@ -34,15 +34,30 @@ dimtype SGF_NODE@global, 5
 	return 着手情報の数
 
 #define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
-#modcfunc _get_property_data str s
+#modcfunc _get_property_data str s1
 	tmp = ""
 	repeat 着手情報の数
-		if 着手情報(0, cnt) = s{
+		if 着手情報(0, cnt) = s1{
 			tmp = 着手情報(1, cnt)
 			break
 		}
 	loop
 	return tmp
+
+#defcfunc get_property_coordinate int p1, array result
+
+	result = ""
+	if get_property_data(p1, "B") != ""{
+		tmpr = refstr
+		result = peek(tmpr,0) - 'a', peek(tmpr,1) - 'a'
+		
+		return 1
+	}else: if get_property_data(p1, "W") != ""{
+		tmpr = refstr
+		result = peek(tmpr,0) - 'a', peek(tmpr,1) - 'a'
+		return 2
+	}
+	return 0
 
 #define global get_nodelist(%1, %2, %3 = 0) _get_nodelist SGF_NODE@global(%1), %2, %3
 #modfunc _get_nodelist array a, int num, local thismod_ID
@@ -56,10 +71,11 @@ dimtype SGF_NODE@global, 5
 	dim a, 子ノードの数
 	memcpy a, 子ノード, 子ノードの数*4
 	return 子ノードの数
-	
-#modfunc cut_node
+
+#define global cut_node(%1) _cut_node(SGF_NODE@global(%1))
+#modfunc _cut_node local i
 	for i,, 子ノードの数
-		cut_node SGF_NODE@global(子ノード(i))
+		cut_node 子ノード(i)
 	next
 	delmod thismod
 	return
@@ -152,7 +168,7 @@ dimtype SGF_NODE@global, 5
 	s += ")"
 	return
 
-#modfunc _get_node_sgf var s
+#modfunc _get_node_sgf var s, local i
 
 	s += ";"
 
@@ -160,11 +176,12 @@ dimtype SGF_NODE@global, 5
 		s += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
 	loop
 	
-	for i,0, 子ノードの数
+	for i,, 子ノードの数
 	
 		if 子ノードの数 >= 2{
 			s+="("
 		}
+		
 		_get_node_sgf SGF_NODE@global(子ノード(i)), s
 		
 		if 子ノードの数 >= 2{
@@ -197,11 +214,11 @@ dimtype SGF_NODE@global, 5
 #module
 #defcfunc 対応する括弧まで取得 str ss, var index, str s1, str s2, var result
 	s = ss
-	if strmid(s,index,1) != s1: dialog "指定位置が開始文字で始まっていません",1,"SGF解析エラー":end
+	if strmid(s,index,1) != s1: sgf_err = "指定位置が開始文字で始まっていません SGF解析エラー"
 	counter = 0
 	repeat , index
 		t = strmid(s,cnt,1)
-		if t == "": dialog "括弧が閉じられていません",1,"SGF解析エラー": end
+		if t == "": sgf_err = "括弧が閉じられていません SGF解析エラー"
 		if t == s1: counter++
 		if t == s2: counter--
 		if counter == 0: r2 = cnt: break
@@ -211,13 +228,14 @@ dimtype SGF_NODE@global, 5
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
 
 	i = instr(ss,index,s1)
-	if i == -1: dialog "対応する文字が見つからない",1,"SGF解析エラー":end
+	if i == -1: sgf_err = "対応する文字が見つからない SGF解析エラー"
 	result = strmid(ss,index,i)
 	return index + i
 #global
 
 
 #module
+
 #deffunc make_SGFnode int nownode, array coordinate, str 手番
 
 	new = nownode
@@ -226,25 +244,26 @@ dimtype SGF_NODE@global, 5
 	poke 座標, 0, 'a' + coordinate
 	poke 座標, 1, 'a' + coordinate.1
 
-	if serch_SGFchild_byxy(nownode, 手番, 座標) = -1{ //ノードが存在しなければ
+	if nownode >= 0: if serch_SGFchild_byxy(nownode, 手番, 座標) >= 0: return new //すでにノードが存在
 	
-		make_new_SGFnode nownode
-		new = stat
-		add_SGFchild nownode, new
-		set_property_data new, 手番, 座標
+	make_new_SGFnode nownode
+	new = stat
+	if nownode >= 0: add_SGFchild nownode, new
+	set_property_data new, 手番, 座標
 		
-	}
 	return new
 	
 #defcfunc load_sgf str ss, int node
+	sss = ss
+	if peek(sss) != '(': return -1
+	sgf_err = ""
 	nln = 0
 	load_sgf_main ss, node
 	return stat
-	
+
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
 	sgfs = ss
 	nn = node
-
 
 	//解析
 	while strmid(sgfs, point, 1) != ""
@@ -281,7 +300,12 @@ dimtype SGF_NODE@global, 5
 			
 		}
 	wend
-	
+
+	if sgf_err != "": return -1
+
 	return stack
 #global
+
+
+
 #endif

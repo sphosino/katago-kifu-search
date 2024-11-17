@@ -1,0 +1,110 @@
+#module list_manager
+
+#deffunc set_separator str s1
+	sep = s1
+	return
+
+#deffunc init_list var a
+	a = sep
+	return
+	
+#deffunc del_list var a, str id
+
+	s = str(id)
+	t = instr(a,, sep + s + sep)
+	if t >= 0{
+		a = strmid(a, 0, t) + strmid(a, t + strlen(s) + 1 , $FFFF)
+	}
+	return
+	
+#deffunc add_list var a, str id
+	if instr(a,, sep + id + sep) == -1{
+		a += id + ","
+		return
+	}
+	return
+#defcfunc get_list_num var a
+	split a, sep, tmp
+	return stat-2
+
+#global
+set_separator ","
+
+
+#module pattern_rect x,y,ex,ey, list
+
+#enum global PATTREN_BLACK          = 0
+#enum global PATTERN_WHITE         
+#enum global PATTERN_BLACK_OR_WHITE
+
+#modinit int _x, int _y, int _ex, int _ey
+
+	x = _x
+	y = _y
+	ex = _ex
+	ey = _ey
+
+	repeat 3
+		init_list list.cnt
+	loop
+	
+	return
+
+#modfunc add_stone_pattern_rect int _x, int _y, int _type
+
+	add_list list(_type), ""+_x+":"+_y
+	
+	return
+
+#modcfunc hitcheck_stone_pattern_rect int _x, int _y, int turn
+
+	if turn != PATTERN_BLACK && turn != PATTERN_WHITE: dialog "黒か白かを指定してください", 1, __FILE__: end
+
+	if _x < x || _x > ex || _y < y || _y > ey: return 0 //範囲外
+
+	result = 2 //範囲内だがパターンにマッチしない
+	repeat 3
+		if turn == 0: if cnt = 1: continue
+		if turn == 1: if cnt = 0: continue
+		t = strtrim(list(cnt),0,',')
+		split t,",", coordinate
+		split coordinate,":", pattern_x, pattern_y
+		if int(pattern_x) == _x && int(pattern_y) == _y{
+			//パターンにマッチ
+			result == 1
+			break
+		}
+	loop
+	
+	return result
+
+#modcfunc get_stone_num_rect
+	c = 0
+	repeat 3
+		c += get_list_num(list.cnt)
+	loop
+
+	return c
+
+#global
+
+newmod p, pattern_rect, 0,0,18,18
+
+//パターン内に石を登録
+add_stone_pattern_rect p  , 3,2, PATTERN_WHITE
+
+
+all_stone_num = 0
+foreach p
+	all_stone_num += get_stone_num_rect(p.cnt)
+loop
+
+mes "矩形パターンに含まれる石数=" + all_stone_num
+
+count = 0
+foreach p
+	switch hitcheck_stone_pattern_rect(p.cnt,3,2,PATTERN_BLACK)
+	case 2: mes "NO-HIT": break
+	case 1: count++ : if count == all_stone_num: mes "HIT!!!": break
+	swend
+loop

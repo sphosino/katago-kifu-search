@@ -1,0 +1,11 @@
+#ifndef boxfa
+#module
+#define global boxfa(%1,%2,%3,%4,%5 = 128) _boxfa %1,%2,%3,%4,%5
+#deffunc _boxfa int ax, int ay, int bx, int by, int alpha
+	gmode 3,,,alpha
+	pdx = ax, bx, bx, ax
+	pdy = ay, ay, by, by
+	gsquare -1, pdx, pdy
+	return
+#global
+#endif

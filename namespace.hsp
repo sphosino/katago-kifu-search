@@ -1,5 +1,5 @@
 #ifndef hash_module
-#module hash_module data, data_opened_list, data_opened_list_num, hashtable, hashcount,  ƒf[ƒ^”, parent
+#module hash_module data, data_opened_list, data_opened_list_num, hashtable, hashcount,  ƒf[ƒ^”, parent, childs
 
 #const MAX_KEYS 5000
 
@@ -27,6 +27,8 @@
 	
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS
+
+	dimtype childs, 5
 
 	mref thismod_ID, 2
 	return thismod_ID
@@ -145,15 +147,23 @@
 	parent = 0
 	return
 
+#modfunc hash_module_add_child var a
+	newmod childs, hash_module
+	a = childs(stat)
+	hash_set_parent a, thismod
+	return
+#modterm
+	foreach childs
+		delmod childs.cnt
+	loop
+	return
 #global
 #endif
 
-newmod a,hash_module
-newmod b,hash_module
-newmod c,hash_module
+newmod a, hash_module
 
-hash_set_parent b, a //@b‚ða‹óŠÔ‚ÉŠ‘®‚³‚¹‚é
-hash_set_parent c, b //  c‚ðb‹óŠÔ‚ÉŠ‘®‚³‚¹‚é@a -> b -> c
+hash_module_add_child a, b
+hash_module_add_child b, c // a -> b -> c
 
 hash_set c, "key1", "value1", 1, 1 //e‹óŠÔ‚É‚à‚È‚¢ŽžA‚±‚Ì‹óŠÔ‚Éì¬
 hash_set c, "key2", "value2", 1    //e‹óŠÔ‚É‚à‚È‚¢ŽžAÅãˆÊ‹óŠÔ‚Éì¬
@@ -161,4 +171,3 @@ hash_set c, "key2", "value3"       //e‹óŠÔ‚ðl—¶‚µ‚È‚¢B‚Â‚Ü‚è•Ï”éŒ¾‚Ý‚½‚¢‚È‚
 
 mes hash_get(a, "key1") + hash_get(b, "key1") + hash_get(c, "key1")@//-> undefinedundefinedvalue1
 mes hash_get(a, "key2") + hash_get(b, "key2") + hash_get(c, "key2")  //-> value2value2value3
-

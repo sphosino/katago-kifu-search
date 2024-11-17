@@ -1,7 +1,10 @@
 #include "go_game_manager.hsp"
 #include "開発完了/sqr.hsp"
 #include "開発完了/keyfps.hsp"
+#include "format_string.hsp"
 #include "hspext.as"
+
+
 
 
 dirname = "C:/Users/owner/Desktop/hsp/棋譜"
@@ -11,7 +14,7 @@ pos,80
 
 time = 1000
 input time
-
+v = ""
 jidou = 0
 着手番号表示 = 0
 
@@ -19,94 +22,132 @@ chkbox "自動再生", jidou: chk_ID = stat
 chkbox "着手番号", 着手番号表示
 
 
-set_treeview 30,30
+set_treeview 50,50
 tree_direction = 6
 
 input tree_direction
 
 newmod t, treebox
-
+topnode = -1
+rn = 0
+dim rect, 4
+dim rect_stack, 4
 newmod board, goban, 19,19,20,20,200,100
 
 button gosub "SGFを読み込む", *loadfile
 button gosub "SGFをコピー", *getsgf
+button gosub "碁盤をクリア", *clearboard
+button gosub "パターン生成", *create_pattern
+chkbox "矩形生成",mode
 
-gosub *loadfile
-
+gosub*loadsgf
 pretime = keyfpstime
 
 *main
 	manage_keyfps
 
 	nownode = get_current_node(t)
-	if nownode = -1: nownode = topnode
 	
+	getBoardCoordinates board, point
 
-	if _getkey(2) == 1{
+	in_board = 0
+	if 0 <= point && point < 19{
+		if 0 <= point.1 && point < 19{
+			in_board = 1
+		}
+	}
+
+	//マウス操作
+	if _getkey(2) == 1{ //右クリック
 		if treebox_onmouseid(t) >= 0{
 			set_current_node t, treebox_onmouseid(t)
 			Treebox_toggle_openflag t, treebox_onmouseid(t)
 		}
+		if mode == 0{
+			if rn > 0{
+				rn--
+				modify_coordinates_by_rect v, rect_stack(0,rn), rect_stack(1, rn), rect_stack(2, rn), rect_stack(3, rn), 1
+			}
+		}
 	}
-	if _getkey(1) == 1{
+	if _getkey(1) == 1{ //左クリック
 		dragging_flag = 1
 		get_treeview_position tmp
 		dragstartx = mousex - tmp
 		dragstarty = mousey - tmp.1
-		
-		if treebox_onmouseid(t) >=0{
-			
-			set_current_node t, stat
-			
+
+
+		if mode = 0{//矩形描画モード
+			if in_board{
+				rect = point,point.1,point,point.1
+			}else{
+				rect = -1
+			}
 		}else{
-
-			getBoardCoordinates board, point
-
-			着手 board, point, point.1
-			
-			if stat{　//着手成功なら
+		
+			if treebox_onmouseid(t) >=0{
+				logmes "select_SGFID== "+stat
 				
-				if 逆手番(get_turn(board)) = 白番:手番 = "W": else: 手番 = "B"
-
-				make_SGFnode nownode, point, 手番
-
-				new = stat
-
-				if new != nownode{
-					Treebox_InsertItem t, new, nownode
+				set_current_node t, stat
+	
+			}else{
+				if in_board{
+					着手 board, point, point.1
+					
+					if stat{　//着手成功
+					
+						make_SGFnode nownode, point, get_turn_SGFstr(逆手番(get_turn(board)))
+		
+						new = stat
+		
+						if new != nownode{
+							Treebox_InsertItem t, new, nownode
+							if nownode == -1: topnode = new
+						}
+						set_current_node t, new
+					}
 				}
-				set_current_node t, new
 			}
 		}
 	}
 
-	if _getkey(1) == -1 && dragging_flag{
-		dragging_flag = 0
-		dragstartx = 0
-		dragstarty = 0
+	if dragging_flag{
+		
+		if mode = 0{
+			rect(2) = limit(point(0),0,18)
+			rect(3) = limit(point(1),0,18)
+		}else{
+			set_treeview_position mousex - dragstartx, mousey - dragstarty
+		}
+		
+		if _getkey(1) == -1{
+			
+			dragging_flag = 0
+			if mode = 0 && rect(0) >= 0{
+				modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
+				rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
+				rn++
+				dim rect,4
+			}
+		}
 	}
 
+	//マウスホイール
+	mw = mousew
+	if mw < 0 : gosub*move_next
+	if mw > 0 : gosub*move_back
+
+	//キー操作
 	if _getkey(17) >= 1{ //CTRL
 		if _getkey('C') == 1 { //CTRL + C
 			gosub*getsgf
 		}
 		if _getkey('V') == 1 { //CTRL + V
-			sdim s, $FFFF
-			clipget s, varsize(s)
-			load_from_sgf t, s
-			topnode = stat
-			set_board_topnode  board, topnode
+			gosub*loadsgf
 		}
 	}
-	
-	mw = mousew
-	if mw < 0 : gosub*move_next
-	if mw > 0 : gosub*move_back
 
-	if dragging_flag{
-		set_treeview_position mousex - dragstartx, mousey - dragstarty
-	}
-
+	//自動再生
 	if jidou & pretime + time <= keyfpstime{
 		gosub *move_next
 	}
@@ -114,26 +155,52 @@ pretime = keyfpstime
 	if prenode != nownode{
 		prenode = nownode
 		//ツリービューからSGFノードのIDを取り出して盤面作成
-		make_board_from_sgf board, get_tree_item_id(nownode)
-	}
-	tmp = get_property_data(nownode, "C")
-	split tmp," ", c_list
+		make_board_from_sgf board, nownode
 
-	redraw 2
+		if nownode >= 0{
+			tmp = get_property_data(get_tree_item_id(nownode), "C")
+			split tmp," ", c_list
+		}
+	}
+
 		a = double(c_list) * 255
 		color a,a,a
 		boxf 0,80,640,480
-		碁盤表示 board , 着手番号表示
+		碁盤表示 board , 着手番号表示, v
 		set_tree_direction tree_direction
 		treebox_draw t, topnode
-	redraw 1
+		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
+	redraw: redraw 2
 	goto*main
-
+*clearboard
+	clear_board board
+	treebox_clear t
+	topnode = stat
+	return
 *getsgf
 	get_node_sgf topnode, a
 	clipset a
 	return
+*loadsgf
+	sdim s, $FFFF
+	clipget s, varsize(s)
+	load_from_SGF t, s
+	topnode = stat
+	set_board_topnode  board, topnode
+	return
+
+*create_pattern
+	create_rects v,r, stones
 	
+	repeat load_stones_from_board(board, n)
+		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
+	loop
+
+	create_pattern_with_rects_and_stones r,stones,l
+
+	logmes patterns_to_notepad(l)
+	
+	return
 *loadfile
 	
 	棋譜取得 dirname, 1 // katagoホームページから最新棋譜をダウンロード
@@ -149,24 +216,28 @@ pretime = keyfpstime
 	return
 
 *move_next
+	if nownode < 0: return
+
 	set_current_node t, get_tree_root_child(nownode)
+	if stat: treeview移動 1
 	pretime = keyfpstime
-	gosub *treeview移動
+
 	return
 	
 *move_back
+	if nownode < 0: return
 	if get_tree_parent(nownode) != -1{
 		set_current_node t, get_tree_parent(nownode)
 		pretime = keyfpstime
-		gosub *treeview移動
+		treeview移動 -1
 	}
 	return
 
-*treeview移動
-	get_treeview_node_size ns
+#deffunc treeview移動 int d
+	get_treeview_node_size ns 
 	if (get_tree_direction() & 1){
-		set_treeview_position 300, 300 + get_手数(board) * ns.1 * -(((get_tree_direction() & 2) != 0) * 2 - 1)
+		move_treeview_position , ns.1 * -(((get_tree_direction() & 2) != 0) * 2 - 1) * d
 	}else{ 
-		set_treeview_position      300 + get_手数(board) * ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1 ),300
+		move_treeview_position   ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1) * d
 	}
 	return

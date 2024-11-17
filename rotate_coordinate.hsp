@@ -1,0 +1,32 @@
+#module
+
+#const DEFAULT_BOARD_SIZE 19
+
+#deffunc rotate_coordinate array result, int x, int y, int pattern, int board_x, int board_y
+
+	bx = board_x
+	by = board_y
+	if bx <= 0: bx = DEFAULT_BOARD_SIZE
+	if by <= 0: by = bx
+
+	if x < 0 || x >= bx || y < 0 || y >= by{
+		dialog "ERROR- 範囲外の値が入力されました -> (" + x + "," + y + ")", 1, __FILE__
+		end
+	}
+	
+    ; パターンによる変換
+    switch pattern & 7
+        case 0 : result = x         , y          : swbreak ; そのまま
+        case 1 : result = by - 1 - y, x          : swbreak ; 90度右回転
+        case 2 : result = bx - 1 - x, by - 1 - y : swbreak ; 180度右回転(上下左右反転)
+        case 3 : result = y         , bx - 1 - x : swbreak ; 270度右回転
+        // xy反転して繰り返す
+        case 4 : result = y         , x          : swbreak ; x,yスワップ
+        case 5 : result = bx - 1 - x, y          : swbreak ; 左右反転
+        case 6 : result = by - 1 - y, bx - 1 - x : swbreak ; 左右反転後、90度右回転
+        case 7 : result = x         , by - 1 - y : swbreak ; 上下反転
+
+    swend
+
+    return
+#global

@@ -190,6 +190,7 @@
 
 	return result
 
+
 #defcfunc get_current_id
 	return current_id
 	
@@ -234,7 +235,7 @@ init_hash_manager
 	new_value "A","親の変数１"
 	new_value "B","親の変数２"
 	
-	new_namespace
+	new_namespace: t= stat
 		//親空間参照
 		mes get_value("A")
 
@@ -250,3 +251,7 @@ init_hash_manager
 
 	mes get_value("A")
 	mes get_value("B")
+
+	set_current_id t
+
+	get_value("A")

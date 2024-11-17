@@ -195,6 +195,10 @@ dimtype treenode@global, 5
 	px = p1
 	py = p2
 	return
+#deffunc move_treeview_position int p1, int p2
+	px += p1
+	py += p2
+	return
 
 #deffunc get_treeview_position array a
 	a = px, py

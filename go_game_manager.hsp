@@ -7,10 +7,13 @@
 //gobanオブジェクト、表示したいsgfノード
 #deffunc make_board_from_sgf var board, int sgf_node_number
 
+	clear_board board //碁盤を初期化
+	if sgf_node_number = -1: return
+	
 	dim nodelist
 	get_nodelist sgf_node_number, nodelist
 
-	clear_board board //碁盤を初期化
+
 
 	//表示したいノードまでノードを着手する
 	for i, length(nodelist)-1, -1, -1
@@ -27,6 +30,8 @@
 
 #deffunc set_board_topnode var board, int topnode
 
+	if topnode < 0: return
+
 	size = get_property_data(get_tree_item_id(topnode), "SZ")
 	split size,":", x, y
 	if stat = 1: y = x
@@ -35,38 +40,45 @@
 	return
 #global
 
+
 #module treebox tree_data, topnode, current_node, treenode_id_list, onmouse_id
 
 #modinit
 	current_node = -1
+	topnode = -1
+	onmouse_id = -1
 	dim tree_node_id_list
 	return
-#modfunc set_current_node int p1
+#modfunc set_current_node int p1, local i
+	i = p1 != current_node
 	current_node = p1
-	return
+	return i
 	
 #modcfunc get_current_node
 	return current_node
 	
 #modfunc treebox_insertItem int item_id, int parent_item_id
-//　item_id = 任意の番号。識別用
-//  親に設定するid item_idで設定したものを使う
+	if item_id < 0: return -1
 
 	if parent_item_id >= 0{
 		parent_id = treenode_id_list(parent_item_id)
 	}else{
 		parent_id = -1
 	}
-
     make_treenode parent_id, item_id
 
-	treenode_id_list(item_id) = stat
-	
+    treenode_id_list(item_id) = stat
+
+    logmes "maketreenode-- 親アイテムID" + parent_id + "　子アイテムID "+stat +"item_id =" + item_id
+
+	if topnode < 0: topnode = item_id
 	return item_id
 
 #modfunc treebox_draw int p1
-	tree_view treenode_id_list(p1), -1, -1, -1
-	onmouse_id = treeview_onmouse_id()
+	if p1 >= 0{
+		tree_view treenode_id_list(p1), -1, -1, -1
+		onmouse_id = treeview_onmouse_id()
+	}
 	return
 
 #modcfunc treebox_onmouseid
@@ -75,6 +87,16 @@
 #modfunc treebox_toggle_openflag int p1
 	toggle_openflag treenode_id_list(p1)
 	return
+
+
+#modfunc treebox_clear
+	logmes "fffff" + topnode
+	cut_node topnode
+	current_node = -1
+	topnode = -1
+	onmouse_id = -1
+	dim tree_node_id_list
+	return topnode
 	
 #modfunc load_from_SGF str s
 
@@ -84,6 +106,7 @@
 
 	//SGFからSGFツリー作成、SGFのトップノードの番号を取得。
 	topnode = load_sgf(s, -1)
+	if topnode < 0: return
 
 	stack = topnode ; 現在のノード番号
 	stack_p = -1    ; 親ノード番号
