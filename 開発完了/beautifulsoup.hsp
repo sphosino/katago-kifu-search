@@ -109,7 +109,7 @@
 	loop
 	return
 	
-#defcfunc get_string str s1
+#defcfunc get_content_tag str s1
 	result = ""
 	s = s1
 	left =  instr(s,0,">") + 1

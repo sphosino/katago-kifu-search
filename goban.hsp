@@ -169,7 +169,7 @@
 
 
 
-#modfunc 碁盤表示 int 碁石番号表示, var set_list
+#modfunc 碁盤表示 int 碁石番号表示
 
 	color $cd,$85,$3f
 	boxf px, py, px + length(board) * masx, py + length2(board) * masy
@@ -225,14 +225,18 @@
 		loop
 	loop
 
-	//setlist描画
-	sn = get_coordinates_set(set_list, sets)
-	for i,, sn
-		x = int(strmid(sets.i,0,2))
-		y = int(strmid(sets.i,2,2))			
-		boxfa px + x * masx, py + y * masy ,px + x * masx + masx, py + y * masy + masy
-	next
 	return
+
+#modfunc Draw_set_list_on_board var set_list
+
+	repeat get_coordinates_set(set_list, sets)
+		x = int(strmid(sets(cnt), 0, 2))
+		y = int(strmid(sets(cnt), 2, 2))			
+		boxfa px + x * masx, py + y * masy ,px + x * masx + masx, py + y * masy + masy
+	loop
+	
+	return
+	
 #modfunc 碁盤に矩形データを表示 array rects
 
 	

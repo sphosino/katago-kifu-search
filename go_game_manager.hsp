@@ -1,5 +1,5 @@
 #include "goban.hsp"
-#include "sgf.hsp"
+#include "ŠJ”­Š®—¹/sgf.hsp"
 #include "tree.hsp"
 
 #module

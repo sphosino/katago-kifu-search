@@ -1,3 +1,4 @@
+#ifndef rotate_coordinate
 #module
 
 #const DEFAULT_BOARD_SIZE 19
@@ -30,3 +31,4 @@
 
     return
 #global
+#endif

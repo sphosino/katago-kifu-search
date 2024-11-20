@@ -1,11 +1,9 @@
 #include "go_game_manager.hsp"
-#include "開発完了/sqr.hsp"
+#include "開発完了/katago_sqr.hsp"
 #include "開発完了/keyfps.hsp"
-#include "format_string.hsp"
+#include "開発完了/listbox.hsp"
+#include "GobanPatternManager.hsp"
 #include "hspext.as"
-
-
-
 
 dirname = "C:/Users/owner/Desktop/hsp/棋譜"
 screen 0, 640,480
@@ -28,6 +26,7 @@ tree_direction = 6
 input tree_direction
 
 newmod t, treebox
+newmod kifulist, my_listbox, "",0,300,200,100,20
 topnode = -1
 rn = 0
 dim rect, 4
@@ -95,6 +94,7 @@ pretime = keyfpstime
 					着手 board, point, point.1
 					
 					if stat{　//着手成功
+						dragging_flag = 0
 					
 						make_SGFnode nownode, point, get_turn_SGFstr(逆手番(get_turn(board)))
 		
@@ -166,9 +166,11 @@ pretime = keyfpstime
 		a = double(c_list) * 255
 		color a,a,a
 		boxf 0,80,640,480
-		碁盤表示 board , 着手番号表示, v
+		碁盤表示 board , 着手番号表示
+		draw_set_list_on_board board, v
 		set_tree_direction tree_direction
 		treebox_draw t, topnode
+		my_listbox_draw kifulist
 		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 	redraw: redraw 2
 	goto*main
@@ -190,7 +192,7 @@ pretime = keyfpstime
 	return
 
 *create_pattern
-	create_rects v,r, stones
+	initialize_rects v,r, stones
 	
 	repeat load_stones_from_board(board, n)
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
@@ -204,11 +206,16 @@ pretime = keyfpstime
 *loadfile
 	
 	棋譜取得 dirname, 1 // katagoホームページから最新棋譜をダウンロード
-	notesel s
-	noteload dirname + "/1.sgf"
+	notesel files
+
+	chdir dirname
+
+	dirlist files,"*.sgf"
+	noteget s
+	noteload s
 
 	//SGFからツリー作成
-	load_from_SGF t, s
+	load_from_SGF t, files
 	topnode = stat
 
 	set_board_topnode board, topnode

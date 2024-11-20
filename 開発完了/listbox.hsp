@@ -1,0 +1,225 @@
+//アイテム構造体（可能な限りロジックは入れないようにする）
+dimtype listbox_items@global, 5
+#module listbox_item name, selected, action
+
+#defcfunc make_listbox_item str s1
+	newmod listbox_items@global,listbox_item, s1
+	return stat
+#modinit str s1
+	name = s1
+	mref thismod_ID, 2
+	return thismod_ID
+
+#define global ctype listbox_item_get_str(%1) _listbox_item_get_str(listbox_items@global(%1))
+#modcfunc _listbox_item_get_str
+	return name
+
+#define global toggle_selected_status(%1) _toggle_selected_status listbox_items@global(%1)
+#modfunc _toggle_selected_status
+	selected ^-1
+	return
+
+#define global ctype get_selected_status(%1) _get_selected_status(listbox_items@global(%1))
+#modcfunc _get_selected_status
+	return selected
+
+#define global del_listbox_item(%1) delmod listbox_items@global(%1)
+	
+#global
+
+//-------------------------------------------------------------------------------------------------------
+
+#module my_listbox listbox_items, item_num, px, py, sx, sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x
+
+#const DEFAULT_ITEM_Y_SIZE 24
+#const DEFAULT_SCROLLBAR_X 8
+
+#modinit int p1, int p2, int p3, int p4
+
+	px = p1
+	py = p2
+	sx = p3
+	sy = p4
+
+	item_y = DEFAULT_ITEM_Y_SIZE
+	scrollbar_x = DEFAULT_SCROLLBAR_X
+
+	current_scroll_index = 0
+	dim listbox_items
+	item_num = 0
+
+	return
+
+#modfunc add_item str s1, local i
+	ss = s1
+	
+	notesel ss
+	
+	repeat notemax
+		noteget i, cnt
+		listbox_items(item_num) = make_listbox_item(i)
+		item_num++
+	loop
+	
+	noteunsel
+	
+	return
+
+#modfunc del_item_by_id int p1
+	del_listbox_item listbox_items.p1
+	item_num--
+	//空いた要素を詰める
+	memcpy listbox_items,listbox_items,(item_num-p1)*4, p1*4, p1*4+4
+	return
+
+#modfunc del_item_by_str str s1
+	repeat item_num
+		if listbox_item_get_str(listbox_items.cnt) == s1{
+			del_item_by_id thismod, cnt
+			break
+		}
+	loop
+	return
+	
+#modfunc set_scroll_index int p1
+	current_scroll_index = limit(p1, 0, limit(item_num - sy/item_y,0))
+	logmes "" + p1 + ": "+current_scroll_index
+	return
+
+#modfunc move_scroll_index int p1
+
+	set_scroll_index thismod, current_scroll_index + p1
+
+	return
+
+#modfunc scroll_top
+	set_scroll_index thismod, 0
+	return
+
+#modfunc scroll_end
+	set_scroll_index thismod, item_num
+	
+	return
+
+#modcfunc get_scroll_index
+	return current_scroll_index
+
+#modfunc set_listbox_item_Ysize int p1
+	item_y = p1
+	return
+	
+#modfunc set_listbox_scollbar_width int p1
+	scrollbar_x = p1
+	return
+
+#modfunc my_listbox_draw
+
+	color 255,255,255
+	boxf px, py, px + sx, py + sy
+
+	max_visible_items = sy / item_y
+
+	//アイテム描画
+	font "",item_y
+	
+	repeat item_num - current_scroll_index
+		if  cnt >= max_visible_items: break
+				
+		//アイテム描画
+		ypos = py + item_y * cnt
+		color 0,100, get_selected_status(listbox_items(current_scroll_index + cnt)) * 100
+		boxf px, ypos, px + sx - bar_width, ypos + item_y
+		pos px + 5, ypos
+		color 200,200,200
+		mes listbox_item_get_str(listbox_items(current_scroll_index + cnt))
+		
+	loop
+	
+	//スクロールバー描画
+	if max_visible_items < item_num{
+
+		bar_width = scrollbar_x
+		bar_height = sy / (item_num - max_visible_items + 1)
+		bar_posx = px + sx - bar_width
+		
+		//リストボックスの高さ - バーの高さ　がスクロールバーの稼働域
+		//それを表示数ー実際のアイテム数で割り算した値が１スクロール単位の移動量
+		//それを実際のスクロールされている量で掛ける。
+		bar_posy = py + (sy - bar_height) / (item_num - max_visible_items) * current_scroll_index
+		
+		color 255
+		boxf bar_posx, bar_posy, bar_posx + bar_width, bar_posy + bar_height
+	}else{
+		bar_width = -1
+	}
+
+	return
+#modcfunc listbox_on_id int x, int y, local i
+	
+	if px > x || py > y || px + sx < x || py + sy < y: return -1 //リストボックス外
+	if x >= px + sx - bar_width{　//スクロールエリア
+		if y >= bar_posy && y <= bar_posy + bar_height: return -2 //スクロールバーのつまみ
+		return -3
+	}
+	//アイテムエリア内
+	i = (y - py ) / item_y + current_scroll_index
+	if i >= item_num: return -4 //アイテム上ではない
+	
+	return i //アイテムの番号
+
+#modfunc check_item int p1
+	toggle_selected_status listbox_items(p1)
+	return
+
+#modcfunc get_selected_items array a, local i
+	dim a
+	repeat item_num
+		if get_selected_status(listbox_items(cnt)){
+			a.i = cnt
+			i++
+		}
+	loop
+	return i
+
+#global
+
+
+#if 1
+
+newmod a,my_listbox, 20,20, 200, 120
+
+
+add_item a,"A\nB\nC\nD\nE\nF\nG\nH"
+
+scroll_end a
+
+set_listbox_scollbar_width a, 5
+
+repeat
+	manage_keyfps
+	mw = mousew
+	if mw > 0: move_scroll_index a, -1
+	if mw < 0: move_scroll_index a, 1
+
+	color 0,0,0
+	boxf
+	my_listbox_draw a
+
+	
+	s = ""
+	repeat get_selected_items(a,result)
+		s += "" + result.cnt + ","
+	loop
+
+	title""+listbox_on_id(a,mousex,mousey) +"--"+ s
+	
+	if _getkey(1) == 1{
+		if listbox_on_id(a,mousex,mousey) >= 0{
+			check_item a,stat
+		}
+	}
+
+	redraw : redraw 2
+loop
+
+#endif

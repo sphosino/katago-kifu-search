@@ -11,7 +11,7 @@
 	return
 	
 #deffunc add_coordinate_set var a, int x, int y
-	if is_coordinate_in_set(a,x,y) == -1{
+	if is_coordinate_in_set(a,x,y) < 0{
 		a += strf("%02d",x) + strf("%02d",y) + ","
 		return
 	}
@@ -26,7 +26,7 @@
 
 #defcfunc get_coordinates_set var a, array result
 	sdim result
-	if a == "," || a == "": return 0
+	if a == "": return 0
 	tmp = strtrim(a,2,',')
 	split tmp,",",result
 	return stat
@@ -136,10 +136,6 @@
 
 
 #if 0
-
-//logにも追加するようにmesを改造(chatGPTさん用)
-#undef mes
-#define mes(%1, %2 = 0) mes@hsp %1, %2: logmes %1
 
 
 // 座標セットの管理変数

@@ -28,28 +28,32 @@
 	httpinfo buf,HTTPINFO_DATA
 	httpinfo size,HTTPINFO_SIZE
 
-	find_tags_bytag buf,"a", result
+	find_tags_bytag buf    ,"tr", data //テーブルの要素
 
-	foreach result
-		tmp = result(cnt)
+	repeat max
+	
+		find_tags_bytag data(cnt + 1) ,"td", target_infos //テーブルの対象の要素をリスト化(見出し（最初のtr）は関係ないので[(cnt + 1)]
+
+		game_id = int(get_content_tag(target_infos(0))) //ゲームIDを取得
+	
+		find_tags_bytag data(cnt*2) ,"a", result //テーブルの対象の要素(見出し（最初のtr）にはリンクは含まれていないので[(cnt+1)*2]ではない)
+	
+			
+		find_attribute_byname result, "href", t
+	
+		httpload url + t
+		if stat: goto*bad
+		gosub *通信待ち
+		httpinfo buf,HTTPINFO_DATA
+		httpinfo size,HTTPINFO_SIZE
 		
-		if get_string(tmp) == "[SGF]"{
-			
-			find_attribute_byname result(cnt), "href", t
+		bsave dirname + "/" + game_id + ".sgf", buf, size
 
-			httpload url + t
-			if stat: goto*bad
-			gosub *通信待ち
-			httpinfo buf,HTTPINFO_DATA
-			httpinfo size,HTTPINFO_SIZE
-			
-			count++
-			bsave dirname + "/" + count + ".sgf", buf, size
+		await 100
 
-			if count >= max:break
-			
-		}
 	loop
+	
+
 
 	chdir now_dir
 	return
