@@ -3,10 +3,11 @@
 #include "開発完了/keyfps.hsp"
 #include "開発完了/listbox.hsp"
 #include "GobanPatternManager.hsp"
+#include "Search_pattern.hsp"
 #include "hspext.as"
 
 dirname = "C:/Users/owner/Desktop/hsp/棋譜"
-screen 0, 640,480
+screen 0, 640,580
 objsize 80
 pos,80
 
@@ -19,14 +20,17 @@ jidou = 0
 chkbox "自動再生", jidou: chk_ID = stat
 chkbox "着手番号", 着手番号表示
 
-
 set_treeview 50,50
 tree_direction = 6
 
 input tree_direction
 
 newmod t, treebox
-newmod kifulist, my_listbox, "",0,300,200,100,20
+newmod kifulist, my_listbox, 0,300,200,120
+newmod matchlist, my_listbox, 0,450,200,120
+	chdir dirname
+	dirlist files,"*.sgf"
+	add_item kifulist, files
 topnode = -1
 rn = 0
 dim rect, 4
@@ -40,6 +44,7 @@ button gosub "パターン生成", *create_pattern
 chkbox "矩形生成",mode
 
 gosub*loadsgf
+
 pretime = keyfpstime
 
 *main
@@ -62,7 +67,7 @@ pretime = keyfpstime
 			set_current_node t, treebox_onmouseid(t)
 			Treebox_toggle_openflag t, treebox_onmouseid(t)
 		}
-		if mode == 0{
+		if mode == 0{//矩形描画モード
 			if rn > 0{
 				rn--
 				modify_coordinates_by_rect v, rect_stack(0,rn), rect_stack(1, rn), rect_stack(2, rn), rect_stack(3, rn), 1
@@ -70,41 +75,50 @@ pretime = keyfpstime
 		}
 	}
 	if _getkey(1) == 1{ //左クリック
-		dragging_flag = 1
-		get_treeview_position tmp
-		dragstartx = mousex - tmp
-		dragstarty = mousey - tmp.1
-
-
-		if mode = 0{//矩形描画モード
-			if in_board{
-				rect = point,point.1,point,point.1
-			}else{
-				rect = -1
-			}
+		if listbox_on_id(kifulist,mousex, mousey) >= 0{
+			itemid = stat
+			items = get_listbox_item_list(kifulist)
+			notesel items
+			noteget s, itemid
+			noteunsel
+			topnode = change_sgf(s, t, board)
 		}else{
-		
-			if treebox_onmouseid(t) >=0{
-				logmes "select_SGFID== "+stat
-				
-				set_current_node t, stat
+			dragging_flag = 1
+			get_treeview_position tmp
+			dragstartx = mousex - tmp
+			dragstarty = mousey - tmp.1
 	
-			}else{
+	
+			if mode = 0{//矩形描画モード
 				if in_board{
-					着手 board, point, point.1
+					rect = point,point.1,point,point.1
+				}else{
+					rect = -1
+				}
+			}else{
+			
+				if treebox_onmouseid(t) >=0{
+					logmes "select_SGFID== "+stat
 					
-					if stat{　//着手成功
-						dragging_flag = 0
-					
-						make_SGFnode nownode, point, get_turn_SGFstr(逆手番(get_turn(board)))
+					set_current_node t, stat
 		
-						new = stat
-		
-						if new != nownode{
-							Treebox_InsertItem t, new, nownode
-							if nownode == -1: topnode = new
+				}else{
+					if in_board{
+						着手 board, point, point.1
+						
+						if stat{　//着手成功
+							dragging_flag = 0
+						
+							make_SGFnode nownode, point, get_turn_SGFstr(逆手番(get_turn(board)))
+			
+							new = stat
+			
+							if new != nownode{
+								Treebox_InsertItem t, new, nownode
+								if nownode == -1: topnode = new
+							}
+							set_current_node t, new
 						}
-						set_current_node t, new
 					}
 				}
 			}
@@ -120,7 +134,7 @@ pretime = keyfpstime
 			set_treeview_position mousex - dragstartx, mousey - dragstarty
 		}
 		
-		if _getkey(1) == -1{
+		if _getkey(1) == -1{//マウスが離されたとき
 			
 			dragging_flag = 0
 			if mode = 0 && rect(0) >= 0{
@@ -134,8 +148,13 @@ pretime = keyfpstime
 
 	//マウスホイール
 	mw = mousew
-	if mw < 0 : gosub*move_next
-	if mw > 0 : gosub*move_back
+	if listbox_on_id(kifulist,mousex, mousey) = -1{
+		if mw < 0 : gosub*move_next
+		if mw > 0 : gosub*move_back
+	}else{
+		if mw < 0: move_scroll_index kifulist,1
+		if mw > 0: move_scroll_index kifulist,-1
+	}
 
 	//キー操作
 	if _getkey(17) >= 1{ //CTRL
@@ -149,6 +168,7 @@ pretime = keyfpstime
 
 	//自動再生
 	if jidou & pretime + time <= keyfpstime{
+		
 		gosub *move_next
 	}
 	
@@ -165,14 +185,17 @@ pretime = keyfpstime
 
 		a = double(c_list) * 255
 		color a,a,a
-		boxf 0,80,640,480
+		boxf 0,80,640,ginfo(13)
 		碁盤表示 board , 着手番号表示
 		draw_set_list_on_board board, v
 		set_tree_direction tree_direction
 		treebox_draw t, topnode
 		my_listbox_draw kifulist
+		my_listbox_draw matchlist
+
 		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 	redraw: redraw 2
+
 	goto*main
 *clearboard
 	clear_board board
@@ -186,9 +209,8 @@ pretime = keyfpstime
 *loadsgf
 	sdim s, $FFFF
 	clipget s, varsize(s)
-	load_from_SGF t, s
-	topnode = stat
-	set_board_topnode  board, topnode
+	if load_sgf(s,-1) < 0: return
+	topnode = load_sgf_set_board(t, stat, board)
 	return
 
 *create_pattern
@@ -198,29 +220,64 @@ pretime = keyfpstime
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
 	loop
 
-	create_pattern_with_rects_and_stones r,stones,l
+	create_pattern_with_rects_and_stones r,stones,p
 
-	logmes patterns_to_notepad(l)
+	logmes patterns_to_notepad(p)
+
+	search get_name_all_items(kifulist), p, search_result
+
+	logmes "@@\n" + search_result + "@@"
 	
 	return
+	
 *loadfile
 	
-	棋譜取得 dirname, 1 // katagoホームページから最新棋譜をダウンロード
+	棋譜取得 dirname, 20 // katagoホームページから最新棋譜をダウンロード
 	notesel files
 
 	chdir dirname
-
 	dirlist files,"*.sgf"
-	noteget s
-	noteload s
+	add_item kifulist, files
 
-	//SGFからツリー作成
-	load_from_SGF t, files
-	topnode = stat
+	notesel files
+	sortnote files,1
+	noteget s,0
 
-	set_board_topnode board, topnode
+	topnode = change_sgf(s,t,board)
 	
 	return
+
+#defcfunc load_sgf_set_board var _treebox, int node, var _board
+	//SGFからツリー作成
+	load_from_SGF_topnode _treebox, node
+	sgf_topnode = node
+	set_board_topnode _board, sgf_topnode
+
+	return sgf_topnode
+
+#defcfunc change_sgf str s1, var _treebox, var _board
+	
+
+	if get_value(s) == NOT_DEFINED_HASH{
+		notesel sgf_data
+		noteload s1
+		noteunsel
+		
+		if load_sgf(sgf_data,-1) >= 0{
+			new_topnode = load_sgf_set_board(_treebox, stat, _board)
+			new_value s1, str(topnode)
+		}else{
+			dialog "SGF_FILE解析エラー",,__FILE__
+			end
+		}
+	}else{
+		new_topnode = int(refstr)
+		logmes "SGF_NODE -> " + new_topnode
+		set_board_topnode _board, new_topnode
+		load_from_SGF_topnode t, new_topnode
+	}
+	
+	return new_topnode
 
 *move_next
 	if nownode < 0: return

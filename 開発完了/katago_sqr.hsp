@@ -11,6 +11,7 @@
 	url2 = url + "/games"
 	
 	chdir dirname
+	dirlist files,"*.sgf"
 
 	httpload url2
 	if stat : goto *bad	; 正しくリクエストができなかった
@@ -28,20 +29,21 @@
 	httpinfo buf,HTTPINFO_DATA
 	httpinfo size,HTTPINFO_SIZE
 
-	find_tags_bytag buf    ,"tr", data //テーブルの要素
+	find_tags_bytag buf,"tr", data //テーブルの要素
+	
 
 	repeat max
 	
 		find_tags_bytag data(cnt + 1) ,"td", target_infos //テーブルの対象の要素をリスト化(見出し（最初のtr）は関係ないので[(cnt + 1)]
 
 		game_id = int(get_content_tag(target_infos(0))) //ゲームIDを取得
-	
-		find_tags_bytag data(cnt*2) ,"a", result //テーブルの対象の要素(見出し（最初のtr）にはリンクは含まれていないので[(cnt+1)*2]ではない)
-	
-			
+
+		if check_exist_sgf(files, game_id): continue
+
+		find_tags_bytag data(cnt + 1),"a", result
 		find_attribute_byname result, "href", t
-	
-		httpload url + t
+
+		httpload url + "/" + t
 		if stat: goto*bad
 		gosub *通信待ち
 		httpinfo buf,HTTPINFO_DATA
@@ -71,5 +73,23 @@
 	httpinfo estr, HTTPINFO_ERROR
 	dialog "ERROR "+estr
 	stop
+
+#defcfunc check_exist_sgf str s1, int p1
+
+	k = s1
+	notesel k
+
+	hit  =0
+	repeat notemax
+		noteget t, cnt
+		if int(t) = p1{
+			hit = 1
+		}
+	loop
+	
+	noteunsel
+
+
+	return hit
 	
 #global

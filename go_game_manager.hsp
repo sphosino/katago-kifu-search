@@ -7,16 +7,18 @@
 //gobanオブジェクト、表示したいsgfノード
 #deffunc make_board_from_sgf var board, int sgf_node_number
 
-	clear_board board //碁盤を初期化
-	if sgf_node_number = -1: return
-	
-	dim nodelist
+	if sgf_node_number < 0{
+		logmes "ERROR-- 無効なノード番号です -> "+ sgf_node_number + "\n "  + __FILE__
+		return
+	}
+
+	//トップノードまでたどってリスト化する関数
 	get_nodelist sgf_node_number, nodelist
 
-
+	set_board_topnode board, nodelist(length(nodelist)-1)
 
 	//表示したいノードまでノードを着手する
-	for i, length(nodelist)-1, -1, -1
+	for i, length(nodelist)-2, -1, -1
 		tmp = get_property_data(nodelist(i),"B")
 		if tmp = "": tmp = get_property_data(nodelist(i), "W")
 		if tmp != ""{
@@ -28,13 +30,20 @@
 	
 	return
 
+//SGFのトップノードに合わせてボードを初期化する関数
 #deffunc set_board_topnode var board, int topnode
 
 	if topnode < 0: return
 
 	size = get_property_data(get_tree_item_id(topnode), "SZ")
-	split size,":", x, y
-	if stat = 1: y = x
+	if stat = 0{
+		logmes "SGFにボードサイズが設定されていません"
+		x = 19
+		y = 19
+	}else{
+		split size,":", x, y
+		if stat = 1: y = x
+	}
 	clear_board board , int(x), int(y)
 	
 	return
@@ -47,7 +56,13 @@
 	current_node = -1
 	topnode = -1
 	onmouse_id = -1
-	dim tree_node_id_list
+	dim treenode_id_list, 10000
+	repeat length(treenode_id_list)
+		treenode_id_list(cnt) = -1
+	loop
+	return
+#modfunc init_treebox_item
+
 	return
 #modfunc set_current_node int p1, local i
 	i = p1 != current_node
@@ -65,11 +80,13 @@
 	}else{
 		parent_id = -1
 	}
-    make_treenode parent_id, item_id
 
-    treenode_id_list(item_id) = stat
-
-    logmes "maketreenode-- 親アイテムID" + parent_id + "　子アイテムID "+stat +"item_id =" + item_id
+	if treenode_id_list(item_id) == -1{
+		make_treenode parent_id, item_id
+    	treenode_id_list(item_id) = stat
+    }
+    
+    logmes "maketreenode-- 親アイテムID" + parent_id + "　子アイテムID "+stat +"  item_id =" + item_id
 
 	if topnode < 0: topnode = item_id
 	return item_id
@@ -90,25 +107,19 @@
 
 
 #modfunc treebox_clear
-	logmes "fffff" + topnode
 	cut_node topnode
 	current_node = -1
 	topnode = -1
 	onmouse_id = -1
-	dim tree_node_id_list
+		dim treenode_id_list, 10000
+	repeat length(treenode_id_list)
+		treenode_id_list(cnt) = -1
+	loop
 	return topnode
 	
-#modfunc load_from_SGF str s
+#modfunc load_from_SGF_topnode int SGF_topnode
 
-	//SGFツリーのノード番号をそのまま利用して、treeboxノードを作成する
-
-	dim tree_node_id_list //アイテム情報を初期化
-
-	//SGFからSGFツリー作成、SGFのトップノードの番号を取得。
-	topnode = load_sgf(s, -1)
-	if topnode < 0: return
-
-	stack = topnode ; 現在のノード番号
+	stack = SGF_topnode ; 現在のノード番号
 	stack_p = -1    ; 親ノード番号
 	sn = 1
 	
@@ -129,7 +140,7 @@
 	wend
 
 	//カレントノードをトップノードに移動
-	set_current_node thismod, topnode
+	set_current_node thismod, SGF_topnode
 	
 	return topnode
 

@@ -144,6 +144,15 @@
     loop
     return
 
+#defcfunc get_pattern_all_stones_num array a, local i
+	i = 0
+	
+	repeat length(a)
+		i += int(a(cnt,2))
+	loop
+
+	return i
+
 
 //生成したパターンを可視化（ログ出力用)
 #defcfunc patterns_to_notepad array a

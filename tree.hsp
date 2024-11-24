@@ -85,7 +85,7 @@ dimtype treenode@global, 5
 #modfunc _tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ, array result, int 現在の深さ, local 現ノードの高さ, local i, local res
 
 	現ノードの高さ = 予定高さ
-	if 現ノードの高さ <= takasa(現在の深さ){//すでにノードがある
+	if 現ノードの高さ <= takasa(現在の深さ){ //すでにノードがある
 		現ノードの高さ = takasa(現在の深さ) + 1　//現ノードをそのノードの下にする。
 	}
 
@@ -107,7 +107,6 @@ dimtype treenode@global, 5
 
 	sx = node_sizex / 2
 	sy = node_sizey / 2
-
 
 
 	//現ノードの位置を計算

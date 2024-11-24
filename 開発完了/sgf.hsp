@@ -46,7 +46,7 @@ dimtype SGF_NODE@global, 5
 
 #defcfunc get_property_coordinate int p1, array result
 
-	result = ""
+	dim result,2
 	if get_property_data(p1, "B") != ""{
 		tmpr = refstr
 		result = peek(tmpr,0) - 'a', peek(tmpr,1) - 'a'
@@ -59,7 +59,7 @@ dimtype SGF_NODE@global, 5
 	}
 	return 0
 
-#define global get_nodelist(%1, %2, %3 = 0) _get_nodelist SGF_NODE@global(%1), %2, %3
+#define global get_nodelist(%1, %2, %3 = 0) dim %2:_get_nodelist SGF_NODE@global(%1), %2, %3
 #modfunc _get_nodelist array a, int num, local thismod_ID
 	mref thismod_ID, 2
 	a(num) = thismod_ID
@@ -255,8 +255,11 @@ dimtype SGF_NODE@global, 5
 	
 #defcfunc load_sgf str ss, int node
 	sss = ss
-	if peek(sss) != '(': return -1
 	sgf_err = ""
+	if peek(sss) != '('{
+		sgf_err = "(Ç≈énÇ‹Ç¡ÇƒÇ¢Ç‹ÇπÇÒ"
+		return -1
+	}
 	nln = 0
 	load_sgf_main ss, node
 	return stat
@@ -264,7 +267,7 @@ dimtype SGF_NODE@global, 5
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
 	sgfs = ss
 	nn = node
-
+	
 	//âêÕ
 	while strmid(sgfs, point, 1) != ""
 		

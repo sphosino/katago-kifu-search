@@ -73,7 +73,6 @@ manage_keyfps
 			total_time += apt - peek(time_record, i)
 			cfps = tm / total_time
 		}else{
-			logmes fps_counter
 			total_time += apt
 			cfps = 1000. * fps_counter / total_time
 		}
