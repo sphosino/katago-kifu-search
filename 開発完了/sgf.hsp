@@ -2,7 +2,7 @@
 
 dimtype SGF_NODE@global, 5
 
-#module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, 候補手, 候補手の数
+#module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, 候補手, 候補手の数, x, y, turn
 
 #define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
 #modinit int parent, local thismod_ID
@@ -236,7 +236,7 @@ dimtype SGF_NODE@global, 5
 
 #module
 
-#deffunc make_SGFnode int nownode, array coordinate, str 手番
+#defcfunc make_SGFnode int nownode, array coordinate, str 手番
 
 	new = nownode
 
@@ -244,7 +244,11 @@ dimtype SGF_NODE@global, 5
 	poke 座標, 0, 'a' + coordinate
 	poke 座標, 1, 'a' + coordinate.1
 
-	if nownode >= 0: if serch_SGFchild_byxy(nownode, 手番, 座標) >= 0: return new //すでにノードが存在
+	if nownode >= 0{
+		if serch_SGFchild_byxy(nownode, 手番, 座標) >= 0{
+			return stat //すでにノードが存在
+		}
+	}
 	
 	make_new_SGFnode nownode
 	new = stat

@@ -3,57 +3,100 @@
 
 dimtype treenode@global, 5
 
-#module tree parent, item_id, childs, cn, openflag
+#module tree parent, item_id, childs, cn, openflag, this_id
+
+//コンストラクタ
+#defcfunc make_treenode int p1, int p2
+	newmod treenode@global, tree, p1, p2
+	return stat
+#modinit int p1, int p2, local i
+	parent = p1
+	item_id = p2
+	openflag = 1
+	dim childs
+
+	mref i, 2
+	this_id = i
+
+	if parent >= 0{
+		add_child_treeview parent, this_id
+	}
+
+	return this_id
+//---------------
+
 
 #define global set_tree_parent(%1, %2) _set_tree_parent treenode@global(%1), %2
 #modfunc _set_tree_parent int p1
 	parent = p1
 	return
 
-#define global add_child_treeview(%1, %2) _add_child_treeview treenode@global(%1), %2
-#modfunc _add_child_treeview int p1, local i, local thismod_ID
+#define global ctype get_tree_parent(%1) _get_tree_parent(treenode@global(%1))
+#modcfunc _get_tree_parent
+	return parent
+
+#deffunc add_child_treeview int p1, int p2
+	_add_child_treeview treenode@global(p1), p2
+	return
+#modfunc _add_child_treeview int p1, local i
 	for i,,cn
 		if i == p1: return i ; すでにその子を持っている
 	next
 	childs(cn) = p1
 	cn++
 	
-	mref thismod_ID, 2
-	set_tree_parent p1, thismod_ID
+	set_tree_parent p1, this_id
 	
 	return cn - 1
 
+#define global del_child_treeview(%1, %2) _del_child_treeview treenode@global(%1), %2
+#modfunc _del_child_treeview int p1, local i
+	for i,,cn
+		if childs(i) == p1{
+			//childsの実体は整数の配列なのでコピーして詰める
+			memcpy childs, childs, cn - i - 1 << 2, i << 2, i + 1 << 2
+			cn--
+			return
+		}
+	next
+	return
 
-#deffunc make_treenode int p1, int p2
-	newmod treenode@global, tree, p1, p2
-	return stat
-#modinit int p1, int p2, local thismod_ID
-	parent = p1
-	item_id = p2
-	openflag = 1
-	dim childs
+#define global ctype serch_tree_child_by_item_ID(%1, %2) _serch_tree_child_by_item_ID(treenode@global(%1),%2)
+#modcfunc _serch_tree_child_by_item_ID int p1, local i
+	for i,,cn
+		if get_tree_item_id(childs(i)) == p1: return childs(i)
+	next
+	return -1
 
-	mref thismod_ID, 2
+//削除処理
+#deffunc del_treenode int p1, int mode
 
-	if parent >= 0{
-		add_child_treeview parent, thismod_ID
+	delmode = mode
+	p = get_tree_parent(p1)
+	if p >= 0{
+		del_child_treeview p, p1
 	}
-
-	return thismod_ID
-
-
-
-#define global ctype get_tree_parent(%1) _get_tree_parent(treenode@global(%1))
-#modcfunc _get_tree_parent
-	return parent
-
+	_del_treenode treenode@global(p1)
+	return
+#modfunc _del_treenode local i
+	for i,,cn
+		_del_treenode(treenode@global(childs(i)))
+	next
+	if delmode{
+		//SGFモジュール使ってたら発動可能なオプション
+		delmod SGF_NODE@global(item_id)
+	}
+	delmod thismod
+	return
+//--------------
+	
 #define global ctype get_tree_root_child(%1) _get_tree_root_child(treenode@global(%1))
 #modcfunc _get_tree_root_child local thismod_ID
 	if openflag: if cn : return childs
-	mref thismod_ID, 2
-	return thismod_ID
+	return this_id
 
-#define global ctype get_tree_item_id(%1) _get_tree_item_id(treenode@global(%1))
+#defcfunc get_tree_item_id int p1
+	return _get_tree_item_id(treenode@global(p1))
 #modcfunc _get_tree_item_id
 	return item_id
 
@@ -122,7 +165,7 @@ dimtype treenode@global, 5
 	}
 
 	if check_area(x-sx/2, y-sy/2, x+sx/2, y+sy/2, mousex, mousey){
-		tree_view_mouse = item_id //マウスがこのアイテム上にあるかを取得
+		tree_view_mouse = this_id
 	}
 
 	//現在の深度での高さを更新

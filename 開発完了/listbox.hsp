@@ -1,14 +1,15 @@
 //アイテム構造体（ロジックは入れない）
 dimtype listbox_items@global, 5
-#module listbox_item name, selected, action
+
+#module listbox_item name, selected, data
 
 #defcfunc make_listbox_item str s1
 	newmod listbox_items@global,listbox_item, s1
 	return stat
-#modinit str s1
+#modinit str s1, local i
 	name = s1
-	mref thismod_ID, 2
-	return thismod_ID
+	mref i, 2 //thismodID
+	return i
 
 #define global ctype listbox_item_get_str(%1) _listbox_item_get_str(listbox_items@global(%1))
 #modcfunc _listbox_item_get_str
@@ -22,6 +23,16 @@ dimtype listbox_items@global, 5
 #define global ctype get_selected_status(%1) _get_selected_status(listbox_items@global(%1))
 #modcfunc _get_selected_status
 	return selected
+
+#define global set_listbox_data(%1,%2) _set_listbox_data listbox_items@global(%1), %2
+#modfunc _set_listbox_data var v
+	data = v
+	logmes data
+	return
+
+#define global ctype get_listbox_data(%1) _get_listbox_data(listbox_items@global(%1))
+#modcfunc _get_listbox_data
+	return data
 
 #define global del_listbox_item(%1) delmod listbox_items@global(%1)
 	
@@ -49,8 +60,8 @@ dimtype listbox_items@global, 5
 	dim listbox_items
 	item_num = 0
 
-
-	return
+	mref thismod_ID, 2
+	return thismod_ID
 
 #modfunc add_item str s1, local i
 	ss = s1
@@ -65,6 +76,10 @@ dimtype listbox_items@global, 5
 	
 	noteunsel
 	
+	return
+
+#modfunc add_item_data int p1, var d
+	set_listbox_data listbox_items(p1), d
 	return
 
 #modfunc del_item_by_id int p1
@@ -89,6 +104,13 @@ dimtype listbox_items@global, 5
 			break
 		}
 	loop
+	return
+
+#modfunc del_item_all
+	repeat item_num
+		del_item_by_id thismod, cnt
+	loop
+	item_num = 0
 	return
 	
 #modfunc set_scroll_index int p1
@@ -149,7 +171,7 @@ dimtype listbox_items@global, 5
 	if max_visible_items < item_num{
 
 		bar_width = scrollbar_x
-		bar_height = sy / (item_num - max_visible_items + 1)
+		bar_height = limit(sy / (item_num - max_visible_items + 1),1)
 		bar_posx = px + sx - bar_width
 		
 		//１スクロール単位の移動量は、(スクロールバーの稼働域) / (オーバーフローしている数)
@@ -164,6 +186,25 @@ dimtype listbox_items@global, 5
 	}
 
 	return
+	
+#modfunc set_current_scroll_index_by_bar_position int y, local scroll_range, local bar_relative_pos, local index
+	// スクロールバーが移動可能な範囲を計算
+	scroll_range = sy - bar_height
+	if scroll_range <= 0 {
+		// スクロール可能な範囲がない場合は、何もせず終了
+		return
+	}
+	
+	// 渡された y をスクロールバー領域内の相対位置に変換
+	bar_relative_pos = limit(y - py, 0, scroll_range)
+	
+	// 相対位置からスクロールインデックスを計算
+	index = bar_relative_pos * (item_num - sy / item_y) / scroll_range
+	
+	// インデックスを設定
+	set_scroll_index thismod, index
+	return
+	
 #modcfunc listbox_on_id int x, int y, local i
 	
 	if px > x || py > y || px + sx < x || py + sy < y{
@@ -213,6 +254,7 @@ dimtype listbox_items@global, 5
 
 #if 0
 
+#include "開発完了/keyfps.hsp"
 newmod a,my_listbox, 20,20, 200, 120
 
 
@@ -243,6 +285,10 @@ repeat
 	if _getkey(1) == 1{
 		if listbox_on_id(a,mousex,mousey) >= 0{
 			check_item a,stat
+		}
+
+		if listbox_on_id(a,mousex,mousey) == -3{
+			set_current_scroll_index_by_bar_position a,mousey
 		}
 	}
 

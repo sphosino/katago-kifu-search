@@ -2,11 +2,15 @@
 #include "開発完了/sgf.hsp"
 #include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
 #module
-#deffunc search str SGF_list, array pattern, var result
+#deffunc search str SGF_list, array pattern, array result
 
-	result = ""
+	sdim result,,2
+	rn = 0
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
+	if stone_num == 0: return 
+	
+	logmes "探索を開始します-> 石数 = " + stone_num
 
 	notesel ss
 	ss = SGF_list
@@ -19,21 +23,27 @@
 
 		if get_value(sgf) == NOT_DEFINED_HASH{
 			topnode = load_sgf(f, -1)
+			logmes "load_sgf -> " + topnode 
 			new_value sgf, str(topnode)
 		}else{
+			
 			topnode = int(refstr)
+			logmes "hash -> " + topnode
 		}
 		
-		if search_main(topnode, pattern){
-			result += sgf + "\n" //一致したSGFを結果に追加
+		if search_main(topnode, pattern, match_node){
+			result(0,rn) = sgf //一致したSGFを結果に追加
+			result(1,rn) = str(match_node)
+			rn++
 		}
 	loop
 	noteunsel
-	return
+	return rn
 
 #const 最大の深さ 50
-#defcfunc search_main int t, array pattern
+#defcfunc search_main int t, array pattern, var result_node
 
+	logmes "called_search_main"
 	//探索スタック初期化
 	node_stack = t //処理したいノード
 	hit_count_stack = 0 //hitした石数を数える
@@ -46,7 +56,7 @@
 		hit_num = hit_count_stack(sn)
 		depth = depth_stack(sn)
 
-		if node != topnode{ //トップノード以外(トップノードは着手が存在しないため)
+		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
 
 		
 			if depth > 最大の深さ{
@@ -60,7 +70,7 @@
 			y = coordinate.1
 	
 			
-			//パターン内の各矩形に対してループ
+			//パターン内の各矩形に対する処理
 			for j,, length(pattern)
 				split pattern(j,0),",", rect
 				
@@ -104,12 +114,12 @@
 					return 0
 				}
 				if hit_num == stone_num{
+					result_node = node //一致したSGFノード
 					return 1 //検索成功
 				}
 				
 			next
 		}
-		
 		repeat get_SGF_childs(node, child)
 			node_stack(sn) = child(cnt)
 			hit_count_stack(sn) = hit_num

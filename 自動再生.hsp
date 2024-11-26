@@ -23,11 +23,13 @@ chkbox "着手番号", 着手番号表示
 set_treeview 50,50
 tree_direction = 6
 
+prenode = -1
+
 input tree_direction
 
 newmod t, treebox
 newmod kifulist, my_listbox, 0,300,200,120
-newmod matchlist, my_listbox, 0,450,200,120
+newmod kifulist, my_listbox, 0,450,200,120:matchlist = stat
 	chdir dirname
 	dirlist files,"*.sgf"
 	add_item kifulist, files
@@ -75,14 +77,30 @@ pretime = keyfpstime
 		}
 	}
 	if _getkey(1) == 1{ //左クリック
-		if listbox_on_id(kifulist,mousex, mousey) >= 0{
-			itemid = stat
-			items = get_listbox_item_list(kifulist)
-			notesel items
-			noteget s, itemid
-			noteunsel
-			topnode = change_sgf(s, t, board)
-		}else{
+
+		inlistbox = 0
+
+		foreach kifulist
+			itemid = listbox_on_id(kifulist.cnt,mousex, mousey)
+			if itemid >= 0{	
+				if get_root_tree_node(t) >= 0: del_treenode(get_root_tree_node(t))
+				
+				items = get_listbox_item_list(kifulist.cnt)
+				notesel items
+				noteget s, itemid
+				noteunsel
+				logmes "AAAAAAA" + s
+				topnode = change_sgf(s, t, board)
+				set_treeview_position
+				inlistbox++
+			}
+
+			if itemid == -3{
+				set_current_scroll_index_by_bar_position kifulist.cnt, mousey
+			}
+		loop
+		
+		if inlistbox == 0{
 			dragging_flag = 1
 			get_treeview_position tmp
 			dragstartx = mousex - tmp
@@ -98,26 +116,41 @@ pretime = keyfpstime
 			}else{
 			
 				if treebox_onmouseid(t) >=0{
-					logmes "select_SGFID== "+stat
+
+					clicked_node = stat
+
+					logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "　 + length(SGF_NODE@global)
+
+					set_current_node t, clicked_node //カレントノードをそのノードに移動して
+
+					logmes "setted current node"
 					
-					set_current_node t, stat
-		
+					sync_treebox_board t, board //碁盤を同期
+
+					logmes "node_chanege_success"
+
+
 				}else{
 					if in_board{
 						着手 board, point, point.1
 						
 						if stat{　//着手成功
 							dragging_flag = 0
-						
-							make_SGFnode nownode, point, get_turn_SGFstr(逆手番(get_turn(board)))
-			
-							new = stat
-			
-							if new != nownode{
-								Treebox_InsertItem t, new, nownode
-								if nownode == -1: topnode = new
+
+							now_sgfnode = get_tree_item_id(nownode)
+
+							//指定した座標のノードを作成、すでにあればそれを返す
+							new = make_SGFnode(now_sgfnode, point, get_turn_SGFstr(逆手番(get_turn(board))))
+
+							//現在のツリーノードにそのSGFノードがあるか？あれば、そのノードを取得
+							new_treeID = serch_tree_child_by_item_ID(nownode, new)
+							
+							if new_treeID == -1{
+								//新たにツリーノードを作る
+								new_treeID = make_treenode(nownode, new)
+								if now_sgfnode == -1: topnode = new_tree_ID
 							}
-							set_current_node t, new
+							set_current_node t, new_treeID
 						}
 					}
 				}
@@ -148,13 +181,16 @@ pretime = keyfpstime
 
 	//マウスホイール
 	mw = mousew
-	if listbox_on_id(kifulist,mousex, mousey) = -1{
-		if mw < 0 : gosub*move_next
-		if mw > 0 : gosub*move_back
-	}else{
-		if mw < 0: move_scroll_index kifulist,1
-		if mw > 0: move_scroll_index kifulist,-1
-	}
+
+	foreach kifulist
+		if listbox_on_id(kifulist.cnt,mousex, mousey) = -1{
+			if mw < 0 : gosub*move_next
+			if mw > 0 : gosub*move_back
+		}else{
+			if mw < 0: move_scroll_index kifulist.cnt,1
+			if mw > 0: move_scroll_index kifulist.cnt,-1
+		}
+	loop
 
 	//キー操作
 	if _getkey(17) >= 1{ //CTRL
@@ -174,10 +210,10 @@ pretime = keyfpstime
 	
 	if prenode != nownode{
 		prenode = nownode
-		//ツリービューからSGFノードのIDを取り出して盤面作成
-		make_board_from_sgf board, nownode
 
+		
 		if nownode >= 0{
+			sync_treebox_board t, board
 			tmp = get_property_data(get_tree_item_id(nownode), "C")
 			split tmp," ", c_list
 		}
@@ -189,9 +225,10 @@ pretime = keyfpstime
 		碁盤表示 board , 着手番号表示
 		draw_set_list_on_board board, v
 		set_tree_direction tree_direction
-		treebox_draw t, topnode
-		my_listbox_draw kifulist
-		my_listbox_draw matchlist
+		treebox_draw t
+		foreach kifulist
+			my_listbox_draw kifulist.cnt
+		loop
 
 		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 	redraw: redraw 2
@@ -226,7 +263,21 @@ pretime = keyfpstime
 
 	search get_name_all_items(kifulist), p, search_result
 
-	logmes "@@\n" + search_result + "@@"
+	search_result_sgflist = ""
+	
+	repeat length2(search_result)
+		search_result_sgflist += search_result(0,cnt) + "\n"
+	loop
+
+	logmes search_result_sgflist
+
+	del_item_all kifulist.matchlist
+	add_item kifulist.matchlist, search_result_sgflist
+
+	repeat length2(search_result)
+		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
+	loop
+
 	
 	return
 	
@@ -247,37 +298,7 @@ pretime = keyfpstime
 	
 	return
 
-#defcfunc load_sgf_set_board var _treebox, int node, var _board
-	//SGFからツリー作成
-	load_from_SGF_topnode _treebox, node
-	sgf_topnode = node
-	set_board_topnode _board, sgf_topnode
 
-	return sgf_topnode
-
-#defcfunc change_sgf str s1, var _treebox, var _board
-	
-
-	if get_value(s) == NOT_DEFINED_HASH{
-		notesel sgf_data
-		noteload s1
-		noteunsel
-		
-		if load_sgf(sgf_data,-1) >= 0{
-			new_topnode = load_sgf_set_board(_treebox, stat, _board)
-			new_value s1, str(topnode)
-		}else{
-			dialog "SGF_FILE解析エラー",,__FILE__
-			end
-		}
-	}else{
-		new_topnode = int(refstr)
-		logmes "SGF_NODE -> " + new_topnode
-		set_board_topnode _board, new_topnode
-		load_from_SGF_topnode t, new_topnode
-	}
-	
-	return new_topnode
 
 *move_next
 	if nownode < 0: return

@@ -1,12 +1,19 @@
 #include "goban.hsp"
 #include "開発完了/sgf.hsp"
-#include "tree.hsp"
+#include "treebox.hsp"
+#include "namespace_base.hsp"
 
 #module
 
-//gobanオブジェクト、表示したいsgfノード
-#deffunc make_board_from_sgf var board, int sgf_node_number
+//ツリーボックスに碁盤を同期させる関数
+#deffunc sync_treebox_board var _treebox, var board
 
+	logmes "current_node = " + get_current_node(_treebox)
+
+	sgf_node_number = get_tree_item_id(get_current_node(_treebox))
+
+	logmes "sgf_node_number = " + sgf_node_number
+	
 	if sgf_node_number < 0{
 		logmes "ERROR-- 無効なノード番号です -> "+ sgf_node_number + "\n "  + __FILE__
 		return
@@ -30,12 +37,15 @@
 	
 	return
 
-//SGFのトップノードに合わせてボードを初期化する関数
-#deffunc set_board_topnode var board, int topnode
+//SGFトップノードを受け取り、ボードを初期化する関数
+#deffunc set_board_topnode var board, int SGF_topnode
 
-	if topnode < 0: return
+	if topnode < 0{
+		dialog "エラー\n無効なノードが入力されました" ,,__FILE__
+		end
+	}
 
-	size = get_property_data(get_tree_item_id(topnode), "SZ")
+	size = get_property_data(SGF_topnode, "SZ")
 	if stat = 0{
 		logmes "SGFにボードサイズが設定されていません"
 		x = 19
@@ -47,101 +57,44 @@
 	clear_board board , int(x), int(y)
 	
 	return
-#global
 
 
-#module treebox tree_data, topnode, current_node, treenode_id_list, onmouse_id
+#defcfunc load_sgf_set_board var _treebox, int node, var _board
+	//SGFからツリー作成
+	load_from_SGF_topnode _treebox, node
+	set_current_node _treebox, stat
+	sgf_topnode = node
+	set_board_topnode _board, sgf_topnode
 
-#modinit
-	current_node = -1
-	topnode = -1
-	onmouse_id = -1
-	dim treenode_id_list, 10000
-	repeat length(treenode_id_list)
-		treenode_id_list(cnt) = -1
-	loop
-	return
-#modfunc init_treebox_item
-
-	return
-#modfunc set_current_node int p1, local i
-	i = p1 != current_node
-	current_node = p1
-	return i
-	
-#modcfunc get_current_node
-	return current_node
-	
-#modfunc treebox_insertItem int item_id, int parent_item_id
-	if item_id < 0: return -1
-
-	if parent_item_id >= 0{
-		parent_id = treenode_id_list(parent_item_id)
-	}else{
-		parent_id = -1
-	}
-
-	if treenode_id_list(item_id) == -1{
-		make_treenode parent_id, item_id
-    	treenode_id_list(item_id) = stat
-    }
-    
-    logmes "maketreenode-- 親アイテムID" + parent_id + "　子アイテムID "+stat +"  item_id =" + item_id
-
-	if topnode < 0: topnode = item_id
-	return item_id
-
-#modfunc treebox_draw int p1
-	if p1 >= 0{
-		tree_view treenode_id_list(p1), -1, -1, -1
-		onmouse_id = treeview_onmouse_id()
-	}
-	return
-
-#modcfunc treebox_onmouseid
-	return onmouse_id
-	
-#modfunc treebox_toggle_openflag int p1
-	toggle_openflag treenode_id_list(p1)
-	return
+	return sgf_topnode
 
 
-#modfunc treebox_clear
-	cut_node topnode
-	current_node = -1
-	topnode = -1
-	onmouse_id = -1
-		dim treenode_id_list, 10000
-	repeat length(treenode_id_list)
-		treenode_id_list(cnt) = -1
-	loop
-	return topnode
-	
-#modfunc load_from_SGF_topnode int SGF_topnode
+#defcfunc change_sgf str s1, var _treebox, var _board
 
-	stack = SGF_topnode ; 現在のノード番号
-	stack_p = -1    ; 親ノード番号
-	sn = 1
-	
-	while sn
-		sn--
-		;現ノードをツリーに追加
-		nnode = stack(sn)
-		pnode = stack_p(sn)
-		Treebox_InsertItem thismod, nnode, pnode
+　　title s1
+	if get_value(s1) == NOT_DEFINED_HASH{
+		notesel sgf_data
+		noteload s1
+		noteunsel
 		
-		//子ノードを全部積む。
-		repeat get_SGF_childs(nnode, childlist)
-			stack(sn) = childlist(cnt)
-			stack_p(sn) = nnode
-			sn++
-		loop
+		if load_sgf(sgf_data,-1) >= 0{
+			new_topnode = load_sgf_set_board(_treebox, stat, _board)
+			new_value s1, str(new_topnode)
+		}else{
+			dialog "SGF_FILE解析エラー",,__FILE__
+			end
+		}
+	}else{
+		new_topnode = int(refstr)
+		logmes "SGF_NODE -> " + new_topnode
 
-	wend
-
-	//カレントノードをトップノードに移動
-	set_current_node thismod, SGF_topnode
+		load_from_SGF_topnode _treebox, new_topnode
+		set_current_node _treebox, stat
+		
+		set_board_topnode _board, new_topnode
+	}
 	
-	return topnode
-
+	return new_topnode
 #global
+
+
