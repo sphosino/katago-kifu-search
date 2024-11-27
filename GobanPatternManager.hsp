@@ -2,7 +2,7 @@
 #ifndef GobanPatternManager
 
 #include "goban.hsp"
-
+#include "開発完了/rotate_coordinate.hsp"
 #module GobanPatternManager
 
 #const global PATTERN_NONE 1
@@ -17,28 +17,28 @@
 #const global PATTERN_PURPLE 1 << 8
 
 
-#defcfunc bit_to_color_names int color_bits
-    result = ""
+#defcfunc bit_to_color_names int color_bits, local i
+    i = ""
 
     if color_bits & PATTERN_NONE{
-	    result += "NONE,"
+	    i += "NONE,"
 	}
 	
     if (color_bits & PATTERN_ANY_COLOR) == PATTERN_ANY_COLOR{
-	    result += "ALL_COLOR"
-	    return result
+	    i += "ALL_COLOR"
+	    return i
 	}
 	
-    if color_bits & PATTERN_BLACK  { result += "BLACK," }
-    if color_bits & PATTERN_WHITE  { result += "WHITE," }
-    if color_bits & PATTERN_RED    { result += "RED," }
-    if color_bits & PATTERN_GREEN  { result += "GREEN," }
-    if color_bits & PATTERN_BLUE   { result += "BLUE," }
-    if color_bits & PATTERN_YELLOW { result += "YELLOW," }
-    if color_bits & PATTERN_ORANGE { result += "ORANGE," }
-    if color_bits & PATTERN_PURPLE { result += "PURPLE," }
+    if color_bits & PATTERN_BLACK  { i += "BLACK," }
+    if color_bits & PATTERN_WHITE  { i += "WHITE," }
+    if color_bits & PATTERN_RED    { i += "RED," }
+    if color_bits & PATTERN_GREEN  { i += "GREEN," }
+    if color_bits & PATTERN_BLUE   { i += "BLUE," }
+    if color_bits & PATTERN_YELLOW { i += "YELLOW," }
+    if color_bits & PATTERN_ORANGE { i += "ORANGE," }
+    if color_bits & PATTERN_PURPLE { i += "PURPLE," }
     
-    return strtrim(result, 2, ',') // 最後のカンマを除去
+    return strtrim(i, 2, ',') // 最後のカンマを除去
 
 //パターンバリデーション
 #define global ctype pattern_validation(%1) \
@@ -73,8 +73,15 @@
 				a(0, an) = m, cnt, PATTERN_WHITE
 				an++
 			swbreak
+			//特殊条件
 			case 3
 				a(0, an) = m, cnt, PATTERN_BLACK | PATTERN_WHITE
+			swbreak
+			case 4
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_BLACK
+			swbreak
+			case 5
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_WHITE
 			swbreak
 			swend
 		loop
@@ -86,11 +93,11 @@
 	//矩形を作成
 	num_rects = create_rect_from_coordinate_set(rect_set, rects)
 	//矩形に合わせて、石情報リストを初期化
-	sdim stones,, num_rects
+	sdim stones,, num_rects,2
 	return
 
 //石情報リストに石を追加
-#deffunc add_stone_pattern array rects, array stones, int x, int y, int col
+#deffunc add_stone_pattern array rects, array stones, int x, int y, int col, local i
     /*
     rects:
     - 矩形リスト (x1, y1, x2, y2)
@@ -102,7 +109,8 @@
     - 検索する石パターン。例【　(PATTERN_BLUE | PATTERN_RED)　-> 青か赤ならマッチ 】
     */
 
-	stone_info = strf("%02d:%02d:%d", x, y, col)
+	stone_info(0) = strf("%02d:%02d:%d", x, y, col)
+	stone_info(1) = strf("%02d:%02d:%d", x, y, col ^ (PATTERN_BLACK | PATTERN_WHITE))
 	
 	repeat length2(rects)
 	
@@ -112,11 +120,15 @@
 		y2 = rects(3,cnt)
 		
 		if x >= x1 && x <= x2 && y >= y1 && y <= y2{
-			if strlen(stones(cnt)) == 0{
-				stones(cnt) = stone_info
-			}else{
-				stones(cnt) += ";" + stone_info
-			}
+
+			for i,,2
+				if strlen(stones(cnt,i)) == 0{
+					stones(cnt,i) = stone_info(i)
+				}else{
+					stones(cnt,i) += "-" + stone_info(i)
+				}
+			next
+			
 			break
 		}
 	loop
@@ -126,26 +138,30 @@
 //最終的に矩形リストと石情報リストからパターンを生成
 #deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
 
-    sdim patterns,,length2(rects), 3
+    sdim patterns,,length2(rects), 3, 2
 
     repeat length2(rects)
     	//矩形データ
-        patterns(cnt,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
+        patterns(cnt,0,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
+        patterns(cnt,0,1) = patterns(cnt,0,0)
         //石データ(x:y:bits)形式
-        patterns(cnt,1) = stones(cnt)
+        patterns(cnt,1,0) = stones(cnt,0)
+        patterns(cnt,1,1) = stones(cnt,1)
         //石数の情報
-		if stones(cnt) == ""{
-			patterns(cnt,2) == "0"
+		if stones(cnt, 0) == ""{
+			patterns(cnt,2,0) == "0"
+			patterns(cnt,2,1) == "0"
 		}else{
-			split stones(cnt),";",tmp
-			patterns(cnt,2) = str(stat)
+			split stones(cnt, 0),"-",tmp
+			patterns(cnt,2,0) = str(stat)
+
+			split stones(cnt, 1),"-", tmp
+			patterns(cnt,2,1) = str(stat)
 		}
-        
     loop
     return
 
 #defcfunc get_pattern_all_stones_num array a, local i
-	i = 0
 	
 	repeat length(a)
 		i += int(a(cnt,2))
@@ -159,10 +175,76 @@
 	notesel s
 	s = "["
 	repeat length(a)
-		noteadd a(cnt,0)  + "@" + a(cnt,1) + "@" + a(cnt,2)
+		noteadd a(cnt, 0, 0)  + "@" + a(cnt, 1, 0) + "@" + a(cnt, 2, 0) + "   " +  a(cnt, 0, 1)  + "@" + a(cnt, 1, 1) + "@" + a(cnt, 2, 1)
 	loop
 	noteadd "]"
 	noteunsel
 	return s
+
+//基本パターンとボードサイズを受け取り８または４パターン化する関数
+#deffunc make_rotated_patterns array a, int board_size_x, int board_size_y , array result
+    /*
+    a:
+    - 基本パターン
+    x, y:
+    - 探索対象のボードサイズ
+    result:
+    - 座標変換を行ったパターンリスト
+    */
+
+	num_rotate_patterns = 8
+	if board_size_x != board_size_y: num_rotate_patterns = 4
+	
+	sdim result,, length(a), length2(a), length3(a), num_rotate_patterns
+	
+    repeat num_rotate_patterns
+    	t_pattern = cnt
+    	//パターン内の各矩形に対して
+
+		for r,,length(a)
+		
+			//矩形データ変換
+			split a(r,0), ",", tmp
+			x1 = int(tmp)
+			y1 = int(tmp.1)
+			x2 = int(tmp.2)
+			y2 = int(tmp.3)
+
+			rotate_rectangle rect, x1, y1, x2, y2, t_pattern, board_size_x, board_size_y
+
+			rect_str = "" + rect(0) + "," + rect(1) + "," + rect(2) + "," + rect(3)
+			
+			//色反転
+			for i,,2
+			
+				
+				//石データ変換
+				split a(r,1,i), "-", stone_datas
+				sdata = ""
+				repeat stat
+					split stone_datas(cnt),":", tmp
+					sn = stat
+					x = int(tmp)
+					y = int(tmp.1)
+					col = tmp.2
+
+					rotate_coordinate p, x, y, t_pattern, board_size_x, board_size_y
+
+					if sdata = ""{
+						sdata = "" + p + ":" + p(1) + ":" + col
+					}else{
+						sdata += "-" + p + ":" + p(1) + ":" + col
+					}
+				loop
+
+				result(r,0,i,t_pattern) = rect_str //矩形情報
+				result(r,1,i,t_pattern) = sdata    //石データ
+				result(r,2,i,t_pattern) = a(r,2) //石数データ
+				
+			next
+		next
+    loop
+
+	return
 #global
 #endif

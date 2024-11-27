@@ -79,7 +79,7 @@
 				}
 
 				//Îî•ñ‚ğ•ª—£
-				split pattern(j,1),";", stones
+				split pattern(j,1),"-", stones
 	
 				match_failed = 1 //Œ©‚Â‚©‚ç‚È‚©‚Á‚½‚ç’Tõ¸”s‚Æ‚·‚éƒtƒ‰ƒO
 				

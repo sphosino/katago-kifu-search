@@ -53,7 +53,7 @@ dimtype treenode@global, 5
 #modfunc _del_child_treeview int p1, local i
 	for i,,cn
 		if childs(i) == p1{
-			//childsの実体は整数の配列なのでコピーして詰める
+			//childsは整数の配列なのでコピーして詰める
 			memcpy childs, childs, cn - i - 1 << 2, i << 2, i + 1 << 2
 			cn--
 			return
@@ -65,6 +65,17 @@ dimtype treenode@global, 5
 #modcfunc _serch_tree_child_by_item_ID int p1, local i
 	for i,,cn
 		if get_tree_item_id(childs(i)) == p1: return childs(i)
+	next
+	return -1
+
+#define global ctype search_tree_by_item_id(%1, %2) _search_tree_by_item_id(treenode@global(%1), %2)
+#modcfunc _search_tree_by_item_id int p1, local i
+	if item_id == p1: return this_id
+	for i,,cn
+		tmp = search_tree_by_item_id(childs(i), p1)
+		if tmp != -1{
+			return tmp
+		}
 	next
 	return -1
 

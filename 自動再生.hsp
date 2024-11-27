@@ -89,8 +89,13 @@ pretime = keyfpstime
 				notesel items
 				noteget s, itemid
 				noteunsel
-				logmes "AAAAAAA" + s
 				topnode = change_sgf(s, t, board)
+				logmes ""+itemid
+				if get_listbox_item_data(kifulist.cnt,itemid){
+					nstat = stat
+					set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
+					sync_treebox_board t, board
+				}
 				set_treeview_position
 				inlistbox++
 			}
