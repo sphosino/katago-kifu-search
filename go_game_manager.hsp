@@ -45,17 +45,24 @@
 		end
 	}
 
+	get_board_size_from_SGF SGF_topnode, xy
+
+	clear_board board , xy, xy.1
+	
+	return
+
+#deffunc get_board_size_from_SGF int SGF_topnode, array a
+
 	size = get_property_data(SGF_topnode, "SZ")
 	if stat = 0{
 		logmes "SGFにボードサイズが設定されていません"
-		x = 19
-		y = 19
+		a = 19,19
 	}else{
 		split size,":", x, y
 		if stat = 1: y = x
+		a = int(x),int(y)
 	}
-	clear_board board , int(x), int(y)
-	
+
 	return
 
 

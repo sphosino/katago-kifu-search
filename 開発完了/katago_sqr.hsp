@@ -32,7 +32,7 @@
 	find_tags_bytag buf,"tr", data //テーブルの要素
 	
 
-	repeat max
+	repeat limit(max,,length(data)-1)
 	
 		find_tags_bytag data(cnt + 1) ,"td", target_infos //テーブルの対象の要素をリスト化(見出し（最初のtr）は関係ないので[(cnt + 1)]
 

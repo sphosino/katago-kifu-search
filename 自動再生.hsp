@@ -7,6 +7,9 @@
 #include "hspext.as"
 
 dirname = "C:/Users/owner/Desktop/hsp/棋譜"
+
+randomize
+
 screen 0, 640,580
 objsize 80
 pos,80
@@ -19,6 +22,8 @@ jidou = 0
 
 chkbox "自動再生", jidou: chk_ID = stat
 chkbox "着手番号", 着手番号表示
+max_depth = 50
+input max_depth
 
 set_treeview 50,50
 tree_direction = 6
@@ -28,11 +33,12 @@ prenode = -1
 input tree_direction
 
 newmod t, treebox
-newmod kifulist, my_listbox, 0,300,200,120
-newmod kifulist, my_listbox, 0,450,200,120:matchlist = stat
+newmod kifulist, my_listbox, 0,320,200,120
+newmod kifulist, my_listbox, 0,460,200,100:matchlist = stat
 	chdir dirname
 	dirlist files,"*.sgf"
-	add_item kifulist, files
+	
+	add_item kifulist, shuffle_notepad(files)
 topnode = -1
 rn = 0
 dim rect, 4
@@ -84,6 +90,7 @@ pretime = keyfpstime
 			itemid = listbox_on_id(kifulist.cnt,mousex, mousey)
 			if itemid >= 0{	
 				if get_root_tree_node(t) >= 0: del_treenode(get_root_tree_node(t))
+				sdim v: rn = 0
 				
 				items = get_listbox_item_list(kifulist.cnt)
 				notesel items
@@ -91,9 +98,11 @@ pretime = keyfpstime
 				noteunsel
 				topnode = change_sgf(s, t, board)
 				logmes ""+itemid
-				if get_listbox_item_data(kifulist.cnt,itemid){
-					nstat = stat
+				if get_listbox_item_data(kifulist.cnt,itemid){ //アイテムデータが設定されていたら、それは検索結果。
+					nstat = stat //検索結果のSGFノード
+					//それが格納されているツリーIDを探してカレントノードに設定
 					set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
+					//碁盤を同期
 					sync_treebox_board t, board
 				}
 				set_treeview_position
@@ -147,7 +156,7 @@ pretime = keyfpstime
 							//指定した座標のノードを作成、すでにあればそれを返す
 							new = make_SGFnode(now_sgfnode, point, get_turn_SGFstr(逆手番(get_turn(board))))
 
-							//現在のツリーノードにそのSGFノードがあるか？あれば、そのノードを取得
+							//現在のツリーノード直下にそのSGFノードがあるか？あれば、そのノードを取得
 							new_treeID = serch_tree_child_by_item_ID(nownode, new)
 							
 							if new_treeID == -1{
@@ -256,6 +265,8 @@ pretime = keyfpstime
 	return
 
 *create_pattern
+	logmes "検索開始"
+	time = -keyfpstime
 	initialize_rects v,r, stones
 	
 	repeat load_stones_from_board(board, n)
@@ -266,7 +277,8 @@ pretime = keyfpstime
 
 	logmes patterns_to_notepad(p)
 
-	search get_name_all_items(kifulist), p, search_result
+
+	search get_name_all_items(kifulist), p, search_result, max_depth
 
 	search_result_sgflist = ""
 	
@@ -283,7 +295,7 @@ pretime = keyfpstime
 		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
 	loop
 
-	
+	logmes "検索終了 -> " +(time+keyfpstime)
 	return
 	
 *loadfile
@@ -331,3 +343,28 @@ pretime = keyfpstime
 		move_treeview_position   ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1) * d
 	}
 	return
+
+#module 
+#defcfunc shuffle_notepad str s1, local ss, local slist, local n, local r
+	ss = s1
+	notesel ss
+	n = notemax
+	repeat n
+		noteget slist(cnt),cnt
+	loop
+
+	repeat n - 1
+		r = rnd(n - cnt) + cnt
+		tmp = slist(cnt)
+		slist(cnt) = slist(r)
+		slist(r) = tmp
+	loop
+
+	ss = ""
+	repeat n
+		noteadd slist(cnt)
+	loop
+	noteunsel
+	
+	return ss
+#global
