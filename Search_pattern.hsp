@@ -4,28 +4,26 @@
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip
 
-
-
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
-
-	sdim result,,2
-	rn = 0
-
+	
 	最大の深さ = 50
 	if max_depth{
 		最大の深さ = max_depth
 	}
-	
+	sdim result,,2
+	rn = 0
+
 	prexy = -1,-1
+	vlist(1) = 0
 	
 	//logmes "探索を開始します-> 石数 = " + stone_num
-	dim valid, 1 + colorflip, r_patterun_num
+	
 	notesel ss
 	ss = SGF_list
+	
 	repeat notemax
 		noteget sgf,cnt
-
 		notesel f
 		noteload sgf
 		noteunsel
@@ -48,11 +46,22 @@
 			make_rotated_patterns pattern, xy,xy.1 , rotated_p
 			prexy = xy,xy.1
 		}
-
-		r_pattern_num = 4 << (xy == xy.1)
-		all_pattern_num = r_pattern_num * (colorflip + 1) 
 		
-		if search_main(topnode, rotated_p, match_node, colorflip){
+		//サーチメイン関数用の変数設定
+		colorflip_num = 1 + colorflip
+		r_pattern_num = 4 << (xy == xy.1)
+		all_pattern_num = r_pattern_num * colorflip_num
+		hnsize = all_pattern_num * 4
+		ln = 0
+		repeat r_pattern_num
+			for i,, colorflip_num
+				vlist(0,ln) = i, cnt
+				ln++
+			next
+		loop
+
+		//検索実行
+		if search_main(topnode, rotated_p, match_node){
 			result(0,rn) = sgf //一致したSGFを結果に追加
 			result(1,rn) = str(match_node)
 			rn++
@@ -61,7 +70,7 @@
 	noteunsel
 	return rn
 
-#defcfunc search_main int t, array pattern, var result_node, int colorflip
+#defcfunc search_main int t, array pattern, array result_node
 
 /*
  t:
@@ -69,28 +78,19 @@
  pattern:
  - 検索に使うパターン
  result_node:
- -検索に一致した場合そのノード番号を返す
+ - 検索に一致した場合そのノード番号を返す
 
  return_value -> マッチしたかどうかの　1か0の値
 */
 
-	
 
 	//探索スタック初期化
-	sn = 0
-	repeat r_pattern_num
-		for i,,1 + colorflip
-			node_stack(sn) = t
-			hit_count_stack(sn) = 0 
-			r_pattern_stack(sn) = cnt
-			c_pattern_stack(sn) = i
-			depth_stack(sn) = 1 
-			sn++
-			valid(i,cnt) = 1
-		next
-	loop
 
-	failed_count = 0
+	dim hit_num, colorflip_num, r_pattern_num
+	dim hit_count_stack, colorflip_num, r_pattern_num, 30
+	node_stack = t
+	depth_stack = 1
+	sn = 1
 
 	while sn
 		sn--
@@ -103,10 +103,6 @@
 		}
 		
 		node = node_stack(sn)
-		hit_num = hit_count_stack(sn)
-		r_p = r_pattern_stack(sn)
-		c_p = c_pattern_stack(sn)
-
 
 		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
 
@@ -114,83 +110,88 @@
 	
 			x = coordinate
 			y = coordinate.1
-	
-			//パターン内の各矩形に対する処理
-			for j,, length(pattern)
-				split pattern(j,0,c_p,r_p),",", rect
-				
-				if in_rect(rect,x,y) == 0{
-					_continue //矩形範囲外なので無視
-				}
 
-				//石情報を分離
-				split pattern(j,1,c_p,r_p),"-", stones
-	
-				match_failed = 1 //見つからなかったら探索失敗とするフラグ
-				
-				//矩形に含まれる石数だけ繰り返す
-				for i,,int(pattern(j,2,c_p,r_p))
-				
-					split stones(i), ":", tmp
-					p_x = int(tmp)
-					p_y = int(tmp.1)
-					p_color = int(tmp.2)
+			memcpy hit_num, hit_count_stack,hnsize,,hnsize*sn
+
+			for v,,ln
+				c_p = vlist(0,v)
+				r_p = vlist(1,v)
+				//パターン内の各矩形に対する処理
+				for j,, length(pattern)
+					split pattern(j,0,c_p,r_p),",", rect
 					
-					if (p_x == x) && (p_y == y){
-						//マッチしたらhitカウント加算
-						switch turn
-						case 1 //黒石
-							if p_color & PATTERN_BLACK{
-								hit_num++
-								match_failed = 0
-							}
-						swbreak
-						case 2 //白石
-							if p_color & PATTERN_WHITE{
-								hit_num++
-								match_failed = 0
-							}
-						swbreak
-						swend
+					if out_of_rect(rect,x,y){
+						_continue
+					}
+	
+					//石情報を分離
+					split pattern(j,1,c_p,r_p),"-", stones
+		
+					match_failed = 1 //見つからなかったら探索失敗とするフラグ
+					
+					//矩形に含まれる石数だけ繰り返す
+					for i,,int(pattern(j,2,c_p,r_p))
+					
+						split stones(i), ":", tmp
+						p_x = int(tmp)
+						p_y = int(tmp.1)
+						p_color = int(tmp.2)
+						
+						if (p_x == x): if(p_y == y){
+							//マッチしたらhitカウント加算
+							switch turn
+							case 1 //黒石
+								if p_color & PATTERN_BLACK{
+									hit_num(c_p,r_p)++
+									match_failed = 0
+								}
+							swbreak
+							case 2 //白石
+								if p_color & PATTERN_WHITE{
+									hit_num(c_p, r_p)++
+									match_failed = 0
+								}
+							swbreak
+							default
+								dialog "黒番でも白番でもないノード\nSGFに問題がある可能性があります",,__FILE__
+								end
+							swend
+							_break
+						}
+					next
+					if match_failed{
+						ln--
+						if ln == 0{
+							//有効なパターンがなくなった。　＝　検索失敗
+							return 0
+						}
+						vlist(0,v) = vlist(0,ln)
+						vlist(1,v) = vlist(1,ln)
 						_break
 					}
-				next
-				if match_failed{
-					valid(c_p, r_p) = 0
-					failed_count++
-					if failed_count == all_pattern_num{
-						return 0
+					if hit_num(c_p, r_p) == stone_num{
+						result_node = node, depth //一致したSGFノードと手数を返す
+						return 1 //検索成功
 					}
-					_break
-				}
-				if hit_num == stone_num{
-					result_node = node //一致したSGFノード
-					return 1 //検索成功
-				}
-				
+				next
 			next
-			if valid(c_p, r_p) = 0: _continue
 		}
-		
 		
 		repeat get_SGF_childs(node, child)
 			node_stack(sn) = child(cnt)
-			hit_count_stack(sn) = hit_num
-			r_pattern_stack(sn) = r_p
-			c_pattern_stack(sn) = c_p
+			hit_count_stack(0,0, sn) = 0//メモリ確保
+			memcpy hit_count_stack, hit_num, hnsize, sn * hnsize//纏めてコピー
 			depth_stack(sn) = depth + 1
 			sn++
 		loop
 		
-
 	wend
 	return 0
 
-#defcfunc in_rect array a, int _x, int _y
-	if int(a(0)) > _x: return 0
-	if int(a(1)) > _y: return 0
-	if int(a(2)) < _x: return 0
-	if int(a(3)) < _y: return 0
-	return 1
+#defcfunc out_of_rect array a, int _x, int _y
+	if int(a   ) > _x: return 1
+	if int(a(1)) > _y: return 1
+	if int(a(2)) < _x: return 1
+	return int(a(3)) < _y
 	
 #global

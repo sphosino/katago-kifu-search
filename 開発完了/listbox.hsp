@@ -86,7 +86,7 @@ dimtype listbox_items@global, 5
 	del_listbox_item listbox_items.p1
 	item_num--
 	//‹ó‚¢‚½—v‘f‚ð‹l‚ß‚é
-	memcpy listbox_items,listbox_items,(item_num-p1)*4, p1*4, p1*4+4
+	memcpy listbox_items,listbox_items,(item_num - p1)*4, p1*4, p1*4+4
 	return
 
 #modcfunc get_listbox_item_list

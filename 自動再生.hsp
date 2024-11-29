@@ -45,7 +45,7 @@ dim rect, 4
 dim rect_stack, 4
 newmod board, goban, 19,19,20,20,220,100
 
-pos 0 , 80 + 30 * 3:button gosub "SGFを読み込む", *loadfile
+pos 0 , 80 + 30 * 3:button gosub "最新棋譜を取得", *loadfile
 pos 80, 80 + 30 * 3:button gosub "SGFをコピー", *getsgf
 pos 0 , 80 + 30 * 4:button gosub "碁盤をクリア", *clearboard
 max_depth = 50

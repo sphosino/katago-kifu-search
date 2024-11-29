@@ -7,5 +7,6 @@ packfile
 *.ax
 *.7z
 *.zip
+*.dll
 test/
 リリース/
