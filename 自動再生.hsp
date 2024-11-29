@@ -4,6 +4,7 @@
 #include "開発完了/listbox.hsp"
 #include "GobanPatternManager.hsp"
 #include "Search_pattern.hsp"
+#include "shuffle_notepad.hsp"
 #include "hspext.as"
 
 dirname = "C:/Users/owner/Desktop/hsp/棋譜"
@@ -11,19 +12,23 @@ dirname = "C:/Users/owner/Desktop/hsp/棋譜"
 randomize
 
 screen 0, 640,580
-objsize 80
+objsize 80,30
 pos,80
+setfps 40
 
+now_y = ginfo_cy
 time = 1000
-input time
+
 v = ""
 jidou = 0
 着手番号表示 = 0
 
+pos , now_y
 chkbox "自動再生", jidou: chk_ID = stat
+pos 80, 80 :input time
+pos 0, 80 + 30
 chkbox "着手番号", 着手番号表示
-max_depth = 50
-input max_depth
+
 
 set_treeview 50,50
 tree_direction = 6
@@ -32,25 +37,33 @@ prenode = -1
 
 input tree_direction
 
-newmod t, treebox
-newmod kifulist, my_listbox, 0,320,200,120
-newmod kifulist, my_listbox, 0,460,200,100:matchlist = stat
-	chdir dirname
-	dirlist files,"*.sgf"
-	
-	add_item kifulist, shuffle_notepad(files)
+
+
 topnode = -1
 rn = 0
 dim rect, 4
 dim rect_stack, 4
-newmod board, goban, 19,19,20,20,200,100
+newmod board, goban, 19,19,20,20,220,100
 
-button gosub "SGFを読み込む", *loadfile
-button gosub "SGFをコピー", *getsgf
-button gosub "碁盤をクリア", *clearboard
-button gosub "パターン生成", *create_pattern
-chkbox "矩形生成",mode
-
+pos 0 , 80 + 30 * 3:button gosub "SGFを読み込む", *loadfile
+pos 80, 80 + 30 * 3:button gosub "SGFをコピー", *getsgf
+pos 0 , 80 + 30 * 4:button gosub "碁盤をクリア", *clearboard
+max_depth = 50
+input max_depth
+now_y =ginfo_cy
+pos   ,now_y:button gosub "検索", *create_pattern
+pos 80,now_y:
+enableColorFlip = 1
+chkbox "色反転も含める", enableColorFlip
+pos 80,80+ 30
+chkbox "着手",mode
+newmod t, treebox
+newmod kifulist, my_listbox, 0,80 + 30 * 8,200,120
+newmod kifulist, my_listbox, 0,80 + 30 * 13,200,100:matchlist = stat
+	chdir dirname
+	dirlist files,"*.sgf"
+	
+	add_item kifulist, shuffle_notepad(files)
 gosub*loadsgf
 
 pretime = keyfpstime
@@ -278,20 +291,21 @@ pretime = keyfpstime
 	logmes patterns_to_notepad(p)
 
 
-	search get_name_all_items(kifulist), p, search_result, max_depth
+	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip)
+
 
 	search_result_sgflist = ""
 	
-	repeat length2(search_result)
-		search_result_sgflist += search_result(0,cnt) + "\n"
+	repeat result_num
+		search_result_sgflist += search_result(0, cnt) + "\n"
 	loop
 
-	logmes search_result_sgflist
+	//logmes search_result_sgflist
 
 	del_item_all kifulist.matchlist
 	add_item kifulist.matchlist, search_result_sgflist
-
-	repeat length2(search_result)
+	
+	repeat result_num
 		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
 	loop
 
@@ -344,27 +358,3 @@ pretime = keyfpstime
 	}
 	return
 
-#module 
-#defcfunc shuffle_notepad str s1, local ss, local slist, local n, local r
-	ss = s1
-	notesel ss
-	n = notemax
-	repeat n
-		noteget slist(cnt),cnt
-	loop
-
-	repeat n - 1
-		r = rnd(n - cnt) + cnt
-		tmp = slist(cnt)
-		slist(cnt) = slist(r)
-		slist(r) = tmp
-	loop
-
-	ss = ""
-	repeat n
-		noteadd slist(cnt)
-	loop
-	noteunsel
-	
-	return ss
-#global

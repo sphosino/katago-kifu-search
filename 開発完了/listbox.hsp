@@ -28,7 +28,6 @@ dimtype listbox_items@global, 5
 #define global set_listbox_data(%1,%2) _set_listbox_data listbox_items@global(%1), %2
 #modfunc _set_listbox_data var v
 	data = v
-	logmes data
 	return
 
 #define global ctype get_listbox_data(%1) _get_listbox_data(listbox_items@global(%1))

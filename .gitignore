@@ -3,5 +3,9 @@
 .vscode/
 obj
 hsptmp
+packfile
 *.ax
+*.7z
+*.zip
 test/
+リリース/

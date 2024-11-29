@@ -1,6 +1,6 @@
+#ifndef shuffle_notepad
 #module 
-#defcfunc shuffle_notepad str s1, local ss, local slist, local n, local index, local r, local s
-
+#defcfunc shuffle_notepad str s1, local ss, local slist, local n, local r
 	ss = s1
 	notesel ss
 	n = notemax
@@ -20,8 +20,7 @@
 		noteadd slist(cnt)
 	loop
 	noteunsel
+	
 	return ss
 #global
-
-randomize 
-mes(shuffle_notepad("a\nb\nc\nd\ne\nf\ng\nh"))
+#endif

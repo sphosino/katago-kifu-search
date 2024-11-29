@@ -175,7 +175,7 @@
 	notesel s
 	s = "["
 	repeat length(a)
-		noteadd a(cnt, 0, 0)  + "@" + a(cnt, 1, 0) + "@" + a(cnt, 2, 0) + "   " +  a(cnt, 0, 1)  + "@" + a(cnt, 1, 1) + "@" + a(cnt, 2, 1)
+		noteadd a(cnt, 0)  + "@" + a(cnt, 1) + "@" + a(cnt, 2)
 	loop
 	noteadd "]"
 	noteunsel

@@ -58,6 +58,10 @@ dimtype SGF_NODE@global, 5
 		return 2
 	}
 	return 0
+#define global ctype get_property_coordinate_cash(%1,%2) _get_property_coordinate_cash(SGF_NODE@global(%1),%2)
+#modcfunc _get_property_coordinate_cash array result
+	result = x,y
+	return turn
 
 #define global get_nodelist(%1, %2, %3 = 0) dim %2:_get_nodelist SGF_NODE@global(%1), %2, %3
 #modfunc _get_nodelist array a, int num, local thismod_ID
@@ -90,20 +94,31 @@ dimtype SGF_NODE@global, 5
 	return 候補手の数
 
 #define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
-#modfunc _set_property_data str s, str d
+#modfunc _set_property_data str s, str d, local i
 
 	already_exist = 0
 	repeat 着手情報の数
 		if 着手情報(0,cnt) = s{
+			index = cnt
 			着手情報(1, cnt) = d
 			already_exist++
 			break
 		}
 	loop
 	if already_exist == 0{
+		index = 着手情報の数
 		着手情報(0, 着手情報の数) = s
 		着手情報(1, 着手情報の数) = d
 		着手情報の数++
+	}
+
+	if s = "W" || s = "B"{
+		mref i, 2
+		if get_property_coordinate(i,re){
+			turn = stat
+			x = re
+			y = re.1
+		}
 	}
 	
 	return
@@ -264,6 +279,7 @@ dimtype SGF_NODE@global, 5
 		sgf_err = "(で始まっていません"
 		return -1
 	}
+	stack = -1
 	nln = 0
 	load_sgf_main ss, node
 	return stat
@@ -302,6 +318,8 @@ dimtype SGF_NODE@global, 5
 			point++
 			
 		}else{
+
+			logmes "不正なトークンが含まれています"
 			
 			point++
 			

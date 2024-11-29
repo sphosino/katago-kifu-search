@@ -2,24 +2,25 @@
 #include "開発完了/sgf.hsp"
 #include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
 #module
-#deffunc search str SGF_list, array pattern, array result, int max_depth
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip
 
-	
-	最大の深さ = 50
-	if max_depth{
-		最大の深さ = max_depth
-	}
+
+
+	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
+	if stone_num == 0: return 0
 
 	sdim result,,2
 	rn = 0
 
-	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
-	if stone_num == 0: return 
+	最大の深さ = 50
+	if max_depth{
+		最大の深さ = max_depth
+	}
 	
 	prexy = -1,-1
 	
 	//logmes "探索を開始します-> 石数 = " + stone_num
-	dim valid, 2, r_patterun_num
+	dim valid, 1 + colorflip, r_patterun_num
 	notesel ss
 	ss = SGF_list
 	repeat notemax
@@ -49,9 +50,9 @@
 		}
 
 		r_pattern_num = 4 << (xy == xy.1)
-		all_pattern_num = r_pattern_num * 2
+		all_pattern_num = r_pattern_num * (colorflip + 1) 
 		
-		if search_main(topnode, rotated_p, match_node){
+		if search_main(topnode, rotated_p, match_node, colorflip){
 			result(0,rn) = sgf //一致したSGFを結果に追加
 			result(1,rn) = str(match_node)
 			rn++
@@ -60,7 +61,7 @@
 	noteunsel
 	return rn
 
-#defcfunc search_main int t, array pattern, var result_node
+#defcfunc search_main int t, array pattern, var result_node, int colorflip
 
 /*
  t:
@@ -78,7 +79,7 @@
 	//探索スタック初期化
 	sn = 0
 	repeat r_pattern_num
-		for i,,2
+		for i,,1 + colorflip
 			node_stack(sn) = t
 			hit_count_stack(sn) = 0 
 			r_pattern_stack(sn) = cnt
@@ -95,31 +96,25 @@
 		sn--
 
 		//以下ノードを取り出して処理。
+		depth = depth_stack(sn)
+
+		if depth > 最大の深さ{
+			_continue
+		}
 		
 		node = node_stack(sn)
 		hit_num = hit_count_stack(sn)
 		r_p = r_pattern_stack(sn)
 		c_p = c_pattern_stack(sn)
-		depth = depth_stack(sn)
 
-		if valid(c_p,r_p) == 0{
-			_continue
-		}
 
 		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
 
-		
-			if depth > 最大の深さ{
-				//手数が制限を超えたのでこのノードは探索打ち切り
-				_continue
-			}
-	
-			turn = get_property_coordinate(node, coordinate) //ノードの手番、座標を取得
+			turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
 	
 			x = coordinate
 			y = coordinate.1
 	
-			
 			//パターン内の各矩形に対する処理
 			for j,, length(pattern)
 				split pattern(j,0,c_p,r_p),",", rect
@@ -174,7 +169,10 @@
 				}
 				
 			next
+			if valid(c_p, r_p) = 0: _continue
 		}
+		
+		
 		repeat get_SGF_childs(node, child)
 			node_stack(sn) = child(cnt)
 			hit_count_stack(sn) = hit_num
@@ -183,6 +181,7 @@
 			depth_stack(sn) = depth + 1
 			sn++
 		loop
+		
 
 	wend
 	return 0
