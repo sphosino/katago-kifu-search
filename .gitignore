@@ -8,5 +8,6 @@ packfile
 *.7z
 *.zip
 *.dll
+*.exe
 test/
 katago-kifu-search/
