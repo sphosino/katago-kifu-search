@@ -12,8 +12,11 @@
 #ifdef _debug
 dirname = "C:\\Users\\owner\\Desktop\\hsp\\棋譜"
 #else
-dirname = "棋譜"
+dirname = dir_exe + "/棋譜"
 #endif
+
+chdir dirname
+
 randomize
 
 screen 0, 640,580
@@ -63,10 +66,10 @@ chkbox "着手",mode
 newmod t, treebox
 newmod kifulist, my_listbox, 0,80 + 30 * 8,200,120
 newmod kifulist, my_listbox, 0,80 + 30 * 13,200,100: matchlist = stat
-	chdir dirname
-	dirlist files,"*.sgf"
+
+
+gosub*load_kifu_folder
 	
-	add_item kifulist, shuffle_notepad(files)
 gosub*loadsgf
 
 pretime = keyfpstime
@@ -320,7 +323,6 @@ pretime = keyfpstime
 	棋譜取得 dirname, 20 // katagoホームページから最新棋譜をダウンロード
 	notesel files
 
-	chdir dirname
 	dirlist files,"*.sgf"
 	add_item kifulist, files
 
@@ -329,6 +331,8 @@ pretime = keyfpstime
 	noteget s,0
 
 	topnode = change_sgf(s,t,board)
+
+	gosub*load_kifu_folder
 	
 	return
 
@@ -349,7 +353,14 @@ pretime = keyfpstime
 		treeview移動 -1
 	}
 	return
+*load_kifu_folder
+	chdir dirname
 
+	del_item_all kifulist
+	dirlist files,"*.sgf"
+	add_item kifulist, shuffle_notepad(files)
+
+	return
 #deffunc treeview移動 int d
 	get_treeview_node_size ns 
 	if (get_tree_direction() & 1){
