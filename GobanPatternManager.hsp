@@ -135,7 +135,7 @@
 
 	return
 
-//最終的に矩形リストと石情報リストからパターンを生成
+//矩形リストと石情報リストから基本パターンを生成
 #deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
 
     sdim patterns,,length2(rects), 3, 2

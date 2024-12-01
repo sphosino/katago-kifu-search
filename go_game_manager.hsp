@@ -26,13 +26,8 @@
 
 	//表示したいノードまでノードを着手する
 	for i, length(nodelist)-2, -1, -1
-		tmp = get_property_data(nodelist(i),"B")
-		if tmp = "": tmp = get_property_data(nodelist(i), "W")
-		if tmp != ""{
-			x = peek(tmp,0) - 'a'
-			y = peek(tmp,1) - 'a'
-			着手 board, x, y
-		}
+		tmp = get_property_coordinate_cash(nodelist(i),xy)
+		着手 board, xy, xy.1
 	next
 	
 	return

@@ -1,3 +1,5 @@
+#packopt name "KataGo棋譜検索"
+
 #include "go_game_manager.hsp"
 #include "開発完了/katago_sqr.hsp"
 #include "開発完了/keyfps.hsp"
@@ -7,8 +9,11 @@
 #include "shuffle_notepad.hsp"
 #include "hspext.as"
 
-dirname = "C:/Users/owner/Desktop/hsp/棋譜"
-
+#ifdef _debug
+dirname = "C:\\Users\\owner\\Desktop\\hsp\\棋譜"
+#else
+dirname = "棋譜"
+#endif
 randomize
 
 screen 0, 640,580
@@ -37,8 +42,6 @@ prenode = -1
 
 input tree_direction
 
-
-
 topnode = -1
 rn = 0
 dim rect, 4
@@ -59,7 +62,7 @@ pos 80,80+ 30
 chkbox "着手",mode
 newmod t, treebox
 newmod kifulist, my_listbox, 0,80 + 30 * 8,200,120
-newmod kifulist, my_listbox, 0,80 + 30 * 13,200,100:matchlist = stat
+newmod kifulist, my_listbox, 0,80 + 30 * 13,200,100: matchlist = stat
 	chdir dirname
 	dirlist files,"*.sgf"
 	
@@ -309,7 +312,7 @@ pretime = keyfpstime
 		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
 	loop
 
-	logmes "検索終了 -> " +(time+keyfpstime)
+	logmes "検索終了 -> " +(time+keyfpstime) + "ms  " + result_num + "件の検索結果"
 	return
 	
 *loadfile
@@ -328,8 +331,6 @@ pretime = keyfpstime
 	topnode = change_sgf(s,t,board)
 	
 	return
-
-
 
 *move_next
 	if nownode < 0: return

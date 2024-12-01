@@ -1,11 +1,20 @@
 #include "GobanPatternManager.hsp"
 #include "開発完了/sgf.hsp"
 #include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
+#include "開発完了/ringbuffer.hsp"
+#include "memorize_hit_rect.hsp"
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
+
+	dim vlist , 3, 16 //パターンリスト
+	data_num = (3 + 16 * 3)
+	init_ringbuffer data_num * 4, 1024
+	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
+
+	colorflip_num = 1 + colorflip
 	
 	最大の深さ = 50
 	if max_depth{
@@ -13,9 +22,8 @@
 	}
 	sdim result,,2
 	rn = 0
-
-	prexy = -1,-1
 	vlist(1) = 0
+	prexy = -1,-1
 	
 	//logmes "探索を開始します-> 石数 = " + stone_num
 	
@@ -44,26 +52,20 @@
 		if prexy != xy || prexy.1 != xy.1{
 			//新たなパターンを生成
 			make_rotated_patterns pattern, xy,xy.1 , rotated_p
+			clear_mem
 			prexy = xy,xy.1
+			
 		}
 		
 		//サーチメイン関数用の変数設定
-		colorflip_num = 1 + colorflip
 		r_pattern_num = 4 << (xy == xy.1)
 		all_pattern_num = r_pattern_num * colorflip_num
-		hnsize = all_pattern_num * 4
-		ln = 0
-		repeat r_pattern_num
-			for i,, colorflip_num
-				vlist(0,ln) = i, cnt
-				ln++
-			next
-		loop
-
+		
 		//検索実行
 		if search_main(topnode, rotated_p, match_node){
 			result(0,rn) = sgf //一致したSGFを結果に追加
 			result(1,rn) = str(match_node)
+			;logmes str(match_node)
 			rn++
 		}
 	loop
@@ -83,26 +85,32 @@
  return_value -> マッチしたかどうかの　1か0の値
 */
 
+	//キュー初期化
+	ln = 0
+	repeat r_pattern_num
+		for i,, colorflip_num
+			vlist(0,ln) = i, cnt, 0
+			ln++
+		next
+	loop
 
-	//探索スタック初期化
+	lpoke node_data, , 1               //現在の深さ
+	lpoke node_data,4, t               //
+	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
+	memcpy node_data, vlist  , 48 * 4, 3 * 4
+	r_push node_data
 
-	dim hit_num, colorflip_num, r_pattern_num
-	dim hit_count_stack, colorflip_num, r_pattern_num, 30
-	node_stack = t
-	depth_stack = 1
-	sn = 1
+	*next_node
+	while ringbuffer_count
 
-	while sn
-		sn--
+		r_shift node_data //キューからノードデータを復元
 
-		//以下ノードを取り出して処理。
-		depth = depth_stack(sn)
-
-		if depth > 最大の深さ{
-			_continue
-		}
+		//ノードデータ展開
+		depth = lpeek(node_data) : if depth > 最大の深さ: return 0
+		node = lpeek(node_data, 4)
+		ln = lpeek(node_data, 8)
+		memcpy vlist  , node_data, 48*4,, 3 * 4
 		
-		node = node_stack(sn)
 
 		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
 
@@ -111,87 +119,93 @@
 			x = coordinate
 			y = coordinate.1
 
-			memcpy hit_num, hit_count_stack,hnsize,,hnsize*sn
 
+			// デバッグ用ログ
+			;logmes "Turn: " + turn + ", x: " + x + ", y: " + y
+			;await 5
+			
 			for v,,ln
-				c_p = vlist(0,v)
+				*check_pattern_list
+			
 				r_p = vlist(1,v)
-				//パターン内の各矩形に対する処理
-				for j,, length(pattern)
-					split pattern(j,0,c_p,r_p),",", rect
-					
-					if out_of_rect(rect,x,y){
-						_continue
-					}
+				j = memorize_hit_rect(r_p, x, y, pattern)
+				if j == -1{
+					_continue
+				}
+
+				c_p = vlist(0,v)
+
+				//石情報を分離
+				split pattern(j,1,c_p,r_p),"-", stones
 	
-					//石情報を分離
-					split pattern(j,1,c_p,r_p),"-", stones
-		
-					match_failed = 1 //見つからなかったら探索失敗とするフラグ
+				match_failed = 1 //見つからなかったら探索失敗とするフラグ
+				
+				//矩形に含まれる石数だけ繰り返す
+				for i,,int(pattern(j,2,c_p,r_p))
+				
+					split stones(i), ":", tmp
+					p_x = int(tmp)
+					p_y = int(tmp.1)
+					p_color = int(tmp.2)
 					
-					//矩形に含まれる石数だけ繰り返す
-					for i,,int(pattern(j,2,c_p,r_p))
-					
-						split stones(i), ":", tmp
-						p_x = int(tmp)
-						p_y = int(tmp.1)
-						p_color = int(tmp.2)
-						
-						if (p_x == x): if(p_y == y){
-							//マッチしたらhitカウント加算
-							switch turn
-							case 1 //黒石
-								if p_color & PATTERN_BLACK{
-									hit_num(c_p,r_p)++
-									match_failed = 0
-								}
-							swbreak
-							case 2 //白石
-								if p_color & PATTERN_WHITE{
-									hit_num(c_p, r_p)++
-									match_failed = 0
-								}
-							swbreak
-							default
-								dialog "黒番でも白番でもないノード\nSGFに問題がある可能性があります",,__FILE__
-								end
-							swend
-							_break
-						}
-					next
-					if match_failed{
-						ln--
-						if ln == 0{
-							//有効なパターンがなくなった。　＝　検索失敗
-							return 0
-						}
-						vlist(0,v) = vlist(0,ln)
-						vlist(1,v) = vlist(1,ln)
+					if (p_x == x): if(p_y == y){
+						//マッチしたらhitカウント加算
+						switch turn
+						case 1 //黒石
+							if p_color & PATTERN_BLACK{
+								vlist(2,v)++
+								match_failed = 0
+							}
+						swbreak
+						case 2 //白石
+							if p_color & PATTERN_WHITE{
+								vlist(2,v)++
+								match_failed = 0
+							}
+						swbreak
+						default
+							dialog "黒番でも白番でもないノード\nSGFに問題がある可能性があります",,__FILE__
+							end
+						swend
 						_break
 					}
-					if hit_num(c_p, r_p) == stone_num{
-						result_node = node, depth //一致したSGFノードと手数を返す
-						return 1 //検索成功
-					}
 				next
+				if match_failed{
+					ln--
+					// デバッグ用ログ
+					;logmes "Match failed for v: " + v
+					;await 5
+					if v == ln{
+						//有効リストを全て探索した。
+						if ln == 0{
+							//有効なパターンがなくなった。　＝　検索失敗
+							goto *next_node
+						}
+						//まだ有効リストが残っているので、子ノードを積みに行く
+						_break
+					}
+					//末尾要素を今の位置に置き換えて再探索
+					vlist(0,v) = vlist(0,ln)
+					vlist(1,v) = vlist(1,ln)
+					vlist(2,v) = vlist(2,ln)
+					goto *check_pattern_list
+				}
+				if vlist(2,v) == stone_num{
+					result_node = node //一致したSGFノード
+					
+					return 1 //検索成功
+				}
 			next
 		}
 		
 		repeat get_SGF_childs(node, child)
-			node_stack(sn) = child(cnt)
-			hit_count_stack(0,0, sn) = 0//メモリ確保
-			memcpy hit_count_stack, hit_num, hnsize, sn * hnsize//纏めてコピー
-			depth_stack(sn) = depth + 1
-			sn++
+			lpoke node_data, , depth + 1
+			lpoke node_data,4, child(cnt)
+			lpoke node_data,8, ln
+			memcpy node_data, vlist, 48*4, 3 * 4
+			r_push node_data
 		loop
-		
 	wend
 	return 0
-
-#defcfunc out_of_rect array a, int _x, int _y
-	if int(a   ) > _x: return 1
-	if int(a(1)) > _y: return 1
-	if int(a(2)) < _x: return 1
-	return int(a(3)) < _y
-	
 #global
+

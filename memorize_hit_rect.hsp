@@ -1,0 +1,40 @@
+#module
+
+#const UNMEMORIZED -9999
+
+#defcfunc memorize_hit_rect int rotate_pattern, int x, int y, array pattern
+	if memory(rotate_pattern, x, y) == UNMEMORIZED{
+		memory(rotate_pattern, x, y) = -1
+		for j,, length(pattern)
+			split pattern(j, 0, 0, rotate_pattern),",", rect
+			if in_rect(rect, x, y){
+				memory(rotate_pattern, x, y) = j
+				_break
+			}
+		next
+	}
+	return memory(rotate_pattern, x, y)
+
+#defcfunc in_rect array a, int x, int y
+	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
+
+#deffunc init_mem
+	dim memory, 8, 99,99
+	dim minus, 8, 99, 99
+	for i,,99
+		for j,,99
+			for k,,8
+				minus(k,i,j) = UNMEMORIZED
+			next
+		next
+	next
+	minus_size = varsize(minus)
+	clear_mem
+	return
+#deffunc clear_mem
+	logmes "clear_mem called"
+	memcpy memory, minus, minus_size
+	return
+#global
+init_mem
+
