@@ -24,7 +24,7 @@ pos,80
 setfps 40
 
 now_y = ginfo_cy
-time = 1000
+auto_interval = 1000
 
 v = ""
 jidou = 0
@@ -32,7 +32,7 @@ jidou = 0
 
 pos , now_y
 chkbox "©“®Ä¶", jidou: chk_ID = stat
-pos 80, 80 :input time
+pos 80, 80 :input auto_interval
 pos 0, 80 + 30
 chkbox "’…è”Ô†", ’…è”Ô†•\¦
 
@@ -253,7 +253,7 @@ pretime = keyfpstime
 	}
 
 	//©“®Ä¶
-	if jidou & pretime + time <= keyfpstime{
+	if jidou & pretime + auto_interval <= keyfpstime{
 		
 		gosub *move_next
 	}
