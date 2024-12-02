@@ -11,7 +11,7 @@
 
 	dim vlist , 3, 16 //パターンリスト
 	data_num = (3 + 16 * 3)
-	init_ringbuffer data_num * 4, 1024
+	init_ringbuffer data_num * 4, 512
 	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
 
 	colorflip_num = 1 + colorflip
@@ -131,7 +131,7 @@
 
 
 				match_failed = 1 //見つからなかったら探索失敗とするフラグ
-				//石情報を分離
+
 
 				if i >= 0{
 					split pattern(j,1,vlist(0,v),r_p),"-", stones
@@ -143,8 +143,8 @@
 						}
 					}else: if turn == 2{
 						if PATTERN_WHITE & tmp.2{
-						vlist(2,v)++
-						match_failed = 0
+							vlist(2,v)++
+							match_failed = 0
 						}
 					}
 				}

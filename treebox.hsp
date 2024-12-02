@@ -38,6 +38,13 @@
 	root_tree_node = -1
 	onmouse_id = -1
 	return root_tree_node
+
+#modfunc make_tree_topnode
+	make_new_SGFnode -1
+	logmes "SGF"+stat
+	current_node = make_treenode (-1, stat)
+	logmes "tree"+current_node
+	return current_node
 	
 #modfunc load_from_SGF_topnode int SGF_topnode
 

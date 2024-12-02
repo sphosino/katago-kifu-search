@@ -110,9 +110,10 @@ pretime = keyfpstime
 				if get_root_tree_node(t) >= 0{
 					del_treenode(get_root_tree_node(t))
 				}
-				sdim v: rn = 0
+				sdim v
+				rn = 0
 
-				check_item kifulist.cnt,itemid, 1
+				check_item kifulist.cnt,itemid, 1 //アイテムにチェックを付ける
 				
 				items = get_listbox_item_list(kifulist.cnt)
 				notesel items
@@ -120,7 +121,7 @@ pretime = keyfpstime
 				noteunsel
 				topnode = change_sgf(s, t, board)
 				
-				logmes ""+itemid
+				
 				if get_listbox_item_data(kifulist.cnt,itemid){ //アイテムデータが設定されていたら、それは検索結果。
 					nstat = stat //検索結果のSGFノード
 					//それが格納されているツリーIDを探してカレントノードに設定
@@ -173,8 +174,17 @@ pretime = keyfpstime
 						
 						if stat{　//着手成功
 							dragging_flag = 0
+							
+							if nownode = -1{ //棋譜未選択状態なら
 
+								make_tree_topnode t
+								nownode = stat
+								
+							}
+							
 							now_sgfnode = get_tree_item_id(nownode)
+							logmes now_sgfnode
+							
 
 							//指定した座標のノードを作成、すでにあればそれを返す
 							new = make_SGFnode(now_sgfnode, point, get_turn_SGFstr(逆手番(get_turn(board))))
@@ -322,7 +332,8 @@ pretime = keyfpstime
 		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
 	loop
 
-	logmes "検索終了 -> " +(time+keyfpstime) + "ms  " + result_num + "件の検索結果"
+	logmes "検索終了 -> " +(time+keyfpstime) + "ms  " + result_num + "件の検索結果" + ccc@
+	ccc@=0
 	return
 	
 *loadfile
