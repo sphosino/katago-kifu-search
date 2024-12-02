@@ -111,6 +111,7 @@ dimtype listbox_items@global, 5
 		del_item_by_id thismod, cnt
 	loop
 	item_num = 0
+	scroll_top thismod
 	return
 	
 #modfunc set_scroll_index int p1
@@ -228,7 +229,15 @@ dimtype listbox_items@global, 5
 	
 	return i //アイテムの番号
 
-#modfunc check_item int p1
+#modfunc check_item int p1, int single_select
+	if single_select{
+		repeat item_num
+			//すべて選択解除
+			if get_selected_status(listbox_items(cnt)){
+				toggle_selected_status listbox_items(cnt)
+			}
+		loop
+	}
 	toggle_selected_status listbox_items(p1)
 	return
 

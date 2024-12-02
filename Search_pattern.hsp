@@ -119,64 +119,40 @@
 			x = coordinate
 			y = coordinate.1
 
-
-			// デバッグ用ログ
-			;logmes "Turn: " + turn + ", x: " + x + ", y: " + y
-			;await 5
 			
 			for v,,ln
 				*check_pattern_list
 			
 				r_p = vlist(1,v)
-				j = memorize_hit_rect(r_p, x, y, pattern)
+				j = memorize_hit_rect(r_p, x, y, pattern, i)　//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
 				if j == -1{
 					_continue
 				}
 
-				c_p = vlist(0,v)
 
-				//石情報を分離
-				split pattern(j,1,c_p,r_p),"-", stones
-	
 				match_failed = 1 //見つからなかったら探索失敗とするフラグ
-				
-				//矩形に含まれる石数だけ繰り返す
-				for i,,int(pattern(j,2,c_p,r_p))
-				
+				//石情報を分離
+
+				if i >= 0{
+					split pattern(j,1,vlist(0,v),r_p),"-", stones
 					split stones(i), ":", tmp
-					p_x = int(tmp)
-					p_y = int(tmp.1)
-					p_color = int(tmp.2)
-					
-					if (p_x == x): if(p_y == y){
-						//マッチしたらhitカウント加算
-						switch turn
-						case 1 //黒石
-							if p_color & PATTERN_BLACK{
-								vlist(2,v)++
-								match_failed = 0
-							}
-						swbreak
-						case 2 //白石
-							if p_color & PATTERN_WHITE{
-								vlist(2,v)++
-								match_failed = 0
-							}
-						swbreak
-						default
-							dialog "黒番でも白番でもないノード\nSGFに問題がある可能性があります",,__FILE__
-							end
-						swend
-						_break
+					if turn == 1{
+						if PATTERN_BLACK & tmp.2{
+							vlist(2,v)++
+							match_failed = 0
+						}
+					}else: if turn == 2{
+						if PATTERN_WHITE & tmp.2{
+						vlist(2,v)++
+						match_failed = 0
+						}
 					}
-				next
+				}
+				
 				if match_failed{
 					ln--
-					// デバッグ用ログ
-					;logmes "Match failed for v: " + v
-					;await 5
 					if v == ln{
-						//有効リストを全て探索した。
+						//有効パターンリストを全て探索した。
 						if ln == 0{
 							//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
 							goto *next_node
@@ -184,7 +160,7 @@
 						//まだ有効リストが残っているので、子ノードを積みに行く
 						_break
 					}
-					//末尾要素を今の位置に置き換えて再探索
+					//パターンリストの末尾要素を今の位置に置き換えて再探索
 					vlist(0,v) = vlist(0,ln)
 					vlist(1,v) = vlist(1,ln)
 					vlist(2,v) = vlist(2,ln)

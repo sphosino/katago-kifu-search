@@ -1,5 +1,4 @@
 #packopt name "KataGo棋譜検索"
-
 #include "go_game_manager.hsp"
 #include "開発完了/katago_sqr.hsp"
 #include "開発完了/keyfps.hsp"
@@ -108,14 +107,19 @@ pretime = keyfpstime
 		foreach kifulist
 			itemid = listbox_on_id(kifulist.cnt,mousex, mousey)
 			if itemid >= 0{	
-				if get_root_tree_node(t) >= 0: del_treenode(get_root_tree_node(t))
+				if get_root_tree_node(t) >= 0{
+					del_treenode(get_root_tree_node(t))
+				}
 				sdim v: rn = 0
+
+				check_item kifulist.cnt,itemid, 1
 				
 				items = get_listbox_item_list(kifulist.cnt)
 				notesel items
 				noteget s, itemid
 				noteunsel
 				topnode = change_sgf(s, t, board)
+				
 				logmes ""+itemid
 				if get_listbox_item_data(kifulist.cnt,itemid){ //アイテムデータが設定されていたら、それは検索結果。
 					nstat = stat //検索結果のSGFノード
@@ -215,15 +219,18 @@ pretime = keyfpstime
 	//マウスホイール
 	mw = mousew
 
+	in_kifulist == 0
 	foreach kifulist
-		if listbox_on_id(kifulist.cnt,mousex, mousey) = -1{
-			if mw < 0 : gosub*move_next
-			if mw > 0 : gosub*move_back
-		}else{
+		if listbox_on_id(kifulist.cnt,mousex, mousey) >= 0{
+			in_kifulist++
 			if mw < 0: move_scroll_index kifulist.cnt,1
 			if mw > 0: move_scroll_index kifulist.cnt,-1
 		}
 	loop
+	if in_kifulist = 0{
+		if mw < 0 : gosub*move_next
+		if mw > 0 : gosub*move_back
+	}
 
 	//キー操作
 	if _getkey(17) >= 1{ //CTRL
@@ -355,7 +362,6 @@ pretime = keyfpstime
 	return
 *load_kifu_folder
 	chdir dirname
-
 	del_item_all kifulist
 	dirlist files,"*.sgf"
 	add_item kifulist, shuffle_notepad(files)
@@ -369,4 +375,3 @@ pretime = keyfpstime
 		move_treeview_position   ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1) * d
 	}
 	return
-
