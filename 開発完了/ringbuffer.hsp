@@ -2,9 +2,9 @@
 #module ringbuffer
 
 #deffunc init_ringbuffer int _size, int _max_num
-	max_num = limit(_max_num,1)
-	size = limit(_size,64)
-	sdim data ,size, max_num
+	max_num = limit(_max_num, 1)
+	size = limit(_size, 64)
+	sdim data, size, max_num
 	reset_ringbuffer
 	return
 	
@@ -17,13 +17,14 @@
 #define plus1(%1) %1 = (%1 + 1) \ max_num
 
 #deffunc r_push var values
+	if count == max_num{
+		//キューが満タンなので拡張
+		resize
+	}
 	memcpy data(write_index), values, size
 	plus1 write_index
 	count++
-	if count == max_num{
-		//キューが満タンになったので拡張
-		resize
-	}
+
 	return
 
 #deffunc r_shift var values
@@ -37,7 +38,7 @@
 	return
 
 
-#deffunc resize
+#deffunc local resize
 	logmes "キューのリサイズが発生しました"
 	sdim tmp, size, max_num
 	repeat max_num
