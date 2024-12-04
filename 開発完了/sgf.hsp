@@ -1,6 +1,6 @@
 #ifndef SGF_NODE
 
-dimtype SGF_NODE@global, 5,1000
+dimtype SGF_NODE@global, 5
 
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, 候補手, 候補手の数, x, y, turn
 

@@ -267,8 +267,11 @@ init_hash_manager
 
 	new_namespace
 		new_value "T","hoyoyo"
-		new_namespace z
+		new_namespace z //’è‹`‚³‚ê‚½“_‚Ì‹óŠÔó‘Ô‚É‚È‚é
 			mes get_value("T")
 			mes get_value("Z")
 			mes get_value("C")
+			set_value "T","new"
+		break_namespace
+		mes get_value("T")
 #endif

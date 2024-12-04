@@ -18,7 +18,7 @@ chdir dirname
 
 randomize
 
-screen 0, 640,580
+screen 0, 700,580
 objsize 80,30
 pos,80
 setfps 40
@@ -42,17 +42,16 @@ tree_direction = 6
 
 prenode = -1
 
-input tree_direction
 
 topnode = -1
 rn = 0
 dim rect, 4
 dim rect_stack, 4
-newmod board, goban, 19,19,20,20,220,100
+newmod board, goban, 19,19,25,25,220,100
 
-pos 0 , 80 + 30 * 3:button gosub "最新棋譜を取得", *loadfile
-pos 80, 80 + 30 * 3:button gosub "SGFをコピー", *getsgf
-pos 0 , 80 + 30 * 4:button gosub "碁盤をクリア", *clearboard
+pos 0 , 80 + 30 * 3: button gosub "最新棋譜を取得", *loadfile
+pos 80, 80 + 30 * 3: button gosub "SGFをコピー", *getsgf
+pos 0 , 80 + 30 * 4: button gosub "碁盤をクリア", *clearboard
 max_depth = 50
 input max_depth
 now_y =ginfo_cy
@@ -159,13 +158,8 @@ pretime = keyfpstime
 
 					logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "　 + length(SGF_NODE@global)
 
-					set_current_node t, clicked_node //カレントノードをそのノードに移動して
-
-					logmes "setted current node"
-					
-					sync_treebox_board t, board //碁盤を同期
-
-					logmes "node_chanege_success"
+					set_current_node t, clicked_node 			
+					sync_treebox_board t, board 
 
 
 				}else{
@@ -271,7 +265,7 @@ pretime = keyfpstime
 
 		a = double(c_list) * 255
 		color a,a,a
-		boxf 0,80,640,ginfo(13)
+		boxf 0,80,700,ginfo(13)
 		碁盤表示 board , 着手番号表示
 		draw_set_list_on_board board, v
 		set_tree_direction tree_direction
@@ -302,7 +296,7 @@ pretime = keyfpstime
 
 *create_pattern
 	logmes "検索開始"
-	time = -keyfpstime
+	time = keyfpstime
 	initialize_rects v,r, stones
 	
 	repeat load_stones_from_board(board, n)
@@ -332,8 +326,8 @@ pretime = keyfpstime
 		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
 	loop
 
-	logmes "検索終了 -> " +(time+keyfpstime) + "ms  " + result_num + "件の検索結果" + ccc@
-	ccc@=0
+	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + result_num + "件の検索結果"
+	
 	return
 	
 *loadfile

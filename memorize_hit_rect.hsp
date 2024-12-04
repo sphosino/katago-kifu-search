@@ -1,3 +1,4 @@
+#ifndef memorize_hit_rect
 #module
 
 #const UNMEMORIZED -9999
@@ -30,7 +31,7 @@
 	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
 
 #deffunc init_mem
-	dim memory,2, 8, 99,99
+	dim memory,2, 8, 99, 99
 	dim minus,2, 8, 99, 99
 	for i,,99
 		for j,,99
@@ -48,4 +49,4 @@
 	return
 #global
 init_mem
-
+#endif
