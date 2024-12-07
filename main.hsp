@@ -18,9 +18,10 @@ chdir dirname
 
 randomize
 
-screen 0, 700,580
+screen 0, 720,580
 objsize 80,30
-pos,80
+header_size = 60
+pos,header_size
 setfps 40
 
 now_y = ginfo_cy
@@ -32,8 +33,8 @@ jidou = 0
 
 pos , now_y
 chkbox "自動再生", jidou: chk_ID = stat
-pos 80, 80 :input auto_interval
-pos 0, 80 + 30
+pos 80, header_size :input auto_interval
+pos 0, 60 + 30
 chkbox "着手番号", 着手番号表示
 
 
@@ -47,11 +48,11 @@ topnode = -1
 rn = 0
 dim rect, 4
 dim rect_stack, 4
-newmod board, goban, 19,19,25,25,220,100
+newmod board, goban, 19,19,26,26,220, 80
 
-pos 0 , 80 + 30 * 3: button gosub "最新棋譜を取得", *loadfile
-pos 80, 80 + 30 * 3: button gosub "SGFをコピー", *getsgf
-pos 0 , 80 + 30 * 4: button gosub "碁盤をクリア", *clearboard
+pos 0 , header_size + 30 * 3: button gosub "最新棋譜を取得", *loadfile
+pos 80, header_size + 30 * 3: button gosub "SGFをコピー", *getsgf
+pos 0 , header_size + 30 * 4: button gosub "碁盤をクリア", *clearboard
 max_depth = 50
 input max_depth
 now_y =ginfo_cy
@@ -59,12 +60,12 @@ pos   ,now_y:button gosub "検索", *create_pattern
 pos 80,now_y:
 enableColorFlip = 1
 chkbox "色反転も含める", enableColorFlip
-pos 80,80+ 30
+pos 80, header_size + 30
 chkbox "着手",mode
 newmod t, treebox
-newmod kifulist, my_listbox, 0,80 + 30 * 8,200,120
-newmod kifulist, my_listbox, 0,80 + 30 * 13,200,100: matchlist = stat
-
+newmod kifulist, my_listbox, 0,header_size + 30 * 8,200,120
+newmod kifulist, my_listbox, 0,header_size + 30 * 13,200,120: matchlist = stat
+set_listbox_item_ysize kifulist.matchlist, 20
 
 gosub*load_kifu_folder
 	
@@ -265,7 +266,7 @@ pretime = keyfpstime
 
 		a = double(c_list) * 255
 		color a,a,a
-		boxf 0,80,700,ginfo(13)
+		boxf 0, header_size , ginfo(12),ginfo(13)
 		碁盤表示 board , 着手番号表示
 		draw_set_list_on_board board, v
 		set_tree_direction tree_direction

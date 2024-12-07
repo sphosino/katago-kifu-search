@@ -73,7 +73,6 @@
 
 #defcfunc change_sgf str s1, var _treebox, var _board
 
-Å@Å@title s1
 	if get_value(s1) == NOT_DEFINED_HASH{
 		notesel sgf_data
 		noteload s1
@@ -95,6 +94,13 @@
 		
 		set_board_topnode _board, new_topnode
 	}
+
+	blackplayer = get_property_data(new_topnode, "PB")
+	split blackplayer,"-",bp
+	whiteplayer = get_property_data(new_topnode, "PW")
+	split whiteplayer,"-",wp
+
+	title" çï " + bp.1 + "  îí " + wp.1
 	
 	return new_topnode
 #global
