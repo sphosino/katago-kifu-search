@@ -20,7 +20,7 @@
 	#ifdef _debug
 		chdir "C:\\Users\\owner\\Desktop\\hsp\\ŠJ”­Š®—¹\\grid_system"
 	#else
-		chdir dir_exe + "grid_system"
+		chdir dir_exe
 	#endif
 	celload "numpic.bmp"
 	PIC_BUFFER = stat

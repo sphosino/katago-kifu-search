@@ -40,6 +40,8 @@
 	logmes "called save_label"
 	vsave_start
 	vsave_put areagrid@global
+	vsave_put save_rect
+	vsave_put load_rect
 	vsave_end varfile
 	return
 #deffunc save_load_manager_load
@@ -47,6 +49,8 @@
 	logmes "called load_label"
 	vload_start varfile
 	vload_get areagrid@global
+	vload_get save_rect
+	vload_get load_rect
 	vload_end
 	return
 #deffunc save_load_manager_init
