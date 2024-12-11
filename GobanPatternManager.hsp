@@ -2,7 +2,7 @@
 #ifndef GobanPatternManager
 
 #include "goban.hsp"
-#include "ŠJ”­Š®—¹/rotate_coordinate.hsp"
+#include "modules/rotate_coordinate.hsp"
 #module GobanPatternManager
 
 #const global PATTERN_NONE 1

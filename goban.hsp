@@ -1,7 +1,7 @@
 #ifndef goban
-#include "開発完了/coordinate_set.hsp"
-#include "開発完了/boxfa.hsp"
-#include "開発完了/grid_system/area_grid_system.hsp"
+#include "modules/coordinate_set.hsp"
+#include "modules/boxfa.hsp"
+#include "modules/grid_system/area_grid_system.hsp"
 
 #const global 空点 0
 #const global 黒番 1

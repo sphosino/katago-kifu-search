@@ -1,5 +1,5 @@
 #include "goban.hsp"
-#include "ŠJ”­Š®—¹/sgf.hsp"
+#include "modules/sgf.hsp"
 #include "treebox.hsp"
 #include "namespace_base.hsp"
 

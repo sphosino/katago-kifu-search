@@ -1,7 +1,7 @@
 #include "GobanPatternManager.hsp"
-#include "開発完了/sgf.hsp"
+#include "modules/sgf.hsp"
 #include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
-#include "開発完了/ringbuffer.hsp"
+#include "modules/ringbuffer.hsp"
 #include "memorize_hit_rect.hsp"
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip

@@ -8,7 +8,7 @@
 	repeat digit
 		n = peek(s,cnt) - '0'
 		pos rect(0) + (rect(2) - rect(0)) * (cnt*2 + 1) / (digit * 2), (rect(1) + rect(3)) / 2
-		gmode 3, x, y,128
+		gmode 3, x, y, 70 
 		grotate PIC_BUFFER, n * x, depth * y, , (rect(2) - rect(0)) / digit, rect(3) - rect(1)
 	loop
 
@@ -18,7 +18,7 @@
 	now_sel = ginfo_sel
 	now_dir = dir_cur
 	#ifdef _debug
-		chdir "C:\\Users\\owner\\Desktop\\hsp\\ŠJ”­Š®—¹\\grid_system"
+		chdir "C:\\Users\\owner\\Desktop\\hsp\\modules\\grid_system"
 	#else
 		chdir dir_exe
 	#endif
