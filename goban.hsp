@@ -1,19 +1,19 @@
 #ifndef goban
 #include "開発完了/coordinate_set.hsp"
 #include "開発完了/boxfa.hsp"
+#include "開発完了/grid_system/area_grid_system.hsp"
 
 #const global 空点 0
 #const global 黒番 1
 #const global 白番 2
 
-#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard
-#modinit int x, int y, int p1, int p2, int p3, int p4
+#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number
+#modinit int x, int y, int p1, int p2, int _area
 	dim board, x, y
 	clear_board thismod
 	masx = p1
 	masy = p2
-	px = p3
-	py = p4
+	area_number = _area
 	return
 #modfunc clear_board int x, int y
 	if x == 0{
@@ -171,6 +171,14 @@
 
 #modfunc 碁盤表示 int 碁石番号表示
 
+	thisrect thismod, r, area_number
+
+	px = r
+	py = r.1
+
+	masx = (r.2 - r) / length(board)
+	masy = (r.3 - r.1) / length2(board)
+
 	color $cd,$85,$3f
 	boxf px, py, px + length(board) * masx, py + length2(board) * masy
 	color
@@ -271,7 +279,18 @@
 		loop
 	loop
 	return
-
+//各モジュールで追加に必要なコードはこれだけ。コピペ推奨
+#modfunc local thisrect array mocklist, int area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
 #deffunc board_serch_init
 	sx = 1,0,-1,0
 	sy = 0,-1,0,1

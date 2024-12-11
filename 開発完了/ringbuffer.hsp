@@ -22,7 +22,9 @@
 		resize
 	}
 	memcpy data(write_index), values, size
+	
 	plus1 write_index
+	
 	count++
 
 	return
@@ -53,7 +55,6 @@
 	loop
 	
 	return
-
 
 #global
 init_ringbuffer

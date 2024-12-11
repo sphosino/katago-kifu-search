@@ -104,7 +104,7 @@ stop
 	for i,,2
 		count = 0
 		repeat s‰ñ”
-			count += monty(a,b,c,d, i)
+			count += montyhall(a,b,c,d, i)
 		loop
 		mes m.i + " “–‚½‚è‰ñ”¨" + count
 	next

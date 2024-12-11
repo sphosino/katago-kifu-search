@@ -1,0 +1,63 @@
+#ifndef save_load_manager
+#addition "../boxfa.hsp"
+#module
+#include "hspda.as"
+#define varfile "area.var"
+#deffunc save_load_manager
+	draw_rect save_rect
+	draw_rect load_rect
+	color 
+	font "",20
+	pos save_rect,save_rect.1: mes "save"
+	pos load_rect,load_rect.1: mes "load"
+	if _getkey(1) == 1{
+		if in_rect(save_rect): gosub*save
+		if in_rect(load_rect): gosub*load
+	}
+	if _getkey(2) == 1{
+		if in_rect(save_rect) || in_rect(load_rect){
+			dragging == 1
+			prepos = mousex,mousey
+		}
+	}
+	if _getkey(2) == -1{
+		dragging == 0
+	}
+	if dragging{
+		·•ª = mousex - prepos, mousey - prepos.1
+		prepos = mousex, mousey
+		repeat 4
+			save_rect.cnt += ·•ª(cnt\2)
+		loop
+		repeat 4
+			load_rect.cnt += ·•ª(cnt\2)
+		loop
+	}
+	return
+
+#deffunc save_load_manager_save
+*save
+	logmes "called save_label"
+	vsave_start
+	vsave_put areagrid@global
+	vsave_end varfile
+	return
+#deffunc save_load_manager_load
+*load
+	logmes "called load_label"
+	vload_start varfile
+	vload_get areagrid@global
+	vload_end
+	return
+#deffunc save_load_manager_init
+	save_rect = 30,30, 90, 60
+	load_rect = 30,70, 90, 100
+	return
+#deffunc draw_rect array a
+	boxfa a,a.1,a.2,a.3
+	return
+#defcfunc local in_rect array rect
+	return mousex >= rect && mousey >= rect.1 && mousex <=rect.2 && mousey <=rect.3
+#global
+save_load_manager_init
+#endif

@@ -1,0 +1,71 @@
+#include "area_grid_system.hsp"
+#include "../keyfps.hsp"
+#module grid_checkbox flag, string, area_number
+#modinit var v, str s, int _area
+	string = s
+	dup v,flag
+	area_number = _area
+	return
+
+#modfunc toggle_g_checkbox
+	flag^1
+	return
+
+#modfunc draw_g_chkbox
+
+	thisrect thismod, rect, area_number
+	color
+	boxf rect,rect.1,rect.2,rect.3
+	color 255,255,255
+	pos rect,rect.1: mes string
+
+	color 180,180,180
+	
+	checkrect = rect.2 - 15, rect.3 - 15, rect.2, rect.3
+	if _getkey(1) == 1{
+		if in_rect(checkrect): toggle_g_checkbox thismod
+	}
+	if flag: color 255,30,30
+	boxf checkrect,checkrect.1,checkrect.2,checkrect.3
+	return
+
+//各モジュールで【矩形エリア】モックを利用するためのコード。コピペ推奨
+#modfunc local thisrect array mocklist, int area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
+
+
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#global
+
+#if 0
+mock_flag@global = 1
+
+repeat 12
+set_rect_mock cnt, 0,0,0,0
+loop
+set_rect_mock 90, 0,0,60,30
+set_rect_mock 30, 60,60, 100,100
+
+newmod c, grid_checkbox, 0, "AA",30
+newmod c, grid_checkbox, 1, "BB",90
+
+
+*main
+	manage_keyfps
+	foreach c
+	draw_g_checkbox c(cnt)
+	loop
+	redraw:redraw 2
+	goto*main
+#endif

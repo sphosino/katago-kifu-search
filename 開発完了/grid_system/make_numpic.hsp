@@ -1,0 +1,29 @@
+#module
+#deffunc make_pic int size, int p1
+	screen 2
+	font "",size
+	mes 0
+	x = ginfo_mesx
+	y = ginfo_mesy
+	logmes "" + x + ","+ y
+	screen 2, x * 10, y * 7
+	font "",size
+	repeat 7
+		m = cnt
+		c = colors(cnt)
+		color c>>16&255,c>>8&255,c&255
+		repeat 10
+			pos cnt * x, m * y: mes cnt
+		loop
+	loop
+	bmpsave "numpic.bmp"
+	return
+
+#deffunc init_pic
+	colors = $00FF00,$FF0000,$0000FF, $000000, $FFFF00, $00FFFF, $FF00FF
+	return
+#global
+init_pic
+
+
+make_pic 300

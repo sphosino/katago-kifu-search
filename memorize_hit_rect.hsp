@@ -27,7 +27,7 @@
 	v = memory(1,rotate_pattern,x,y)
 	return memory(0,rotate_pattern, x, y)
 
-#defcfunc in_rect array a, int x, int y
+#defcfunc local in_rect array a, int x, int y
 	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
 
 #deffunc init_mem

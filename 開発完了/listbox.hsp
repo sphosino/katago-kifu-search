@@ -39,19 +39,19 @@ dimtype listbox_items@global, 5
 #global
 
 //-------------------------------------------------------------------------------------------------------
-
-#module my_listbox listbox_items, item_num, px, py, sx, sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
+#addition "grid_system/area_grid_system.hsp"
+#addition "boxfa.hsp"
+#module my_listbox listbox_items, item_num, area_number, px,py,sx,sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
 
 #const DEFAULT_ITEM_Y_SIZE 24
 #const DEFAULT_SCROLLBAR_X 8
 
 
-#modinit int p1, int p2, int p3, int p4
+#modinit int p1
 
-	px = p1
-	py = p2
-	sx = p3
-	sy = p4
+	area_number = p1
+
+	thisrect thismod, r, area_number
 
 	item_y = DEFAULT_ITEM_Y_SIZE
 	scrollbar_x = DEFAULT_SCROLLBAR_X
@@ -148,6 +148,12 @@ dimtype listbox_items@global, 5
 #modfunc my_listbox_draw
 
 	color 255,255,255
+
+	thisrect thismod, rect, area_number
+	px = rect
+	py = rect.1
+	sx = rect.2 - px
+	sy = rect.3 - py
 	boxf px, py, px + sx, py + sy
 
 	max_visible_items = sy / item_y
@@ -260,7 +266,18 @@ dimtype listbox_items@global, 5
 
 #modcfunc get_listbox_item_data int p1
 	return int(get_listbox_data(listbox_items(p1)))
-
+//各モジュールで追加に必要なコードはこれだけ。コピペ推奨
+#modfunc local thisrect array mocklist, int area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
 #global
 
 

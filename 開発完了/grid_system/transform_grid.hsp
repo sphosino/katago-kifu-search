@@ -1,0 +1,103 @@
+#module
+#deffunc transform array a, int x, int y
+
+	dim list, 2
+	ln = 0
+	repeat length2(a)
+		m = cnt
+		repeat length(a)
+			if a(cnt,m) != -1{
+				list(0, ln) = m * length(a) + cnt, a(cnt, m)
+				ln++
+			}
+		loop
+	loop
+
+	grid_dim a, x, y
+
+	repeat ln
+		
+		_x = list(0, cnt) \ x
+		_y = list(0, cnt) / x
+		d = list(1,cnt)
+		a(_x,_y) = d
+		
+	loop
+	return
+
+#deffunc array_mes array a, int px, int py
+
+	repeat length2(a)
+		m = cnt
+		repeat length(a)
+			pos px + cnt * 20, py + m * 20
+			mes  a(cnt,m)
+		loop
+	loop
+	return
+
+#deffunc grid_dim array a, int x, int y
+	dim a, x, y
+	repeat y
+		m = cnt
+		repeat x
+			a(cnt, m) = -1
+		loop
+	loop
+	return
+
+#deffunc clear_grid array a
+	repeat length2(a)
+		m = cnt
+		repeat length(a)
+			a(cnt, m) = -1
+		loop
+	loop
+	return
+	
+//grid‚©‚ç“Á’è‚Ì’l‚ğæ‚èo‚µA‚»‚ê‚ª‘¶İ‚·‚égridID‚ğ•Ô‚·
+#defcfunc serch_grid_id array a, int id
+	i = -1
+	repeat length2(a)
+		m = cnt
+		repeat length(a)
+			if a(cnt, m) = id{
+				i = m * length(a) + cnt
+			}
+		loop
+	loop
+	return i
+	
+#defcfunc rnd4byte int p1
+	s = ""
+	poke s,,rnd(256)
+	poke s,1,rnd(256)
+	poke s,2,rnd(256)
+	poke s,3,rnd(128 << (p1 != 0))
+	return lpeek(s)
+#global
+
+#if 0
+	randomize
+	
+	grid_dim a, 2,10
+	repeat length2(a)
+	m=cnt
+	repeat length(a)
+		a(cnt,m) =  rnd4byte() \ 100
+	loop
+	loop
+	
+	a(1,1) = -1
+	
+	array_mes a
+	
+	transform a, 6,6
+	
+	array_mes a, 200
+	
+	transform a, 9,3
+	
+	array_mes a, 400
+
+#endif

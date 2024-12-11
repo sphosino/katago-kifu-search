@@ -1,0 +1,31 @@
+//mock_readME
+//矩形モック運用コードの仕組み（このファイルは運用状態の説明です。動きません）
+
+
+//各モジュールで追加に必要なコードはこれだけ。コピペ推奨
+#modfunc local thisrect array mocklist, var area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
+	
+///////////////area_grid_system.hspの最後に追加してあるモックモジュール。(モックモード時の依存部分はここだけ）///////////////
+#module area_grid_system_mock
+//矩形モックを設定する関数
+#deffunc set_rect_mock int _area, int p1, int p2, int p3, int p4
+	mocklist(0, _area) = p1, p2, p3, p4
+	return
+#deffunc get_rect_mock array a
+	dup a, mocklist
+	return
+#global
+dim mocklist@area_grid_system_mock 4, 1000
+///////////////////////////////////////////////////////////////////
+
+mock_flag@global = 0 //これがモックモードフラグ。デフォルトは0 ->実運用モード

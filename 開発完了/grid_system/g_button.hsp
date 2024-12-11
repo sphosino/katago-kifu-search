@@ -1,0 +1,49 @@
+#include "area_grid_system.hsp"
+#module grid_button string, area, label, colors, bc, fc
+#modinit str s1, label l, int area_number
+	string = s1
+	label = l
+	area = area_number
+	colors = 0,1,2,3
+	return
+
+#modfunc draw_g_button
+	get_rect area, rect
+	if in_rect(rect){
+		bc = backcolors(colors(1))
+		fc = fontcolors(colors(1))
+		if _getkey(1) >= 1{
+			bc = backcolors(colors(2))
+			fc = fontcolors(colors(2))
+			if _getkey(1) == 1{
+				logmes "g_button clicked!!"
+				gosub label
+			}
+		}
+	}else{
+		bc = backcolors(colors(0))
+		fc = fontcolors(colors(0))
+	}
+	now_cx = ginfo_cx, ginfo_cy
+	pos rect, rect.1
+	setcolor bc: boxf rect,rect.1,rect.2,rect.3
+	setcolor fc: mes string
+	pos now_cx,now_cx.1
+	
+	return
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+
+#deffunc init_g_button_colorlist
+	backcolors = $00d49d,$fedf03,$e08e9f,$da85af,$f1eef7,$ae8fb1,$262626, $183883,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6
+	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9
+	return
+
+#deffunc local setcolor int p1
+	color p1>>16&255,p1>>8&255,p1&255
+	return
+
+#global
+init_g_button_colorlist
