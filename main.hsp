@@ -54,7 +54,7 @@ root = make_area(1,2)
 		sidebar_area = make_area(1,3)
 			sidebar_kifulist = make_area()
 			sidebar_kifulist_match = make_area()
-			sidebar_buttons = make_area(2,5)
+			sidebar_buttons = make_area(2,4)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
 				button_clearboard = make_area()
@@ -72,7 +72,6 @@ push_grid_child sidebar_area, sidebar_buttons
 push_grid_child sidebar_area, sidebar_kifulist
 push_grid_child sidebar_area, sidebar_kifulist_match
 
-logmes "start"
 push_grid_child sidebar_buttons, button_loadfile
 push_grid_child sidebar_buttons, button_getsgf
 push_grid_child sidebar_buttons, button_clearboard
@@ -104,8 +103,9 @@ enableColorFlip = 1
 newmod t, treebox
 newmod kifulist, my_listbox, sidebar_kifulist
 newmod kifulist, my_listbox, sidebar_kifulist_match: matchlist = stat
-set_listbox_item_ysize kifulist.matchlist, 20
-
+foreach kifulist
+	set_listbox_item_ysize kifulist.cnt, 20
+loop
 gosub*load_kifu_folder
 	
 gosub*loadsgf
@@ -308,7 +308,7 @@ pretime = keyfpstime
 		color a,a,a
 		boxf 0, header_size , ginfo_winx,ginfo_winy
 		
-		碁盤表示 board , 着手番号表示 //１３個目でエラーというか、メモリ上限かな？とおもったのですが。
+		碁盤表示 board , 着手番号表示
 		draw_set_list_on_board board, v
 		set_tree_direction tree_direction
 		treebox_draw t
@@ -324,8 +324,10 @@ pretime = keyfpstime
 
 		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
-		draw_all_rect root, debugmode
 		if getdbl_ms(17,200): debugmode^1
+		draw_all_rect root, debugmode
+		get_in_grid aa
+		title strf("%d,%d,%d",get_in_area(),aa,aa.1)
 	redraw: redraw 2
 
 	goto*main

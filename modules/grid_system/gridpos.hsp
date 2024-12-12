@@ -73,8 +73,13 @@
 	}
 	return index
 #deffunc grid_manager array x, array y, array grid_position, array margin, array draginfo
-	gidx = grid_id(x,margin  ,mousex - grid_position  )
-	gidy = grid_id(y,margin.1,mousey - grid_position.1)
+
+
+	gidx = grid_id(x, margin  , mousex - grid_position  )
+	gidy = grid_id(y, margin.1, mousey - grid_position.1)
+
+	draginfo(6) = gidx
+	draginfo(7) = gidy
 
 	dup catchx, draginfo(0)
 	dup catchy, draginfo(1)

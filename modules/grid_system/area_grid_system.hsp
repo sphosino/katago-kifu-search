@@ -24,6 +24,8 @@ dimtype areagrid@global, 5,100
 
 	mref thismod_ID, 2
 	set_grid_shape thismod_ID, 列数, 行数
+
+	dim draginfo,8
 	
 	return thismod_ID
 
@@ -98,6 +100,7 @@ dimtype areagrid@global, 5,100
 
 //親を設定する。親に子を設定する時の内部利用
 #deffunc local set_grid_parent int id, int pid
+	if id == -1: return
 	_set_grid_parent areagrid@global(id), pid
 	return
 #modfunc local _set_grid_parent int p1
@@ -107,6 +110,7 @@ dimtype areagrid@global, 5,100
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
+	
 //自身のレクトを取得
 #deffunc get_rect int p1, array rect
 	_get_rect areagrid@global(p1), -1, rect
@@ -151,30 +155,77 @@ dimtype areagrid@global, 5,100
 //自身以下のレクトを処理 + (デバッグ用の可視化)
 #deffunc draw_all_rect int p1, int debug_mode
 	aid = -1
+	g_area = -1 //つかまれたエリア
 	_draw_all_rect areagrid@global(p1), 0 , debug_mode
 	if debug_mode {
 		color 255
 		save_load_manager
+
+		if g_area != -1{
+			logmes strf("f%d",f_area)
+			logmes strf("%d,%d,%d,%d",g_area, grid_value, gird_gx, gird_gy)
+			if f_area != -1{
+					//すでに一つ目選択済み
+				add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
+				add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
+				f_area = -1
+				
+			}else{
+				f_area = g_area
+				first_value = grid_value
+				first_gx = grid_gx
+				first_gy = grid_gy
+			}
+		}
+		if f_area >= 0{
+			get_gird_rect_area areagrid@global(f_area), first_gx, first_gy, rect
+			circle rect,rect.1,rect.2,rect.3
+		}
 	}
 	return
+#modfunc get_gird_rect_area int x, int y, array resulta
+		_get_rect thismod, -1, t
+		get_grid_rect grid_x, grid_y, margin_x, margin_y, x, y, resulta
+		resulta += t
+		resulta.1 + =t.1
+		reuslta.2 + = t
+		resulta.3 += t.1
+	return
 #modfunc _draw_all_rect int depth, int debug_mode, local thismod_ID, local i, local result
-	mref thismod_ID, 2
-	
 
+	mref thismod_ID, 2	
 	get_rect thismod_ID, result
 
 	if debug_mode{ 
 		margin = margin_x, margin_y
+		//グリッド移動処理
+		
 		grid_manager grid_x, grid_y, result, margin, draginfo
+		if in_rect(result){
+			aid = thismod_ID
+			if aid == thismod_ID{
+				gx = draginfo(6)
+				gy = draginfo(7)
+				if _getkey(1) == 1{
+					g_area = aid
+					grid_gx = gx
+					grid_gy = gy
+					grid_value = grid(gx,gy)
+				}
+			}
+		}
+
+
+		
+		
 		//エリア描画
 		c = area_colors(depth \ length(area_colors))
 		color c >> 16 & 255, c >> 8 & 255, c & 255
 		centering_mes thismod_ID, depth, result
+		
 	}
 	
-	if in_rect(result){
-		aid = thismod_ID
-	}
+
 	repeat 行数
 		for i,, 列数
 			if grid(i, cnt) != -1{
@@ -206,11 +257,17 @@ dimtype areagrid@global, 5,100
 	
 #deffunc init_area_color_list
 	area_colors = $000000,$ffff00,$00FFFF,$0000ff,$FF00FF
+	f_area = -1
 	return
 #defcfunc get_in_area
 	return aid
+#deffunc get_in_grid array a
+	a = gx, gy
+	return
+	
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
 #global
 init_area_color_list
 
@@ -227,6 +284,7 @@ init_area_color_list
 	return
 #deffunc init_area_grid_system_mock
 	dim mocklist, 4, 1000
+	
 	return
 #global
 init_area_grid_system_mock
