@@ -1,3 +1,8 @@
+#ifndef listbox_item
+
+#include "area_grid_system.hsp"
+
+
 //アイテム構造体（ロジックは入れない）
 dimtype listbox_items@global, 5
 
@@ -6,11 +11,11 @@ dimtype listbox_items@global, 5
 #defcfunc make_listbox_item str s1
 	newmod listbox_items@global,listbox_item, s1
 	return stat
-#modinit str s1, local i
+#modinit str s1, local thismod_ID
 	data = 0
 	name = s1
-	mref i, 2 //thismodID
-	return i
+	mref thismod_ID, 2 //thismodID
+	return thismod_ID
 
 #define global ctype listbox_item_get_str(%1) _listbox_item_get_str(listbox_items@global(%1))
 #modcfunc _listbox_item_get_str
@@ -39,15 +44,14 @@ dimtype listbox_items@global, 5
 #global
 
 //-------------------------------------------------------------------------------------------------------
-#addition "grid_system/area_grid_system.hsp"
-#addition "boxfa.hsp"
-#module my_listbox listbox_items, item_num, area_number, px,py,sx,sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
+
+#module grid_listbox listbox_items, item_num, area_number, px,py,sx,sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
 
 #const DEFAULT_ITEM_Y_SIZE 24
 #const DEFAULT_SCROLLBAR_X 8
 
 
-#modinit int p1
+#modinit int p1, local thimod_ID
 
 	area_number = p1
 
@@ -116,7 +120,7 @@ dimtype listbox_items@global, 5
 	
 #modfunc set_scroll_index int p1
 	current_scroll_index = limit(p1, 0, limit(item_num - sy/item_y,0))
-	//logmes "" + p1 + ": "+current_scroll_index
+	logmes "" + p1 + ": "+current_scroll_index
 	return
 
 #modfunc move_scroll_index int p1
@@ -130,6 +134,8 @@ dimtype listbox_items@global, 5
 	return
 
 #modfunc scroll_end
+	thisrect thismod, r, area_number
+	sy = r.3-r.1
 	set_scroll_index thismod, item_num
 	
 	return
@@ -155,7 +161,6 @@ dimtype listbox_items@global, 5
 	sx = rect.2 - px
 	sy = rect.3 - py
 	boxf px, py, px + sx, py + sy
-
 	max_visible_items = sy / item_y
 
 	//アイテム描画
@@ -171,7 +176,6 @@ dimtype listbox_items@global, 5
 		pos px + 5, ypos
 		color 200,200,200
 		mes listbox_item_get_str(listbox_items(current_scroll_index + cnt))
-		
 	loop
 	
 	//スクロールバー描画
@@ -279,18 +283,20 @@ dimtype listbox_items@global, 5
 	}
 	return
 #global
+#endif
 
 
 #if 0
 
-#include "開発完了/keyfps.hsp"
-newmod a,my_listbox, 20,20, 200, 120
+#include "../keyfps.hsp"
+mock_flag@global = 1
+set_rect_mock 0, 100,100,200,300
 
+newmod a, grid_listbox, 0
 
-add_item a,"A\nB\nC\nD\nE\nF\nG\nH"
+add_item a,"A\nB\nC\nD\nE\nF\nG\nH\nI\nJ"
 
 scroll_end a
-
 set_listbox_scollbar_width a, 5
 
 repeat

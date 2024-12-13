@@ -10,7 +10,7 @@ screen 0, 730,580
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_button.hsp"
 #include "modules/grid_system/g_chkbox.hsp"
-#include "modules/listbox.hsp"
+#include "modules/grid_system/g_listbox.hsp"
 #include "hspext.as"
 
 #ifdef _debug
@@ -92,9 +92,10 @@ newmod g_buttons, grid_button, "Œé”Õ‚ğƒNƒŠƒA"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "ŒŸõ"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "’…è" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"F”½“]", chkbox_colorflip
+newmod kifulist, grid_listbox, sidebar_kifulist
+newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_area
-newmod kifulist, my_listbox, sidebar_kifulist
-newmod kifulist, my_listbox, sidebar_kifulist_match: matchlist = stat
+
 newmod t, treebox
 
 
