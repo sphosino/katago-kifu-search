@@ -5,7 +5,7 @@
 #include "centering_mes.hsp"
 #include "area_save_load_manager.hsp"
 
-dimtype areagrid@global, 5,100
+dimtype areagrid@global, 5
 
 #module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo
 
@@ -158,39 +158,66 @@ dimtype areagrid@global, 5,100
 	g_area = -1 //つかまれたエリア
 	_draw_all_rect areagrid@global(p1), 0 , debug_mode
 	if debug_mode {
-		color 255
-		save_load_manager
+		color 255: save_load_manager
 
 		if g_area != -1{
-			logmes strf("f%d",f_area)
-			logmes strf("%d,%d,%d,%d",g_area, grid_value, gird_gx, gird_gy)
-			if f_area != -1{
-					//すでに一つ目選択済み
-				add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
-				add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
-				f_area = -1
+			if f_area != -1{//すでに一つ目選択済み
+				logmes "スワップ要求が来ています->" + grid_value + "," + first_value 
+				if grid_value == -1 && first_value == -1: goto*swapend
+				if grid_value == -1 || first_value == -1{
+					if grid_value == -1{
+						empty_slot = g_area
+						target_slot = first_value
+					}else{
+						empty_slot = f_area
+						target_slot = grid_value
+					}
+					//エｍプティスロットの親系列にターゲットスロットがあったら無効
+					if is_valid_swap(empty_slot, Target_slot){
+
+						add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
+						add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
+						logmes "(empty <-> area ) swaped!!" + grid_value + "," + first_value
+					}else{
+						logmes "空スロットとその親系列のスワップは不可能です\n" + empty_slot + "(-1) <--> " + Target_slot
+					}
+					goto*swapend
+				}
 				
+				if is_valid_swap(first_value, grid_value) && is_valid_swap(grid_value, first_value){
+					add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
+					add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
+					logmes "(area <-> area) swaped!!" + grid_value + "," + first_value
+				}else{
+					//子情報も入れ替えたうえでスワップ（未実装）
+					logmes "親系列スワップ"
+				}
+				
+				*swapend
+				f_area = -1
 			}else{
 				f_area = g_area
 				first_value = grid_value
 				first_gx = grid_gx
 				first_gy = grid_gy
+				logmes strf("一つ目の情報 -> %d,%d,%d,%d",f_area,first_value,first_gx,first_gy)
 			}
 		}
 		if f_area >= 0{
-			get_gird_rect_area areagrid@global(f_area), first_gx, first_gy, rect
-			circle rect,rect.1,rect.2,rect.3
+			get_rect first_value, rect
+			circle rect,rect.1,rect.2,rect.3,0
 		}
 	}
 	return
-#modfunc get_gird_rect_area int x, int y, array resulta
-		_get_rect thismod, -1, t
-		get_grid_rect grid_x, grid_y, margin_x, margin_y, x, y, resulta
-		resulta += t
-		resulta.1 + =t.1
-		reuslta.2 + = t
-		resulta.3 += t.1
-	return
+
+#defcfunc is_valid_swap int empty, int target
+	return _is_valid_swap(areagrid@global(empty), target)
+#modcfunc _is_valid_swap int target, local thismod_ID
+	mref thismod_ID, 2
+	if thismod_ID == target: return 0
+	if parentid == -1: return 1
+	return is_valid_swap(parentid, target)
+	
 #modfunc _draw_all_rect int depth, int debug_mode, local thismod_ID, local i, local result
 
 	mref thismod_ID, 2	
@@ -199,33 +226,28 @@ dimtype areagrid@global, 5,100
 	if debug_mode{ 
 		margin = margin_x, margin_y
 		//グリッド移動処理
-		
 		grid_manager grid_x, grid_y, result, margin, draginfo
+		/*draginfoに処理した情報が入る
+		draginfo(0) -> 最後につかんだ場所x
+		draginfo(1) -> 最後につかんだ場所y
+		draginfo(2) -> マウス位置x
+		draginfo(3) -> マウス位置y
+		draginfo(4) -> xグリッドつかんでいるかflag
+		draginfo(5) -> yグリッドつかんでいるかflag
+		draginfo(6) -> つかんだ場所情報x （マイナスならグリッド、そうでなければエリア
+		draginfo(7) -> つかんだ場所情報y （マイナスならグリッド、そうでなければエリア
+		
+		*/
+
 		if in_rect(result){
 			aid = thismod_ID
-			if aid == thismod_ID{
-				gx = draginfo(6)
-				gy = draginfo(7)
-				if _getkey(1) == 1{
-					g_area = aid
-					grid_gx = gx
-					grid_gy = gy
-					grid_value = grid(gx,gy)
-				}
-			}
 		}
 
-
-		
-		
 		//エリア描画
-		c = area_colors(depth \ length(area_colors))
-		color c >> 16 & 255, c >> 8 & 255, c & 255
 		centering_mes thismod_ID, depth, result
 		
 	}
 	
-
 	repeat 行数
 		for i,, 列数
 			if grid(i, cnt) != -1{
@@ -233,7 +255,20 @@ dimtype areagrid@global, 5,100
 			}
 		next
 	loop
-
+	
+	if _getkey(1) == 1{
+		if aid = thismod_ID{
+			gx = draginfo(6)
+			gy = draginfo(7)
+			if gx >= 0 & gy >= 0{ //グリッドではなくエリア上にある
+				g_area = aid
+				grid_gx = gx
+				grid_gy = gy
+				grid_value = grid(gx,gy)
+				logmes strf("クリック情報 -> %d,%d,%d,%d",g_area,grid_value,grid_gx,grid_gy)
+			}
+		}
+	}
 	if debug_mode{
 		//グリッド描画
 		color 0,235,0
@@ -255,8 +290,7 @@ dimtype areagrid@global, 5,100
 	
 	return
 	
-#deffunc init_area_color_list
-	area_colors = $000000,$ffff00,$00FFFF,$0000ff,$FF00FF
+#deffunc init_grid_system
 	f_area = -1
 	return
 #defcfunc get_in_area
@@ -269,7 +303,7 @@ dimtype areagrid@global, 5,100
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
 #global
-init_area_color_list
+init_grid_system
 
 //////矩形モック
 #module area_grid_system_mock
@@ -299,14 +333,14 @@ d = make_area(2,2)
 e = make_area(2,2)
 f = make_area()
 g = make_area()
-h = make_area()
+h = make_area(2,2)
 
 add_grid_child root, c , 0,0
 add_grid_child c   , d , 1,0
 add_grid_child c   , e , 0,1
 push_grid_child e  , f
 push_grid_child e  , g
-push_grid_child e  , h
+push_grid_child root  , h
 
 
 screen 0,700,700

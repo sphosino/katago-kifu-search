@@ -125,7 +125,7 @@ pretime = keyfpstime
 			in_board = 1
 		}
 	}
-
+	if debugmode == 0{
 	//マウス操作
 	if _getkey(2) == 1{ //右クリック
 		if treebox_onmouseid(t) >= 0{
@@ -302,6 +302,7 @@ pretime = keyfpstime
 			split tmp," ", c_list
 		}
 	}
+	}
 
 
 		a = double(c_list) * 255
@@ -326,8 +327,7 @@ pretime = keyfpstime
 
 		if getdbl_ms(17,200): debugmode^1
 		draw_all_rect root, debugmode
-		get_in_grid aa
-		title strf("%d,%d,%d",get_in_area(),aa,aa.1)
+		
 	redraw: redraw 2
 
 	goto*main

@@ -8,7 +8,7 @@
 	repeat digit
 		n = peek(s,cnt) - '0'
 		pos rect(0) + (rect(2) - rect(0)) * (cnt*2 + 1) / (digit * 2), (rect(1) + rect(3)) / 2
-		gmode 3, x, y, 65 
+		gmode 3, x, y, 60 
 		grotate PIC_BUFFER, n * x, depth * y, , (rect(2) - rect(0)) / digit, rect(3) - rect(1)
 	loop
 

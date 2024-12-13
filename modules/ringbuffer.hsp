@@ -18,9 +18,10 @@
 
 #deffunc r_push var values
 	if count == max_num{
-		//ƒLƒ…[‚ª–ƒ^ƒ“‚È‚Ì‚ÅŠg’£
 		resize
 	}
+#deffunc r_push2 var values
+
 	memcpy data(write_index), values, size
 	
 	plus1 write_index

@@ -100,7 +100,7 @@
 	whiteplayer = get_property_data(new_topnode, "PW")
 	split whiteplayer,"-",wp
 
-	title" çï " + bp.1 + bp.2 + "  îí " + wp.1 + wp.2
+	title" çï " + bp.1 + bp.2 + "   îí " + wp.1 + wp.2
 	
 	return new_topnode
 #global

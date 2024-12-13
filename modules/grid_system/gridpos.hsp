@@ -59,27 +59,21 @@
 	a(index - 1) += moved_value
 	return moved_value
 
-#defcfunc grid_id array a, int margin, int position
+#defcfunc grid_id array a, int _margin, int position
 	start = 0
 	index = -99999
 	if position >= 0{
 		repeat length(a)
 			start += a(cnt)
-			if position < start: index = cnt: break
+			if position <= start: index = cnt: break
 			if cnt == length(a) - 1: break
-			start += margin
-			if position < start: index = -1 - cnt: break
+			start += _margin
+			if position <= start: index = -1 - cnt: break
 		loop
 	}
 	return index
+	
 #deffunc grid_manager array x, array y, array grid_position, array margin, array draginfo
-
-
-	gidx = grid_id(x, margin  , mousex - grid_position  )
-	gidy = grid_id(y, margin.1, mousey - grid_position.1)
-
-	draginfo(6) = gidx
-	draginfo(7) = gidy
 
 	dup catchx, draginfo(0)
 	dup catchy, draginfo(1)
@@ -87,7 +81,12 @@
 	dup prepos_y, draginfo(3)
 	dup dragging_x, draginfo(4)
 	dup dragging_y, draginfo(5)
-
+	dup gidx, draginfo(6)
+	dup gidy, draginfo(7)
+	
+	gidx = grid_id(x, margin  , mousex - grid_position  )
+	gidy = grid_id(y, margin.1, mousey - grid_position.1)
+	
 	if _getkey(1) == 1{
 		if gidx < 0 && gidx != -99999 && grid_position(1) <= mousey && grid_position(3)  >= mousey{
 			catchx = abs(gidx)
