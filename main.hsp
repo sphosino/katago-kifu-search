@@ -60,6 +60,7 @@ root = make_area(1,2)
 				button_clearboard = make_area()
 				button_search = make_area()
 				chkbox_tyakusyu = make_area()
+				chkbox_colorflip = make_area()
 		
 //親子関係構築
 push_grid_child root , header_area
@@ -77,32 +78,37 @@ push_grid_child sidebar_buttons, button_getsgf
 push_grid_child sidebar_buttons, button_clearboard
 push_grid_child sidebar_buttons, button_search
 push_grid_child sidebar_buttons, chkbox_tyakusyu
-
-//実体作成
-newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
-newmod g_buttons, grid_button, "SGFをコピー"   , *getsgf  , button_getsgf
-newmod g_buttons, grid_button, "碁盤をクリア"  , *clearboard, button_clearboard
-newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
-
-newmod g_chkbox, grid_checkbox, mode, "着手"       , chkbox_tyakusyu
+push_grid_child sidebar_buttons, chkbox_colorflip
 
 exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
 }
 
+//実体作成
+newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
+newmod g_buttons, grid_button, "SGFコピー"   , *getsgf  , button_getsgf
+newmod g_buttons, grid_button, "碁盤をクリア"  , *clearboard, button_clearboard
+newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
+newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
+newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
+newmod board, goban, 19,19,26,26, goban_area
+newmod kifulist, my_listbox, sidebar_kifulist
+newmod kifulist, my_listbox, sidebar_kifulist_match: matchlist = stat
+newmod t, treebox
+
+
+//矩形範囲指定用
 rn = 0
 dim rect, 4
 dim rect_stack, 4
-newmod board, goban, 19,19,26,26,goban_area
 
+//探索の深さ
 max_depth = 50
-now_y =ginfo_cy
-pos 80,now_y:
+
+//色反転を含めるか
 enableColorFlip = 1
-newmod t, treebox
-newmod kifulist, my_listbox, sidebar_kifulist
-newmod kifulist, my_listbox, sidebar_kifulist_match: matchlist = stat
+
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 20
 loop

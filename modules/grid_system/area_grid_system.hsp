@@ -156,10 +156,11 @@ dimtype areagrid@global, 5
 #deffunc draw_all_rect int p1, int debug_mode
 	aid = -1
 	g_area = -1 //つかまれたエリア
-	_draw_all_rect areagrid@global(p1), 0 , debug_mode
+	
 	if debug_mode {
+		_draw_all_rect areagrid@global(p1), 0 , debug_mode
 		color 255: save_load_manager
-
+		if stat: return
 		if g_area != -1{
 			if f_area != -1{//すでに一つ目選択済み
 				logmes "スワップ要求が来ています->" + grid_value + "," + first_value 
@@ -204,12 +205,26 @@ dimtype areagrid@global, 5
 			}
 		}
 		if f_area >= 0{
-			get_rect first_value, rect
-			circle rect,rect.1,rect.2,rect.3,0
+			if first_value == -1{
+				dim selected_rect
+				get_rect f_area, selected_rect
+				get_grid_area areagrid@global(f_area), first_gx, first_gy, selected_rect
+			}else{
+				get_rect first_value, selected_rect
+			}
+			circle selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 0
 		}
 	}
 	return
 
+#modfunc get_grid_area int x, int y, array rect
+	get_grid_rect grid_x, grid_y, margin_x, margin_y, x, y, _rect
+	rect(2) = rect(0) + _rect(2)
+	rect(3) = rect(1) + _rect(3)
+	rect(0) = rect(0) + _rect(0) + padding_x
+	rect(1) = rect(1) + _rect(1) + padding_y
+	return
+	
 #defcfunc is_valid_swap int empty, int target
 	return _is_valid_swap(areagrid@global(empty), target)
 #modcfunc _is_valid_swap int target, local thismod_ID
@@ -292,6 +307,7 @@ dimtype areagrid@global, 5
 	
 #deffunc init_grid_system
 	f_area = -1
+	selected_rect = -1,-1,-1,-1
 	return
 #defcfunc get_in_area
 	return aid
@@ -318,12 +334,27 @@ init_grid_system
 	return
 #deffunc init_area_grid_system_mock
 	dim mocklist, 4, 1000
-	
 	return
 #global
 init_area_grid_system_mock
 ////////////
-
+/*/各モジュールで【矩形エリア】モックを利用する際のコード。コピペ推奨
+#modfunc local thisrect array mocklist, int area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
+*/
+	//★★モジュール内で使用する方法★★//
+/*　
+	thisrect thismod, 矩形情報を受け取る配列変数, エリア番号
+*/
 #endif
 
 #if 0

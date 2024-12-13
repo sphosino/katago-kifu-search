@@ -4,6 +4,7 @@
 #include "hspda.as"
 #define varfile "area.var"
 #deffunc save_load_manager
+	save_load_clicked = 0
 	draw_rect save_rect
 	draw_rect load_rect
 	color 
@@ -33,7 +34,7 @@
 			load_rect.cnt += ·•ª(cnt\2)
 		loop
 	}
-	return
+	return save_load_clicked
 
 #deffunc save_load_manager_save
 *save
@@ -43,6 +44,7 @@
 	vsave_put save_rect
 	vsave_put load_rect
 	vsave_end varfile
+	save_load_clicked = 1
 	return
 #deffunc save_load_manager_load
 *load
@@ -52,6 +54,7 @@
 	vload_get save_rect
 	vload_get load_rect
 	vload_end
+	save_load_clicked = 1
 	return
 #deffunc save_load_manager_init
 	save_rect = 30,30, 90, 60
