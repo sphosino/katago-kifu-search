@@ -8,6 +8,7 @@
 	logmes "" + x + ","+ y
 	screen 2, x * 10, y * 7
 	font "",size
+	color 255,255,255:boxf
 	repeat 7
 		m = cnt
 		c = colors(cnt)
@@ -20,7 +21,7 @@
 	return
 
 #deffunc init_pic
-	colors = $00FF00,$FF0000,$0000FF, $000000, $FFFF00, $00FFFF, $FF00FF
+	colors = $00FF00,$FF0000,$0000FF, $000001, $FFFF00, $00FFFF, $FF00FF
 	return
 #global
 init_pic

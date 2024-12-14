@@ -9,5 +9,6 @@ packfile
 *.zip
 *.dll
 *.exe
+*.ico
 test/
 katago-kifu-search/

@@ -4,11 +4,10 @@
 	//表示領域にコピー
 	s = str(p1)
 	digit = strlen(s)
-
 	repeat digit
 		n = peek(s,cnt) - '0'
 		pos rect(0) + (rect(2) - rect(0)) * (cnt*2 + 1) / (digit * 2), (rect(1) + rect(3)) / 2
-		gmode 3, x, y, 60 
+		gmode 3, x, y, 50 
 		grotate PIC_BUFFER, n * x, depth * y, , (rect(2) - rect(0)) / digit, rect(3) - rect(1)
 	loop
 
@@ -26,8 +25,7 @@
 	PIC_BUFFER = stat
 	gsel PIC_BUFFER
 	x = ginfo_sx / 10
-	y = ginfo_sy / 7 
-	
+	y = ginfo_sy / 7
 	chdir now_dir
 	gsel now_sel
 	return

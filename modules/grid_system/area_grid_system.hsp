@@ -212,7 +212,8 @@ dimtype areagrid@global, 5
 			}else{
 				get_rect first_value, selected_rect
 			}
-			circle selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 0
+			color
+			boxfl selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 2
 		}
 	}
 	return

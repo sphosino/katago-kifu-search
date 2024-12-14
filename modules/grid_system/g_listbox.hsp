@@ -290,7 +290,7 @@ dimtype listbox_items@global, 5
 
 #include "../keyfps.hsp"
 mock_flag@global = 1
-set_rect_mock 0, 100,100,200,300
+set_rect_mock 0, 100,100,300,200
 
 newmod a, grid_listbox, 0
 
@@ -317,10 +317,12 @@ repeat
 
 	title""+listbox_on_id(a,mousex,mousey) +"--"+ s
 	
-	if _getkey(1) == 1{
-		if listbox_on_id(a,mousex,mousey) >= 0{
+	if _getkey(1) >= 1{
+
+		if _getkey(1) == 1 && listbox_on_id(a,mousex,mousey) >= 0{
 			check_item a,stat
 		}
+		
 
 		if listbox_on_id(a,mousex,mousey) == -3{
 			set_current_scroll_index_by_bar_position a,mousey
