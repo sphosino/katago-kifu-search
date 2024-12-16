@@ -11,6 +11,7 @@ screen 0, 730,580
 #include "modules/grid_system/g_button.hsp"
 #include "modules/grid_system/g_chkbox.hsp"
 #include "modules/grid_system/g_listbox.hsp"
+#include "modules/grid_system/g_slider.hsp"
 #include "hspext.as"
 
 #ifdef _debug
@@ -23,20 +24,16 @@ chdir dirname
 
 randomize
 
-
-objsize 80,30
 header_size = 60
 pos,header_size
 setfps 40
 
-now_y = ginfo_cy
 auto_interval = 1000
 
-v = ""
+v = "" //矩形選択用
+
 jidou = 0
 着手番号表示 = 0
-
-
 
 set_treeview 50,50
 tree_direction = 6
@@ -61,6 +58,8 @@ root = make_area(1,2)
 				button_search = make_area()
 				chkbox_tyakusyu = make_area()
 				chkbox_colorflip = make_area()
+				chkbox_autoplay = make_area()
+				slider = make_area()
 		
 //親子関係構築
 push_grid_child root , header_area
@@ -79,19 +78,23 @@ push_grid_child sidebar_buttons, button_clearboard
 push_grid_child sidebar_buttons, button_search
 push_grid_child sidebar_buttons, chkbox_tyakusyu
 push_grid_child sidebar_buttons, chkbox_colorflip
+push_grid_child sidebar_buttons, chkbox_autoplay
+push_grid_child sidebar_buttons, slider
 
 exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
 }
-
+alpha@ = 50
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGFコピー"   , *getsgf  , button_getsgf
-newmod g_buttons, grid_button, "碁盤をクリア"  , *clearboard, button_clearboard
+newmod g_buttons, grid_button, "碁盤クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
+newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
+newmod g_slider, grid_slider, alpha@, slider, 0, 255
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_area
@@ -329,11 +332,14 @@ pretime = keyfpstime
 		foreach g_buttons
 			draw_g_button g_buttons.cnt
 		loop
-
+		foreach g_slider
+			slider_manager g_slider.cnt
+		loop
 		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
 		if getdbl_ms(17,200): debugmode^1
 		draw_all_rect root, debugmode
+		title""+alpha@
 		
 	redraw: redraw 2
 

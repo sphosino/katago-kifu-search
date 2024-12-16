@@ -1,0 +1,162 @@
+#include "../keyfps.hsp"
+#include "area_grid_system.hsp"
+#module grid_slider v, min, max, horizontal, x, y, center_x, center_y,tickness,長さ,dragging, area, r, pre_value
+#modinit var a, int _horizontal, int area_number, int _min, int _max, local thismod_ID
+	dup v, a
+	
+	horizontal = _horizontal
+	area = area_number
+	min = _min
+	max = _max
+	
+	set_position_g_slider thismod, 0, 0
+	set_size_g_slider thismod, 100, 6, 8
+
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modfunc set_position_g_slider int _x, int _y
+	x = _x
+	y = _y
+	calc_position_g_slider thismod
+	return
+
+#modfunc set_size_g_slider int _sizex, int _sizey, int _sizer
+	長さ = _sizex
+	tickness = _sizey
+	r = _sizer
+	calc_position_g_slider thismod
+	return
+
+#modfunc calc_position_g_slider
+	if max == min{
+		center_x = (x + x + 長さ) / 2
+	}else{
+		center_x = limit(x + r + (長さ - 2 * r) * (v - min) / (max - min), limit(x+r,,x+長さ-r), limit(x+r,x+長さ-r))
+	}
+	center_y = (y + y + tickness ) / 2
+	calc_v_position_g_slider thismod
+	return
+
+#modfunc calc_v_position_g_slider
+	可動範囲 = (長さ - r * 2)
+	if 可動範囲 > 0{
+		v = limit(min + (mx - (rect + r)) * (max - min) / 可動範囲, limit(max,,min), limit(max,min))
+	}
+	pre_value = v
+	return
+
+#modcfunc get_value_g_slider
+	return v
+
+#modfunc slider_manager
+
+	thisrect thismod, oya,area
+	mx = mousex -oya
+	my = mousey -oya.1
+	rect = x, y, x + 長さ,  y + tickness
+	cx = center_x
+	cy = center_y
+	
+	tumami = cx - r, cy - r, cx + r, cy + r
+	
+	if horizontal == 0{
+		swap mx,my
+	}
+	if _getkey(1) == 1{
+		if in_rect(rect): dragging = 1
+	}
+	
+	if horizontal == 0{
+		swap rect  ,rect.1
+		swap rect.2,rect.3
+		swap tumami  ,tumami.1
+		swap tumami.2,tumami.3
+	}
+	
+	if dragging{
+		center_x = limit(mx, rect + r, rect + 長さ - r)
+		
+		calc_v_position_g_slider thismod
+
+	}
+
+	if pre_value != v{
+		calc_position_g_slider thismod
+	}
+
+	if _getkey(1) == -1{
+		dragging = 0
+	}
+	
+	color
+	boxf oya + rect, oya.1 + rect.1, oya + rect.2, oya.1 + rect.3
+	color 255
+	circle oya + tumami, oya.1 + tumami.1, oya + tumami.2, oya.1 + tumami.3
+
+	pre_value = v
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mx && a(1) <= my && a(2) >= mx && a(3) >= my
+
+#deffunc swap var a, var b
+	tmp = a
+	a = b
+	b = tmp
+	return
+	
+//各モジュールで【矩形エリア】モックを利用するためのコード。コピペ推奨
+#modfunc local thisrect array mocklist, int area_number_mock
+	if mock_flag@global{
+		get_rect_mock mockrect //モックから矩形取得
+		mocklist(0) = mockrect(0,area_number_mock)
+		mocklist(1) = mockrect(1,area_number_mock)
+		mocklist(2) = mockrect(2,area_number_mock)
+		mocklist(3) = mockrect(3,area_number_mock) 
+	}else{
+		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
+	}
+	return
+#global
+
+
+#if 0 //テストコード
+
+mock_flag@global = 1
+
+set_rect_mock 88,200,200,300,300
+set_rect_mock 77,100,100,200,200
+set_rect_mock 99, 50, 50, 300, 300 // モック矩形設定（垂直スライダー用）
+set_rect_mock 66, 100, 100, 400, 150 // モック矩形設定（水平スライダー用）
+set_rect_mock 55, 300, 300, 300, 200
+
+
+vertical = 130     : newmod a, grid_slider, vertical   , 0, 77, 200, -100
+vertical2 = 50     : newmod a, grid_slider, vertical2  , 0, 99, 100, 0 
+horizontals = 0    : newmod a, grid_slider, horizontals, 1, 66, 100, 200
+horizontal = 10000 : newmod a, grid_slider, horizontal , 1, 88, 500, 3000
+vertical3 = 60     : newmod a, grid_slider, vertical3, 0, 55, 0, 100: set_size_g_slider a(stat), 0, 6, 8 //長さなしにしてみた。動かない(仕様）
+
+//メインループ
+repeat
+	redraw:redraw 2
+	manage_keyfps ;FPS調整と、_getkey()サポート
+	
+	color 255,255,255:boxf:color
+	pos 200,300
+	foreach a
+		slider_manager a.cnt
+		mes get_value_g_slider( a.cnt )
+	loop
+	
+	//連動チェック
+	
+	if _getkey(2) == 1{ //右クリック
+		horizontal = rnd( 2500) + 500  //値を直接書き換えてつまみが移動するか？
+	}
+loop
+
+#endif
+
+//現状のコードです。これでいい？

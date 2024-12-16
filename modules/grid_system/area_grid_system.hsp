@@ -19,8 +19,8 @@ dimtype areagrid@global, 5
 	parentid = -1
 	padding_x = 6
 	padding_y = 6
-	margin_x = 6
-	margin_y = 6
+	margin_x = 5
+	margin_y = 5
 
 	mref thismod_ID, 2
 	set_grid_shape thismod_ID, —ñ”, s”
@@ -213,7 +213,7 @@ dimtype areagrid@global, 5
 				get_rect first_value, selected_rect
 			}
 			color
-			boxfl selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 2
+			boxfl selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 3
 		}
 	}
 	return
