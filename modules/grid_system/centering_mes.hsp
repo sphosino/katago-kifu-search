@@ -28,6 +28,8 @@
 	y = ginfo_sy / 7
 	chdir now_dir
 	gsel now_sel
+
+	alpha@ = 30
 	return
 #global
 numpic_init

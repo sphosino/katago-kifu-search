@@ -1,5 +1,5 @@
 #include "area_grid_system.hsp"
-#module grid_button string, area, label, colors, bc, fc, x, y, sx, sy, fit
+#module grid_button string, area, label, colors, bc, fc, fit, ps
 
 #modinit str s1, label l, int area_number
 	string = s1
@@ -7,32 +7,24 @@
 	area = area_number
 	colors = 0,1,2,3
 
-	set_fitmode thismod, 1
+	set_fitmode_g_button thismod, 1
 	return
-
-#modfunc set_fitmode int _mode
+	
+#modfunc set_fitmode_g_button int _mode
 	fit = _mode
 	return
 #modfunc set_position_g_button int _x, int _y
-	x = _x
-	y = _y
+	ps = _x, _y
 	return
 #modfunc set_size_g_button int _sizex, int _sizey
-	sx = _sizex
-	sy = _sizey
+	ps(2) = _sizex, _sizey
 	return
+	
 #modfunc draw_g_button
 
 	thisrect thismod, oya, area
-	if fit{
-		rect = oya,oya.1,oya.2,oya.3
-	}else{
-		rect(0) = limit(oya   + x     , oya  , oya.2)
-		rect(1) = limit(oya.1 + y     , oya.1, oya.3)
-		rect(2) = limit(oya   + x + sx, oya  , oya.2)
-		rect(3) = limit(oya.1 + y + sy, oya.1, oya.3)
-	}
-	
+	get_rect_by_fitmode fit, oya, ps, rect
+
 	if in_rect(rect){
 		bc = backcolors(colors(1))
 		fc = fontcolors(colors(1))

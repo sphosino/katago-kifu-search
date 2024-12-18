@@ -81,6 +81,7 @@ push_grid_child sidebar_buttons, chkbox_colorflip
 push_grid_child sidebar_buttons, chkbox_autoplay
 push_grid_child sidebar_buttons, slider
 
+
 exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
@@ -94,7 +95,7 @@ newmod g_buttons, grid_button, "ŒŸõ"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "’…è" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"F”½“]", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"©“®Ä¶",chkbox_autoplay
-newmod g_slider, grid_slider, alpha@, slider, 0, 255
+newmod g_slider, grid_slider, alpha@,1, slider,0, 255
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_area

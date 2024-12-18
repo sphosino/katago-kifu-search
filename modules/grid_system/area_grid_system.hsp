@@ -338,8 +338,21 @@ init_grid_system
 	return
 #global
 init_area_grid_system_mock
+
+#module
+#deffunc get_rect_by_fitmode int fit, array oya, array ps, array rect
+	if fit{
+		rect = oya,oya.1,oya.2,oya.3
+	}else{
+		rect(0) = limit(oya   + ps         , oya  , oya.2)
+		rect(1) = limit(oya.1 + ps.1       , oya.1, oya.3)
+		rect(2) = limit(oya   + ps   + ps.2, oya  , oya.2)
+		rect(3) = limit(oya.1 + ps.1 + ps.3, oya.1, oya.3)
+	}
+	return
+#global
 ////////////
-/*/各モジュールで【矩形エリア】モックを利用する際のコード。コピペ推奨
+/*/グリッドシステムを利用する各モジュールで【矩形エリア】モックを利用する際のコード。コピペ推奨
 #modfunc local thisrect array mocklist, int area_number_mock
 	if mock_flag@global{
 		get_rect_mock mockrect //モックから矩形取得

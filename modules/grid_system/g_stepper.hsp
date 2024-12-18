@@ -1,34 +1,48 @@
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
-#module grid_checkbox flag, string, area_number, fit, ps
-#modinit var v, str s, int _area
-	string = s
-	dup v,flag
+#module grid_stepper area_number, v, fit, ps
+#modinit var value, int _area
+	dup v, value
 	area_number = _area
-	fit = 1
+	
+	set_fitmode_g_stepper thismod, 1
 	return
 
-#modfunc toggle_g_checkbox
-	flag^1
+
+#modfunc set_fitmode_g_stepper int _mode
+	fit = _mode
 	return
+#modfunc set_position_g_stepper int _x, int _y
+	ps = _x, _y
+	return
+#modfunc set_size_g_stepper int _sizex, int _sizey
+	ps(2) = _sizex, _sizey
+	return
+	
+#modfunc draw_g_stepper
 
-#modfunc draw_g_chkbox
-
-	thisrect thismod, rect, area_number
+	thisrect thismod, oya, area_number
+	get_rect_by_fitmode fit, oya, ps, rect
 	
 	color
 	boxf rect,rect.1,rect.2,rect.3
 	color 255,255,255
-	pos rect,rect.1: mes string
+	pos rect,rect.1: mes v
 
 	color 180,180,180
-	
-	checkrect = rect.2 - 15, rect.3 - 15, rect.2, rect.3
+
+
+	half_y = (rect.3 - rect.1) / 2
+	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
+	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
 	if _getkey(1) == 1{
-		if in_rect(checkrect): toggle_g_checkbox thismod
+		if in_rect(uprect): v++
+		if in_rect(downrect): v--
+		v = limit(v,0)
 	}
-	if flag: color 255,30,30
-	boxf checkrect,checkrect.1,checkrect.2,checkrect.3
+	color 255,30,30
+	aboxfl uprect, 1
+	aboxfl downrect, 1
 	return
 
 //各モジュールで【矩形エリア】モックを利用するためのコード。コピペ推奨
@@ -45,28 +59,24 @@
 	return
 
 
-
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 #global
 
-#if 0
+#if 1
 mock_flag@global = 1
 
-repeat 12
-set_rect_mock cnt, 0,0,0,0
-loop
+
 set_rect_mock 90, 0,0,60,30
 set_rect_mock 30, 60,60, 100,100
 
-newmod c, grid_checkbox, a, "AA",30
-newmod c, grid_checkbox, b, "BB",90
+newmod c, grid_stepper, a, 90
 
 
 *main
 	manage_keyfps
 	foreach c
-	draw_g_chkbox c(cnt)
+	draw_g_stepper c(cnt)
 	loop
 	redraw:redraw 2
 	goto*main

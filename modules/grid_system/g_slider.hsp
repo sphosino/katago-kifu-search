@@ -134,8 +134,8 @@ set_rect_mock 55, 300, 300, 300, 200
 
 vertical = 130     : newmod a, grid_slider, vertical   , 0, 77, 200, -100
 vertical2 = 50     : newmod a, grid_slider, vertical2  , 0, 99, 100, 0 
-horizontals = 0    : newmod a, grid_slider, horizontals, 1, 66, 100, 200
-horizontal = 10000 : newmod a, grid_slider, horizontal , 1, 88, 500, 3000
+horizontal2 = 0    : newmod a, grid_slider, horizontal2, 1, 66, 100, 200
+horizontal = 10000 : newmod a, grid_slider, horizontal , 1, 88, 500, 3000: set_position_g_slider a(stat), 200,50
 vertical3 = 60     : newmod a, grid_slider, vertical3, 0, 55, 0, 100: set_size_g_slider a(stat), 0, 6, 8 //長さなしにしてみた。動かない(仕様）
 
 //メインループ
@@ -155,8 +155,7 @@ repeat
 	if _getkey(2) == 1{ //右クリック
 		horizontal = rnd( 2500) + 500  //値を直接書き換えてつまみが移動するか？
 	}
+	title ""+mousex+","+mousey
 loop
 
 #endif
-
-//現状のコードです。これでいい？
