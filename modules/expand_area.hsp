@@ -1,9 +1,21 @@
+
+
+
+#module
+#deffunc move_rect array rect1, array rect2, int ease_type, int flame, int easemax, array result
+	repeat length(rect2)
+		setease rect1(cnt\length(rect1))  , rect2(cnt)  , ease_type
+		result(cnt) = getease(flame, easemax)	; イージング値の取得(整数)
+	loop
+	return
+#global
+
 rect1 = 100,100,110,110
-rect2 = rect1 - 10,rect1.1-10,rect1.2 + 10,rect1.3+ 10
+rect2 = 200,200, 450,400
 
 	flame = 20
 	
-	easetype =  ease_loop
+	easetype =  ease_quad_out
 	i=0
 	repeat
 		redraw 0
@@ -16,13 +28,3 @@ rect2 = rect1 - 10,rect1.1-10,rect1.2 + 10,rect1.3+ 10
 		await 16
 		i=i+1
 	loop
-
-
-#module
-#deffunc move_rect array rect1, array rect2, array ease_type, int flame, int easemax, array result
-	repeat length(rect2)
-		setease rect1(cnt\length(rect1))  , rect2(cnt)  , ease_type(cnt\length(ease_type))
-		result(cnt) = getease(flame, easemax)	; イージング値の取得(整数)
-	loop
-	return
-#global

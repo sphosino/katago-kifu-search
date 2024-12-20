@@ -1,28 +1,15 @@
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
-#module grid_stepper area_number, v, fit, ps
-#modinit var value, int _area
+#module grid_stepper area_number, v
 	dup v, value
 	area_number = _area
 	
-	set_fitmode_g_stepper thismod, 1
 	return
 
-
-#modfunc set_fitmode_g_stepper int _mode
-	fit = _mode
-	return
-#modfunc set_position_g_stepper int _x, int _y
-	ps = _x, _y
-	return
-#modfunc set_size_g_stepper int _sizex, int _sizey
-	ps(2) = _sizex, _sizey
-	return
 	
 #modfunc draw_g_stepper
 
-	thisrect thismod, oya, area_number
-	get_rect_by_fitmode fit, oya, ps, rect
+	thisrect thismod, rect, area_number
 	
 	color
 	boxf rect,rect.1,rect.2,rect.3

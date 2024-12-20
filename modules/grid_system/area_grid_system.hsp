@@ -7,12 +7,14 @@
 
 dimtype areagrid@global, 5
 
-#module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo
+#module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo, childlist,cn
 
 #defcfunc make_area int x, int y
 	newmod areagrid@global, area, x, y
 	return stat
 #modinit int x, int y, local thismod_ID
+	mref thismod_ID, 2
+	
 	列数 = limit(x,1) ;(x)
 	行数 = limit(y,1) ;(y)
 
@@ -21,11 +23,11 @@ dimtype areagrid@global, 5
 	padding_y = 6
 	margin_x = 5
 	margin_y = 5
-
-	mref thismod_ID, 2
+	
 	set_grid_shape thismod_ID, 列数, 行数
 
-	dim draginfo,8
+	dim draginfo, 8
+	
 	
 	return thismod_ID
 
@@ -37,6 +39,7 @@ dimtype areagrid@global, 5
 	grid(x, y) = child_id
 	mref thismod_ID,2
 	set_grid_parent child_id, thismod_ID
+	
 	return
 
 #modcfunc get_open_grid array open_number, local i
@@ -119,18 +122,19 @@ dimtype areagrid@global, 5
 
 	//親レクト取得
 	if parentid == -1{
-		//親がなければルートエリアということで、画面全体とする。
+		//親がなければルートエリアということで、親は画面全体とする。
 		rect = padding_x,　padding_y,　ginfo_sx - padding_x,　ginfo_sy - padding_y
 	}else{
-
+		//親がいれば、親のエリアを取得
 		mref thismod_ID, 2
 		_get_rect areagrid@global(parentid), thismod_ID, rect
 	}
-	
+
+	//親レクトに合わせてグリッドをスケーリング
 	scale_grid grid_x , margin_x, rect(2) - rect(0)
 	scale_grid grid_y , margin_y, rect(3) - rect(1)
 
-	//子IDが指定されてれば探して、そのレクトを返す
+	//子IDが指定されてれば探して、そのレクトに変更
 	if child_id >= 0{
 		find = 0
 		repeat 行数
@@ -151,6 +155,8 @@ dimtype areagrid@global, 5
 		}
 	}
 	return
+	
+//現状のコードはスケーリングは取得時に行っていますが、　エリアマネージャを導入した場合どこで行いますか？
 
 //自身以下のレクトを処理 + (デバッグ用の可視化)
 #deffunc draw_all_rect int p1, int debug_mode
@@ -339,18 +345,6 @@ init_grid_system
 #global
 init_area_grid_system_mock
 
-#module
-#deffunc get_rect_by_fitmode int fit, array oya, array ps, array rect
-	if fit{
-		rect = oya,oya.1,oya.2,oya.3
-	}else{
-		rect(0) = limit(oya   + ps         , oya  , oya.2)
-		rect(1) = limit(oya.1 + ps.1       , oya.1, oya.3)
-		rect(2) = limit(oya   + ps   + ps.2, oya  , oya.2)
-		rect(3) = limit(oya.1 + ps.1 + ps.3, oya.1, oya.3)
-	}
-	return
-#global
 ////////////
 /*/グリッドシステムを利用する各モジュールで【矩形エリア】モックを利用する際のコード。コピペ推奨
 #modfunc local thisrect array mocklist, int area_number_mock

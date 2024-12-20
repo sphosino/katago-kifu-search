@@ -1,11 +1,10 @@
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
-#module grid_checkbox flag, string, area_number, fit, ps
+#module grid_checkbox flag, string, area_number
 #modinit var v, str s, int _area
 	string = s
 	dup v,flag
 	area_number = _area
-	fit = 1
 	return
 
 #modfunc toggle_g_checkbox

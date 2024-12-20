@@ -1,29 +1,19 @@
 #include "area_grid_system.hsp"
-#module grid_button string, area, label, colors, bc, fc, fit, ps
+#module grid_button string, area, label, colors, bc, fc
 
-#modinit str s1, label l, int area_number
+#modinit str s1, label l, int area_number, local thismod_ID
 	string = s1
 	label = l
 	area = area_number
 	colors = 0,1,2,3
 
-	set_fitmode_g_button thismod, 1
-	return
+	mref thismod_ID, 2
+	return thismod_ID
 	
-#modfunc set_fitmode_g_button int _mode
-	fit = _mode
-	return
-#modfunc set_position_g_button int _x, int _y
-	ps = _x, _y
-	return
-#modfunc set_size_g_button int _sizex, int _sizey
-	ps(2) = _sizex, _sizey
-	return
 	
 #modfunc draw_g_button
 
-	thisrect thismod, oya, area
-	get_rect_by_fitmode fit, oya, ps, rect
+	thisrect thismod, rect, area
 
 	if in_rect(rect){
 		bc = backcolors(colors(1))
