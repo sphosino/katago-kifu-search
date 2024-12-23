@@ -1,6 +1,38 @@
 #packopt name "KataGoŠû•ˆŒŸõ"
 #packopt icon "original.ico"
-screen 0, 730,580
+
+#define window_file_name "window.txt"
+exist window_file_name
+if strsize == -1{
+	x = 1140
+	y = 855
+}else{
+	notesel s
+	noteload window_file_name
+	noteget x,0
+	noteget y,1
+	x = int(x)
+	y = int(y)
+	noteunsel
+}
+screen 0, x, y,,(ginfo(20)-x)/2,(ginfo(21) - y)/2
+onexit *save_window_size
+if 0{ *save_window_size
+	notesel s
+	noteadd str(ginfo_sx),0, 1
+	noteadd str(ginfo_sy),1, 1
+	noteadd str(ginfo(4)),2,1
+	noteadd str(ginfo(5)),3,1
+
+#ifdef _debug
+dirname = "C:\\Users\\owner\\Desktop\\hsp"
+#else
+dirname = dir_exe
+#endif
+	notesave window_file_name
+	end
+}
+
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/keyfps.hsp"
@@ -12,6 +44,7 @@ screen 0, 730,580
 #include "modules/grid_system/g_chkbox.hsp"
 #include "modules/grid_system/g_listbox.hsp"
 #include "modules/grid_system/g_slider.hsp"
+#include "modules/grid_system/g_stepper.hsp"
 #include "hspext.as"
 
 #ifdef _debug
@@ -51,7 +84,7 @@ root = make_area(1,2)
 		sidebar_area = make_area(1,3)
 			sidebar_kifulist = make_area()
 			sidebar_kifulist_match = make_area()
-			sidebar_buttons = make_area(2,4)
+			sidebar_buttons = make_area(2,5)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
 				button_clearboard = make_area()
@@ -108,7 +141,7 @@ rn = 0
 dim rect, 4
 dim rect_stack, 4
 
-//’Tõ‚Ì[‚³
+//’Tõ‚ÌÅ‘å[‚³
 max_depth = 50
 
 //F”½“]‚ğŠÜ‚ß‚é‚©
@@ -342,10 +375,28 @@ pretime = keyfpstime
 
 		if getdbl_ms(17,200): debugmode ^ 1
 		draw_all_rect root, debugmode
-		
-	redraw: redraw 2
 
+		//–ˆƒtƒŒ[ƒ€‚PŠû•ˆ“Ç‚İ‚Ş
+			f = get_name_all_items(kifulist)
+			notesel f
+				repeat notemax, nextindex
+					noteget sgf_file_name, cnt
+					if sgf_file_name == "":break
+					if get_value(sgf_file_name) == NOT_DEFINED_HASH{
+						notesel sgf
+							logmes "AA"+ sgf_file_name
+							noteload sgf_file_name
+							new_value sgf_file_name, str(load_sgf(sgf, -1))
+							nextindex = cnt + 1
+						noteunsel
+						break
+					}
+				loop
+			noteunsel
+	redraw
+	redraw 2
 	goto*main
+	
 *save_area
 	return
 *clearboard
@@ -440,7 +491,7 @@ pretime = keyfpstime
 	del_item_all kifulist
 	dirlist files,"*.sgf"
 	add_item kifulist, shuffle_notepad(files)
-
+	nextindex = 0
 	return
 #deffunc treeviewˆÚ“® int ddd
 	get_treeview_node_size ns 

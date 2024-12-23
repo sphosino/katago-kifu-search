@@ -49,7 +49,7 @@
 #deffunc get_board_size_from_SGF int SGF_topnode, array a
 
 	size = get_property_data(SGF_topnode, "SZ")
-	if stat = 0{
+	if size == ""{
 		logmes "SGFにボードサイズが設定されていません"
 		a = 19,19
 	}else{

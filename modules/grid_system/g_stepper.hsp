@@ -1,6 +1,8 @@
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
 #module grid_stepper area_number, v
+
+#modinit array value, int _area
 	dup v, value
 	area_number = _area
 	
@@ -50,7 +52,7 @@
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 #global
 
-#if 1
+#if 0
 mock_flag@global = 1
 
 
@@ -58,7 +60,7 @@ set_rect_mock 90, 0,0,60,30
 set_rect_mock 30, 60,60, 100,100
 
 newmod c, grid_stepper, a, 90
-
+newmod c, grid_stepper, v, 30
 
 *main
 	manage_keyfps

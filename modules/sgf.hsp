@@ -41,7 +41,7 @@ dimtype SGF_NODE@global, 5
 #modcfunc _get_property_data str s1
 	tmp = ""
 	repeat ’…èî•ñ‚Ì”
-		if ’…èî•ñ(0, cnt) = s1{
+		if ’…èî•ñ(0, cnt) == s1{
 			tmp = ’…èî•ñ(1, cnt)
 			break
 		}
