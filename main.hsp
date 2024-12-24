@@ -25,9 +25,9 @@ if 0{ *save_window_size
 	noteadd str(ginfo(5)),3,1
 
 #ifdef _debug
-dirname = "C:\\Users\\owner\\Desktop\\hsp"
+	dirname = "C:\\Users\\owner\\Desktop\\hsp"
 #else
-dirname = dir_exe
+	dirname = dir_exe
 #endif
 	notesave window_file_name
 	end
@@ -48,9 +48,9 @@ dirname = dir_exe
 #include "hspext.as"
 
 #ifdef _debug
-dirname = "C:\\Users\\owner\\Desktop\\hsp\\Šû•ˆ"
+	dirname = "C:\\Users\\owner\\Desktop\\hsp\\Šû•ˆ"
 #else
-dirname = dir_exe + "/Šû•ˆ"
+	dirname = dir_exe + "/Šû•ˆ"
 #endif
 
 chdir dirname
