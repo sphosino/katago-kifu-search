@@ -377,22 +377,22 @@ pretime = keyfpstime
 		draw_all_rect root, debugmode
 
 		//毎フレーム１棋譜読み込む
-			f = get_name_all_items(kifulist)
-			notesel f
-				repeat notemax, nextindex
-					noteget sgf_file_name, cnt
-					if sgf_file_name == "":break
-					if get_value(sgf_file_name) == NOT_DEFINED_HASH{
-						notesel sgf
-							logmes "AA"+ sgf_file_name
-							noteload sgf_file_name
-							new_value sgf_file_name, str(load_sgf(sgf, -1))
-							nextindex = cnt + 1
-						noteunsel
-						break
-					}
-				loop
-			noteunsel
+		filelist = get_name_all_items(kifulist)
+		notesel filelist
+			repeat notemax
+				noteget sgf_file_name, nextindex
+				nextindex++
+				if sgf_file_name == "": break
+				if get_value(sgf_file_name) == NOT_DEFINED_HASH{
+					notesel sgf
+						noteload sgf_file_name
+						logmes "loaded sgf ->"+ sgf_file_name
+						new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
+					noteunsel
+					break
+				}
+			loop
+		noteunsel
 	redraw
 	redraw 2
 	goto*main
@@ -438,13 +438,16 @@ pretime = keyfpstime
 		search_result_sgflist += search_result(0, cnt) + "\n"
 	loop
 
+	sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
+
 	//logmes search_result_sgflist
 
 	del_item_all kifulist.matchlist
 	add_item kifulist.matchlist, search_result_sgflist
 	
 	repeat result_num
-		add_item_data kifulist.matchlist, cnt, search_result(1,cnt)
+		sortget n,cnt
+		add_item_data kifulist.matchlist, cnt, search_result(1,n)
 	loop
 
 	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + result_num + "件の検索結果"
