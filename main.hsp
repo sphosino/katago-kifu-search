@@ -438,7 +438,7 @@ pretime = keyfpstime
 		search_result_sgflist += search_result(0, cnt) + "\n"
 	loop
 
-	sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
+	if search_result_sgflist != "": sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
 
 	//logmes search_result_sgflist
 
