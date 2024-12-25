@@ -230,7 +230,8 @@ pretime = keyfpstime
 	
 			if mode = 0{//‹éŒ`•`‰æƒ‚[ƒh
 				if in_board{
-					rect = point,point.1,point,point.1
+					rect = limit(point,0,18),limit(point.1,0,18)
+					rect(2) = rect, rect.1
 				}else{
 					rect = -1
 				}
