@@ -413,6 +413,11 @@ pretime = keyfpstime
 	clipget s, varsize(s)
 	if load_sgf(s,-1) < 0: return
 	topnode = load_sgf_set_board(t, stat, board)
+	
+	blackplayer = get_property_data(topnode, "PB")
+	whiteplayer = get_property_data(topnode, "PW")
+
+	title" • " + blackplayer + "   ”’ " + whiteplayer
 	return
 
 *create_pattern
