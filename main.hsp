@@ -258,6 +258,7 @@ pretime = keyfpstime
 
 								make_tree_topnode t
 								nownode = stat
+								topnode = nownode
 								
 							}
 							
@@ -404,10 +405,13 @@ pretime = keyfpstime
 	clear_board board
 	treebox_clear t
 	topnode = stat
+	title ""
 	return
 *getsgf
-	get_node_sgf topnode, a
-	clipset a
+	if topnode >= 0{
+		get_node_sgf topnode, a
+		clipset a
+	}
 	return
 *loadsgf
 	sdim s, $FFFF
@@ -452,7 +456,7 @@ pretime = keyfpstime
 	add_item kifulist.matchlist, search_result_sgflist
 	
 	repeat result_num
-		sortget n,cnt
+		sortget n, cnt
 		add_item_data kifulist.matchlist, cnt, search_result(1,n)
 	loop
 
