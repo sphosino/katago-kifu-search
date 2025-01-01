@@ -71,8 +71,6 @@ jidou = 0
 set_treeview 50,50
 tree_direction = 6
 
-prenode = -1
-
 
 topnode = -1
 
@@ -133,7 +131,7 @@ exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
 }
-alpha@ = 50
+
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGFコピー"   , *getsgf  , button_getsgf
@@ -356,14 +354,6 @@ pretime = keyfpstime
 			gosub *move_next
 		}
 		
-		if prenode != nownode{
-			prenode = nownode
-			if nownode >= 0{
-				sync_treebox_board t, board
-				tmp = get_property_data(get_tree_item_id(nownode), "C")
-				split tmp," ", c_list
-			}
-		}
 	}
 	
 	a = double(c_list) * 255
@@ -414,18 +404,18 @@ pretime = keyfpstime
 	redraw 2
 	goto*main
 	
-*save_area
-	return
 *go10
 	repeat 10
 		gosub*move_next
 	loop
 	return
+	
 *back10
 	repeat 10
 		gosub *move_back
 	loop
 	return
+	
 *clearboard
 	clear_board board
 	treebox_clear t
@@ -513,7 +503,7 @@ pretime = keyfpstime
 	set_current_node t, get_tree_root_child(nownode)
 	if stat: treeview移動 1
 	pretime = keyfpstime
-	nownode = get_current_node(t)
+	gosub*syncboard
 	return
 	
 *move_back
@@ -523,8 +513,16 @@ pretime = keyfpstime
 		pretime = keyfpstime
 		treeview移動 -1
 	}
-	nownode = get_current_node(t)
+	gosub*syncboard
 	return
+	
+*syncboard
+	nownode = get_current_node(t)
+	sync_treebox_board t, board
+	tmp = get_property_data(get_tree_item_id(nownode), "C")
+	split tmp," ", c_list
+	return
+	
 *load_kifu_folder
 	chdir dirname
 	del_item_all kifulist
@@ -532,6 +530,7 @@ pretime = keyfpstime
 	add_item kifulist, shuffle_notepad(files)
 	nextindex = 0
 	return
+	
 #deffunc treeview移動 int ddd
 	get_treeview_node_size ns 
 	if (get_tree_direction() & 1){
