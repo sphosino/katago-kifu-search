@@ -21,8 +21,8 @@ if 0{ *save_window_size
 	notesel s
 	noteadd str(ginfo_sx),0, 1
 	noteadd str(ginfo_sy),1, 1
-	noteadd str(ginfo(4)),2,1
-	noteadd str(ginfo(5)),3,1
+	noteadd str(ginfo(4)),2, 1
+	noteadd str(ginfo(5)),3, 1
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\hsp"
@@ -93,6 +93,7 @@ root = make_area(1,2)
 			sidebar_buttons = make_area(2,4)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
+				button_getsgf_nowpoint = make_area()
 				
 				button_search = make_area()
 				
@@ -108,6 +109,7 @@ push_grid_child root , body_area
 		push_grid_child sidebar_area, sidebar_buttons
 			push_grid_child sidebar_buttons, button_loadfile
 			push_grid_child sidebar_buttons, button_getsgf
+			push_grid_child sidebar_buttons, button_getsgf_nowpoint
 			push_grid_child sidebar_buttons, button_search
 			push_grid_child sidebar_buttons, chkbox_colorflip
 			
@@ -134,7 +136,8 @@ if strsize >= 0{
 
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
-newmod g_buttons, grid_button, "SGFコピー"   , *getsgf  , button_getsgf
+newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
+newmod g_buttons, grid_button, "SGF取得(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "碁盤クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
@@ -427,6 +430,10 @@ pretime = keyfpstime
 		get_node_sgf topnode, a
 		clipset a
 	}
+	return
+*getsgf_nowpoint
+	get_node_sgf_nowpoint get_tree_item_id(nownode), a
+	clipset a
 	return
 *loadsgf
 	sdim s, $FFFF

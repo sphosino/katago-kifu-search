@@ -13,18 +13,15 @@
 rect1 = 100,100,110,110
 rect2 = 200,200, 450,400
 
-	flame = 20
+	flame = 100
 	
-	easetype =  ease_quad_out
-	i=0
 	repeat
 		redraw 0
 		color 0,0,0:boxf	; ‰æ–Ê‚ðƒNƒŠƒA
 		color 255
 
-		move_rect rect1,rect2, easetype, cnt, flame, r
+		move_rect rect1,rect2, ease_quad_inout, cnt, flame, r
 		circle  r,r.1,r.2,r.3
 		redraw 1
 		await 16
-		i=i+1
 	loop

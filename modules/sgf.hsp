@@ -210,6 +210,24 @@ dimtype SGF_NODE@global, 5
 
 	return
 
+//特定のノードまでのSGFを取得
+#deffunc get_node_sgf_nowpoint int p1, var s, local i
+	logmes "get_node_sgf_nowpoint -> " + p1
+	get_nodelist p1, a
+	s = "("
+	for i, length(a)-2,-1,-1
+		logmes "a(i) -> " + a(i)
+		s += get_node_sgf_nowpoint_main(SGF_NODE@global(a(i)))
+	next
+	s += ")"
+	return s
+#modcfunc get_node_sgf_nowpoint_main local i
+	i = ";"
+	repeat 着手情報の数
+		i += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
+	loop
+	return i
+
 #modfunc set_root int p1
 
 	repeat 子ノードの数
