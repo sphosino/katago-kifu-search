@@ -215,11 +215,11 @@ dimtype SGF_NODE@global, 5,65535
 	logmes "get_node_sgf_nowpoint -> " + p1
 	get_nodelist p1, a
 	s = "("
-	for i, length(a)-2,-1,-1
-		logmes "a(i) -> " + a(i)
+	for i, length(a)-1,-1,-1
 		s += get_node_sgf_nowpoint_main(SGF_NODE@global(a(i)))
 	next
 	s += ")"
+	logmes s
 	return s
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
