@@ -29,7 +29,7 @@
 	return onmouse_id
 	
 #modfunc treebox_toggle_openflag int p1
-	toggle_openflag treenode_id_list(p1)
+	toggle_openflag p1
 	return
 
 

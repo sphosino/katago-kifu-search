@@ -1,7 +1,8 @@
 #ifndef SGF_NODE
+#include "sgf_properties.hsp"
 dimtype SGF_NODE@global, 5,500000
 
-#module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, x, y, turn
+#module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties,properties_data, properties_num, x, y, turn
 
 #define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
 #modinit int parent, local thismod_ID
@@ -10,9 +11,10 @@ dimtype SGF_NODE@global, 5,500000
 	
 	dim 子ノード
 	子ノードの数 = 0
-	
-	sdim 着手情報,,2
-	着手情報の数 = 0
+
+	dim properties
+	sdim properties_data
+	properties_num = 0
 	
 	x = -1
 	y = -1
@@ -27,18 +29,18 @@ dimtype SGF_NODE@global, 5,500000
 	return 親ノード
 
 #modfunc get_nodeinfo array a
-	repeat 着手情報の数
-		a(0,cnt) = 着手情報(0,cnt)
-		a(1,cnt) = 着手情報(1,cnt)
+	repeat properties_num
+		a(0,cnt) = get_property_number(properties(cnt))
+		a(1,cnt) = properties_data(cnt)
 	loop
-	return 着手情報の数
+	return properties_num
 
 #define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
 #modcfunc _get_property_data str s1
 	tmp = ""
-	repeat 着手情報の数
-		if 着手情報(0, cnt) == s1{
-			tmp = 着手情報(1, cnt)
+	repeat properties_num
+		if get_properties_str(properties(cnt)) == s1{
+			tmp = properties_data(cnt)
 			break
 		}
 	loop
@@ -97,19 +99,19 @@ dimtype SGF_NODE@global, 5,500000
 #modfunc _set_property_data str s, str d, local i
 
 	already_exist = 0
-	repeat 着手情報の数
-		if 着手情報(0,cnt) = s{
+	repeat properties_num
+		if get_property_str(properties(cnt)) == s{
 			index = cnt
-			着手情報(1, cnt) = d
+			properties_data(cnt) = d
 			already_exist++
 			break
 		}
 	loop
 	if already_exist == 0{
-		index = 着手情報の数
-		着手情報(0, 着手情報の数) = s
-		着手情報(1, 着手情報の数) = d
-		着手情報の数++
+		index = properties_num
+		properties(properties_num) = get_property_str(s)
+		properties_data(properties_num) = d
+		properties_num++
 	}
 
 	if s == "W" || s == "B"{
@@ -125,9 +127,9 @@ dimtype SGF_NODE@global, 5,500000
 
 #modfunc set_move_info str s1, str s2
 
-	着手情報(0, 着手情報の数) = s1
-	着手情報(1, 着手情報の数) = s2
-	着手情報の数++
+	properties(properties_num) = get_property_str(s1)
+	properties_data(properties_num) = s2
+	properties_num++
 	return
 	
 #modcfunc serch_SGFchild int p1
@@ -187,8 +189,8 @@ dimtype SGF_NODE@global, 5,500000
 
 	s += ";"
 
-	repeat 着手情報の数
-		s += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
+	repeat properties_num
+		s += get_properties_number(properties(cnt)) + "[" + properties_data(cnt) + "]"
 	loop
 	
 	for i,, 子ノードの数
@@ -219,8 +221,8 @@ dimtype SGF_NODE@global, 5,500000
 	return s
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
-	repeat 着手情報の数
-		i += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
+	repeat properties_num
+		i += get_properties_number(properties(cnt)) + "[" + properties_data(cnt) + "]"
 	loop
 	return i
 

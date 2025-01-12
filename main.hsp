@@ -245,7 +245,15 @@ pretime = keyfpstime
 				get_treeview_position tmp
 				dragstartx = mousex - tmp
 				dragstarty = mousey - tmp.1
-		
+					if treebox_onmouseid(t) >=0{
+	
+						clicked_node = stat
+	
+						logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "　 + length(SGF_NODE@global)
+	
+						set_current_node t, clicked_node 			
+						sync_treebox_board t, board 
+					}
 		
 				if mode = 0{//矩形描画モード
 					if in_board{
@@ -256,17 +264,7 @@ pretime = keyfpstime
 					}
 				}else{
 				
-					if treebox_onmouseid(t) >=0{
-	
-						clicked_node = stat
-	
-						logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "　 + length(SGF_NODE@global)
-	
-						set_current_node t, clicked_node 			
-						sync_treebox_board t, board 
-	
-	
-					}else{
+					if treebox_onmouseid(t) < 0{
 						if in_board{
 							着手 board, point, point.1
 							

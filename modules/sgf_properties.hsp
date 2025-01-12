@@ -1,0 +1,33 @@
+#enum global SGF_PROPERTY_B = 0
+#enum global SGF_PROPERTY_W
+#enum global SGF_PROPERTY_COMMENT
+
+#include "namespace.hsp"
+
+#module
+#defcfunc get_properties_str int p1
+	return properties(p1)
+#defcfunc get_property_number str s1
+	a = hash_get(h,s1)
+	if a == "__undefined__": dialog "サポートされていないプロパティ":end
+	return int(hash_get(h,s1))
+#deffunc init_properties
+	newmod h, hash_module
+	notesel s
+	noteload "properties.txt"
+	repeat notemax
+		noteget n, cnt
+		properties(cnt) = n
+		hash_set h, n, str(cnt)
+	loop
+	return
+#global
+init_properties
+
+#if 0
+mes get_properties_str(SGF_PROPERTY_W) // -> W
+mes get_property_number("B") // -> 0
+mes get_property_number("C") // -> 2
+mes get_property_number("b") // !error
+
+#endif
