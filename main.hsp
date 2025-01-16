@@ -159,7 +159,7 @@ newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox
 
-
+set_treeview_position 0,20
 //‹éŒ`”ÍˆÍŽw’è—p
 rn = 0
 dim rect, 4
