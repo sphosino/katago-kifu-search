@@ -10,3 +10,7 @@ HA
 KM
 RU
 RE
+BR
+WR
+DT
+GN
