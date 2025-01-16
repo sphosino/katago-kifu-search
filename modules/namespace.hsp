@@ -160,7 +160,6 @@
 #global
 #endif
 
-#if 0
 newmod a, hash_module
 
 hash_module_add_child a, b
@@ -172,4 +171,3 @@ hash_set c, "key2", "value3"       //e‹óŠÔ‚ðl—¶‚µ‚È‚¢B‚Â‚Ü‚è•Ï”éŒ¾‚Ý‚½‚¢‚È‚
 
 mes hash_get(a, "key1") + hash_get(b, "key1") + hash_get(c, "key1")@//-> undefinedundefinedvalue1
 mes hash_get(a, "key2") + hash_get(b, "key2") + hash_get(c, "key2")  //-> value2value2value3
-#endif

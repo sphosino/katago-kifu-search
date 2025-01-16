@@ -15,6 +15,13 @@ if strsize == -1{
 	y = int(y)
 	noteunsel
 }
+#ifdef _debug
+	dirname = "C:\\Users\\owner\\Desktop\\hsp"
+#else
+	dirname = dir_exe
+#endif
+kifu_dirname = dirname + "/棋譜"
+
 screen 0, x, y,,(ginfo(20)-x)/2,(ginfo(21) - y)/2
 onexit *save_window_size
 if 0{ *save_window_size
@@ -24,15 +31,11 @@ if 0{ *save_window_size
 	noteadd str(ginfo(4)),2, 1
 	noteadd str(ginfo(5)),3, 1
 
-#ifdef _debug
-	dirname = "C:\\Users\\owner\\Desktop\\hsp"
-#else
-	dirname = dir_exe
-#endif
+
 	notesave window_file_name
 	end
 }
-
+#include "modules/sgf2.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/keyfps.hsp"
@@ -47,17 +50,12 @@ if 0{ *save_window_size
 #include "modules/grid_system/g_stepper.hsp"
 #include "hspext.as"
 
-#ifdef _debug
-	dirname = "C:\\Users\\owner\\Desktop\\hsp\\棋譜"
-#else
-	dirname = dir_exe + "/棋譜"
-#endif
 
-chdir dirname
+chdir kifu_dirname
 
 randomize
 
-header_size = 60
+header_size = 40
 pos,header_size
 setfps 40
 
@@ -80,9 +78,11 @@ root = make_area(1,2)
 	body_area = make_area(2,1)
 		goban_area = make_area(1,2)
 			goban_body_area = make_area()
-			goban_footer = make_area(5)
+			goban_footer = make_area(7): set_margin goban_footer,2,5
+				back_one = make_area()
 				back_ten = make_area()
 				go_ten = make_area()
+				go_one = make_area()
 				button_clearboard = make_area()
 				chkbox_tyakusyu = make_area()
 				chkbox_autoplay = make_area()
@@ -122,8 +122,10 @@ push_grid_child root , body_area
 		push_grid_child goban_area, goban_body_area
 		push_grid_child goban_area, goban_footer
 
+			push_grid_child goban_footer, back_one
 			push_grid_child goban_footer, back_ten
 			push_grid_child goban_footer, go_ten
+			push_grid_child goban_footer, go_one
 			push_grid_child goban_footer, button_clearboard
 			push_grid_child goban_footer, chkbox_tyakusyu
 			push_grid_child goban_footer, chkbox_autoplay
@@ -138,15 +140,16 @@ if strsize >= 0{
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
-newmod g_buttons, grid_button, "碁盤クリア"  , *clearboard, button_clearboard
+newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 
-newmod g_buttons, grid_button, "１０手戻る", *back10, back_ten
-newmod g_buttons, grid_button, "１０手進む", *go10, go_ten
-
+newmod g_buttons, grid_button, "<", *move_back, back_one
+newmod g_buttons, grid_button, "<<", *back10, back_ten
+newmod g_buttons, grid_button, ">>", *go10, go_ten
+newmod g_buttons, grid_button, ">", *move_next, go_one
 
 newmod g_slider, grid_slider, alpha@,1, slider,0, 255
 newmod kifulist, grid_listbox, sidebar_kifulist
@@ -487,7 +490,7 @@ pretime = keyfpstime
 	
 *loadfile
 	
-	棋譜取得 dirname, 20 // katagoホームページから最新棋譜をダウンロード
+	棋譜取得 kifu_dirname, 20 // katagoホームページから最新棋譜をダウンロード
 	notesel files
 
 	dirlist files,"*.sgf"
@@ -530,7 +533,7 @@ pretime = keyfpstime
 	return
 	
 *load_kifu_folder
-	chdir dirname
+	chdir kifu_dirname
 	del_item_all kifulist
 	dirlist files,"*.sgf"
 	add_item kifulist, shuffle_notepad(files)

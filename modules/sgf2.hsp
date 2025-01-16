@@ -15,7 +15,6 @@ dimtype SGF_NODE@global, 5,500000
 	dim properties
 	sdim properties_data
 	properties_num = 0
-	
 	x = -1
 	y = -1
 	turn = -1
@@ -30,7 +29,7 @@ dimtype SGF_NODE@global, 5,500000
 
 #modfunc get_nodeinfo array a
 	repeat properties_num
-		a(0,cnt) = get_property_number(properties(cnt))
+		a(0,cnt) = property_number_to_str(properties(cnt))
 		a(1,cnt) = properties_data(cnt)
 	loop
 	return properties_num
@@ -39,7 +38,7 @@ dimtype SGF_NODE@global, 5,500000
 #modcfunc _get_property_data str s1
 	tmp = ""
 	repeat properties_num
-		if get_properties_str(properties(cnt)) == s1{
+		if property_number_to_str(properties(cnt)) == s1{
 			tmp = properties_data(cnt)
 			break
 		}
@@ -100,7 +99,7 @@ dimtype SGF_NODE@global, 5,500000
 
 	already_exist = 0
 	repeat properties_num
-		if get_property_str(properties(cnt)) == s{
+		if property_number_to_str(properties(cnt)) == s{
 			index = cnt
 			properties_data(cnt) = d
 			already_exist++
@@ -109,7 +108,7 @@ dimtype SGF_NODE@global, 5,500000
 	loop
 	if already_exist == 0{
 		index = properties_num
-		properties(properties_num) = get_property_str(s)
+		properties(properties_num) = property_str_to_number(s)
 		properties_data(properties_num) = d
 		properties_num++
 	}

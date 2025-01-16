@@ -1,5 +1,4 @@
 #include "GobanPatternManager.hsp"
-#include "modules/sgf.hsp"
 #include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
 #include "modules/ringbuffer.hsp"
 #include "memorize_hit_rect.hsp"
