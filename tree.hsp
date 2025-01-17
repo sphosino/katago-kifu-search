@@ -53,7 +53,6 @@ dimtype treenode@global, 5
 #modfunc _del_child_treeview int p1, local i
 	for i,,cn
 		if childs(i) == p1{
-			//childsは整数の配列なのでコピーして詰める
 			memcpy childs, childs, cn - i - 1 << 2, i << 2, i + 1 << 2
 			cn--
 			return

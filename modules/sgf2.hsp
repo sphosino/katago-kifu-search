@@ -189,7 +189,7 @@ dimtype SGF_NODE@global, 5,500000
 	s += ";"
 
 	repeat properties_num
-		s += get_properties_number(properties(cnt)) + "[" + properties_data(cnt) + "]"
+		s += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
 	loop
 	
 	for i,, qƒm[ƒh‚Ì”
