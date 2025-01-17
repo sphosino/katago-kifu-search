@@ -221,7 +221,7 @@ dimtype SGF_NODE@global, 5,500000
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
 	repeat properties_num
-		i += get_properties_number(properties(cnt)) + "[" + properties_data(cnt) + "]"
+		i += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
 	loop
 	return i
 
