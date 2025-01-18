@@ -51,7 +51,7 @@
 		
 		bsave dirname + "/" + game_id + ".sgf", buf, size
 
-		await 200
+		await 300
 
 	loop
 	
@@ -65,7 +65,7 @@
 	httpinfo res,HTTPINFO_MODE
 	if res = HTTPMODE_READY : return
 	if res <= HTTPMODE_NONE : goto *bad
-	await 50
+	await 40
 	goto *’ÊM‘Ò‚¿
 
 *bad

@@ -492,7 +492,7 @@ pretime = keyfpstime
 	
 *loadfile
 	
-	棋譜取得 kifu_dirname, 20 // katagoホームページから最新棋譜をダウンロード
+	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
 	notesel files
 
 	dirlist files,"*.sgf"
