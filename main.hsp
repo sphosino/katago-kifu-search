@@ -25,13 +25,12 @@ kifu_dirname = dirname + "/Šû•ˆ"
 screen 0, x, y,,(ginfo(20)-x)/2,(ginfo(21) - y)/2
 onexit *save_window_size
 if 0{ *save_window_size
+	sdim s
 	notesel s
 	noteadd str(ginfo_sx),0, 1
 	noteadd str(ginfo_sy),1, 1
 	noteadd str(ginfo(4)),2, 1
 	noteadd str(ginfo(5)),3, 1
-
-
 	notesave window_file_name
 	end
 }

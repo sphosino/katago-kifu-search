@@ -10,5 +10,6 @@ packfile
 *.dll
 *.exe
 *.ico
+*.bmp
 test/
 katago-kifu-search/
