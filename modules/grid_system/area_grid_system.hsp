@@ -2,7 +2,7 @@
 
 #include "transform_grid.hsp"
 #include "gridpos.hsp"
-#include "centering_mes.hsp"
+;#include "centering_mes.hsp"
 #include "area_save_load_manager.hsp"
 
 dimtype areagrid@global, 5
@@ -186,7 +186,7 @@ dimtype areagrid@global, 5
 						add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
 						logmes "(empty <-> area ) swaped!!" + grid_value + "," + first_value
 					}else{
-						logmes "空スロットとその親系列のスワップは不可能です\n" + empty_slot + "(-1) <--> " + Target_slot
+						logmes "空スロットとその系列のスワップは不可能です\n" + empty_slot + "(-1) <--> " + Target_slot
 					}
 					goto*swapend
 				}
@@ -266,7 +266,7 @@ dimtype areagrid@global, 5
 		}
 
 		//エリア描画
-		centering_mes thismod_ID, depth, result
+		;centering_mes thismod_ID, depth, result
 		
 	}
 	

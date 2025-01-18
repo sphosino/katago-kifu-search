@@ -2,18 +2,18 @@
 #include "area_grid_system.hsp"
 #module grid_slider v, min, max, horizontal, x, y, center_x, center_y,tickness,長さ,dragging, area, r, pre_value
 #modinit var a, int _horizontal, int area_number, int _min, int _max, local thismod_ID
-	dup v, a
-	
-	horizontal = _horizontal
-	area = area_number
-	min = _min
-	max = _max
-	
-	set_position_g_slider thismod, 0, 0
-	set_size_g_slider thismod, 100, 6, 8
+    dup v, a
 
-	mref thismod_ID, 2
-	return thismod_ID
+    horizontal = _horizontal
+    area = area_number
+    min = _min
+    max = _max
+
+    set_position_g_slider thismod, 0, 0
+    set_size_g_slider thismod, 100, 6, 8
+
+    mref thismod_ID, 2
+    return thismod_ID
 
 #modfunc set_position_g_slider int _x, int _y
 	x = _x
@@ -41,7 +41,9 @@
 #modfunc calc_v_position_g_slider
 	可動範囲 = (長さ - r * 2)
 	if 可動範囲 > 0{
-		v = limit(min + (mx - (rect + r)) * (max - min) / 可動範囲, limit(max,,min), limit(max,min))
+		if dragging{　//ドラッグ中のみの処理にした。
+			v = limit(min + (mx - (rect + r)) * (max - min) / 可動範囲, limit(max,,min), limit(max,min))
+		}
 	}
 	pre_value = v
 	return
@@ -93,7 +95,7 @@
 	boxf oya + rect, oya.1 + rect.1, oya + rect.2, oya.1 + rect.3
 	color 255
 	circle oya + tumami, oya.1 + tumami.1, oya + tumami.2, oya.1 + tumami.3
-
+	
 	pre_value = v
 	return
 	
@@ -135,7 +137,7 @@ set_rect_mock 55, 300, 300, 300, 200
 vertical = 130     : newmod a, grid_slider, vertical   , 0, 77, 200, -100
 vertical2 = 50     : newmod a, grid_slider, vertical2  , 0, 99, 100, 0 
 horizontal2 = 0    : newmod a, grid_slider, horizontal2, 1, 66, 100, 200
-horizontal = 10000 : newmod a, grid_slider, horizontal , 1, 88, 500, 3000: set_position_g_slider a(stat), 200,50
+horizontal = 600   : newmod a, grid_slider, horizontal , 1, 88, 500, 3000: set_position_g_slider a(stat), 200,50 //@@反映されました　初期化時にドラッグ中の処理を入れたからおかしくなってたようですね。
 vertical3 = 60     : newmod a, grid_slider, vertical3, 0, 55, 0, 100: set_size_g_slider a(stat), 0, 6, 8 //長さなしにしてみた。動かない(仕様）
 
 //メインループ

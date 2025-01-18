@@ -79,9 +79,8 @@ dimtype treenode@global, 5
 	return -1
 
 //削除処理
-#deffunc del_treenode int p1, int mode
+#deffunc del_treenode int p1
 
-	delmode = mode
 	p = get_tree_parent(p1)
 	if p >= 0{
 		del_child_treeview p, p1
@@ -92,10 +91,6 @@ dimtype treenode@global, 5
 	for i,,cn
 		_del_treenode(treenode@global(childs(i)))
 	next
-	if delmode{
-		//SGFモジュール使ってたら発動可能なオプション
-		delmod SGF_NODE@global(item_id)
-	}
 	delmod thismod
 	return
 //--------------
@@ -147,7 +142,9 @@ dimtype treenode@global, 5
 	
 			if i == 0{
 				//最初の子ノードの処理が終わったとき、現ノードを確定させる
+
 				_tree_view treenode@global(childs(i)), 現ノードの高さ, 確定ノードの深さ, 確定ノードの高さ, res, 現在の深さ + 1
+
 				// res.0 === 処理が終わったそのノードの高さが返ってくる
 				// res.1 === 処理が終わったそのノードが(斜めで戻ってきたか)のフラグが入っている、
 				現ノードの高さ = res - res.1

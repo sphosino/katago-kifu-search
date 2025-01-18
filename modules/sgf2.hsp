@@ -1,6 +1,6 @@
 #ifndef SGF_NODE
 #include "sgf_properties.hsp"
-dimtype SGF_NODE@global, 5,500000
+dimtype SGF_NODE@global, 5
 
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties,properties_data, properties_num, x, y, turn
 
@@ -37,12 +37,20 @@ dimtype SGF_NODE@global, 5,500000
 #define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
 #modcfunc _get_property_data str s1
 	tmp = ""
-	repeat properties_num
-		if property_number_to_str(properties(cnt)) == s1{
-			tmp = properties_data(cnt)
-			break
+	if s1 == "B" || s1 == "W"{
+		if turn != -1{
+			tmp = "  "
+			poke tmp, 0, 'a' + x
+			poke tmp, 1, 'a' + y
 		}
-	loop
+	}else{
+		repeat properties_num
+			if property_number_to_str(properties(cnt)) == s1{
+				tmp = properties_data(cnt)
+				break
+			}
+		loop
+	}
 	return tmp
 
 #defcfunc get_property_coordinate int p1, array result
@@ -84,48 +92,36 @@ dimtype SGF_NODE@global, 5,500000
 	next
 	delmod thismod
 	return
-#modfunc set_候補手 str s
-	候補手(候補手の数) = s
-	候補手の数++
-	return
-#modfunc get_候補手 array a
-	repeat 候補手の数
-		a.cnt = 候補手.cnt
-	loop
-	return 候補手の数
 
 #define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
 #modfunc _set_property_data str s, str d, local i
 
-	already_exist = 0
-	repeat properties_num
-		if property_number_to_str(properties(cnt)) == s{
-			index = cnt
-			properties_data(cnt) = d
-			already_exist++
-			break
-		}
-	loop
-	if already_exist == 0{
-		index = properties_num
-		properties(properties_num) = property_str_to_number(s)
-		properties_data(properties_num) = d
-		properties_num++
-	}
-
-	if s == "W" || s == "B"{
-		mref i, 2
-		if get_property_coordinate(i,re){
-			turn = stat
-			x = re
-			y = re.1
+	if s == "B" || s == "W"{
+		turn = 1 + (s == "W")
+		tmp = d
+		x = peek(tmp, 0) - 'a'
+		y = peek(tmp, 1) - 'a'
+	}else{
+		already_exist = 0
+		repeat properties_num
+			if property_number_to_str(properties(cnt)) == s{
+				index = cnt
+				properties_data(cnt) = d
+				already_exist++
+				break
+			}
+		loop
+		if already_exist == 0{
+			index = properties_num
+			properties(properties_num) = property_str_to_number(s)
+			properties_data(properties_num) = d
+			properties_num++
 		}
 	}
 	
 	return
 
 #modfunc set_move_info str s1, str s2
-
 	properties(properties_num) = get_property_str(s1)
 	properties_data(properties_num) = s2
 	properties_num++
@@ -187,6 +183,18 @@ dimtype SGF_NODE@global, 5,500000
 #modfunc _get_node_sgf var s, local i
 
 	s += ";"
+	
+	if turn != -1{
+		座標 = "  "
+		poke 座標, 0, 'a' + x
+		poke 座標, 1, 'a' + y
+		
+		if turn == 1{
+			s += "B[" + 座標 + "]"
+		}else{
+			s += "W[" + 座標 + "]"
+		}	
+	}
 
 	repeat properties_num
 		s += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
@@ -220,6 +228,16 @@ dimtype SGF_NODE@global, 5,500000
 	return s
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
+	if turn != -1{
+		座標 = "  "
+		poke 座標, 0, 'a' + x
+		poke 座標, 1, 'a' + y
+		if turn == 1{
+			i += "B[" + 座標 + "]"
+		}else{
+			i += "W[" + 座標 + "]"
+		}	
+	}
 	repeat properties_num
 		i += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
 	loop
@@ -305,7 +323,7 @@ dimtype SGF_NODE@global, 5,500000
 	onerror 0
 	return stat
 *er
-	dialog ""+err+"::" + varsize(SGF_NODE@global)
+	dialog "エラーコード = "+err+"\n" + length(SGF_NODE@global),, __FILE__
 	end
 
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
