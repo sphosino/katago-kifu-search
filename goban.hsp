@@ -13,6 +13,7 @@
 	clear_board thismod
 	masx = p1
 	masy = p2
+	stone_circle = 1 //Î‚ð‘È‰~‚É‚µ‚È‚¢
 	area_number = _area
 	return
 #modfunc clear_board int x, int y
@@ -178,6 +179,11 @@
 
 	masx = limit((r.2 - r  ) / length(board),1)
 	masy = limit((r.3 - r.1) / length2(board),1)
+
+	if stone_circle == 1{
+		if masx > masy: masx = masy
+		if masy > masx: masy = masx
+	}
 
 	color $cd,$85,$3f
 	boxf px, py, px + length(board) * masx, py + length2(board) * masy
