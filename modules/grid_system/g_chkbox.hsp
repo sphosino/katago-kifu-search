@@ -3,6 +3,7 @@
 #module grid_checkbox flag, string, area_number
 #modinit var v, str s, int _area
 	string = s
+	flag = v
 	dup v,flag
 	area_number = _area
 	return

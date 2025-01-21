@@ -100,9 +100,8 @@ root = make_area(1,2)
 				button_search = make_area()
 				
 				chkbox_colorflip = make_area()
+				chkbox_view_hosi = make_area()
 				
-				
-		
 //êeéqä÷åWç\íz
 push_grid_child root , header_area
 push_grid_child root , body_area
@@ -114,6 +113,7 @@ push_grid_child root , body_area
 			push_grid_child sidebar_buttons, button_getsgf_nowpoint
 			push_grid_child sidebar_buttons, button_search
 			push_grid_child sidebar_buttons, chkbox_colorflip
+			push_grid_child sidebar_buttons, chkbox_view_hosi
 			
 			
 		push_grid_child sidebar_area, sidebar_kifulist
@@ -148,6 +148,7 @@ newmod g_buttons, grid_button, "åüçı"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "íÖéË" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"êFîΩì]", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"é©ìÆçƒê∂",chkbox_autoplay
+newmod g_chkbox, grid_checkbox, view_hosi@goban,"êØ", chkbox_view_hosi
 
 newmod g_buttons, grid_button, "<", *move_back, back_one
 newmod g_buttons, grid_button, "<<", *back10, back_ten
@@ -173,6 +174,9 @@ max_depth = 50
 
 //êFîΩì]Çä‹ÇﬂÇÈÇ©
 enableColorFlip = 1
+
+//êØÇï\é¶Ç∑ÇÈÇ©
+view_hosi@goban = 0
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 20

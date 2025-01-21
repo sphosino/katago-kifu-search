@@ -185,6 +185,8 @@
 		if masy > masx: masy = masx
 	}
 
+	//線描画
+
 	color $cd,$85,$3f
 	boxf px, py, px + length(board) * masx, py + length2(board) * masy
 	color
@@ -196,6 +198,25 @@
 	loop
 
 
+	//星描画
+	if view_hosi{
+		
+		get_hosi length(board), length2(board), hosilist
+		repeat stat
+	
+			centerx = px + masx / 2 + masx * hosilist(0, cnt)
+			centery = py + masy / 2 + masy * hosilist(1, cnt)
+			x1 = centerx - hosisizer
+			y1 = centery - hosisizer
+			x2 = centerx + hosisizer
+			y2 = centery + hosisizer
+			
+			circle x1, y1, x2, y2
+			
+		loop
+	}
+
+	//石描画
 
 	repeat length(board): m= cnt
 		repeat length2(board)
@@ -297,10 +318,59 @@
 		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
 	}
 	return
-#deffunc board_serch_init
+#deffunc board_module_init int p1
 	sx = 1,0,-1,0
 	sy = 0,-1,0,1
+
+	hosisizer = p1
+	view_hosi = 1
+	
+	if hosisizer == 0: hosisizer = 3
 	return
+
+//盤の大きさを受け取り、星の位置のリストを返す
+#deffunc get_hosi int boardsizex, int boardsizey, array a , local n
+	
+	dim a, 2
+
+	if boardsizex == 9 && boardsizey == 9{
+		
+		a(0,n) = 5,5
+		n++
+
+	}
+
+	if boardsizex == 13 && boardsizey == 13{
+		
+		a(0,n) = 3,3 : n++
+		a(0,n) = 6,3 : n++
+		a(0,n) = 9,3 : n++
+		a(0,n) = 3,6 : n++
+		a(0,n) = 6,6 : n++
+		a(0,n) = 9,6 : n++
+		a(0,n) = 3,9 : n++
+		a(0,n) = 6,9 : n++
+		a(0,n) = 9,9 : n++
+
+	
+	}
+
+	if boardsizex == 19 && boardsizey == 19{
+
+		a(0,n) = 3,3 : n++
+		a(0,n) = 9,3 : n++
+		a(0,n) = 15,3 : n++
+		a(0,n) = 3,9 : n++
+		a(0,n) = 9,9 : n++
+		a(0,n) = 15,9 : n++
+		a(0,n) = 3,15 : n++
+		a(0,n) = 9,15 : n++
+		a(0,n) = 15,15 : n++
+
+	}
+
+
+	return n
 #global
-board_serch_init
+board_module_init
 #endif

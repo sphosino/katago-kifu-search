@@ -1,8 +1,0 @@
-#module freeLayout_rect itemlist, in
-#modinit
-	dim itemlist, 5
-	return
-#modfunc add_child_free_layout int id, int p1, int p2, int p3, int p4
-	
-	return
-#global
