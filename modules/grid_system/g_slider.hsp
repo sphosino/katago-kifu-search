@@ -1,7 +1,7 @@
 #include "../keyfps.hsp"
 #include "area_grid_system.hsp"
 #module grid_slider v, min, max, horizontal, x, y, center_x, center_y,tickness,長さ,dragging, area, r, pre_value
-#modinit var a, int _horizontal, int area_number, int _min, int _max, local thismod_ID
+#modinit var a, int _horizontal, int area_number, int _min, int _max, int 太さ, int つまみサイズ, local thismod_ID
     dup v, a
 
     horizontal = _horizontal
@@ -9,8 +9,21 @@
     min = _min
     max = _max
 
-    set_position_g_slider thismod, 0, 0
-    set_size_g_slider thismod, 100, 6, 8
+
+	thisrect thismod, oya,area
+	if　horizontal{
+		init_size = oya.2-oya
+		init_x = 0
+		init_y = oya.3 - oya. 1 - 太さ>> 1
+	}else{
+		init_size = oya.3-oya.1
+		init_x = oya.2 - oya - 太さ>> 1
+		init_y = 0
+	}
+	
+	set_size_g_slider thismod, init_size, 太さ, つまみサイズ
+    set_position_g_slider thismod, init_x, init_y
+
 
     mref thismod_ID, 2
     return thismod_ID

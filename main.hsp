@@ -155,7 +155,7 @@ newmod g_buttons, grid_button, "<<", *back10, back_ten
 newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">", *move_next, go_one
 
-newmod g_slider, grid_slider, auto_interval,1, slider, 100, 2000
+newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 6, 8
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_body_area
