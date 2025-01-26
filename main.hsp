@@ -94,8 +94,8 @@ root = make_area(1,2)
 			sidebar_kifulist_result = make_area(1,2)
 				sidebar_kifulist_match = make_area()
 				sidebar_kifulist_buttons = make_area(2)
-					sidebar_kifulist_match_next = make_area()
 					sidebar_kifulist_match_back = make_area()
+					sidebar_kifulist_match_next = make_area()
 			sidebar_buttons = make_area(2,3)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
@@ -124,8 +124,8 @@ push_grid_child root , body_area
 		push_grid_child sidebar_area, sidebar_kifulist_result
 			push_grid_child sidebar_kifulist_result, sidebar_kifulist_match
 			push_grid_child sidebar_kifulist_result, sidebar_kifulist_buttons
-				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_next
 				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_back
+				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_next
 
 	push_grid_child body_area, goban_area
 
