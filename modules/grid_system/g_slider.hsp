@@ -12,12 +12,12 @@
 
 	thisrect thismod, oya,area
 	if@horizontal{
-		init_size = oya.2-oya
+		init_size = oya.2 - oya
 		init_x = 0
-		init_y = oya.3 - oya. 1 - ‘¾‚³>> 1
+		init_y = oya.3 - oya.1 - ‘¾‚³ >> 1
 	}else{
-		init_size = oya.3-oya.1
-		init_x = oya.2 - oya - ‘¾‚³>> 1
+		init_size = oya.3 - oya.1
+		init_x = oya.2 - oya - ‘¾‚³ >> 1
 		init_y = 0
 	}
 	
@@ -67,6 +67,18 @@
 #modfunc slider_manager
 
 	thisrect thismod, oya,area
+		if@horizontal{
+		init_size = oya.2 - oya
+		init_x = 0
+		init_y = oya.3 - oya.1 - ‘¾‚³ >> 1
+	}else{
+		init_size = oya.3 - oya.1
+		init_x = oya.2 - oya - ‘¾‚³ >> 1
+		init_y = 0
+	}
+	
+	set_size_g_slider thismod, init_size, tickness, r
+    set_position_g_slider thismod, init_x, init_y
 	mx = mousex -oya
 	my = mousey -oya.1
 	rect = x, y, x + ’·‚³,  y + tickness

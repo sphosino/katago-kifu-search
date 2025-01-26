@@ -267,7 +267,8 @@ dimtype listbox_items@global, 5
 		}
 	loop
 	return i
-
+#modcfunc get_item_num
+	return item_num
 #modcfunc get_listbox_item_data int p1
 	return int(get_listbox_data(listbox_items(p1)))
 //各モジュールで追加に必要なコードはこれだけ。コピペ推奨

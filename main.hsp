@@ -91,7 +91,11 @@ root = make_area(1,2)
 				
 		sidebar_area = make_area(1,3)
 			sidebar_kifulist = make_area()
-			sidebar_kifulist_match = make_area()
+			sidebar_kifulist_result = make_area(1,2)
+				sidebar_kifulist_match = make_area()
+				sidebar_kifulist_buttons = make_area(2)
+					sidebar_kifulist_match_next = make_area()
+					sidebar_kifulist_match_back = make_area()
 			sidebar_buttons = make_area(2,3)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
@@ -117,7 +121,11 @@ push_grid_child root , body_area
 			
 			
 		push_grid_child sidebar_area, sidebar_kifulist
-		push_grid_child sidebar_area, sidebar_kifulist_match
+		push_grid_child sidebar_area, sidebar_kifulist_result
+			push_grid_child sidebar_kifulist_result, sidebar_kifulist_match
+			push_grid_child sidebar_kifulist_result, sidebar_kifulist_buttons
+				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_next
+				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_back
 
 	push_grid_child body_area, goban_area
 
@@ -160,6 +168,8 @@ newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_body_area
 
+newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
+newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
 
 newmod t, treebox
 
@@ -217,35 +227,10 @@ pretime = keyfpstime
 			inlistbox = 0
 	
 			foreach kifulist
-				itemid = listbox_on_id(kifulist.cnt,mousex, mousey)
-				if itemid >= 0{	
-					if get_root_tree_node(t) >= 0{
-						del_treenode(get_root_tree_node(t))
-					}
-					sdim v
-					rn = 0
+				sel = listbox_on_id(kifulist.cnt,mousex, mousey)
+				select_kifulist_item sel, cnt
 	
-					check_item kifulist.cnt,itemid, 1 //アイテムにチェックを付ける
-					
-					items = get_listbox_item_list(kifulist.cnt)
-					notesel items
-					noteget s, itemid
-					noteunsel
-					topnode = change_sgf(s, t, board)
-					
-					
-					if get_listbox_item_data(kifulist.cnt,itemid){ //アイテムデータが設定されていたら、それは検索結果。
-						nstat = stat //検索結果のSGFノード
-						//それが格納されているツリーIDを探してカレントノードに設定
-						set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
-						//碁盤を同期
-						sync_treebox_board t, board
-					}
-					set_treeview_position 20,20
-					inlistbox++
-				}
-	
-				if itemid == -3{
+				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
 				}
 			loop
@@ -414,7 +399,45 @@ pretime = keyfpstime
 	redraw
 	redraw 2
 	goto*main
+#deffunc select_kifulist_item int itemid, int kifulist_id
 	
+	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){	
+		if get_root_tree_node(t) >= 0{
+			del_treenode(get_root_tree_node(t))
+		}
+		sdim v
+		rn = 0
+	
+		check_item kifulist.kifulist_id, itemid, 1 //アイテムにチェックを付ける
+		
+		items = get_listbox_item_list(kifulist.kifulist_id)
+		notesel items
+		noteget s, itemid
+		noteunsel
+		topnode = change_sgf(s, t, board)
+		
+		
+		if get_listbox_item_data(kifulist.kifulist_id,itemid){ //アイテムデータが設定されていたら、それは検索結果。
+			nstat = stat //検索結果のSGFノード
+			//それが格納されているツリーIDを探してカレントノードに設定
+			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
+			//碁盤を同期
+			sync_treebox_board t, board
+		}
+		set_treeview_position 20,20
+		inlistbox++
+	}
+	return
+*next_kifu
+	logmes "NEXT"
+	a = get_selected_items(kifulist(matchlist), sel)
+	select_kifulist_item sel + 1, matchlist
+	return
+*back_kifu
+	logmes "BACK"
+	a = get_selected_items(kifulist(matchlist), sel)
+	select_kifulist_item sel - 1, matchlist
+	return
 *go10
 	repeat 10
 		gosub*move_next
