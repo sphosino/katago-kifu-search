@@ -401,7 +401,8 @@ pretime = keyfpstime
 	goto*main
 #deffunc select_kifulist_item int itemid, int kifulist_id
 	
-	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){	
+	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
+		current_kifulist = kifulist_id
 		if get_root_tree_node(t) >= 0{
 			del_treenode(get_root_tree_node(t))
 		}
@@ -430,13 +431,13 @@ pretime = keyfpstime
 	return
 *next_kifu
 	logmes "NEXT"
-	a = get_selected_items(kifulist(matchlist), sel)
-	select_kifulist_item sel + 1, matchlist
+	a = get_selected_items(kifulist(current_kifulist), sel)
+	select_kifulist_item sel + 1, current_kifulist
 	return
 *back_kifu
 	logmes "BACK"
-	a = get_selected_items(kifulist(matchlist), sel)
-	select_kifulist_item sel - 1, matchlist
+	a = get_selected_items(kifulist(current_kifulist), sel)
+	select_kifulist_item sel - 1, current_kifulist
 	return
 *go10
 	repeat 10
