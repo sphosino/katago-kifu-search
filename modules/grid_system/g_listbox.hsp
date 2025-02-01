@@ -258,6 +258,9 @@ dimtype listbox_items@global, 5
 	loop
 	return ss
 
+#modcfunc get_name_item int p1
+	return listbox_item_get_str(listbox_items(p1))
+
 #modcfunc get_selected_items array a, local i
 	dim a
 	repeat item_num

@@ -1,0 +1,99 @@
+#include "hspinet.as"
+netinit
+#include "beautifulsoup.hsp"
+
+#module
+
+#deffunc 棋譜取得 str dirname, int max
+
+	dim result
+	now_dir = dir_cur
+	
+	url = "https://katagotraining.org"
+	url2 = "games"
+	
+	chdir dirname
+	dirlist files, "*.sgf"
+
+	
+	neturl@ url
+	netrequest_get@ url2
+	if stat : goto *bad	; 正しくリクエストができなかった
+	gosub *通信待ち
+
+	netgetv@ buf
+
+	
+	find_tags_bytag buf, "table", result
+	find_tags_bytag result, "a", r
+	find_attribute_byname r.1, "href", f
+
+	neturl@ url + f
+
+	netrequest_get@ ""
+	
+	if stat : goto *bad
+	gosub *通信待ち
+	
+	netgetv@ buf
+
+	find_tags_bytag buf, "tr", data // テーブルの要素
+
+	repeat limit(max,,length(data)-1)
+	
+		find_tags_bytag data(cnt + 1), "td", target_infos
+
+		game_id = int(get_content_tag(target_infos(0)))
+
+		if check_exist_sgf(files, game_id): continue
+
+		find_tags_bytag data(cnt + 1), "a", result
+		find_attribute_byname result, "href", t
+
+		netdlname@ dirname + "/" + game_id + ".sgf"
+
+		neturl@ url + t
+		netrequest@ ""
+		if stat : goto *bad
+		gosub *通信待ち
+
+		await 300
+
+	loop
+
+	chdir now_dir
+	return
+
+*通信待ち
+	; 結果待ちのためのループ
+	netexec@ res
+	logmes "結果待ち"
+	if res > 0 : return
+	if res < 0 : goto *bad
+	await 40
+	goto *通信待ち
+
+*bad
+	; エラー処理
+	logmes "ERROR -> " +res
+
+	stop
+
+#defcfunc check_exist_sgf str s1, int p1
+
+	k = s1
+	notesel k
+
+	hit  = 0
+	repeat notemax
+		noteget t, cnt
+		if int(t) == p1 {
+			hit = 1
+		}
+	loop
+	
+	noteunsel
+
+	return hit
+
+#global

@@ -36,7 +36,7 @@ if 0{ *save_window_size
 }
 #include "modules/sgf2.hsp"
 #include "go_game_manager.hsp"
-#include "modules/katago_sqr.hsp"
+#include "modules/katago_sqr2.hsp"
 #include "modules/keyfps.hsp"
 #include "GobanPatternManager.hsp"
 #include "Search_pattern.hsp"
@@ -56,7 +56,7 @@ randomize
 
 header_size = 40
 pos,header_size
-setfps 40
+setfps 60
 
 
 
@@ -156,7 +156,7 @@ newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
-newmod g_chkbox, grid_checkbox, view_hosi@goban,"星", chkbox_view_hosi
+newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 
 newmod g_buttons, grid_button, "<", *move_back, back_one
 newmod g_buttons, grid_button, "<<", *back10, back_ten
@@ -228,7 +228,7 @@ pretime = keyfpstime
 	
 			foreach kifulist
 				sel = listbox_on_id(kifulist.cnt,mousex, mousey)
-				select_kifulist_item sel, cnt
+				inlistbox += select_kifulist_item(sel, cnt)
 	
 				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
@@ -351,7 +351,8 @@ pretime = keyfpstime
 		}
 		
 	}
-	
+
+	color 255,255,255:boxf 0,0, ginfo_winx, header_size
 	a = double(c_list) * 255
 	color a,a,a
 	boxf 0, header_size , ginfo_winx,ginfo_winy
@@ -399,24 +400,26 @@ pretime = keyfpstime
 	redraw
 	redraw 2
 	goto*main
-#deffunc select_kifulist_item int itemid, int kifulist_id
+#defcfunc select_kifulist_item int itemid, int kifulist_id
 	
 	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
 		current_kifulist = kifulist_id
 		if get_root_tree_node(t) >= 0{
 			del_treenode(get_root_tree_node(t))
 		}
+
+		//範囲指定を初期化
 		sdim v
 		rn = 0
-	
-		check_item kifulist.kifulist_id, itemid, 1 //アイテムにチェックを付ける
+
+		//アイテムにチェックを付ける
+		check_item kifulist.kifulist_id, itemid, 1
 		
 		items = get_listbox_item_list(kifulist.kifulist_id)
 		notesel items
 		noteget s, itemid
 		noteunsel
 		topnode = change_sgf(s, t, board)
-		
 		
 		if get_listbox_item_data(kifulist.kifulist_id,itemid){ //アイテムデータが設定されていたら、それは検索結果。
 			nstat = stat //検索結果のSGFノード
@@ -426,18 +429,18 @@ pretime = keyfpstime
 			sync_treebox_board t, board
 		}
 		set_treeview_position 20,20
-		inlistbox++
+		return 1
 	}
-	return
+	return 0
 *next_kifu
 	logmes "NEXT"
 	a = get_selected_items(kifulist(current_kifulist), sel)
-	select_kifulist_item sel + 1, current_kifulist
+	a = select_kifulist_item(sel + 1, current_kifulist)
 	return
 *back_kifu
 	logmes "BACK"
 	a = get_selected_items(kifulist(current_kifulist), sel)
-	select_kifulist_item sel - 1, current_kifulist
+	a = select_kifulist_item(sel - 1, current_kifulist)
 	return
 *go10
 	repeat 10
@@ -456,6 +459,7 @@ pretime = keyfpstime
 	treebox_clear t
 	topnode = stat
 	title ""
+	current_kifulist = -1
 	return
 *getsgf
 	if topnode >= 0{
@@ -503,9 +507,11 @@ pretime = keyfpstime
 		search_result_sgflist += search_result(0, cnt) + "\n"
 	loop
 
-	if search_result_sgflist != "": sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
+	if search_result_sgflist != ""{
 
-	//logmes search_result_sgflist
+		sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
+		current_kifulist = matchlist
+	}
 
 	del_item_all kifulist.matchlist
 	add_item kifulist.matchlist, search_result_sgflist
