@@ -89,6 +89,7 @@ netinit
 		noteget t, cnt
 		if int(t) == p1 {
 			hit = 1
+			break
 		}
 	loop
 	

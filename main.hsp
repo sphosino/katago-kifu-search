@@ -353,9 +353,10 @@ pretime = keyfpstime
 	}
 
 	color 255,255,255:boxf 0,0, ginfo_winx, header_size
-	a = double(c_list) * 255
-	color a,a,a
-	boxf 0, header_size , ginfo_winx,ginfo_winy
+	color 138,128,128:boxf 0,header_size,ginfo_winx, ginfo_winy
+	a = double(c_list) * 255: color a,a,a
+	get_rect goban_body_area, goban_back_rect
+	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
 	
 	Œé”Õ•\¦ board , ’…è”Ô†•\¦
 	draw_set_list_on_board board, v
