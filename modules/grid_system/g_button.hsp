@@ -50,18 +50,7 @@
 #deffunc local setcolor int p1
 	color p1>>16&255,p1>>8&255,p1&255
 	return
-//各モジュールで【矩形エリア】モックを利用するためのコード。コピペ推奨
-#modfunc local thisrect array mocklist, int area_number_mock
-	if mock_flag@global{
-		get_rect_mock mockrect //モックから矩形取得
-		mocklist(0) = mockrect(0,area_number_mock)
-		mocklist(1) = mockrect(1,area_number_mock)
-		mocklist(2) = mockrect(2,area_number_mock)
-		mocklist(3) = mockrect(3,area_number_mock) 
-	}else{
-		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
-	}
-	return
+#include "rectmock.hsp"
 #global
 init_g_button_colorlist
 

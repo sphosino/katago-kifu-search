@@ -274,18 +274,7 @@ dimtype listbox_items@global, 5
 	return item_num
 #modcfunc get_listbox_item_data int p1
 	return int(get_listbox_data(listbox_items(p1)))
-//各モジュールで追加に必要なコードはこれだけ。コピペ推奨
-#modfunc local thisrect array mocklist, int area_number_mock
-	if mock_flag@global{
-		get_rect_mock mockrect //モックから矩形取得
-		mocklist(0) = mockrect(0,area_number_mock)
-		mocklist(1) = mockrect(1,area_number_mock)
-		mocklist(2) = mockrect(2,area_number_mock)
-		mocklist(3) = mockrect(3,area_number_mock) 
-	}else{
-		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
-	}
-	return
+#include "rectmock.hsp"
 #global
 #endif
 

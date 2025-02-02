@@ -56,7 +56,7 @@ randomize
 
 header_size = 40
 pos,header_size
-setfps 60
+setfps 40
 
 
 
