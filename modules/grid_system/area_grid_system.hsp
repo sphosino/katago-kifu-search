@@ -123,7 +123,7 @@ dimtype areagrid@global, 5
 	//親レクト取得
 	if parentid == -1{
 		//親がなければルートエリアということで、親は画面全体とする。
-		rect = padding_x,　padding_y,　ginfo_sx - padding_x,　ginfo_sy - padding_y
+		rect = padding_x,　padding_y,　ginfo(12) - padding_x,　ginfo(13) - padding_y
 	}else{
 		//親がいれば、親のエリアを取得
 		mref thismod_ID, 2

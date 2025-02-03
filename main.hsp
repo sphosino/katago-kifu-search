@@ -22,7 +22,9 @@ if strsize == -1{
 #endif
 kifu_dirname = dirname + "/Šû•ˆ"
 
-screen 0, x, y,,(ginfo(20)-x)/2,(ginfo(21) - y)/2
+screen 2, ginfo(20), ginfo(21),,(ginfo(20)-x)/2,(ginfo(21) - y)/2,x,y
+gsel 0,-1
+gsel 2
 onexit *save_window_size
 if 0{ *save_window_size
 	sdim s
