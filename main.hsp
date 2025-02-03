@@ -96,7 +96,7 @@ root = make_area(1,2)
 				sidebar_kifulist_buttons = make_area(2)
 					sidebar_kifulist_match_back = make_area()
 					sidebar_kifulist_match_next = make_area()
-			sidebar_buttons = make_area(2,3)
+			sidebar_buttons = make_area(2,4)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
 				button_getsgf_nowpoint = make_area()
@@ -105,6 +105,7 @@ root = make_area(1,2)
 				
 				chkbox_colorflip = make_area()
 				chkbox_view_hosi = make_area()
+				kifustart = make_area()
 				
 //親子関係構築
 push_grid_child root , header_area
@@ -118,6 +119,7 @@ push_grid_child root , body_area
 			push_grid_child sidebar_buttons, button_search
 			push_grid_child sidebar_buttons, chkbox_colorflip
 			push_grid_child sidebar_buttons, chkbox_view_hosi
+			push_grid_child sidebar_buttons, kifustart
 			
 			
 		push_grid_child sidebar_area, sidebar_kifulist
@@ -157,6 +159,7 @@ newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
+newmod g_stepper, grid_stepper, kifu_start_num,kifustart
 
 newmod g_buttons, grid_button, "<", *move_back, back_one
 newmod g_buttons, grid_button, "<<", *back10, back_ten
@@ -187,6 +190,10 @@ enableColorFlip = 1
 
 //星を表示するか
 view_hosi@goban = 0
+
+//棋譜を何手目から表示するか
+kifu_start_num = 5
+
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 20
@@ -375,7 +382,9 @@ pretime = keyfpstime
 	foreach g_slider
 		slider_manager g_slider.cnt
 	loop
-
+	foreach g_stepper
+		draw_g_stepper g_stepper.cnt
+	loop
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
@@ -428,6 +437,11 @@ pretime = keyfpstime
 			//それが格納されているツリーIDを探してカレントノードに設定
 			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
 
+		}else{
+			nownode = 0
+			repeat kifu_start_num
+				gosub*move_next
+			loop
 		}
 
 		gosub*syncboard
