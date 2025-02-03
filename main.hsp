@@ -1,20 +1,9 @@
 #packopt name "KataGo棋譜検索"
 #packopt icon "original.ico"
-
 #define window_file_name "window.txt"
-exist window_file_name
-if strsize == -1{
-	x = 1140
-	y = 855
-}else{
-	notesel s
-	noteload window_file_name
-	noteget x,0
-	noteget y,1
-	x = int(x)
-	y = int(y)
-	noteunsel
-}
+
+gsel 0,-1
+
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\hsp"
 #else
@@ -22,20 +11,77 @@ if strsize == -1{
 #endif
 kifu_dirname = dirname + "/棋譜"
 
-screen 2, ginfo(20), ginfo(21),,(ginfo(20)-x)/2,(ginfo(21) - y)/2,x,y
-gsel 0,-1
-gsel 2
+chdir dirname
+
+exist window_file_name
+
+if strsize == -1{
+	x = 1140
+	y = 855
+	sx = x
+	sy = y
+	wx = (ginfo(20) - x) / 2
+	wy = (ginfo(21) - y) / 2
+	//探索の最大深さ
+	max_depth = 50
+	
+	//色反転を含めるか
+	enableColorFlip = 1
+	
+	//星を表示するか
+	view_hosi@goban = 0
+	
+	//棋譜を何手目から表示するか
+	kifu_start_num = 5
+
+	//棋譜再生速度(ms)
+	auto_interval = 1000
+}else{
+	notesel s
+	noteload window_file_name
+	tmp = 0
+	noteget_ x
+	noteget_ y
+	noteget_ wx
+	noteget_ wy
+	noteget_ sx
+	noteget_ sy
+	noteget_ max_depth
+	noteget_ enableColorFlip
+	noteget_ view_hosi@goban
+	noteget_ kifu_start_num
+	noteget_ auto_interval
+	noteunsel
+}
+#module
+#deffunc noteget_ var a
+	noteget a, tmp
+	a = int(a)
+	tmp++
+	return
+#global
+screen 2, ginfo(20), ginfo(21),,wx,wy,sx,sy
+
 onexit *save_window_size
 if 0{ *save_window_size
+	chdir dirname
 	sdim s
 	notesel s
-	noteadd str(ginfo_sx),0, 1
-	noteadd str(ginfo_sy),1, 1
-	noteadd str(ginfo(4)),2, 1
-	noteadd str(ginfo(5)),3, 1
+	noteadd str(ginfo(10)) //ウィンドウサイズ
+	noteadd str(ginfo(11))
+	noteadd str(ginfo(4)) //ウィンドウ位置
+	noteadd str(ginfo(5))
+	noteadd str(ginfo(12))　//描画領域サイズ
+	noteadd str(ginfo(13))
+	noteadd str(max_depth)
+	noteadd str(enableColorFlip)
+	noteadd str(view_hosi@goban)
+	noteadd str(kifu_start_num)
+	noteadd str(auto_interval)
 	notesave window_file_name
 	end
 }
+
 #include "modules/sgf2.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
@@ -58,7 +104,7 @@ randomize
 
 header_size = 40
 pos,header_size
-setfps 40
+setfps 60
 
 
 
@@ -69,9 +115,9 @@ jidou = 0
 
 set_treeview 50,50
 set_treeview_position 20,20
-tree_direction = 6
+set_tree_direction 6
 
-auto_interval = 1000
+
 
 topnode = -1
 
@@ -150,7 +196,6 @@ exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
 }
-
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
@@ -183,18 +228,6 @@ newmod t, treebox
 rn = 0
 dim rect, 4
 dim rect_stack, 4
-
-//探索の最大深さ
-max_depth = 50
-
-//色反転を含めるか
-enableColorFlip = 1
-
-//星を表示するか
-view_hosi@goban = 0
-
-//棋譜を何手目から表示するか
-kifu_start_num = 5
 
 
 foreach kifulist
@@ -363,35 +396,38 @@ pretime = keyfpstime
 		
 	}
 
-	color 128,128,128:boxf 0,0,ginfo_winx, ginfo_winy
-	a = double(c_list) * 255: color a,a,a
-	get_rect goban_body_area, goban_back_rect
-	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
+	counter++
+	if counter \ 2 == 0{
+		color 128,128,128:boxf 0,0,ginfo_winx, ginfo_winy
+		a = double(c_list) * 255: color a,a,a
+		get_rect goban_body_area, goban_back_rect
+		boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
+		
+		碁盤表示 board , 着手番号表示
+		draw_set_list_on_board board, v
+		
+		treebox_draw t
+		foreach kifulist
+			my_listbox_draw kifulist.cnt
+		loop
+		foreach g_chkbox
+			draw_g_chkbox g_chkbox.cnt
+		loop
+		foreach g_buttons
+			draw_g_button g_buttons.cnt
+		loop
+		foreach g_slider
+			slider_manager g_slider.cnt
+		loop
+		foreach g_stepper
+			draw_g_stepper g_stepper.cnt
+		loop
 	
-	碁盤表示 board , 着手番号表示
-	draw_set_list_on_board board, v
-	set_tree_direction tree_direction
-	treebox_draw t
-	foreach kifulist
-		my_listbox_draw kifulist.cnt
-	loop
-	foreach g_chkbox
-		draw_g_chkbox g_chkbox.cnt
-	loop
-	foreach g_buttons
-		draw_g_button g_buttons.cnt
-	loop
-	foreach g_slider
-		slider_manager g_slider.cnt
-	loop
-	foreach g_stepper
-		draw_g_stepper g_stepper.cnt
-	loop
-
-	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
-
-	if getdbl_ms(17,200): debugmode ^ 1
-	draw_all_rect root, debugmode
+		if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
+	
+		if getdbl_ms(17,200): debugmode ^ 1
+		draw_all_rect root, debugmode
+	}
 
 		//毎フレーム１棋譜読み込む
 		filelist = get_name_all_items(kifulist)

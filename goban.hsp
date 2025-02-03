@@ -324,7 +324,6 @@
 	sy = 0,-1,0,1
 
 	hosisizer = p1
-	view_hosi = 1
 	
 	if hosisizer == 0: hosisizer = 3
 	return
