@@ -128,29 +128,30 @@ root = make_area(1,2)
 		goban_area = make_area(1,2)
 			goban_body_area = make_area()
 			goban_footer = make_area(8): set_margin goban_footer,2,5
+				back_top = make_area()
 				back_one = make_area()
 				back_ten = make_area()
 				go_ten = make_area()
 				go_one = make_area()
+				go_end = make_area()
 				button_clearboard = make_area()
 				chkbox_tyakusyu = make_area()
-				chkbox_autoplay = make_area()
-				slider = make_area()
+
 				
 		sidebar_area = make_area(1,3)
 			sidebar_kifulist = make_area()
 			sidebar_kifulist_result = make_area(1,2)
 				sidebar_kifulist_match = make_area()
-				sidebar_kifulist_buttons = make_area(2)
+				sidebar_kifulist_buttons = make_area(2,2)
 					sidebar_kifulist_match_back = make_area()
 					sidebar_kifulist_match_next = make_area()
+					chkbox_autoplay = make_area()
+					slider = make_area()
 			sidebar_buttons = make_area(2,4)
 				button_loadfile = make_area()
 				button_getsgf = make_area()
 				button_getsgf_nowpoint = make_area()
-				
 				button_search = make_area()
-				
 				chkbox_colorflip = make_area()
 				chkbox_view_hosi = make_area()
 				kifustart = make_area()
@@ -176,20 +177,23 @@ push_grid_child root , body_area
 			push_grid_child sidebar_kifulist_result, sidebar_kifulist_buttons
 				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_back
 				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_next
+				push_grid_child sidebar_kifulist_buttons, chkbox_autoplay
+				push_grid_child sidebar_kifulist_buttons, slider
 
 	push_grid_child body_area, goban_area
 
 		push_grid_child goban_area, goban_body_area
 		push_grid_child goban_area, goban_footer
 
+			push_grid_child goban_footer, back_top
 			push_grid_child goban_footer, back_one
 			push_grid_child goban_footer, back_ten
 			push_grid_child goban_footer, go_ten
 			push_grid_child goban_footer, go_one
+			push_grid_child goban_footer, go_end
 			push_grid_child goban_footer, button_clearboard
 			push_grid_child goban_footer, chkbox_tyakusyu
-			push_grid_child goban_footer, chkbox_autoplay
-			push_grid_child goban_footer, slider
+
 
 
 exist "area.var"
@@ -208,10 +212,12 @@ newmod g_chkbox, grid_checkbox, jidou          ,"é©ìÆçƒê∂",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"êØï\é¶", chkbox_view_hosi
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart
 
+newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
 newmod g_buttons, grid_button, "<", *move_back, back_one
 newmod g_buttons, grid_button, "<<", *back10, back_ten
 newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">", *move_next, go_one
+newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 
 newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 6, 8
 newmod kifulist, grid_listbox, sidebar_kifulist
@@ -508,6 +514,19 @@ pretime = keyfpstime
 		gosub *move_back
 	loop
 	return
+*to_sgftop
+	set_current_node t
+	gosub*syncboard
+	return
+*to_sgfend
+	
+	repeat 1000
+		gosub *move_next
+		if stat == 0:break
+		if cnt == 999: logmes "Ç®ÇªÇÁÇ≠ÉGÉâÅ["
+	loop
+	gosub*syncboard
+	return
 	
 *clearboard
 	clear_board board
@@ -602,10 +621,11 @@ pretime = keyfpstime
 	if nownode < 0: return
 
 	set_current_node t, get_tree_root_child(nownode)
+	moved = stat
 	if stat: treeviewà⁄ìÆ 1
 	pretime = keyfpstime
 	gosub*syncboard
-	return
+	return moved
 	
 *move_back
 	if nownode < 0: return
