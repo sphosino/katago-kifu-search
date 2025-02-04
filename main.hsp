@@ -186,13 +186,14 @@ push_grid_child root , body_area
 		push_grid_child goban_area, goban_footer
 
 			push_grid_child goban_footer, back_top
-			push_grid_child goban_footer, back_one
 			push_grid_child goban_footer, back_ten
-			push_grid_child goban_footer, go_ten
+			push_grid_child goban_footer, back_one
 			push_grid_child goban_footer, go_one
+			push_grid_child goban_footer, go_ten
 			push_grid_child goban_footer, go_end
-			push_grid_child goban_footer, button_clearboard
 			push_grid_child goban_footer, chkbox_tyakusyu
+			push_grid_child goban_footer, button_clearboard
+
 
 
 
@@ -206,26 +207,28 @@ newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
+newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
+newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
+newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
+newmod g_buttons, grid_button, "<<", *back10, back_ten
+newmod g_buttons, grid_button, "<", *move_back, back_one
+newmod g_buttons, grid_button, ">", *move_next, go_one
+newmod g_buttons, grid_button, ">>", *go10, go_ten
+newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
+
 newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
+
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart
 
-newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
-newmod g_buttons, grid_button, "<", *move_back, back_one
-newmod g_buttons, grid_button, "<<", *back10, back_ten
-newmod g_buttons, grid_button, ">>", *go10, go_ten
-newmod g_buttons, grid_button, ">", *move_next, go_one
-newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
-
 newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 6, 8
+
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
-newmod board, goban, 19,19,26,26, goban_body_area
 
-newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
-newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
+newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox
 
@@ -519,7 +522,8 @@ pretime = keyfpstime
 	gosub*syncboard
 	return
 *to_sgfend
-	
+
+	if topnode < 0: return
 	repeat 1000
 		gosub *move_next
 		if stat == 0:break
