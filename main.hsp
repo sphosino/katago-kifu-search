@@ -401,7 +401,7 @@ pretime = keyfpstime
 		get_rect goban_body_area, goban_back_rect
 		boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
 		
-		碁盤表示 board , 着手番号表示
+		碁盤表示 board , 着手番号表示, 20
 		draw_set_list_on_board board, v
 		
 		treebox_draw t
