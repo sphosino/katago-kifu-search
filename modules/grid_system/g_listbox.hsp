@@ -160,8 +160,11 @@ dimtype listbox_items@global, 5
 	py = rect.1
 	sx = rect.2 - px
 	sy = rect.3 - py
-	boxf px, py, px + sx, py + sy
 	max_visible_items = sy / item_y
+
+	sy = max_visible_items * item_y
+
+	boxf px, py, px + sx, py + sy
 
 	//ƒAƒCƒeƒ€•`‰æ
 	font "",item_y
