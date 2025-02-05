@@ -37,8 +37,8 @@
 
 		if get_value(sgf) == NOT_DEFINED_HASH{
 			topnode = load_sgf(f, -1)
-			//logmes "load_sgf -> " + topnode 
 			new_value sgf, str(topnode)
+			await
 		}else{
 			
 			topnode = int(refstr)
