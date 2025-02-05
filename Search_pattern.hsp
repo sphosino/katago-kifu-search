@@ -38,13 +38,19 @@
 		if get_value(sgf) == NOT_DEFINED_HASH{
 			topnode = load_sgf(f, -1)
 			new_value sgf, str(topnode)
-			title "Šû•ˆ“Ç‚Ýž‚Ý’†"+ cnt * 100 / notemax + "%"
+			title "Šû•ˆ“Ç‚Ýž‚Ý’† -> "+ cnt * 100 / notemax + "% Š®—¹"
 			await
-		}else{
-			
-			topnode = int(refstr)
-			//logmes "hash -> " + topnode
 		}
+	loop
+
+	title "ŒŸõ’†"
+	
+	repeat notemax
+		noteget sgf,cnt
+		if get_value(sgf) == NOT_DEFINED_HASH: dialog "ERROR -> " + refstr ,, __FILE__: end
+		
+		topnode = int(refstr)
+		
 
 		get_board_size_from_SGF topnode, xy
 
