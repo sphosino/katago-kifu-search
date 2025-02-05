@@ -670,5 +670,8 @@ pretime = keyfpstime
 		move_treeview_position , ns.1 * -(((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
 	}else{ 
 		move_treeview_position   ns   * -(((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
+
+		get_treeview_position a
+		if a >= 20: set_treeview_position 20,20
 	}
 	return
