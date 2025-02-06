@@ -2,7 +2,6 @@
 
 #include "transform_grid.hsp"
 #include "gridpos.hsp"
-;#include "centering_mes.hsp"
 #include "area_save_load_manager.hsp"
 
 dimtype areagrid@global, 5
@@ -124,6 +123,7 @@ dimtype areagrid@global, 5
 	if parentid == -1{
 		//親がなければルートエリアということで、親は画面全体とする。
 		rect = padding_x,　padding_y,　ginfo(12) - padding_x,　ginfo(13) - padding_y
+		logmes "ルートウィンドウサイズ -> " + ginfo(12) + "," + ginfo(13)
 	}else{
 		//親がいれば、親のエリアを取得
 		mref thismod_ID, 2
@@ -156,8 +156,6 @@ dimtype areagrid@global, 5
 	}
 	return
 	
-//現状のコードはスケーリングは取得時に行っていますが、　エリアマネージャを導入した場合どこで行いますか？
-
 //自身以下のレクトを処理 + (デバッグ用の可視化)
 #deffunc draw_all_rect int p1, int debug_mode
 	aid = -1
@@ -265,9 +263,6 @@ dimtype areagrid@global, 5
 			aid = thismod_ID
 		}
 
-		//エリア描画
-		;centering_mes thismod_ID, depth, result
-		
 	}
 	
 	repeat 行数
@@ -344,54 +339,34 @@ init_grid_system
 	return
 #global
 init_area_grid_system_mock
-
-////////////
-/*/グリッドシステムを利用する各モジュールで【矩形エリア】モックを利用する際のコード。コピペ推奨
-#modfunc local thisrect array mocklist, int area_number_mock
-	if mock_flag@global{
-		get_rect_mock mockrect //モックから矩形取得
-		mocklist(0) = mockrect(0,area_number_mock)
-		mocklist(1) = mockrect(1,area_number_mock)
-		mocklist(2) = mockrect(2,area_number_mock)
-		mocklist(3) = mockrect(3,area_number_mock) 
-	}else{
-		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
-	}
-	return
-*/
-	//★★モジュール内で使用する方法★★//
-/*　
-	thisrect thismod, 矩形情報を受け取る配列変数, エリア番号
-*/
 #endif
-
 #if 0
-root = make_area(2,2)
-c = make_area(2,2)
-d = make_area(2,2)
-e = make_area(2,2)
-f = make_area()
-g = make_area()
-h = make_area(2,2)
-
-add_grid_child root, c , 0,0
-add_grid_child c   , d , 1,0
-add_grid_child c   , e , 0,1
-push_grid_child e  , f
-push_grid_child e  , g
-push_grid_child root  , h
-
-
-screen 0,700,700
-debugmode = 1
-*main
-
-	manage_keyfps
-	color 200,200,200: boxf 0,0, ginfo_winx, ginfo_winy
-	draw_all_rect root, debugmode
-	if getdbl_ms(17,200): debugmode^1
-	redraw: redraw 2
+	root = make_area(2,2)
+	c = make_area(2,2)
+	d = make_area(2,2)
+	e = make_area(2,2)
+	f = make_area()
+	g = make_area()
+	h = make_area(2,2)
 	
-
-	goto*main
+	add_grid_child root, c , 0,0
+	add_grid_child c   , d , 1,0
+	add_grid_child c   , e , 0,1
+	push_grid_child e  , f
+	push_grid_child e  , g
+	push_grid_child root  , h
+	
+	
+	screen 0,700,700
+	debugmode = 1
+	*main
+	
+		manage_keyfps
+		color 200,200,200: boxf 0,0, ginfo_winx, ginfo_winy
+		draw_all_rect root, debugmode
+		if getdbl_ms(17,200): debugmode^1
+		redraw: redraw 2
+		
+	
+		goto*main
 #endif
