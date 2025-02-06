@@ -3,7 +3,7 @@
 #include "modules/ringbuffer.hsp"
 #include "memorize_hit_rect.hsp"
 #module
-#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
@@ -28,20 +28,25 @@
 	
 	notesel ss
 	ss = SGF_list
-	
-	repeat notemax
-		noteget sgf,cnt
-		notesel f
-		noteload sgf
-		noteunsel
 
-		if get_value(sgf) == NOT_DEFINED_HASH{
-			topnode = load_sgf(f, -1)
-			new_value sgf, str(topnode)
-			title "棋譜読み込み中 -> "+ cnt * 100 / notemax + "% 完了"
-			await
-		}
-	loop
+	if kifu_update{		
+		repeat notemax
+			noteget sgf,cnt
+			notesel f
+			;load_start_time = keyfpstime
+			noteload sgf
+			;load_end_time = keyfpstime
+			;logmes strf("loadtime %d ms  ::  endtime %d ms  ::  taketime  %d ms",load_start_time,load_end_time,load_end_time-load_start_time)
+			noteunsel
+	
+			if get_value(sgf) == NOT_DEFINED_HASH{
+				topnode = load_sgf(f, -1)
+				new_value sgf, str(topnode)
+				await
+				title "棋譜読み込み中 -> "+ cnt * 100 / notemax + "% 完了  しばらくお待ちください"
+			}
+		loop
+	}
 
 	title "検索中"
 	
@@ -76,6 +81,9 @@
 		}
 	loop
 	noteunsel
+
+	title "検索完了"
+	
 	return rn
 
 #defcfunc search_main int t, array pattern, array result_node

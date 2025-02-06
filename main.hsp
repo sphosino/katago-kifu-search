@@ -102,9 +102,16 @@ chdir kifu_dirname
 randomize
 
 header_size = 40
-pos,header_size
-setfps 50
+pos , header_size
 
+
+//使用キーの宣言
+delkey_all
+addkey 1 //左クリック
+addkey 2 //右クリック
+addkey 17 //ctrl
+addkey 'C'
+addkey 'V'
 
 
 v = "" //矩形選択用
@@ -116,7 +123,7 @@ set_treeview 50,50
 set_treeview_position 20,20
 set_tree_direction 6
 
-
+kifu_upadate = 1
 
 topnode = -1
 
@@ -248,11 +255,12 @@ gosub*loadsgf
 c_list = "0.50"
 
 pretime = keyfpstime
-
+setfps 60
 *main
 	manage_keyfps
+	;title ""+getrealfpsf()
 
-	//毎フレーム１棋譜読み込む
+	/*/毎フレーム１棋譜読み込む
 	filelist = get_name_all_items(kifulist)
 	notesel filelist
 		repeat notemax
@@ -269,8 +277,7 @@ pretime = keyfpstime
 			}
 		loop
 	noteunsel
-
-	if ginfo(2) != 2: goto*main
+	;/*/
 	
 	nownode = get_current_node(t)
 	getBoardCoordinates board, point
@@ -581,7 +588,8 @@ pretime = keyfpstime
 	logmes patterns_to_notepad(p)
 
 
-	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip)
+	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip, kifu_update)
+	kifu_update = 0
 
 
 	search_result_sgflist = ""
@@ -664,6 +672,7 @@ pretime = keyfpstime
 	dirlist files,"*.sgf"
 	add_item kifulist, shuffle_notepad(files)
 	nextindex = 0
+	kifu_update = 1
 	return
 	
 #deffunc treeview移動 int ddd

@@ -203,6 +203,8 @@
 	if view_hosi{
 		
 		get_hosi length(board), length2(board), hosilist
+
+		hosisizer = limit(masx / 10,3)
 		repeat stat
 	
 			centerx = px + masx / 2 + masx * hosilist(0, cnt)
