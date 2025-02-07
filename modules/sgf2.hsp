@@ -91,10 +91,15 @@ dimtype SGF_NODE@global, 5,800000
 	return
 
 #define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
-#modfunc _set_property_data str s, str d, local i
+#modfunc _set_property_data str s, str d
 
-	if s == "B" || s == "W"{
-		turn = 1 + (s == "W")
+	if s == "B"{
+		turn = 1
+		tmp = d
+		x = peek(tmp, 0) - 'a'
+		y = peek(tmp, 1) - 'a'
+	}else: if s == "W"{
+		turn = 2
 		tmp = d
 		x = peek(tmp, 0) - 'a'
 		y = peek(tmp, 1) - 'a'

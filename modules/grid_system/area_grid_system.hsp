@@ -161,8 +161,9 @@ dimtype areagrid@global, 5
 	aid = -1
 	g_area = -1 //つかまれたエリア
 	
-	if debug_mode {
-		_draw_all_rect areagrid@global(p1), 0 , debug_mode
+	
+	_draw_all_rect areagrid@global(p1), 0 , debug_mode
+		if debug_mode {
 		color 255: save_load_manager
 		if stat: return
 		if g_area != -1{
@@ -242,11 +243,14 @@ dimtype areagrid@global, 5
 
 	mref thismod_ID, 2	
 	get_rect thismod_ID, result
-
+	if in_rect(result){
+		aid = thismod_ID
+	}
 	if debug_mode{ 
 		margin = margin_x, margin_y
 		//グリッド移動処理
 		grid_manager grid_x, grid_y, result, margin, draginfo
+		
 		/*draginfoに処理した情報が入る
 		draginfo(0) -> 最後につかんだ場所x
 		draginfo(1) -> 最後につかんだ場所y
@@ -256,15 +260,9 @@ dimtype areagrid@global, 5
 		draginfo(5) -> yグリッドつかんでいるかflag
 		draginfo(6) -> つかんだ場所情報x （マイナスならグリッド、そうでなければエリア
 		draginfo(7) -> つかんだ場所情報y （マイナスならグリッド、そうでなければエリア
-		
 		*/
 
-		if in_rect(result){
-			aid = thismod_ID
-		}
-
 	}
-	
 	repeat 行数
 		for i,, 列数
 			if grid(i, cnt) != -1{

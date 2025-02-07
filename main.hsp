@@ -258,26 +258,33 @@ pretime = keyfpstime
 setfps 60
 *main
 	manage_keyfps
-	;title ""+getrealfpsf()
 
-	/*/毎フレーム１棋譜読み込む
-	filelist = get_name_all_items(kifulist)
-	notesel filelist
-		repeat notemax
-			noteget sgf_file_name, nextindex
-			nextindex++
-			if sgf_file_name == "": break
-			if get_value(sgf_file_name) == NOT_DEFINED_HASH{
-				notesel sgf
-					noteload sgf_file_name
-					logmes "loaded sgf ->"+ sgf_file_name
-					new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
-				noteunsel
-				break
-			}
-		loop
-	noteunsel
-	;/*/
+	new_ = get_in_area()
+	if pre_ != new_{
+		pat = keyfpstime
+		pre_ = new_
+	}
+
+	if keyfpstime - pat >= 3000{
+		//毎フレーム１棋譜読み込む
+		filelist = get_name_all_items(kifulist)
+		notesel filelist
+			repeat
+				noteget sgf_file_name, nextindex
+				nextindex++
+				if sgf_file_name == "": break
+				if get_value(sgf_file_name) == NOT_DEFINED_HASH{
+					notesel sgf
+						noteload sgf_file_name
+						logmes "loaded sgf ->"+ sgf_file_name
+						new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
+					noteunsel
+					break
+				}
+			loop
+		noteunsel
+		;/*/
+	}
 	
 	nownode = get_current_node(t)
 	getBoardCoordinates board, point
@@ -303,6 +310,8 @@ setfps 60
 			}
 		}
 		if _getkey(1) == 1{ //左クリック
+
+			pat = keyfpstime
 	
 			inlistbox = 0
 	
@@ -459,7 +468,8 @@ setfps 60
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
-	if getdbl_ms(17,200): debugmode ^ 1
+	if getdbl_ms(17,250): debugmode ^ 1
+	
 	draw_all_rect root, debugmode
 
 	redraw
