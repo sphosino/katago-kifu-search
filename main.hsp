@@ -567,6 +567,7 @@ setfps 60
 	}
 	return
 *getsgf_nowpoint
+	if nownode < 0: return
 	logmes get_tree_item_id(nownode)
 	get_node_sgf_nowpoint get_tree_item_id(nownode), a
 	clipset a
