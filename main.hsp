@@ -51,6 +51,11 @@ if strsize == -1{
 	noteget_ view_hosi@goban
 	noteget_ kifu_start_num
 	noteget_ auto_interval
+
+	if wx < 0{
+		wx = (ginfo(20) - x) / 2
+		wy = (ginfo(21) - y) / 2
+	}
 	noteunsel
 }
 #module
@@ -311,7 +316,10 @@ setfps 60
 		}
 		if _getkey(1) == 1{ //¶ƒNƒŠƒbƒN
 
-			pat = keyfpstime
+
+			if ginfo_act != -1 {
+				pat = keyfpstime
+			}
 	
 			inlistbox = 0
 	
