@@ -1,8 +1,11 @@
 #packopt name "KataGo棋譜検索"
-#packopt icon "original.ico"
 #define window_file_name "window.txt"
+#include "user32.as"
+screen , ginfo(20), ginfo(21)
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
 
-gsel 0,-1
+#const KIFU_LOAD_MAX 4100
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\hsp"
@@ -32,7 +35,7 @@ if strsize == -1{
 	view_hosi@goban = 0
 	
 	//棋譜を何手目から表示するか
-	kifu_start_num = 5
+	kifu_start_num = 10
 
 	//棋譜再生速度(ms)
 	auto_interval = 1000
@@ -51,13 +54,21 @@ if strsize == -1{
 	noteget_ view_hosi@goban
 	noteget_ kifu_start_num
 	noteget_ auto_interval
+	noteget_ 最小化
+	noteget_ 最大化
 
+	if 最大化: sendmsg hwnd, $112, $F030
+	if 最小化: sendmsg hwnd, $112, $F020
+
+	//wx,wyがなぜか -32000 という数値で保存されてしまう場合があるようなので、その場合の処理
 	if wx < 0{
 		wx = (ginfo(20) - x) / 2
 		wy = (ginfo(21) - y) / 2
 	}
+
 	noteunsel
 }
+
 #module
 #deffunc noteget_ var a
 	noteget a, tmp
@@ -65,7 +76,8 @@ if strsize == -1{
 	tmp++
 	return
 #global
-screen 2, ginfo(20), ginfo(21),,wx,wy,sx,sy
+
+width sx, sy, wx, wy
 
 onexit *save_window_size
 if 0{ *save_window_size
@@ -83,6 +95,10 @@ if 0{ *save_window_size
 	noteadd str(view_hosi@goban)
 	noteadd str(kifu_start_num)
 	noteadd str(auto_interval)
+	IsIconic hwnd: 最小化 = stat
+	IsZoomed hwnd: 最大化 = stat
+	noteadd str(最小化)
+	noteadd str(最大化)
 	notesave window_file_name
 	end
 }
@@ -261,34 +277,47 @@ c_list = "0.50"
 
 pretime = keyfpstime
 setfps 60
+
+#const INACTIVITY_TIMEOUT 2000
+
 *main
 	manage_keyfps
 
-	new_ = get_in_area()
-	if pre_ != new_{
-		pat = keyfpstime
-		pre_ = new_
-	}
-
-	if keyfpstime - pat >= 3000{
-		//毎フレーム１棋譜読み込む
-		filelist = get_name_all_items(kifulist)
-		notesel filelist
-			repeat
-				noteget sgf_file_name, nextindex
-				nextindex++
-				if sgf_file_name == "": break
-				if get_value(sgf_file_name) == NOT_DEFINED_HASH{
-					notesel sgf
-						noteload sgf_file_name
-						logmes "loaded sgf ->"+ sgf_file_name
-						new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
-					noteunsel
-					break
-				}
-			loop
-		noteunsel
-		;/*/
+	if kifu_update{//棋譜がアップデートされたときのみ走る
+		new_ = get_in_area()
+		//マウスがエリア間を移動したか、プログラム上で左クリックされたか
+		if (pre_ != new_) || ((_getkey(1) == 1) && (ginfo_act != -1)){
+			pat = keyfpstime
+			pre_ = new_
+		}
+	
+		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
+			//毎フレーム１棋譜読み込む
+			filelist = get_name_all_items(kifulist)
+			notesel filelist
+				repeat
+					noteget sgf_file_name, next_kifuload_index
+					next_kifuload_index++
+					if sgf_file_name == ""{
+						//全て読み込んだ
+						kifu_update = 0
+						break
+					}
+					if get_value(sgf_file_name) == NOT_DEFINED_HASH{
+						notesel sgf
+							noteload sgf_file_name
+							logmes "start loading sgf -> " + sgf_file_name
+							start_time = keyfpstime // 計測開始
+							new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
+							end_time = keyfpstime // 計測終了
+							logmes "loaded sgf -> " + sgf_file_name + " (time: " + (end_time - start_time) + " ms)  " + next_kifuload_index
+						noteunsel
+						break
+					}
+				loop
+			noteunsel
+			;/*/
+		}
 	}
 	
 	nownode = get_current_node(t)
@@ -315,11 +344,6 @@ setfps 60
 			}
 		}
 		if _getkey(1) == 1{ //左クリック
-
-
-			if ginfo_act != -1 {
-				pat = keyfpstime
-			}
 	
 			inlistbox = 0
 	
@@ -581,6 +605,7 @@ setfps 60
 	clipset a
 	return
 *loadsgf
+	dim t
 	newmod t, treebox
 	sdim s, $FFFF
 	clipget s, varsize(s)
@@ -638,16 +663,6 @@ setfps 60
 *loadfile
 	
 	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
-	notesel files
-
-	dirlist files,"*.sgf"
-	add_item kifulist, files
-
-	notesel files
-	sortnote files,1
-	noteget s,0
-
-	topnode = change_sgf(s,t,board)
 
 	gosub*load_kifu_folder
 	
@@ -678,7 +693,7 @@ setfps 60
 	nownode = get_current_node(t) 
 	sync_treebox_board t, board
 	tmp = get_property_data(get_tree_item_id(nownode), "C")
-	:logmes "sync -> "+topnode + "::"+ get_tree_item_id(nownode) + "   "+tmp
+	logmes "sync -> "+topnode + "::"+ get_tree_item_id(nownode) + "   "+tmp
 	if get_tree_item_id(nownode) == topnode: tmp = "0.50"
 	split tmp," ", c_list
 	
@@ -689,8 +704,18 @@ setfps 60
 	chdir kifu_dirname
 	del_item_all kifulist
 	dirlist files,"*.sgf"
-	add_item kifulist, shuffle_notepad(files)
-	nextindex = 0
+	notesel ss 
+		ss = shuffle_notepad(files)
+		sdim s
+		repeat limit(notemax,,KIFU_LOAD_MAX)
+			noteget tmp,cnt
+			s += tmp + "\n"
+		loop
+	noteunsel
+	
+	add_item kifulist, s
+
+	next_kifuload_index = 0
 	kifu_update = 1
 	return
 	

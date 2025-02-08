@@ -1,7 +1,7 @@
 #ifndef SGF_NODE
 #include "sgf_properties.hsp"
 #include "keyfps.hsp"
-dimtype SGF_NODE@global, 5,800000
+dimtype SGF_NODE@global, 5,900000
 
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties,properties_data, properties_num, x, y, turn
 
@@ -315,8 +315,6 @@ dimtype SGF_NODE@global, 5,800000
 	return new
 	
 #defcfunc load_sgf str ss, int node
-
-	load_start_time = keyfpstime
 	
 	onerror *er
 	sss = ss
@@ -328,14 +326,10 @@ dimtype SGF_NODE@global, 5,800000
 	stack = -1
 	nln = 0
 	load_sgf_main ss, node
-	topnode = stat
 	onerror 0
-
-	logmes strf("starttime %d ms :: endtime %d ms :: taketime %d ms",load_start_time, keyfpstime, keyfpstime-load_start_time)
-
-	return topnode
+	return stat
 *er
-	dialog "エラーコード = "+err+"\n" + length(SGF_NODE@global),, __FILE__
+	dialog "エラーコード = "+err+"\n" + length(SGF_NODE@global) + "\n" + next_kifuload_index@,, __FILE__
 	end
 
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
@@ -359,8 +353,9 @@ dimtype SGF_NODE@global, 5,800000
 			load_sgf_main f, nn
 			
 		}else:if (token == ';'){
-			
+
 			make_new_SGFnode nn
+			
 			new_id = stat
 
 			stack(nln) = new_id: nln++

@@ -77,7 +77,7 @@
 
 	return res
 	
-#modfunc getcapture array a
+#modfunc goban_getcapture array a
 	a = •‚ªæ‚Á‚½”,”’‚ªæ‚Á‚½”
 	return
 
