@@ -277,7 +277,7 @@ dimtype SGF_NODE@global, 5,900000
 			counter++
 		}else:if t == s2{
 			counter--
-	}
+		}
 		if counter == 0: r2 = cnt: break
 	loop
 	result = strmid(s, index + 1, r2 - index - 1)
