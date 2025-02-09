@@ -4,6 +4,7 @@
 #const UNMEMORIZED -9999
 
 #defcfunc memorize_hit_rect int rotate_pattern, int x, int y, array pattern, var v
+
 	if memory(0,rotate_pattern, x, y) == UNMEMORIZED{
 		memory(0,rotate_pattern, x, y) = -1, -1
 		for j,, length(pattern)

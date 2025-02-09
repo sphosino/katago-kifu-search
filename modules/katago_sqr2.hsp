@@ -53,9 +53,15 @@ netinit
 		netdlname@ dirname + "/" + game_id + ".sgf"
 
 		neturl@ url + t
+
+		logmes "取得開始 -> " + game_id + ".sgf"
+		
 		netrequest@ ""
 		if stat : goto *bad
 		gosub *通信待ち
+
+		logmes "取得完了 -> " + game_id + ".sgf"
+		
 
 		await 300
 
@@ -67,7 +73,6 @@ netinit
 *通信待ち
 	; 結果待ちのためのループ
 	netexec@ res
-	logmes "結果待ち"
 	if res > 0 : return
 	if res < 0 : goto *bad
 	await 40

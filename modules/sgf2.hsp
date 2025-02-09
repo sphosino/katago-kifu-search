@@ -1,7 +1,7 @@
 #ifndef SGF_NODE
 #include "sgf_properties.hsp"
 #include "keyfps.hsp"
-dimtype SGF_NODE@global, 5,900000
+dimtype SGF_NODE@global, 5
 
 #module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties,properties_data, properties_num, x, y, turn
 
@@ -329,7 +329,7 @@ dimtype SGF_NODE@global, 5,900000
 	onerror 0
 	return stat
 *er
-	dialog "エラーコード = "+err+"\n" + length(SGF_NODE@global) + "\n" + next_kifuload_index@,, __FILE__
+	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
 	end
 
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn

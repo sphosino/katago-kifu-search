@@ -508,7 +508,7 @@ setfps 60
 	redraw 2
 	
 	goto*main
-#defcfunc select_kifulist_item int itemid, int kifulist_id
+#defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
 	
 	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
 		current_kifulist = kifulist_id
@@ -522,6 +522,14 @@ setfps 60
 
 		//アイテムにチェックを付ける
 		check_item kifulist.kifulist_id, itemid, 1
+
+		if is_item_visible(kifulist.kifulist_id,itemid) == 0{
+			if flag_next_or_back = 0{
+				scroll_item_to_top kifulist.kifulist_id, itemid
+			}else{
+				scroll_item_to_bottom kifulist.kifulist_id, itemid
+			}
+		}
 		
 		items = get_listbox_item_list(kifulist.kifulist_id)
 		notesel items
@@ -552,7 +560,7 @@ setfps 60
 *next_kifu
 	logmes "NEXT"
 	a = get_selected_items(kifulist(current_kifulist), sel)
-	a = select_kifulist_item(sel + 1, current_kifulist)
+	a = select_kifulist_item(sel + 1, current_kifulist,1)
 	return
 *back_kifu
 	logmes "BACK"
@@ -663,6 +671,10 @@ setfps 60
 *loadfile
 	
 	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
+
+	dimtype SGF_NODE@global,5
+	init_hash_manager
+	init_properties
 
 	gosub*load_kifu_folder
 	
