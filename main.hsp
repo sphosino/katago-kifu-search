@@ -1,3 +1,5 @@
+
+
 #packopt name "KataGoŠû•ˆŒŸõ"
 #define window_file_name "window.txt"
 #include "user32.as"
@@ -182,6 +184,7 @@ root = make_area(1,2)
 				chkbox_colorflip = make_area()
 				chkbox_view_hosi = make_area()
 				kifustart = make_area()
+				kifustart_result = make_area()
 				
 //eqŠÖŒW\’z
 push_grid_child root , header_area
@@ -196,6 +199,7 @@ push_grid_child root , body_area
 			push_grid_child sidebar_buttons, chkbox_colorflip
 			push_grid_child sidebar_buttons, chkbox_view_hosi
 			push_grid_child sidebar_buttons, kifustart
+			push_grid_child sidebar_buttons, kifustart_result
 			
 			
 		push_grid_child sidebar_area, sidebar_kifulist
@@ -249,6 +253,7 @@ newmod g_chkbox, grid_checkbox, jidou          ,"©“®Ä¶",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"¯•\¦", chkbox_view_hosi
 
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart
+newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result
 
 newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15, 12
 
@@ -543,6 +548,11 @@ setfps 60
 			//‚»‚ê‚ªŠi”[‚³‚ê‚Ä‚¢‚éƒcƒŠ[ID‚ğ’T‚µ‚ÄƒJƒŒƒ“ƒgƒm[ƒh‚Éİ’è
 			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
 
+			nownode = get_current_node(t)
+			repeat kifu_start_num_result
+				gosub*move_next
+			loop
+
 		}else{
 			nownode = get_root_tree_node(t)
 			repeat kifu_start_num
@@ -674,8 +684,9 @@ setfps 60
 
 	dimtype SGF_NODE@global,5
 	init_hash_manager
+	#ifdef init_properties
 	init_properties
-
+	#endif
 	gosub*load_kifu_folder
 	
 	return

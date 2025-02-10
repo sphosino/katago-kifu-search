@@ -1,3 +1,5 @@
+
+
 #ifndef hash_module
 #module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  ƒf[ƒ^”
 
@@ -29,7 +31,12 @@
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS
 
-	mref thismod_ID, 2
+	#ifdef __hsp64__@
+		mref thismod_ID, 4
+	#else
+		mref thismod_ID, 2
+	#endif
+	
 	return thismod_ID
 
 
