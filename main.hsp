@@ -151,83 +151,41 @@ kifu_upadate = 1
 topnode = -1
 
 //ƒGƒŠƒAì¬
-root = make_area(1,2)
-	header_area = make_area()
-	body_area = make_area(2,1)
-		goban_area = make_area(1,2)
-			goban_body_area = make_area()
-			goban_footer = make_area(8): set_margin goban_footer,2,5
-				back_top = make_area()
-				back_one = make_area()
-				back_ten = make_area()
-				go_ten = make_area()
-				go_one = make_area()
-				go_end = make_area()
-				button_clearboard = make_area()
-				chkbox_tyakusyu = make_area()
+root = make_area_child(1,2)
+	header_area = make_area_child(,,root)
+	body_area = make_area_child(2,1)
+		sidebar_area = make_area_child(1,3,body_area)
+		goban_area = make_area_child(1,2)
+			goban_body_area = make_area_child(,,goban_area)
+			goban_footer = make_area_child(8): set_margin goban_footer,2,5
+				back_top = make_area_child(,,goban_footer)
+				back_one = make_area_child()
+				back_ten = make_area_child()
+				go_ten = make_area_child()
+				go_one = make_area_child()
+				go_end = make_area_child()
+				button_clearboard = make_area_child()
+				chkbox_tyakusyu = make_area_child()
+			sidebar_buttons = make_area_child(2,4,sidebar_area)
+			sidebar_kifulist = make_area_child()
+			sidebar_kifulist_result = make_area_child(1,2)
 
+				sidebar_kifulist_match = make_area_child(,,sidebar_kifulist_result)
+				sidebar_kifulist_buttons = make_area_child(2,2)
+					sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons)
+					sidebar_kifulist_match_next = make_area_child()
+					chkbox_autoplay = make_area_child()
+					slider = make_area_child()
+
+				button_loadfile = make_area_child(,,sidebar_buttons)
+				button_getsgf = make_area_child()
+				button_getsgf_nowpoint = make_area_child()
+				button_search = make_area_child()
+				chkbox_colorflip = make_area_child()
+				chkbox_view_hosi = make_area_child()
+				kifustart = make_area_child()
+				kifustart_result = make_area_child()
 				
-		sidebar_area = make_area(1,3)
-			sidebar_kifulist = make_area()
-			sidebar_kifulist_result = make_area(1,2)
-				sidebar_kifulist_match = make_area()
-				sidebar_kifulist_buttons = make_area(2,2)
-					sidebar_kifulist_match_back = make_area()
-					sidebar_kifulist_match_next = make_area()
-					chkbox_autoplay = make_area()
-					slider = make_area()
-			sidebar_buttons = make_area(2,4)
-				button_loadfile = make_area()
-				button_getsgf = make_area()
-				button_getsgf_nowpoint = make_area()
-				button_search = make_area()
-				chkbox_colorflip = make_area()
-				chkbox_view_hosi = make_area()
-				kifustart = make_area()
-				kifustart_result = make_area()
-				
-//eqŠÖŒW\’z
-push_grid_child root , header_area
-push_grid_child root , body_area
-
-	push_grid_child body_area, sidebar_area
-		push_grid_child sidebar_area, sidebar_buttons
-			push_grid_child sidebar_buttons, button_loadfile
-			push_grid_child sidebar_buttons, button_getsgf
-			push_grid_child sidebar_buttons, button_getsgf_nowpoint
-			push_grid_child sidebar_buttons, button_search
-			push_grid_child sidebar_buttons, chkbox_colorflip
-			push_grid_child sidebar_buttons, chkbox_view_hosi
-			push_grid_child sidebar_buttons, kifustart
-			push_grid_child sidebar_buttons, kifustart_result
-			
-			
-		push_grid_child sidebar_area, sidebar_kifulist
-		push_grid_child sidebar_area, sidebar_kifulist_result
-			push_grid_child sidebar_kifulist_result, sidebar_kifulist_match
-			push_grid_child sidebar_kifulist_result, sidebar_kifulist_buttons
-				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_back
-				push_grid_child sidebar_kifulist_buttons, sidebar_kifulist_match_next
-				push_grid_child sidebar_kifulist_buttons, chkbox_autoplay
-				push_grid_child sidebar_kifulist_buttons, slider
-
-	push_grid_child body_area, goban_area
-
-		push_grid_child goban_area, goban_body_area
-		push_grid_child goban_area, goban_footer
-
-			push_grid_child goban_footer, back_top
-			push_grid_child goban_footer, back_ten
-			push_grid_child goban_footer, back_one
-			push_grid_child goban_footer, go_one
-			push_grid_child goban_footer, go_ten
-			push_grid_child goban_footer, go_end
-			push_grid_child goban_footer, chkbox_tyakusyu
-			push_grid_child goban_footer, button_clearboard
-
-
-
-
 exist "area.var"
 if strsize >= 0{
 	save_load_manager_load

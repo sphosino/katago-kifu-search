@@ -337,22 +337,42 @@ init_grid_system
 	return
 #global
 init_area_grid_system_mock
+
+
+
+#module
+
+#define global ctype make_area_child(%1 = 1, %2 = 1, %3 = -1) _make_area_child(%1,%2,%3)
+#defcfunc _make_area_child  int x, int y, int _parent
+	if _parent != -1{
+		//親が指定されていれば、
+		parent = _parent
+
+		//これ以降省略されていた時はこれを使う。
+		default_parent = parent
+	}else{
+		//親が省略されている
+		parent = default_parent
+	}
+	logmes a
+	a = make_area(x,y)
+	if parent != -1: push_grid_child parent, a
+	return a
+#deffunc init_grid_system_manager
+	default_parent = -1
+	return
+#global
+init_grid_system_manager
+
 #endif
+
 #if 0
-	root = make_area(2,2)
-	c = make_area(2,2)
-	d = make_area(2,2)
-	e = make_area(2,2)
-	f = make_area()
-	g = make_area()
-	h = make_area(2,2)
-	
-	add_grid_child root, c , 0,0
-	add_grid_child c   , d , 1,0
-	add_grid_child c   , e , 0,1
-	push_grid_child e  , f
-	push_grid_child e  , g
-	push_grid_child root  , h
+	root = make_area_child(2,2)
+		a = make_area_child(3,3,root)
+			b = make_area_child(2,2,a)
+			c = make_area_child(2,3)
+			d = make_area_child(3,2)
+		aa = make_area_child(2,2,root)
 	
 	
 	screen 0,700,700
