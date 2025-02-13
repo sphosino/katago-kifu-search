@@ -699,6 +699,7 @@ setfps 60
 	treebox_clear t
 	chdir kifu_dirname
 	del_item_all kifulist
+	del_item_all kifulist.matchlist
 	dirlist files,"*.sgf"
 	notesel ss 
 		ss = shuffle_notepad(files)
