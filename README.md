@@ -13,3 +13,6 @@ lizzieなどで深く読ませるとだいぶ言ってることが変わるこ�
 
 囲碁AI、KataGoのサイト　
 https://katagotraining.org/
+
+検討ソフトを導入する場合メガパックがおすすめ
+https://github.com/wonsiks/BadukMegapack
