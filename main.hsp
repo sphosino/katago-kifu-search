@@ -154,10 +154,13 @@ topnode = -1
 root = make_area_child(1,2)
 	header_area = make_area_child(,,root)
 	body_area = make_area_child(2,1)
-		sidebar_area = make_area_child(1,3,body_area)
+	
+		sidebar_area = make_area_child(1,2,body_area)
 		goban_area = make_area_child(1,2)
+		
 			goban_body_area = make_area_child(,,goban_area)
 			goban_footer = make_area_child(8): set_margin goban_footer,2,5
+			
 				back_top = make_area_child(,,goban_footer)
 				back_one = make_area_child()
 				back_ten = make_area_child()
@@ -166,12 +169,21 @@ root = make_area_child(1,2)
 				go_end = make_area_child()
 				button_clearboard = make_area_child()
 				chkbox_tyakusyu = make_area_child()
-			sidebar_buttons = make_area_child(2,4,sidebar_area)
-			sidebar_kifulist = make_area_child()
-			sidebar_kifulist_result = make_area_child(1,2)
-
-				sidebar_kifulist_match = make_area_child(,,sidebar_kifulist_result)
+				
+			sidebar_buttons = make_area_child(2,3,sidebar_area)
+			sidebar_kifu_area = make_area_child(1,2)
+			
+				sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
 				sidebar_kifulist_buttons = make_area_child(2,2)
+
+					sidebar_kifulist1 = make_area_child(,2,sidebar_kifulist_area)
+					sidebar_kifulist2 = make_area_child(,2)
+					
+						sidebar_kifulist = make_area_child(,,sidebar_kifulist1)
+						kifustart = make_area_child()
+						sidebar_kifulist_match = make_area_child(,,sidebar_kifulist2)
+						kifustart_result = make_area_child()
+						
 					sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons)
 					sidebar_kifulist_match_next = make_area_child()
 					chkbox_autoplay = make_area_child()
@@ -183,8 +195,7 @@ root = make_area_child(1,2)
 				button_search = make_area_child()
 				chkbox_colorflip = make_area_child()
 				chkbox_view_hosi = make_area_child()
-				kifustart = make_area_child()
-				kifustart_result = make_area_child()
+
 				
 exist "area.var"
 if strsize >= 0{
@@ -210,8 +221,8 @@ newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 
-newmod g_stepper, grid_stepper, kifu_start_num,kifustart
-newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result
+newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
+newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
 
 newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15, 12
 
@@ -248,8 +259,8 @@ setfps 60
 
 	if kifu_update{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
-		//マウスがエリア間を移動したか、プログラム上で左クリックされたか
-		if (pre_ != new_) || ((_getkey(1) == 1) && (ginfo_act != -1)){
+		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
+		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
 			pat = keyfpstime
 			pre_ = new_
 		}
@@ -507,8 +518,12 @@ setfps 60
 			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
 
 			nownode = get_current_node(t)
-			repeat kifu_start_num_result
-				gosub*move_next
+			repeat abs(kifu_start_num_result)
+				if kifu_start_num_result > 0{
+					gosub*move_next
+				}else{
+					gosub*move_back
+				}
 			loop
 
 		}else{

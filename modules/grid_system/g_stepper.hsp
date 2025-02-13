@@ -1,11 +1,28 @@
+#ifndef grid_stepper
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
-#module grid_stepper area_number, v
+#module grid_stepper area_number, v, under_limit, top_limit, gap
+
 
 #modinit array value, int _area
 	dup v, value
 	area_number = _area
-	
+	under_limit = -99999
+	top_limit = 99999
+	gap = 1
+	mref thismod_ID, 2
+	return thismod_ID
+
+#define global set_stepper_limit(%1, %2 = "", %3 = "", %4 = "") :\
+a@stepper = %2: if vartype(a@stepper) !=1{ a@stepper = str(a@stepper)}\
+b@stepper = %3: if vartype(b@stepper) !=1{ b@stepper = str(b@stepper)}\
+c@stepper = %4: if vartype(c@stepper) !=1{ c@stepper = str(c@stepper)}\
+_set_stepper_limit %1, a@stepper,b@stepper,c@stepper
+
+#modfunc _set_stepper_limit  str s1, str s2, str s3
+	if s1 != "": under_limit = int(s1)
+	if s2 != "": top_limit = int(s2)
+	if s3 != "": gap = int(s3)
 	return
 
 	
@@ -24,10 +41,10 @@
 	half_y = (rect.3 - rect.1) / 2
 	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
 	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
-	if _getkey(1) == 1{
-		if in_rect(uprect): v++
-		if in_rect(downrect): v--
-		v = limit(v,0)
+	if getPhold_ms(1, 350 , 150) == 1{
+		if in_rect(uprect): v+=gap
+		if in_rect(downrect): v-=gap
+		v = limit(v,under_limit,top_limit)
 	}
 	color 255,30,30
 	aboxfl uprect, 1
@@ -40,7 +57,7 @@
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 #global
-
+#endif
 #if 0
 mock_flag@global = 1
 
