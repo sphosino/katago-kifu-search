@@ -11,5 +11,5 @@ lizzieなどで深く読ませるとだいぶ言ってることが変わるこ�
 
 寝る前に自動再生を眺めて強くなろう！というコンセプトで作っています
 
-本家KataGoのサイト　
+囲碁AI、KataGoのサイト　
 https://katagotraining.org/
