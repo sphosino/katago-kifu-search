@@ -14,9 +14,9 @@
 	return thismod_ID
 
 #define global set_stepper_limit(%1, %2 = "", %3 = "", %4 = "") :\
-a@stepper = %2: if vartype(a@stepper) !=1{ a@stepper = str(a@stepper)}\
-b@stepper = %3: if vartype(b@stepper) !=1{ b@stepper = str(b@stepper)}\
-c@stepper = %4: if vartype(c@stepper) !=1{ c@stepper = str(c@stepper)}\
+a@stepper = %2: if vartype(a@stepper) != 2{ a@stepper = str(a@stepper)}\
+b@stepper = %3: if vartype(b@stepper) != 2{ b@stepper = str(b@stepper)}\
+c@stepper = %4: if vartype(c@stepper) != 2{ c@stepper = str(c@stepper)}\
 _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 
 #modfunc _set_stepper_limit  str s1, str s2, str s3
