@@ -11,4 +11,5 @@ Katagoのrating自己対戦の棋譜を集めていますが、わずか数百vi
 
 寝る前に自動再生を眺めて強くなろう！というコンセプトで作っています
 
+本家KataGoのサイト↓
 https://katagotraining.org/
