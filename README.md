@@ -11,5 +11,8 @@ lizzieなどで深く読ませるとだいぶ言ってることが変わるこ�
 
 寝る前に自動再生を眺めて強くなろう！というコンセプトで作っています
 
-本家KataGoのサイト　
+囲碁AI、KataGoのサイト　
 https://katagotraining.org/
+
+検討ソフトを導入する場合メガパックがおすすめ
+https://github.com/wonsiks/BadukMegapack
