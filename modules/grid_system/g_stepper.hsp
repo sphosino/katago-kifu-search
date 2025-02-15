@@ -41,10 +41,10 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	half_y = (rect.3 - rect.1) / 2
 	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
 	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
-	if getPhold_ms(1, 350 , 150) == 1{
-		if in_rect(uprect): v+=gap
-		if in_rect(downrect): v-=gap
-		v = limit(v,under_limit,top_limit)
+	if getPhold_ms(1, 400 , 100) == 1{
+		if in_rect(uprect)  : v += gap
+		if in_rect(downrect): v -= gap
+		v = limit(v, under_limit, top_limit)
 	}
 	color 255,30,30
 	aboxfl uprect, 1

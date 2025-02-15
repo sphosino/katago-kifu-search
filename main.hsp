@@ -264,7 +264,8 @@ setfps 60
 			pat = keyfpstime
 			pre_ = new_
 		}
-	
+
+		//ユーザーがアクティブでない時
 		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
 			//毎フレーム１棋譜読み込む
 			filelist = get_name_all_items(kifulist)
@@ -690,7 +691,7 @@ setfps 60
 *syncboard
 	nownode = get_current_node(t) 
 	sync_treebox_board t, board
-	tmp = get_property_data(get_tree_item_id(nownode), "C")
+	tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
 	logmes "sync -> "+topnode + "::"+ get_tree_item_id(nownode) + "   "+tmp
 	if get_tree_item_id(nownode) == topnode: tmp = "0.50"
 	split tmp," ", c_list
