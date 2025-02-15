@@ -12,8 +12,8 @@ lizzieなどの検討ソフトで深く読ませると最善ではないこと�
 寝る前に自動再生で眺めて強くなろう！というコンセプトで作っています
 
 ***
-囲碁AI、KataGoのサイト　
+囲碁AI、KataGoのサイト  
 https://katagotraining.org/
 
-KataGoを動かす検討ソフトを導入する場合、こちらのメガパックがおすすめ。私もこれを使っています。
+KataGoを動かす検討ソフトを導入する場合、こちらのメガパックがおすすめ。私もこれを使っています。  
 https://github.com/wonsiks/BadukMegapack
