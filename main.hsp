@@ -600,7 +600,9 @@ setfps 60
 	newmod t, treebox
 	sdim s, $FFFF
 	clipget s, varsize(s)
+	
 	if load_sgf(s,-1) < 0: return
+	
 	topnode = load_sgf_set_board(t, stat, board)
 	
 	blackplayer = get_property_data(topnode, "PB")

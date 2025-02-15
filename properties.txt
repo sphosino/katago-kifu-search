@@ -16,3 +16,8 @@ DT
 GN
 TR
 PC
+DZ
+CA
+AP
+LZOP
+LZ
