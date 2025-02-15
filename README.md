@@ -15,5 +15,5 @@ lizzieなどの検討ソフトで深く読ませると最善ではないこと�
 囲碁AI、KataGoのサイト　
 https://katagotraining.org/
 
-検討ソフトを導入する場合メガパックがおすすめ
+KataGoを動かす検討ソフトを導入する場合、こちらのメガパックがおすすめ。私もこれを使っています。
 https://github.com/wonsiks/BadukMegapack
