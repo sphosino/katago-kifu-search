@@ -1,12 +1,13 @@
 #include "area_grid_system.hsp"
 #include "../keyfps.hsp"
-#module grid_checkbox flag, string, area_number
+#module grid_checkbox flag, string, area_number, check_size, margin
 #modinit var v, str s, int _area
 	string = s
 	flag = v
 	dup v,flag
 	area_number = _area
-	check_size = 15
+	check_size = 20
+	margin = 3
 	return
 
 #modfunc toggle_g_checkbox
@@ -26,7 +27,7 @@
 
 	rx = rect.2 + rect.0 - check_size >> 1
 	ry = rect.3 + rect.1 - check_size >> 1
-	checkrect = rect.2 - check_size,ry,rect.2, ry + check_size
+	checkrect = rect.2 - check_size - margin,ry,rect.2 - margin, ry + check_size
 	if _getkey(1) == 1{
 		if in_rect(rect): toggle_g_checkbox thismod
 	}
