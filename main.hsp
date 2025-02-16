@@ -7,8 +7,6 @@ screen , ginfo(20), ginfo(21)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 
-#const KIFU_LOAD_MAX 4100
-
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\hsp"
 #else
@@ -41,6 +39,8 @@ if strsize == -1{
 
 	//Šû•ˆÄ¶‘¬“x(ms)
 	auto_interval = 1000
+
+	KIFU_LOAD_MAX = 4100
 }else{
 	notesel s
 	noteload window_file_name
@@ -58,6 +58,7 @@ if strsize == -1{
 	noteget_ auto_interval
 	noteget_ Å¬‰»
 	noteget_ Å‘å‰»
+	noteget_ KIFU_LOAD_MAX
 
 	if Å‘å‰»: sendmsg hwnd, $112, $F030
 	if Å¬‰»: sendmsg hwnd, $112, $F020
@@ -101,6 +102,7 @@ if 0{ *save_window_size
 	IsZoomed hwnd: Å‘å‰» = stat
 	noteadd str(Å¬‰»)
 	noteadd str(Å‘å‰»)
+	noteadd str(KIFU_LOAD_MAX)
 	notesave window_file_name
 	end
 }
