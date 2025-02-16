@@ -129,7 +129,7 @@ dimtype SGF_NODE@global, 5
 	properties_num++
 	return
 	
-#modcfunc serch_SGFchild int p1
+#modcfunc search_SGFchild int p1
 	result = -1
 	repeat 子ノードの数
 		if 子ノード(cnt) == p1{
@@ -139,8 +139,8 @@ dimtype SGF_NODE@global, 5
 	loop
 	return result
 
-#define global ctype serch_SGFchild_byxy(%1,%2,%3) _serch_SGFchild_byxy(SGF_NODE@global(%1), %2, %3)
-#modcfunc _serch_SGFchild_byxy str s1, str s2
+#define global ctype search_SGFchild_byxy(%1,%2,%3) _search_SGFchild_byxy(SGF_NODE@global(%1), %2, %3)
+#modcfunc _search_SGFchild_byxy str s1, str s2
 	result = -1
 	repeat 子ノードの数
 		if get_property_data(子ノード(cnt), s1) == s2{
@@ -153,7 +153,7 @@ dimtype SGF_NODE@global, 5
 #define global add_SGFchild(%1,%2) _add_SGFchild SGF_NODE@global(%1), %2
 #modfunc _add_SGFchild int p1
 
-	if serch_SGFchild(thismod, p1) == -1{
+	if search_SGFchild(thismod, p1) == -1{
 		子ノード(子ノードの数) = p1
 		子ノードの数++
 	}
@@ -162,7 +162,7 @@ dimtype SGF_NODE@global, 5
 
 #modfunc del_SGFchild int p1
 
-	if serch_SGFchild(thismod, p1) >= 0{
+	if search_SGFchild(thismod, p1) >= 0{
 		memcpy 子ノード, 子ノード, 子ノードの数 - stat - 1 << 2, stat << 2
 		子ノードの数--
 	}
@@ -302,7 +302,7 @@ dimtype SGF_NODE@global, 5
 	poke 座標, 1, 'a' + coordinate.1
 
 	if nownode >= 0{
-		if serch_SGFchild_byxy(nownode, 手番, 座標) >= 0{
+		if search_SGFchild_byxy(nownode, 手番, 座標) >= 0{
 			return stat //すでにノードが存在
 		}
 	}
@@ -332,17 +332,20 @@ dimtype SGF_NODE@global, 5
 	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
 	end
 
-#deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
+#deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn, local sgf_length
 	sgfs = ss
 	nn = node
 	
+	sgf_length = strlen(sgfs)
 	//解析
-	while strmid(sgfs, point, 1) != ""
+	*@
+	if point >= sgf_length: return stack
 		
 		token = peek(sgfs, point)
-
+		;ssss = -keyfpstime
 		if token >= 'A' && token <= 'Z'{
 
+			
 			point = 対応する文字まで取得(sgfs, point, "[", P) + 1
 			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
 			set_property_data nn, P, D
@@ -358,7 +361,8 @@ dimtype SGF_NODE@global, 5
 			
 			new_id = stat
 
-			stack(nln) = new_id: nln++
+			stack(nln) = new_id:nln++
+
 
 			if nn >= 0{
 				add_SGFchild nn, new_id
@@ -373,10 +377,7 @@ dimtype SGF_NODE@global, 5
 			point++
 			
 		}
-	wend
-
-	if sgf_err != "": return -1
-
-	return stack
+		;logmes "eeeee" + (ssss + keyfpstime)
+	goto*@b
 #global
 #endif

@@ -378,7 +378,7 @@ setfps 60
 								new = make_SGFnode(now_sgfnode, point, get_turn_SGFstr(逆手番(get_turn(board))))
 	
 								//現在のツリーノード直下にそのSGFノードがあるか？あれば、そのノードを取得
-								new_treeID = serch_tree_child_by_item_ID(nownode, new)
+								new_treeID = search_tree_child_by_item_ID(nownode, new)
 								
 								if new_treeID == -1{
 									//新たにツリーノードを作る
@@ -456,7 +456,7 @@ setfps 60
 	碁盤表示 board , 着手番号表示, 20
 	draw_set_list_on_board board, v
 	
-	treebox_draw t
+
 	foreach kifulist
 		my_listbox_draw kifulist.cnt
 	loop
@@ -476,7 +476,7 @@ setfps 60
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
 	if getdbl_ms(17,250): debugmode ^ 1
-	
+		treebox_draw t
 	draw_all_rect root, debugmode
 
 	redraw

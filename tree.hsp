@@ -60,8 +60,8 @@ dimtype treenode@global, 5
 	next
 	return
 
-#define global ctype serch_tree_child_by_item_ID(%1, %2) _serch_tree_child_by_item_ID(treenode@global(%1),%2)
-#modcfunc _serch_tree_child_by_item_ID int p1, local i
+#define global ctype search_tree_child_by_item_ID(%1, %2) _search_tree_child_by_item_ID(treenode@global(%1),%2)
+#modcfunc _search_tree_child_by_item_ID int p1, local i
 	for i,,cn
 		if get_tree_item_id(childs(i)) == p1: return childs(i)
 	next

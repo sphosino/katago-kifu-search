@@ -94,7 +94,6 @@
 		
 		set_board_topnode _board, new_topnode
 	}
-
 	blackplayer = get_property_data(new_topnode, "PB")
 	split blackplayer,"-",bp
 	whiteplayer = get_property_data(new_topnode, "PW")
