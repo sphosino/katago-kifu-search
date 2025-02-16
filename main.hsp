@@ -689,11 +689,17 @@ setfps 60
 	return
 	
 *syncboard
-	nownode = get_current_node(t) 
+	nownode = get_current_node(t)
+
+	if get_tree_item_id(nownode) == topnode{
+		tmp = "0.50"
+	}else{
+			tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
+	}
 	sync_treebox_board t, board
-	tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
+
 	logmes "sync -> "+topnode + "::"+ get_tree_item_id(nownode) + "   "+tmp
-	if get_tree_item_id(nownode) == topnode: tmp = "0.50"
+
 	split tmp," ", c_list
 	
 	return

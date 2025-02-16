@@ -21,3 +21,12 @@ CA
 AP
 LZOP
 LZ
+OT
+EV
+BT
+TM
+GC
+WT
+US
+AB
+N

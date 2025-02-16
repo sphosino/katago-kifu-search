@@ -43,6 +43,14 @@
 	get_board_size_from_SGF SGF_topnode, xy
 
 	clear_board board , xy, xy.1
+
+	okiisi = get_property_data(SGF_topnode,"AB")
+	if okiisi != ""{
+		repeat strlen(okiisi) / 2
+		’u‚«Î board,peek(okiisi,cnt*2) - 'a', peek(okiisi,cnt*2+1) - 'a', 1
+		loop
+		toggle_turn board
+	}
 	
 	return
 

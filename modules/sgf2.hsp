@@ -199,7 +199,16 @@ dimtype SGF_NODE@global, 5
 	}
 
 	repeat properties_num
-		s += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
+		a = property_number_to_str(properties(cnt))
+		if a == "AB"{
+			aa = properties_data(cnt)
+			s += a
+			repeat strlen(aa)/2
+				s += "[" + strmid(aa,cnt*2,2) + "]"
+			loop
+		}else{
+			s += a + "[" + properties_data(cnt) + "]"
+		}
 	loop
 	
 	for i,, 子ノードの数
@@ -268,11 +277,9 @@ dimtype SGF_NODE@global, 5
 #module
 #defcfunc 対応する括弧まで取得 str ss, var index, str s1, str s2, var result
 	s = ss
-	;if strmid(s,index,1) != s1: sgf_err = "指定位置が開始文字で始まっていません SGF解析エラー"
 	counter = 0
 	repeat , index
 		t = strmid(s,cnt,1)
-		;if t == "": sgf_err = "括弧が閉じられていません SGF解析エラー"
 		if t == s1{
 			counter++
 		}else:if t == s2{
@@ -285,7 +292,6 @@ dimtype SGF_NODE@global, 5
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
 
 	i = instr(ss,index,s1)
-	;if i == -1: sgf_err = "対応する文字が見つからない SGF解析エラー"
 	result = strmid(ss,index,i)
 	return index + i
 #global
@@ -366,6 +372,10 @@ dimtype SGF_NODE@global, 5
 			nn = new_id
 			point++
 			
+		}else:if token == '['{
+			point++
+			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
+			set_property_data nn, P, get_property_data(nn, P) + D
 		}else{
 
 			logmes "不正なトークンが含まれています"

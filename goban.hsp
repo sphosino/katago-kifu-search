@@ -40,6 +40,10 @@
 	if p1 == 黒番: return "B"
 	if p1 == 白番: return "W"
 	return ;error
+#modfunc toggle_turn
+	if 手番 == 黒番: 手番 = 白番: return
+	if 手番 == 白番: 手番 = 黒番
+	return
 #modcfunc get_手数
 	return 手数
 #modfunc 着手 int x, int y
@@ -373,6 +377,17 @@
 
 
 	return n
+
+#modfunc 置き石 int _x, int _y, int col
+	if _x < 0 || _x >= length(board) || _y < 0 || _y >= length2(board) {
+		return 0 // 範囲外
+	}
+	if board(_x, _y) != 空点 {
+		return 0 // 既に石がある
+	}
+	board(_x, _y) = col
+	stepboard(_x, _y) = 0 // 置き石は手数にカウントしない
+	return 1 // 成功
 #global
 board_module_init
 #endif

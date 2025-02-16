@@ -247,7 +247,7 @@ init_hash_manager
 #endif
 
 
-#if 1
+#if 0
 	new_value "A","e‚Ì•Ï”‚P"
 	new_value "B","e‚Ì•Ï”‚Q"
 	new_value "Z","fafa"

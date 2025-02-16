@@ -1,0 +1,116 @@
+#ifdef _debug
+	dirname = "C:\\Users\\owner\\Desktop\\hsp"
+#else
+	dirname = dir_exe
+#endif
+#include "sgf2.hsp"  // 前回のモジュールを想定
+
+// 設定パラメータ
+#const MAX_DEPTH 430     // メインの手数
+#const BRANCH_PROB 30    // 分岐発生確率(%)
+#const VARIATION_MAX 6    // 最大分岐数
+#const BOARD_SIZE 52      // 碁盤のサイズ
+
+// 初期化
+randomize
+dim board, BOARD_SIZE, BOARD_SIZE
+dim history, MAX_DEPTH
+current_color = 1  // 1=黒,2=白
+
+// ルートノード作成
+make_new_SGFnode -1
+root = stat
+set_property_data root, "SZ", "" + BOARD_SIZE
+set_property_data root, "KM", "6.5"
+set_property_data root, "RU", "Japanese"
+
+// メイン手順生成
+current_node = root
+repeat MAX_DEPTH
+    // 合法手が見つかるまで試行
+    repeat
+    await
+        x = rnd(BOARD_SIZE)
+        y = rnd(BOARD_SIZE)
+        if board(x,y) == 0 : break
+    loop
+
+    // ノード作成
+    make_new_SGFnode current_node
+    new_node = stat
+    add_SGFchild current_node, new_node
+    current_node = new_node
+
+    // 着手情報設定
+    	    chr = "  "
+	    poke chr, 0, 'a' + x
+	    poke chr, 1, 'a' + y
+    if current_color == 1 {
+
+        set_property_data current_node, "B", chr
+    } else {
+        set_property_data current_node, "W", chr
+    }
+
+    // 分岐生成（確率的に作成）
+    if (rnd(100) < BRANCH_PROB) && (cnt < MAX_DEPTH-1) {
+        branches = rnd(VARIATION_MAX-1)+1
+        repeat branches
+            make_new_SGFnode current_node
+            branch_node = stat
+            add_SGFchild current_node, branch_node
+
+            // 分岐手順（短い手数）
+            repeat rnd(5)+1
+                // 分岐用のランダムな着手
+                repeat
+                    bx = rnd(BOARD_SIZE)
+                    by = rnd(BOARD_SIZE)
+                    if board(bx,by) == 0 : break
+                loop
+                
+                make_new_SGFnode branch_node
+                new_bnode = stat
+                add_SGFchild branch_node, new_bnode
+                branch_node = new_bnode
+    	    chr = "  "
+	    poke chr, 0, 'a' + bx
+	    poke chr, 1, 'a' + by
+                if current_color == 1 {
+                    set_property_data branch_node, "W", chr
+                } else {
+                    set_property_data branch_node, "B", chr
+                }
+            loop
+        loop
+    }
+
+    // 盤面更新
+    board(x,y) = current_color
+    current_color = 3 - current_color  // 手番交替
+loop
+
+dialog "生成完了: large_test.sgf\n手数:"+MAX_DEPTH+"\n分岐数:"+BRANCH_PROB+"%"
+get_node_sgf root, sgf_data
+notesel sgf_data
+notesave "bigtest.sgf"
+
+// パフォーマンス計測用
+#include "keyfps.hsp"
+
+#undef logmes
+#define logmes(%1) logmes@hsp(%1):mes %1
+
+start_time = keyfpstime
+topnode = load_sgf(sgf_data, -1)
+time = keyfpstime - start_time
+logmes "ロード時間: " + time + "ミリ秒\n総ノード数: " + length(SGF_NODE@global)
+
+stop
+
+/*
+ロード時間: 1086ミリ秒
+総ノード数: 3558
+*/
+
+//一応のため、少し変更してもう一度テストしました。　今後SGFモジュールをテストするときはこのコードでよさそうですか？
