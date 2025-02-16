@@ -337,13 +337,11 @@ dimtype SGF_NODE@global, 5
 	
 	sgf_length = strlen(sgfs)
 	//‰ðÍ
-	*@
-	if point >= sgf_length: return stack
+	while point < sgf_length
 		
 		token = peek(sgfs, point)
-		;ssss = -keyfpstime
+		
 		if token >= 'A' && token <= 'Z'{
-
 			
 			point = ‘Î‰ž‚·‚é•¶Žš‚Ü‚ÅŽæ“¾(sgfs, point, "[", P) + 1
 			point = ‘Î‰ž‚·‚é•¶Žš‚Ü‚ÅŽæ“¾(sgfs, point, "]", D) + 1
@@ -360,8 +358,7 @@ dimtype SGF_NODE@global, 5
 			
 			new_id = stat
 
-			stack(nln) = new_id:nln++
-
+			stack(nln) = new_id: nln++
 
 			if nn >= 0{
 				add_SGFchild nn, new_id
@@ -376,7 +373,7 @@ dimtype SGF_NODE@global, 5
 			point++
 			
 		}
-		;logmes "eeeee" + (ssss + keyfpstime)
-	goto*@b
+	wend
+	return stack
 #global
 #endif
