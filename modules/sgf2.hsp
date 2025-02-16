@@ -339,7 +339,7 @@ dimtype SGF_NODE@global, 5
 	sgf_length = strlen(sgfs)
 	//解析
 	*@
-	if point >= sgf_length: return stack
+	if point >= sgf_length: return
 		
 		token = peek(sgfs, point)
 		;ssss = -keyfpstime
@@ -351,10 +351,13 @@ dimtype SGF_NODE@global, 5
 			set_property_data nn, P, D
 			
 		}else:if token = '('{
-			
-			point = 対応する括弧まで取得(sgfs, point, "(", ")", f) + 1
-			load_sgf_main f, nn
-			
+			if point = 0{ //これでかなり高速化しました。対応する括弧まで取得が重かった見たいです。最初の(は対応する位置が分かっているのでそれを利用しました。
+				load_sgf_main strmid(sgfs,1,sgf_length -2), nn
+				return stack
+			}else{
+				point = 対応する括弧まで取得(sgfs, point, "(", ")", f) + 1
+				load_sgf_main f, nn
+			}
 		}else:if (token == ';'){
 
 			make_new_SGFnode nn
