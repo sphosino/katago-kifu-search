@@ -217,7 +217,7 @@ newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 
 newmod g_chkbox, grid_checkbox, mode           , "’…è" , chkbox_tyakusyu
-newmod g_chkbox, grid_checkbox, enableColorFlip,"F”½“]", chkbox_colorflip
+newmod g_chkbox, grid_checkbox, enableColorFlip,"ŒŸõ‚É\nF”½“]‚àŠÜ‚Ş", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"©“®Ä¶",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"¯•\¦", chkbox_view_hosi
 

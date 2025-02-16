@@ -249,8 +249,18 @@ dimtype SGF_NODE@global, 5
 			i += "W[" + À•W + "]"
 		}	
 	}
+
 	repeat properties_num
-		i += property_number_to_str(properties(cnt)) + "[" + properties_data(cnt) + "]"
+		s = property_number_to_str(properties(cnt))
+		if s == "AB"{
+			aa = properties_data(cnt)
+			i += s
+			repeat strlen(aa)/2
+				i += "[" + strmid(aa,cnt*2,2) + "]"
+			loop
+		}else{
+			i += s + "[" + properties_data(cnt) + "]"
+		}
 	loop
 	return i
 

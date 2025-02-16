@@ -6,10 +6,10 @@
 #include "sgf2.hsp"  // 前回のモジュールを想定
 
 // 設定パラメータ
-#const MAX_DEPTH 430     // メインの手数
+#const MAX_DEPTH 450     // メインの手数
 #const BRANCH_PROB 30    // 分岐発生確率(%)
 #const VARIATION_MAX 6    // 最大分岐数
-#const BOARD_SIZE 52      // 碁盤のサイズ
+#const BOARD_SIZE 26      // 碁盤のサイズ
 
 // 初期化
 randomize
