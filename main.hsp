@@ -226,8 +226,8 @@ newmod g_chkbox, grid_checkbox, view_hosi@goban,"¯•\¦", chkbox_view_hosi
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
 
-newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15, 12
-newmod g_slider, grid_slider, alpha_interval, 1, slider, 0, 100000, 15,12, ,20
+newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15 , 25
+newmod g_slider, grid_slider, alpha_interval, 1, slider, 0, 10000, 15 , 25, ,30
 
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
