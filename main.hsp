@@ -117,7 +117,7 @@ if 0{ *save_window_size
 #include "modules/grid_system/g_button.hsp"
 #include "modules/grid_system/g_chkbox.hsp"
 #include "modules/grid_system/g_listbox.hsp"
-#include "modules/grid_system/g_slider.hsp"
+#include "modules/grid_system/g_slider2.hsp"
 #include "modules/grid_system/g_stepper.hsp"
 #include "hspext.as"
 
@@ -227,6 +227,7 @@ newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_st
 newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
 
 newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15, 12
+newmod g_slider, grid_slider, alpha_interval, 1, slider, 0, 100000, 15,12, ,20
 
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
@@ -443,11 +444,23 @@ setfps 60
 		}
 	
 		//自動再生
-		if jidou & pretime + auto_interval <= keyfpstime{
-			
-			gosub *move_next
+
+		//-------------------基本wait +     局面の難解さによるwait
+		if jidou{
+			if pre_jidou = 0{
+				前の形勢 = double(c_list)
+				pre_jidou = 1
+			}
+			if pretime + auto_interval + (形勢の変化率 * alpha_interval) <= keyfpstime{
+				
+				gosub *move_next
+				今の形勢 = double(c_list)
+				形勢の変化率 = absf(今の形勢 - 前の形勢)
+				前の形勢 = 今の形勢
+			}
+		}else{
+			pre_jidou = 0
 		}
-		
 	}
 
 	color 128,128,128:boxf 0,0,ginfo_winx, ginfo_winy
