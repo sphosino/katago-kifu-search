@@ -226,8 +226,9 @@ newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
 
-newmod g_slider, grid_slider, auto_interval, 1, slider, 100, 2000, 15 , 25
-newmod g_slider, grid_slider, alpha_interval, 1, slider, 0, 10000, 15 , 25, ,30
+newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 2000 , 14 , 16
+newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
+newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
@@ -251,6 +252,7 @@ gosub*load_kifu_folder
 gosub*loadsgf
 
 c_list = "0.50"
+dim pre_xy, 2
 
 pretime = keyfpstime
 setfps 60
@@ -451,7 +453,7 @@ setfps 60
 				前の形勢 = double(c_list)
 				pre_jidou = 1
 			}
-			if pretime + auto_interval + (形勢の変化率 * alpha_interval) <= keyfpstime{
+			if pretime + auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 18)  <= keyfpstime{
 				
 				gosub *move_next
 				今の形勢 = double(c_list)
@@ -706,14 +708,21 @@ setfps 60
 *syncboard
 	nownode = get_current_node(t)
 
+	tmp = get_property_coordinate_cash(get_tree_item_id(nownode), xy)
+
+	マンハッタン距離 = abs(xy - pre_xy)   +   abs(xy.1 - pre_xy.1)
+
+	logmes "マンハッタン距離 = "+マンハッタン距離
+	
+
+	pre_xy = xy, xy.1
+
 	if get_tree_item_id(nownode) == topnode{
 		tmp = "0.50"
 	}else{
-			tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
+		tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
 	}
 	sync_treebox_board t, board
-
-	logmes "sync -> "+topnode + "::"+ get_tree_item_id(nownode) + "   "+tmp
 
 	split tmp," ", c_list
 	
