@@ -447,13 +447,13 @@ setfps 60
 	
 		//自動再生
 
-		//-------------------基本wait +     局面の難解さによるwait
+		//-------------------基本wait +  局面の難解さによるwait(エンジンの形勢判断 + 直前の手とのマンハッタン距離)
 		if jidou{
 			if pre_jidou = 0{
 				前の形勢 = double(c_list)
 				pre_jidou = 1
 			}
-			if pretime + auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 18)  <= keyfpstime{
+			if pretime + auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36)  <= keyfpstime{
 				
 				gosub *move_next
 				今の形勢 = double(c_list)
