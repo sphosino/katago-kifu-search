@@ -39,6 +39,8 @@ if strsize == -1{
 
 	//棋譜再生速度(ms)
 	auto_interval = 1000
+	alpha_interval = 10000
+	m_interval = 10000
 
 	KIFU_LOAD_MAX = 4100
 }else{
@@ -56,12 +58,13 @@ if strsize == -1{
 	noteget_ view_hosi@goban
 	noteget_ kifu_start_num
 	noteget_ auto_interval
+	noteget_ alpha_interval
+	noteget_ m_interval
 	noteget_ 最小化
 	noteget_ 最大化
 	noteget_ KIFU_LOAD_MAX
 
-	if 最大化: sendmsg hwnd, $112, $F030
-	if 最小化: sendmsg hwnd, $112, $F020
+
 
 	//wx,wyがなぜか -32000 という数値で保存されてしまう場合があるようなので、その場合の処理
 	if wx < 0{
@@ -81,9 +84,11 @@ if strsize == -1{
 #global
 
 width sx, sy, wx, wy
-
-onexit *save_window_size
-if 0{ *save_window_size
+	if 最大化: sendmsg hwnd, $112, $F030
+	if 最小化: sendmsg hwnd, $112, $F020
+	
+onexit *save_info
+if 0{ *save_info
 	chdir dirname
 	sdim s
 	notesel s
@@ -91,13 +96,15 @@ if 0{ *save_window_size
 	noteadd str(ginfo(11))
 	noteadd str(ginfo(4)) //ウィンドウ位置
 	noteadd str(ginfo(5))
-	noteadd str(ginfo(12))　//描画領域サイズ
-	noteadd str(ginfo(13))
+	noteadd str(save_window_size  )　//描画領域サイズ
+	noteadd str(save_window_size.1)
 	noteadd str(max_depth)
 	noteadd str(enableColorFlip)
 	noteadd str(view_hosi@goban)
 	noteadd str(kifu_start_num)
 	noteadd str(auto_interval)
+	noteadd str(alpha_interval)
+	noteadd str(m_interval)
 	IsIconic hwnd: 最小化 = stat
 	IsZoomed hwnd: 最大化 = stat
 	noteadd str(最小化)
@@ -259,8 +266,20 @@ setfps 60
 
 #const INACTIVITY_TIMEOUT 2000
 
+pre_window_size = 0,0
+
 *main
 	manage_keyfps
+
+	
+	window_size = ginfo(12), ginfo(13)
+	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
+		pre_window_size = window_size, window_size.1
+		IsZoomed hwnd
+		if stat = 0{
+			save_window_size = window_size, window_size.1
+		}
+	}
 
 	if kifu_update{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
@@ -713,7 +732,6 @@ setfps 60
 	マンハッタン距離 = abs(xy - pre_xy)   +   abs(xy.1 - pre_xy.1)
 
 	logmes "マンハッタン距離 = "+マンハッタン距離
-	
 
 	pre_xy = xy, xy.1
 
