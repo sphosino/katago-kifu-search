@@ -386,7 +386,6 @@
 		return 0 // 既に石がある
 	}
 	board(_x, _y) = col
-	stepboard(_x, _y) = 0 // 置き石は手数にカウントしない
 	return 1 // 成功
 #global
 board_module_init
