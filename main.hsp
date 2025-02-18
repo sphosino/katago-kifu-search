@@ -275,8 +275,8 @@ pre_window_size = 0,0
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
 		pre_window_size = window_size, window_size.1
-		ç≈ëÂâª = IsZoomed hwnd
-		ç≈è¨âª = IsIconic hwnd
+		IsZoomed hwnd :ç≈ëÂâª = stat
+		IsIconic hwnd :ç≈è¨âª = stat
 		if (ç≈ëÂâª | ç≈è¨âª) == 0{
 			save_window_size = window_size, window_size.1
 		}
