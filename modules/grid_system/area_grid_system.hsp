@@ -4,6 +4,7 @@
 #include "gridpos.hsp"
 #include "area_save_load_manager.hsp"
 #include "rboxf.hsp"
+#include "get_rect_margin.hsp"
 
 dimtype areagrid@global, 5
 

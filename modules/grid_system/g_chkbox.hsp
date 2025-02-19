@@ -21,7 +21,9 @@
 	color
 	rboxf rect,rect.1,rect.2,rect.3
 	color 255,255,255
-	pos rect,rect.1: mes string
+	m = 5, 5, 5, 5
+	get_rect_margin rect, m, nrec
+	pos nrec, nrec.1: mes string
 
 	color 180,180,180
 

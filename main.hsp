@@ -13,7 +13,6 @@ SetWindowLong hwnd, -16, stat | $10000 | $40000
 kifu_dirname = dirname + "/棋譜"
 
 chdir dirname
-
 exist window_file_name
 
 if strsize == -1{
@@ -43,6 +42,7 @@ if strsize == -1{
 	KIFU_LOAD_MAX = 4100
 }else{
 	notesel s
+	chdir dirname
 	noteload window_file_name
 	noteget_start
 	noteget_ x
@@ -131,7 +131,7 @@ if 0{
 #include "hspext.as"
 
 
-chdir kifu_dirname
+
 
 randomize
 
@@ -212,6 +212,7 @@ exist "area.var"
 if strsize >= 0{
 	save_load_manager_load
 }
+chdir kifu_dirname
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
@@ -301,12 +302,15 @@ pre_window_size = -9999,-9999
 					}
 					if get_value(sgf_file_name) == NOT_DEFINED_HASH{
 						notesel sgf
+							chdir kifu_dirname
 							noteload sgf_file_name
 							logmes "start loading sgf -> " + sgf_file_name
 							start_time = keyfpstime // 計測開始
-							new_value sgf_file_name, str(load_sgf(sgf, -1)) //ファイル名とトップノードの番号を紐づける
+							lsgf = load_sgf(sgf, -1)
 							end_time = keyfpstime // 計測終了
-							logmes "loaded sgf -> " + sgf_file_name + " (time: " + (end_time - start_time) + " ms)  " + next_kifuload_index
+							new_value sgf_file_name, str(lsgf) //ファイル名とトップノードの番号を紐づける
+							end_time2 = keyfpstime
+							logmes "loaded sgf -> " + sgf_file_name + " (time: " + (end_time - start_time) + " ms) "+(end_time2 - start_time) + " ms)  " + next_kifuload_index
 						noteunsel
 						break
 					}
@@ -641,6 +645,8 @@ pre_window_size = -9999,-9999
 	newmod t, treebox
 	sdim s, $FFFF
 	clipget s, varsize(s)
+
+	if s = "": return
 	
 	if load_sgf(s,-1) < 0: return
 	
@@ -695,9 +701,9 @@ pre_window_size = -9999,-9999
 	return
 	
 *loadfile
-	
+	chdir kifu_dirname
 	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
-
+	chdir dirname
 	dimtype SGF_NODE@global,5
 	init_hash_manager
 	#ifdef init_properties

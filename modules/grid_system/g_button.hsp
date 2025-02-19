@@ -33,9 +33,14 @@
 		fc = fontcolors(colors(0))
 	}
 	now_cx = ginfo_cx, ginfo_cy
-	pos rect, rect.1
+	
 	setcolor bc: rboxf rect,rect.1,rect.2,rect.3
-	setcolor fc: mes string
+	setcolor fc
+	pos rect, rect.1
+	m = 5, 5, 5, 5
+	get_rect_margin rect, m, nrec
+	pos nrec,nrec.1
+	mes string
 	pos now_cx,now_cx.1
 	
 	return

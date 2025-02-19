@@ -39,6 +39,7 @@
 #deffunc save_load_manager_save
 *save
 	logmes "called save_label"
+	chdir dirname@
 	vsave_start
 	vsave_put areagrid@global
 	vsave_put save_rect
@@ -49,6 +50,7 @@
 #deffunc save_load_manager_load
 *load
 	logmes "called load_label"
+	chdir dirname@
 	vload_start varfile
 	vload_get areagrid@global
 	vload_get save_rect
