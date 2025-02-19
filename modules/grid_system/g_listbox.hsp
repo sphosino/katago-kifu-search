@@ -2,7 +2,7 @@
 
 #include "area_grid_system.hsp"
 
-
+#addition "../keyfps.hsp"
 //アイテム構造体（ロジックは入れない）
 dimtype listbox_items@global, 5
 
@@ -297,7 +297,7 @@ dimtype listbox_items@global, 5
 
 #if 0
 
-#include "../keyfps.hsp"
+
 mock_flag@global = 1
 set_rect_mock 0, 100,100,300,200
 

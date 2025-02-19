@@ -1,4 +1,6 @@
 #include "area_grid_system.hsp"
+#addition "../keyfps.hsp"
+
 #module grid_button string, area, label, colors, bc, fc
 
 #modinit str s1, label l, int area_number, local thismod_ID
@@ -57,6 +59,8 @@ init_g_button_colorlist
 
 #if 0
 
-	newmod a, grid_button, "ABC"
+	newmod a, grid_button, "ABC",*lab_
 
+*lab_
+	stop
 #endif

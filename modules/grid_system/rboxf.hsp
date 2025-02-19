@@ -1,7 +1,7 @@
 #module
 #define ctype max( %1, %2 ) ( %1 )*( %1 > %2 ) + ( %2 )*( %1 <= %2 )
 #define ctype min( %1, %2 ) ( %1 )*( %1 < %2 ) + ( %2 )*( %1 >= %2 )
-#const DEFAULT_R 20
+#const DEFAULT_R 5
 /*
     rboxf (左上X座標), (左上Y座標), (右下X座標), (右下Y座標), (角の半径)
 */

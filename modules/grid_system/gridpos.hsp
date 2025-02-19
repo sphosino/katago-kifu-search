@@ -1,4 +1,6 @@
-#include "ŠJ”­Š®—¹/keyfps.hsp"
+#ifndef get_grid_rect
+#addition "modules/keyfps.hsp"
+#addition "../keyfps.hsp"
 #module 
 #deffunc get_grid_rect array x, array y, int margin_x, int margin_y, int idx, int idy, array c
 	dim c,4
@@ -232,7 +234,7 @@
 	return
 	
 #global
-
+#endif
 
 #if 0
 x = 200,20,20,20,20,200

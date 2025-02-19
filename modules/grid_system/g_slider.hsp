@@ -1,5 +1,6 @@
-#include "../keyfps.hsp"
+
 #include "area_grid_system.hsp"
+#addition "../keyfps.hsp"
 #module grid_slider v, min, max, horizontal, x, y, center_x, center_y,tickness,’·‚³,dragging, area, r, pre_value, oya, rect
 
 #include "rectmock.hsp"

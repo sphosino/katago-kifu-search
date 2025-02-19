@@ -64,7 +64,6 @@ manage_keyfps
 		at = et - keyFPStimer__() ; 余裕時間
 		await at - 1 ; (余裕時間-1)だけ待って
 		*@: if et > keyFPStimer__(): await: goto *@b ; 残りはawaitだけでループを回して時刻を合わせる
-		
 		apt = limit(stat - pt,, 255) ; 前回から今回までの経過時間
 		pt = stat ; 今の時間を記録
 		

@@ -114,10 +114,11 @@ if 0{
 	notesave window_file_name
 	end
 }
+
+#include "modules/keyfps.hsp"
 #include "modules/sgf2.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
-#include "modules/keyfps.hsp"
 #include "GobanPatternManager.hsp"
 #include "Search_pattern.hsp"
 #include "shuffle_notepad.hsp"
@@ -262,7 +263,7 @@ c_list = "0.50"
 dim pre_xy, 2
 
 pretime = keyfpstime
-setfps 60
+setfps 30
 
 #const INACTIVITY_TIMEOUT 2000
 
