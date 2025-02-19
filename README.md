@@ -15,5 +15,5 @@ Katagoのrating自己対戦の棋譜を集めていますが、わずか数百vi
 囲碁AI、KataGoのサイト  
 https://katagotraining.org/
 
-KataGoを動かす検討ソフトを導入する場合、こちらのメガパックがおすすめ。私もこれを使っています。  
+KataGoを動かす検討ソフトを導入する場合、seventeenさんが開発されている、BadukMegapackがおすすめ。私もこれを使っています。  
 https://github.com/wonsiks/BadukMegapack
