@@ -32,7 +32,7 @@
 	}
 	now_cx = ginfo_cx, ginfo_cy
 	pos rect, rect.1
-	setcolor bc: boxf rect,rect.1,rect.2,rect.3
+	setcolor bc: rboxf rect,rect.1,rect.2,rect.3
 	setcolor fc: mes string
 	pos now_cx,now_cx.1
 	

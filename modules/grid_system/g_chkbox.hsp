@@ -19,7 +19,7 @@
 	thisrect thismod, rect, area_number
 	
 	color
-	boxf rect,rect.1,rect.2,rect.3
+	rboxf rect,rect.1,rect.2,rect.3
 	color 255,255,255
 	pos rect,rect.1: mes string
 

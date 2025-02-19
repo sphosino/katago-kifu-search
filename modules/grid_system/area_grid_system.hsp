@@ -3,6 +3,7 @@
 #include "transform_grid.hsp"
 #include "gridpos.hsp"
 #include "area_save_load_manager.hsp"
+#include "rboxf.hsp"
 
 dimtype areagrid@global, 5
 
