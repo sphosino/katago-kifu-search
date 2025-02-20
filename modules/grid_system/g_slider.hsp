@@ -126,7 +126,7 @@
 
 	color ,255:boxf oya,oya.1,oya.2,oya.3
 	color
-	boxf oya + rect, oya.1 + rect.1, oya + rect.2, oya.1 + rect.3
+	rboxf oya + rect, oya.1 + rect.1, oya + rect.2, oya.1 + rect.3
 	color 255
 	circle oya + tumami, oya.1 + tumami.1, oya + tumami.2, oya.1 + tumami.3
 	

@@ -393,7 +393,7 @@ dimtype SGF_NODE@global, 5
 			
 			point++
 			point = ‘Î‰‚·‚é•¶š‚Ü‚Åæ“¾(sgfs, point, "]", D) + 1
-			set_property_data nn, P, get_property_data(nn, P) + D //¡Œã•K—v‚Å‚ ‚ê‚Î‹æØ‚è•¶š‚ğ‹²‚Ş‚±‚Æ‚à‚Å‚«‚éB
+			set_property_data nn, P, get_property_data(nn, P) + D
 			
 		}else{
 
