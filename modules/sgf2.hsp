@@ -332,17 +332,23 @@ dimtype SGF_NODE@global, 5
 	
 #defcfunc load_sgf str ss, int node
 	
-	onerror *er
 	sss = ss
-	
+	if strlen(sss) < 3{
+		//最小SGFは　(;)
+		return -1
+	}
 	if (peek(sss) != '(') || (peek(sss, strlen(sss) - 1) != ')'){
 		return -1
 	}
 	stack = -1
 	nln = 0
-	load_sgf_main strmid(sss,1,strlen(sss) - 2), node
+
+	onerror *er
+		load_sgf_main strmid(sss,1,strlen(sss) - 2), node
 	onerror 0
+	
 	return stat
+
 *er
 	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
 	end

@@ -645,8 +645,6 @@ pre_window_size = -9999,-9999
 	newmod t, treebox
 	sdim s, $FFFF
 	clipget s, varsize(s)
-
-	if s = "": return
 	
 	if load_sgf(s,-1) < 0: return
 	
