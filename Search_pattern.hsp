@@ -122,70 +122,66 @@
 		ln = lpeek(node_data, 8)
 		memcpy vlist  , node_data, 48*4,, 3 * 4
 		
+		turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
 
-		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
+		if turn == -1: goto *child_get //; 着手がないノード（トップノードか、もしくは投了したと考える）
 
-			turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
-			
-	
-			x = coordinate
-			y = coordinate.1
+		x = coordinate
+		y = coordinate.1
 
-			if x == -1: goto *child_get; 着手がないノード（投了したと考える）
-			
-			for v,,ln
-				*check_pattern_list
-			
-				r_p = vlist(1,v)
-				j = memorize_hit_rect(r_p, x, y, pattern, i)　//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
-				if j == -1{
-					_continue
-				}
+		for v,,ln
+			*check_pattern_list
+		
+			r_p = vlist(1,v)
+			j = memorize_hit_rect(r_p, x, y, pattern, i)　//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
+			if j == -1{
+				_continue
+			}
 
 
-				match_failed = 1 //見つからなかったら探索失敗とするフラグ
+			match_failed = 1 //見つからなかったら探索失敗とするフラグ
 
 
-				if i >= 0{
-					split pattern(j,1,vlist(0,v),r_p),"-", stones
-					split stones(i), ":", tmp
-					if turn == 1{
-						if PATTERN_BLACK & tmp.2{
-							vlist(2,v)++
-							match_failed = 0
-						}
-					}else: if turn == 2{
-						if PATTERN_WHITE & tmp.2{
-							vlist(2,v)++
-							match_failed = 0
-						}
+			if i >= 0{
+				split pattern(j,1,vlist(0,v),r_p),"-", stones
+				split stones(i), ":", tmp
+				if turn == 1{
+					if PATTERN_BLACK & tmp.2{
+						vlist(2,v)++
+						match_failed = 0
+					}
+				}else: if turn == 2{
+					if PATTERN_WHITE & tmp.2{
+						vlist(2,v)++
+						match_failed = 0
 					}
 				}
+			}
+			
+			if match_failed{
+				ln--
+				if v == ln{
+					//有効パターンリストを全て探索した。
+					if ln == 0{
+						//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
+						goto *next_node
+					}
+					//まだ有効リストが残っているので、子ノードを積みに行く
+					_break
+				}
+				//パターンリストの末尾要素を今の位置に置き換えて再探索
+				vlist(0,v) = vlist(0,ln)
+				vlist(1,v) = vlist(1,ln)
+				vlist(2,v) = vlist(2,ln)
+				goto *check_pattern_list
+			}
+			if vlist(2,v) == stone_num{
+				result_node = node //一致したSGFノード
 				
-				if match_failed{
-					ln--
-					if v == ln{
-						//有効パターンリストを全て探索した。
-						if ln == 0{
-							//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
-							goto *next_node
-						}
-						//まだ有効リストが残っているので、子ノードを積みに行く
-						_break
-					}
-					//パターンリストの末尾要素を今の位置に置き換えて再探索
-					vlist(0,v) = vlist(0,ln)
-					vlist(1,v) = vlist(1,ln)
-					vlist(2,v) = vlist(2,ln)
-					goto *check_pattern_list
-				}
-				if vlist(2,v) == stone_num{
-					result_node = node //一致したSGFノード
-					
-					return 1 //検索成功
-				}
-			next
-		}
+				return 1 //検索成功
+			}
+		next
+		
 		*child_get
 		repeat get_SGF_childs(node, child)
 			lpoke node_data, , depth + 1
