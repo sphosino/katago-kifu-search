@@ -32,13 +32,11 @@
 
 #deffunc r_push2 var values
 
-	tmp = count < max_num
-
 	memcpy data(write_index), values, size
 	
 	plus1 write_index
 	
-	count += tmp
+	count += count < max_num
 
 	return
 
