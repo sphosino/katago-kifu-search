@@ -23,7 +23,7 @@ if strsize == -1{
 	wx = (ginfo(20) - x) / 2
 	wy = (ginfo(21) - y) / 2
 	//’Tõ‚ÌÅ‘å[‚³
-	max_depth = 50
+	max_depth = 60
 	
 	//F”½“]‚ğŠÜ‚ß‚é‚©
 	enableColorFlip = 1

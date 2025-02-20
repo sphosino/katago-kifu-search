@@ -30,8 +30,8 @@
 	ss = SGF_list
 
 	if kifu_update{		
-		repeat
-			noteget sgf, next_kifuload_index@
+		repeat ,next_kifuload_index@
+			noteget sgf, cnt
 			next_kifuload_index@++
 			if sgf == "": break
 			notesel f
