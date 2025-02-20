@@ -306,7 +306,7 @@ pre_window_size = -9999,-9999
 							noteload sgf_file_name
 							logmes "start loading sgf -> " + sgf_file_name
 							start_time = keyfpstime // 計測開始
-							lsgf = load_sgf(sgf, -1)
+							lsgf = load_sgf(sgf)
 							end_time = keyfpstime // 計測終了
 							new_value sgf_file_name, str(lsgf) //ファイル名とトップノードの番号を紐づける
 							end_time2 = keyfpstime
@@ -646,7 +646,7 @@ pre_window_size = -9999,-9999
 	sdim s, $FFFF
 	clipget s, varsize(s)
 	
-	if load_sgf(s,-1) < 0: return
+	if load_sgf(s) < 0: return
 	
 	topnode = load_sgf_set_board(t, stat, board)
 	

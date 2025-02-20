@@ -329,26 +329,29 @@ dimtype SGF_NODE@global, 5
 	set_property_data new, è”Ô, À•W
 		
 	return new
-	
-#defcfunc load_sgf str ss, int node
+
+#define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1,%2)
+#defcfunc _load_sgf str ss, int node
 	
 	sss = ss
-	if strlen(sss) < 3{
+	sgflen = strlen(sss)
+	if sgflen < 3{
 		//Å¬SGF‚Í@(;)
 		return -1
 	}
-	if (peek(sss) != '(') || (peek(sss, strlen(sss) - 1) != ')'){
+	if (peek(sss) != '(') || (peek(sss, sgflen - 1) != ')'){
 		return -1
 	}
 	start_point = instr(sss, 0 ,";")
-	if start_point == -1: return -1
+	if start_point == -1{
+		return -1
+	}
 	
-
 	make_new_SGFnode node
 	topnode = stat
 	
 	onerror *er
-		load_sgf_main strmid(sss, start_point + 1, strlen(sss) - start_point - 2), topnode
+		load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	onerror 0
 	
 	return topnode

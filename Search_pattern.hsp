@@ -40,7 +40,7 @@
 			noteunsel
 	
 			if get_value(sgf) == NOT_DEFINED_HASH{
-				topnode = load_sgf(f, -1)
+				topnode = load_sgf(f)
 				new_value sgf, str(topnode)
 				await
 				title "Šû•ˆ“Ç‚Ýž‚Ý’† -> "+ cnt * 100 / notemax + "% Š®—¹  ‚µ‚Î‚ç‚­‚¨‘Ò‚¿‚­‚¾‚³‚¢"
