@@ -379,20 +379,19 @@ dimtype SGF_NODE@global, 5
 			load_sgf_main f, nn
 			
 		}else:if (token == ';'){
-
+			
 			make_new_SGFnode nn
-			
 			new_id = stat
-
 			add_SGFchild nn, new_id
-			
 			nn = new_id
 			point++
 			
 		}else:if token == '['{
+			
 			point++
 			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
-			set_property_data nn, P, get_property_data(nn, P) + D
+			set_property_data nn, P, get_property_data(nn, P) + D //今後必要であれば区切り文字を挟むこともできる。
+			
 		}else{
 
 			logmes "不正なトークンが含まれています"
