@@ -3,7 +3,7 @@
 #include "keyfps.hsp"
 dimtype SGF_NODE@global, 5
 
-#module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties,properties_data, properties_num, x, y, turn
+#module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties, properties_data, properties_num, x, y, turn
 
 #define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
 #modinit int parent, local thismod_ID
@@ -203,7 +203,7 @@ dimtype SGF_NODE@global, 5
 		if a == "AB"{
 			aa = properties_data(cnt)
 			s += a
-			repeat strlen(aa)/2
+			repeat strlen(aa) / 2
 				s += "[" + strmid(aa,cnt*2,2) + "]"
 			loop
 		}else{
@@ -252,7 +252,7 @@ dimtype SGF_NODE@global, 5
 
 	repeat properties_num
 		s = property_number_to_str(properties(cnt))
-		if s == "AB"{
+		if s == "AB" || s == "AW"{
 			aa = properties_data(cnt)
 			i += s
 			repeat strlen(aa)/2

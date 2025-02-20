@@ -73,7 +73,7 @@ dimtype SGF_NODE@global, 5,500000
 #define global ctype get_SGF_childs(%1, %2) _get_SGF_childs(SGF_NODE@global(%1), %2)
 #modcfunc _get_SGf_childs array a
 	dim a, 子ノードの数
-	memcpy a, 子ノード, 子ノードの数*4
+	memcpy a, 子ノード, 子ノードの数 * 4
 	return 子ノードの数
 
 #define global cut_node(%1) _cut_node(SGF_NODE@global(%1))
@@ -217,6 +217,7 @@ dimtype SGF_NODE@global, 5,500000
 	s += ")"
 	logmes s
 	return s
+	
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
 	repeat 着手情報の数

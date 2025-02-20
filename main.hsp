@@ -615,7 +615,7 @@ pre_window_size = -9999,-9999
 	if topnode < 0: return
 	repeat 1000
 		gosub *move_next
-		if stat == 0:break
+		if stat == 0: break
 		if cnt == 999: logmes "‚¨‚»‚ç‚­ƒGƒ‰["
 	loop
 	gosub*syncboard
