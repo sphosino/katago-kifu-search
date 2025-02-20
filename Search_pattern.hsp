@@ -1,5 +1,5 @@
 #include "GobanPatternManager.hsp"
-#include "namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
+#include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
 #include "modules/ringbuffer.hsp"
 #include "memorize_hit_rect.hsp"
 #module
@@ -126,10 +126,12 @@
 		if node != t{ //トップノード以外(トップノードは着手が存在しないため)
 
 			turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
+			
 	
 			x = coordinate
 			y = coordinate.1
 
+			if x == -1: goto *child_get; 着手がないノード（投了したと考える）
 			
 			for v,,ln
 				*check_pattern_list
@@ -184,12 +186,12 @@
 				}
 			next
 		}
-		
+		*child_get
 		repeat get_SGF_childs(node, child)
 			lpoke node_data, , depth + 1
 			lpoke node_data,4, child(cnt)
 			lpoke node_data,8, ln
-			memcpy node_data, vlist, 48*4, 3 * 4
+			memcpy node_data, vlist, 48 * 4, 3 * 4
 			r_push node_data
 		loop
 	wend

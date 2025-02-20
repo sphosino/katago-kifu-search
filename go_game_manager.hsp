@@ -1,7 +1,7 @@
 #include "goban.hsp"
 
 #include "treebox.hsp"
-#include "namespace_base.hsp"
+#include "modules/namespace_base.hsp"
 
 #module
 

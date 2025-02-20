@@ -4,7 +4,6 @@
 #const UNMEMORIZED -9999
 
 #defcfunc memorize_hit_rect int rotate_pattern, int x, int y, array pattern, var v
-
 	if memory(0,rotate_pattern, x, y) == UNMEMORIZED{
 		memory(0,rotate_pattern, x, y) = -1, -1
 		for j,, length(pattern)
@@ -26,8 +25,9 @@
 		next
 	}
 	v = memory(1,rotate_pattern,x,y)
+	onerror 0
 	return memory(0,rotate_pattern, x, y)
-
+	return
 #defcfunc local in_rect array a, int x, int y
 	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
 

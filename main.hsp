@@ -62,7 +62,7 @@ if strsize == -1{
 	noteget_ 最大化
 	noteget_ KIFU_LOAD_MAX
 
-	//wx,wyがなぜか -32000 という数値で保存されてしまう場合があるようなので、その場合の処理
+	//wx, wyがなぜか -32000 という数値で保存されてしまう場合があるようなので、その場合の処理
 	if wx < 0{
 		wx = (ginfo(20) - x) / 2
 		wy = (ginfo(21) - y) / 2
@@ -83,7 +83,7 @@ if strsize == -1{
 #global
 
 width sx, sy, wx, wy
-save_window_size = ginfo(12),ginfo(13)
+save_window_size = ginfo(12), ginfo(13)
 if 最大化: sendmsg hwnd, $112, $F030
 if 最小化: sendmsg hwnd, $112, $F020
 	
