@@ -30,15 +30,13 @@
 	ss = SGF_list
 
 	if kifu_update{		
-		repeat notemax
-			noteget sgf,cnt
+		repeat
+			noteget sgf, next_kifuload_index@
+			next_kifuload_index@++
+			if sgf == "": break
 			notesel f
-			;load_start_time = keyfpstime
 			noteload sgf
-			;load_end_time = keyfpstime
-			;logmes strf("loadtime %d ms  ::  endtime %d ms  ::  taketime  %d ms",load_start_time,load_end_time,load_end_time-load_start_time)
 			noteunsel
-	
 			if get_value(sgf) == NOT_DEFINED_HASH{
 				topnode = load_sgf(f)
 				new_value sgf, str(topnode)
