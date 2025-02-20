@@ -17,16 +17,28 @@
 #define plus1(%1) %1 = (%1 + 1) \ max_num
 
 #deffunc r_push var values
+
 	if count == max_num{
 		resize
 	}
-#deffunc r_push2 var values
 
 	memcpy data(write_index), values, size
 	
 	plus1 write_index
 	
 	count++
+
+	return
+
+#deffunc r_push2 var values
+
+	tmp = count < max_num
+
+	memcpy data(write_index), values, size
+	
+	plus1 write_index
+	
+	count += tmp
 
 	return
 
