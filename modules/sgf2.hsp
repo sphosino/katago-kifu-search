@@ -340,14 +340,18 @@ dimtype SGF_NODE@global, 5
 	if (peek(sss) != '(') || (peek(sss, strlen(sss) - 1) != ')'){
 		return -1
 	}
-	stack = -1
-	nln = 0
+	start_point = instr(sss, 0 ,";")
+	if start_point == -1: return -1
+	
 
+	make_new_SGFnode node
+	topnode = stat
+	
 	onerror *er
-		load_sgf_main strmid(sss,1,strlen(sss) - 2), node
+		load_sgf_main strmid(sss, start_point + 1, strlen(sss) - start_point - 2), topnode
 	onerror 0
 	
-	return stat
+	return topnode
 
 *er
 	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
@@ -380,11 +384,8 @@ dimtype SGF_NODE@global, 5
 			
 			new_id = stat
 
-			stack(nln) = new_id: nln++
-
-			if nn >= 0{
-				add_SGFchild nn, new_id
-			}
+			add_SGFchild nn, new_id
+			
 			nn = new_id
 			point++
 			
@@ -400,6 +401,6 @@ dimtype SGF_NODE@global, 5
 			
 		}
 	wend
-	return stack
+	return
 #global
 #endif
