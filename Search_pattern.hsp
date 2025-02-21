@@ -30,7 +30,7 @@
 	ss = SGF_list
 
 	if kifu_update{		
-		repeat ,next_kifuload_index@
+		repeat , next_kifuload_index@
 			noteget sgf, cnt
 			next_kifuload_index@++
 			if sgf == "": break
@@ -47,7 +47,7 @@
 	}
 
 	title "棋譜読み込み完了。　検索中・・・"
-	
+
 	repeat notemax
 		noteget sgf,cnt
 		if get_value(sgf) == NOT_DEFINED_HASH: dialog "ERROR -> " + refstr ,, __FILE__: end
@@ -71,11 +71,12 @@
 		
 		//検索実行
 		if search_main(topnode, rotated_p, match_node){
-			result(0,rn) = sgf //一致したSGFを結果に追加
-			result(1,rn) = str(match_node)
+			result(0, rn) = sgf //一致したSGFを結果に追加
+			result(1, rn) = str(match_node)
 			;logmes str(match_node)
 			rn++
 		}
+		
 	loop
 	noteunsel
 
@@ -100,7 +101,7 @@
 	ln = 0
 	repeat r_pattern_num
 		for i,, colorflip_num
-			vlist(0,ln) = i, cnt, 0
+			vlist(0, ln) = i, cnt, 0
 			ln++
 		next
 	loop
@@ -111,6 +112,7 @@
 	memcpy node_data, vlist  , 48 * 4, 3 * 4
 	r_push node_data
 
+	
 	*next_node
 	while ringbuffer_count
 
@@ -124,69 +126,60 @@
 		
 		turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
 
-		if turn == -1: goto *child_get //; 着手がないノード（トップノードか、もしくは投了したと考える）
+		if turn == -1: goto *get_child //; 着手がないノード（トップノードか、もしくは投了したと考える）
 
-		x = coordinate
 		y = coordinate.1
 
 		for v,,ln
 			*check_pattern_list
 		
-			r_p = vlist(1,v)
-			j = memorize_hit_rect(r_p, x, y, pattern, i)　//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
+			r_p = vlist(1, v)
+			
+			//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
+			j = memorize_hit_rect(r_p, coordinate, y, pattern, i)　
 			if j == -1{
 				_continue
 			}
 
-
-			match_failed = 1 //見つからなかったら探索失敗とするフラグ
-
-
 			if i >= 0{
-				split pattern(j,1,vlist(0,v),r_p),"-", stones
+				split pattern(j, 1, vlist(0, v), r_p),"-", stones
 				split stones(i), ":", tmp
 				if turn == 1{
-					if PATTERN_BLACK & tmp.2{
-						vlist(2,v)++
-						match_failed = 0
-					}
+					if PATTERN_BLACK & tmp.2: goto *matched
 				}else: if turn == 2{
-					if PATTERN_WHITE & tmp.2{
-						vlist(2,v)++
-						match_failed = 0
-					}
+					if PATTERN_WHITE & tmp.2: goto *matched
 				}
 			}
 			
-			if match_failed{
-				ln--
-				if v == ln{
-					//有効パターンリストを全て探索した。
-					if ln == 0{
-						//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
-						goto *next_node
-					}
+			ln--
+			if v == ln{
+				//有効パターンリストを全て探索した。
+				if ln{
 					//まだ有効リストが残っているので、子ノードを積みに行く
-					_break
+					goto *get_child
 				}
-				//パターンリストの末尾要素を今の位置に置き換えて再探索
-				vlist(0,v) = vlist(0,ln)
-				vlist(1,v) = vlist(1,ln)
-				vlist(2,v) = vlist(2,ln)
-				goto *check_pattern_list
+				//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
+				goto *next_node
 			}
-			if vlist(2,v) == stone_num{
+			//パターンリストの末尾要素を今の位置に置き換えて再探索
+			vlist(0, v) = vlist(0, ln)
+			vlist(1, v) = vlist(1, ln)
+			vlist(2, v) = vlist(2, ln)
+			goto *check_pattern_list
+			
+			*matched
+			vlist(2, v)++
+			if vlist(2, v) == stone_num{
 				result_node = node //一致したSGFノード
-				
 				return 1 //検索成功
 			}
 		next
 		
-		*child_get
+		*get_child
 		repeat get_SGF_childs(node, child)
-			lpoke node_data, , depth + 1
-			lpoke node_data,4, child(cnt)
-			lpoke node_data,8, ln
+			lpoke node_data,  , depth + 1
+			lpoke node_data, 4, child(cnt)
+			lpoke node_data, 8, ln
 			memcpy node_data, vlist, 48 * 4, 3 * 4
 			r_push node_data
 		loop
