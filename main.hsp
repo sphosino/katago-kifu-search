@@ -116,7 +116,7 @@ if 0{
 }
 
 #include "modules/keyfps.hsp"
-#include "modules/sgf2.hsp"
+#include "modules/sgf.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
 #include "GobanPatternManager.hsp"
@@ -761,7 +761,8 @@ pre_window_size = -9999,-9999
 	del_item_all kifulist.matchlist
 	dirlist files,"*.sgf"
 	notesel ss 
-		ss = shuffle_notepad(files)
+		;ss = shuffle_notepad(files)
+		ss = files
 		sdim s
 		repeat limit(notemax,,KIFU_LOAD_MAX)
 			noteget tmp,cnt

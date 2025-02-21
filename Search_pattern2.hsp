@@ -9,7 +9,7 @@
 	if stone_num == 0: return 0
 
 	dim vlist , 3, 16 //パターンリスト
-	data_num = (3 + 16 * 3)
+	data_num = (2 + 16 * 3)
 	init_ringbuffer data_num * 4, 512
 	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
 
@@ -81,7 +81,7 @@
 	loop
 	noteunsel
 
-	title "検索完了 -> " + (keyfpstime - starttime) + " ms"
+	title "検索完了2 -> " + (keyfpstime - starttime) + " ms"
 	
 	return rn
 
@@ -107,10 +107,9 @@
 		next
 	loop
 
-	lpoke node_data, , 1               //現在の深さ
-	lpoke node_data,4, t               //
-	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
-	memcpy node_data, vlist  , 48 * 4, 3 * 4
+	lpoke node_data, , t               //
+	lpoke node_data,4, all_pattern_num //全ての有効なパターン数
+	memcpy node_data, vlist  , 48 * 4, 2 * 4
 	r_push node_data
 
 	
@@ -120,10 +119,9 @@
 		r_shift node_data //キューからノードデータを復元
 
 		//ノードデータ展開
-		depth = lpeek(node_data) : if depth > 最大の深さ: return 0
-		node = lpeek(node_data, 4)
-		ln = lpeek(node_data, 8)
-		memcpy vlist  , node_data, 48*4,, 3 * 4
+		node = lpeek(node_data)
+		ln = lpeek(node_data, 4)
+		memcpy vlist  , node_data, 48*4,, 2 * 4
 		
 		turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
 
@@ -178,10 +176,9 @@
 		
 		*get_child
 		repeat get_SGF_childs(node, child)
-			lpoke node_data,  , depth + 1
-			lpoke node_data, 4, child(cnt)
-			lpoke node_data, 8, ln
-			memcpy node_data, vlist, 48 * 4, 3 * 4
+			lpoke node_data, , child(cnt)
+			lpoke node_data, 4, ln
+			memcpy node_data, vlist, 48 * 4, 2 * 4
 			r_push node_data
 		loop
 	wend

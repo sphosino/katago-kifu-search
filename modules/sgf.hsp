@@ -1,18 +1,16 @@
 #ifndef SGF_NODE
-dimtype SGF_NODE@global, 5,500000
+#include "sgf_properties.hsp"
+#include "keyfps.hsp"
+dimtype SGF_NODE@global, 5
 
-#module SGF_NODE 親ノード, 子ノード, 子ノードの数, 着手情報, 着手情報の数, x, y, turn
+#module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties, properties_data, properties_num, x, y, turn
 
 #define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
 #modinit int parent, local thismod_ID
 
 	親ノード = parent
 	
-	dim 子ノード
-	子ノードの数 = 0
-	
-	sdim 着手情報,,2
-	着手情報の数 = 0
+	sdim properties_data
 	
 	x = -1
 	y = -1
@@ -27,21 +25,29 @@ dimtype SGF_NODE@global, 5,500000
 	return 親ノード
 
 #modfunc get_nodeinfo array a
-	repeat 着手情報の数
-		a(0,cnt) = 着手情報(0,cnt)
-		a(1,cnt) = 着手情報(1,cnt)
+	repeat properties_num
+		a(0,cnt) = property_number_to_str(properties(cnt))
+		a(1,cnt) = properties_data(cnt)
 	loop
-	return 着手情報の数
+	return properties_num
 
 #define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
 #modcfunc _get_property_data str s1
 	tmp = ""
-	repeat 着手情報の数
-		if 着手情報(0, cnt) == s1{
-			tmp = 着手情報(1, cnt)
-			break
+	if s1 == "B" || s1 == "W"{
+		if turn != -1{
+			tmp = "  "
+			poke tmp, 0, 'a' + x
+			poke tmp, 1, 'a' + y
 		}
-	loop
+	}else{
+		repeat properties_num
+			if property_number_to_str(properties(cnt)) == s1{
+				tmp = properties_data(cnt)
+				break
+			}
+		loop
+	}
 	return tmp
 
 #defcfunc get_property_coordinate int p1, array result
@@ -73,7 +79,7 @@ dimtype SGF_NODE@global, 5,500000
 #define global ctype get_SGF_childs(%1, %2) _get_SGF_childs(SGF_NODE@global(%1), %2)
 #modcfunc _get_SGf_childs array a
 	dim a, 子ノードの数
-	memcpy a, 子ノード, 子ノードの数 * 4
+	memcpy a, 子ノード, 子ノードの数*4
 	return 子ノードの数
 
 #define global cut_node(%1) _cut_node(SGF_NODE@global(%1))
@@ -83,54 +89,47 @@ dimtype SGF_NODE@global, 5,500000
 	next
 	delmod thismod
 	return
-#modfunc set_候補手 str s
-	候補手(候補手の数) = s
-	候補手の数++
-	return
-#modfunc get_候補手 array a
-	repeat 候補手の数
-		a.cnt = 候補手.cnt
-	loop
-	return 候補手の数
 
 #define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
-#modfunc _set_property_data str s, str d, local i
+#modfunc _set_property_data str s, str d
 
-	already_exist = 0
-	repeat 着手情報の数
-		if 着手情報(0,cnt) = s{
-			index = cnt
-			着手情報(1, cnt) = d
-			already_exist++
-			break
-		}
-	loop
-	if already_exist == 0{
-		index = 着手情報の数
-		着手情報(0, 着手情報の数) = s
-		着手情報(1, 着手情報の数) = d
-		着手情報の数++
-	}
-
-	if s == "W" || s == "B"{
-		mref i, 2
-		if get_property_coordinate(i,re){
-			turn = stat
-			x = re
-			y = re.1
+	if s == "B"{
+		turn = 1
+		tmp = d
+		x = peek(tmp, 0) - 'a'
+		y = peek(tmp, 1) - 'a'
+	}else: if s == "W"{
+		turn = 2
+		tmp = d
+		x = peek(tmp, 0) - 'a'
+		y = peek(tmp, 1) - 'a'
+	}else{
+		already_exist = 0
+		repeat properties_num
+			if property_number_to_str(properties(cnt)) == s{
+				index = cnt
+				properties_data(cnt) = d
+				already_exist++
+				break
+			}
+		loop
+		if already_exist == 0{
+			index = properties_num
+			properties(properties_num) = property_str_to_number(s)
+			properties_data(properties_num) = d
+			properties_num++
 		}
 	}
 	
 	return
 
 #modfunc set_move_info str s1, str s2
-
-	着手情報(0, 着手情報の数) = s1
-	着手情報(1, 着手情報の数) = s2
-	着手情報の数++
+	properties(properties_num) = get_property_str(s1)
+	properties_data(properties_num) = s2
+	properties_num++
 	return
 	
-#modcfunc serch_SGFchild int p1
+#modcfunc search_SGFchild int p1
 	result = -1
 	repeat 子ノードの数
 		if 子ノード(cnt) == p1{
@@ -140,8 +139,8 @@ dimtype SGF_NODE@global, 5,500000
 	loop
 	return result
 
-#define global ctype serch_SGFchild_byxy(%1,%2,%3) _serch_SGFchild_byxy(SGF_NODE@global(%1), %2, %3)
-#modcfunc _serch_SGFchild_byxy str s1, str s2
+#define global ctype search_SGFchild_byxy(%1,%2,%3) _search_SGFchild_byxy(SGF_NODE@global(%1), %2, %3)
+#modcfunc _search_SGFchild_byxy str s1, str s2
 	result = -1
 	repeat 子ノードの数
 		if get_property_data(子ノード(cnt), s1) == s2{
@@ -154,7 +153,7 @@ dimtype SGF_NODE@global, 5,500000
 #define global add_SGFchild(%1,%2) _add_SGFchild SGF_NODE@global(%1), %2
 #modfunc _add_SGFchild int p1
 
-	if serch_SGFchild(thismod, p1) == -1{
+	if search_SGFchild(thismod, p1) == -1{
 		子ノード(子ノードの数) = p1
 		子ノードの数++
 	}
@@ -163,7 +162,7 @@ dimtype SGF_NODE@global, 5,500000
 
 #modfunc del_SGFchild int p1
 
-	if serch_SGFchild(thismod, p1) >= 0{
+	if search_SGFchild(thismod, p1) >= 0{
 		memcpy 子ノード, 子ノード, 子ノードの数 - stat - 1 << 2, stat << 2
 		子ノードの数--
 	}
@@ -186,9 +185,30 @@ dimtype SGF_NODE@global, 5,500000
 #modfunc _get_node_sgf var s, local i
 
 	s += ";"
+	
+	if turn != -1{
+		座標 = "  "
+		poke 座標, 0, 'a' + x
+		poke 座標, 1, 'a' + y
+		
+		if turn == 1{
+			s += "B[" + 座標 + "]"
+		}else{
+			s += "W[" + 座標 + "]"
+		}	
+	}
 
-	repeat 着手情報の数
-		s += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
+	repeat properties_num
+		a = property_number_to_str(properties(cnt))
+		if a == "AB"{
+			aa = properties_data(cnt)
+			s += a
+			repeat strlen(aa) / 2
+				s += "[" + strmid(aa,cnt*2,2) + "]"
+			loop
+		}else{
+			s += a + "[" + properties_data(cnt) + "]"
+		}
 	loop
 	
 	for i,, 子ノードの数
@@ -217,11 +237,30 @@ dimtype SGF_NODE@global, 5,500000
 	s += ")"
 	logmes s
 	return s
-	
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
-	repeat 着手情報の数
-		i += 着手情報(0,cnt) + "[" + 着手情報(1, cnt) + "]"
+	if turn != -1{
+		座標 = "  "
+		poke 座標, 0, 'a' + x
+		poke 座標, 1, 'a' + y
+		if turn == 1{
+			i += "B[" + 座標 + "]"
+		}else{
+			i += "W[" + 座標 + "]"
+		}	
+	}
+
+	repeat properties_num
+		s = property_number_to_str(properties(cnt))
+		if s == "AB" || s == "AW"{
+			aa = properties_data(cnt)
+			i += s
+			repeat strlen(aa)/2
+				i += "[" + strmid(aa,cnt*2,2) + "]"
+			loop
+		}else{
+			i += s + "[" + properties_data(cnt) + "]"
+		}
 	loop
 	return i
 
@@ -248,13 +287,14 @@ dimtype SGF_NODE@global, 5,500000
 #module
 #defcfunc 対応する括弧まで取得 str ss, var index, str s1, str s2, var result
 	s = ss
-	if strmid(s,index,1) != s1: sgf_err = "指定位置が開始文字で始まっていません SGF解析エラー"
 	counter = 0
 	repeat , index
 		t = strmid(s,cnt,1)
-		if t == "": sgf_err = "括弧が閉じられていません SGF解析エラー"
-		if t == s1: counter++
-		if t == s2: counter--
+		if t == s1{
+			counter++
+		}else:if t == s2{
+			counter--
+		}
 		if counter == 0: r2 = cnt: break
 	loop
 	result = strmid(s, index + 1, r2 - index - 1)
@@ -262,7 +302,6 @@ dimtype SGF_NODE@global, 5,500000
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
 
 	i = instr(ss,index,s1)
-	if i == -1: sgf_err = "対応する文字が見つからない SGF解析エラー"
 	result = strmid(ss,index,i)
 	return index + i
 #global
@@ -279,7 +318,7 @@ dimtype SGF_NODE@global, 5,500000
 	poke 座標, 1, 'a' + coordinate.1
 
 	if nownode >= 0{
-		if serch_SGFchild_byxy(nownode, 手番, 座標) >= 0{
+		if search_SGFchild_byxy(nownode, 手番, 座標) >= 0{
 			return stat //すでにノードが存在
 		}
 	}
@@ -290,35 +329,49 @@ dimtype SGF_NODE@global, 5,500000
 	set_property_data new, 手番, 座標
 		
 	return new
+
+#define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1,%2)
+#defcfunc _load_sgf str ss, int node
 	
-#defcfunc load_sgf str ss, int node
-	onerror *er
 	sss = ss
-	sgf_err = ""
-	if peek(sss) != '('{
-		sgf_err = "(で始まっていません"
+	sgflen = strlen(sss)
+	if sgflen < 3{
+		//最小SGFは　(;)
 		return -1
 	}
-	stack = -1
-	nln = 0
-	load_sgf_main ss, node
+	if (peek(sss) != '(') || (peek(sss, sgflen - 1) != ')'){
+		return -1
+	}
+	start_point = instr(sss, 0 ,";")
+	if start_point == -1{
+		return -1
+	}
+	
+	make_new_SGFnode node
+	topnode = stat
+	
+	onerror *er
+		load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	onerror 0
-	return stat
+	
+	return topnode
+
 *er
-	dialog ""+err+"::" + varsize(SGF_NODE@global)
+	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
 	end
 
-#deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn
+#deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn, local sgf_length
 	sgfs = ss
 	nn = node
 	
+	sgf_length = strlen(sgfs)
 	//解析
-	while strmid(sgfs, point, 1) != ""
+	while point < sgf_length
 		
 		token = peek(sgfs, point)
-
+		
 		if token >= 'A' && token <= 'Z'{
-
+			
 			point = 対応する文字まで取得(sgfs, point, "[", P) + 1
 			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
 			set_property_data nn, P, D
@@ -332,14 +385,15 @@ dimtype SGF_NODE@global, 5,500000
 			
 			make_new_SGFnode nn
 			new_id = stat
-
-			stack(nln) = new_id: nln++
-
-			if nn >= 0{
-				add_SGFchild nn, new_id
-			}
+			add_SGFchild nn, new_id
 			nn = new_id
 			point++
+			
+		}else:if token == '['{
+			
+			point++
+			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
+			set_property_data nn, P, get_property_data(nn, P) + D
 			
 		}else{
 
@@ -349,9 +403,6 @@ dimtype SGF_NODE@global, 5,500000
 			
 		}
 	wend
-
-	if sgf_err != "": return -1
-
-	return stack
+	return
 #global
 #endif
