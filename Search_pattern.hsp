@@ -127,7 +127,7 @@
 		
 		turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
 
-		if coordinate < 0: goto *get_child //; 着手がないノード（トップノードか、もしくは投了したと考える）
+		if coordinate < 0: goto *get_child //; 着手がないノード（トップノードか、パス、もしくは投了したと考える）
 
 		y = coordinate.1
 
