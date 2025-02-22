@@ -264,7 +264,7 @@ c_list = "0.50"
 dim pre_xy, 2
 
 pretime = keyfpstime
-setfps 30
+setfps 40
 
 #const INACTIVITY_TIMEOUT 2000
 
@@ -278,6 +278,7 @@ pre_window_size = -9999,-9999
 		pre_window_size = window_size, window_size.1
 		gosub *save_window_size_main
 	}
+	logmes slowdown()
 
 	if kifu_update{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
@@ -758,11 +759,10 @@ pre_window_size = -9999,-9999
 	del_item_all kifulist.matchlist
 	dirlist files,"*.sgf"
 	notesel ss 
-		;ss = shuffle_notepad(files)
-		ss = files
+		ss = shuffle_notepad(files)
 		sdim s
 		repeat limit(notemax,,KIFU_LOAD_MAX)
-			noteget tmp,cnt
+			noteget tmp, cnt
 			s += tmp + "\n"
 		loop
 	noteunsel

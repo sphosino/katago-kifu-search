@@ -81,7 +81,7 @@
 	loop
 	noteunsel
 
-	title "ŒŸõŠ®—¹ -> " + (keyfpstime - starttime) + " ms"
+	title "ŒŸõŠ®—¹ -> " + (keyfpstime - starttime) + " ms  -> " + rn + " Œ
 	
 	return rn
 
