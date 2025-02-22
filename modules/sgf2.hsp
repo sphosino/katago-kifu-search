@@ -368,7 +368,7 @@ init_sgf_module
 #global
 #endif
 
-#if 1
+#if 0
 
 mes get_node_sgf(load_sgf("(;B[ii] ;W[jj]  (; W[kk]C[ƒqƒƒƒbƒz[])  (;W[ll]))"))
 
