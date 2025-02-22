@@ -116,7 +116,7 @@ if 0{
 }
 
 #include "modules/keyfps.hsp"
-#include "modules/sgf.hsp"
+#include "modules/sgf2.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
 #include "GobanPatternManager.hsp"
@@ -397,8 +397,7 @@ pre_window_size = -9999,-9999
 								
 								now_sgfnode = get_tree_item_id(nownode)
 								logmes now_sgfnode
-								
-	
+									
 								//指定した座標のノードを作成、すでにあればそれを返す
 								new = make_SGFnode(now_sgfnode, point, get_turn_SGFstr(逆手番(get_turn(board))))
 	
@@ -702,11 +701,9 @@ pre_window_size = -9999,-9999
 	chdir kifu_dirname
 	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
 	chdir dirname
-	dimtype SGF_NODE@global,5
+	
 	init_hash_manager
-	#ifdef init_properties
-	init_properties
-	#endif
+
 	gosub*load_kifu_folder
 	
 	return

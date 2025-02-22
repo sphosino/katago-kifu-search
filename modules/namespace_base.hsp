@@ -10,7 +10,7 @@
 #const mrefget 2
 #const __INTSIZE__ 4
 #endif
-#const MAX_KEYS 5000
+#const MAX_KEYS 10000
 
 #enum KEY = 0
 #enum VALUE

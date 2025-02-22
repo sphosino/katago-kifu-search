@@ -86,7 +86,7 @@
 		noteload s1
 		noteunsel
 		
-		if load_sgf(sgf_data,-1) >= 0{
+		if load_sgf(sgf_data) >= 0{
 			new_topnode = load_sgf_set_board(_treebox, stat, _board)
 			new_value s1, str(new_topnode)
 		}else{

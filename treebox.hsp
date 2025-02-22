@@ -40,9 +40,9 @@
 	return root_tree_node
 
 #modfunc make_tree_topnode
-	make_new_SGFnode -1
-	logmes "SGF"+stat
-	current_node = make_treenode (-1, stat)
+	tmp = make_new_SGFnode(-1)
+	logmes "SGF"+tmp
+	current_node = make_treenode(-1, tmp)
 	logmes "tree"+current_node
 	return current_node
 	
@@ -69,7 +69,7 @@
 		
 		//子ノードを全部積む。
 		repeat get_SGF_childs(nnode, childlist)
-			node_stack(sn) = childlist(cnt)
+			node_stack(sn) = lpeek(childlist,cnt*4)
 			parent_tree_stack(sn) = tnode
 			sn++
 		loop

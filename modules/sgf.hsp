@@ -24,13 +24,6 @@ dimtype SGF_NODE@global, 5
 #modcfunc _get_SGFparent
 	return 親ノード
 
-#modfunc get_nodeinfo array a
-	repeat properties_num
-		a(0,cnt) = property_number_to_str(properties(cnt))
-		a(1,cnt) = properties_data(cnt)
-	loop
-	return properties_num
-
 #define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
 #modcfunc _get_property_data str s1
 	tmp = ""
@@ -49,21 +42,7 @@ dimtype SGF_NODE@global, 5
 		loop
 	}
 	return tmp
-
-#defcfunc get_property_coordinate int p1, array result
-
-	dim result,2
-	if get_property_data(p1, "B") != ""{
-		tmpr = refstr
-		result = peek(tmpr,0) - 'a', peek(tmpr,1) - 'a'
-		
-		return 1
-	}else: if get_property_data(p1, "W") != ""{
-		tmpr = refstr
-		result = peek(tmpr,0) - 'a', peek(tmpr,1) - 'a'
-		return 2
-	}
-	return 0
+	
 #define global ctype get_property_coordinate_cash(%1,%2) _get_property_coordinate_cash(SGF_NODE@global(%1),%2)
 #modcfunc _get_property_coordinate_cash array result
 	result = x,y
@@ -77,18 +56,10 @@ dimtype SGF_NODE@global, 5
 	return
 
 #define global ctype get_SGF_childs(%1, %2) _get_SGF_childs(SGF_NODE@global(%1), %2)
-#modcfunc _get_SGf_childs array a
+#modcfunc _get_SGF_childs array a
 	dim a, 子ノードの数
-	memcpy a, 子ノード, 子ノードの数*4
+	memcpy a, 子ノード, 子ノードの数 * 4
 	return 子ノードの数
-
-#define global cut_node(%1) _cut_node(SGF_NODE@global(%1))
-#modfunc _cut_node local i
-	for i,, 子ノードの数
-		cut_node 子ノード(i)
-	next
-	delmod thismod
-	return
 
 #define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
 #modfunc _set_property_data str s, str d
@@ -123,11 +94,6 @@ dimtype SGF_NODE@global, 5
 	
 	return
 
-#modfunc set_move_info str s1, str s2
-	properties(properties_num) = get_property_str(s1)
-	properties_data(properties_num) = s2
-	properties_num++
-	return
 	
 #modcfunc search_SGFchild int p1
 	result = -1
@@ -168,14 +134,6 @@ dimtype SGF_NODE@global, 5
 	}
 	return
 
-#modcfunc get_rootnode local thismod_ID
-	if 子ノードの数 == 0{
-		mref thismod_ID, 2
-		return thismod_ID
-	}
-	return 子ノード
-
-
 #deffunc get_node_sgf int p1, var s
 	s = "("
 	_get_node_sgf SGF_NODE@global(p1), s
@@ -214,13 +172,13 @@ dimtype SGF_NODE@global, 5
 	for i,, 子ノードの数
 	
 		if 子ノードの数 >= 2{
-			s+="("
+			s += "("
 		}
 		
 		_get_node_sgf SGF_NODE@global(子ノード(i)), s
 		
 		if 子ノードの数 >= 2{
-			s+=")"
+			s += ")"
 		}
 	next
 
@@ -236,7 +194,7 @@ dimtype SGF_NODE@global, 5
 	next
 	s += ")"
 	logmes s
-	return s
+	return
 #modcfunc get_node_sgf_nowpoint_main local i
 	i = ";"
 	if turn != -1{
