@@ -126,10 +126,14 @@
 	return child_num(node_id)
 
 #defcfunc search_SGFchild int node_id, int target
+	result = -1
     repeat child_num(node_id)
-        if lpeek(sgf_node_childs(node_id), cnt * 4) == target : return cnt
+        if lpeek(sgf_node_childs(node_id), cnt * 4) == target{
+	    	result = cnt
+	    	break
+	    }
     loop
-    return -1
+    return result
 
 #defcfunc get_node_sgf int p1
 	result = "("
