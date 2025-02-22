@@ -41,7 +41,6 @@
 
 #modfunc make_tree_topnode
 	tmp = make_new_SGFnode(-1)
-	logmes "SGF"+tmp
 	current_node = make_treenode(-1, tmp)
 	logmes "tree"+current_node
 	return current_node

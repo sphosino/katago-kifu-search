@@ -1,246 +1,256 @@
-#ifndef SGF_NODE
-#include "sgf_properties.hsp"
-#include "keyfps.hsp"
-dimtype SGF_NODE@global, 5
+#ifndef sgf_node
+#module sgf_node
 
-#module SGF_NODE 親ノード, 子ノード, 子ノードの数, properties, properties_data, properties_num, x, y, turn
+#define KEY_VALUE_SEP "|||"
 
-#define global make_new_SGFnode(%1) newmod SGF_NODE@global,SGF_NODE, %1
-#modinit int parent, local thismod_ID
+#define MAX_NODE 1500000
 
-	親ノード = parent
+#deffunc init_sgf_module
+	dim parent, MAX_NODE //親ノード
 	
-	sdim properties_data
-	
-	x = -1
-	y = -1
-	turn = -1
-	
-	mref thismod_ID, 2
-	return thismod_ID
-	
-//--情報取得
-#define global ctype get_SGFparent(%1) _get_SGFparent(SGF_NODE@global(%1))
-#modcfunc _get_SGFparent
-	return 親ノード
+	dim sgf_node_turn, MAX_NODE //ノードの手番
+	dim sgf_node_x, MAX_NODE //ノードの座標ｘ
+	dim sgf_node_y, MAX_NODE //ノードの座標ｙ
+	sdim sgf_properties_data,, MAX_NODE //その他のプロパティ
+	dim sgf_properties_num,MAX_NODE //その他のプロパティの数
 
-#define global ctype get_property_data(%1, %2) _get_property_data(SGF_NODE@global(%1), %2)
-#modcfunc _get_property_data str s1
-	tmp = ""
-	if s1 == "B" || s1 == "W"{
-		if turn != -1{
-			tmp = "  "
-			poke tmp, 0, 'a' + x
-			poke tmp, 1, 'a' + y
-		}
-	}else{
-		repeat properties_num
-			if property_number_to_str(properties(cnt)) == s1{
-				tmp = properties_data(cnt)
-				break
-			}
-		loop
-	}
-	return tmp
-	
-#define global ctype get_property_coordinate_cash(%1,%2) _get_property_coordinate_cash(SGF_NODE@global(%1),%2)
-#modcfunc _get_property_coordinate_cash array result
-	result = x,y
-	return turn
+	sdim sgf_node_childs,, MAX_NODE //子ノードリスト
+	dim child_num, MAX_NODE //子ノードの数
 
-#define global get_nodelist(%1, %2, %3 = 0) dim %2:_get_nodelist SGF_NODE@global(%1), %2, %3
-#modfunc _get_nodelist array a, int num, local thismod_ID
-	mref thismod_ID, 2
-	a(num) = thismod_ID
-	if 親ノード != -1: _get_nodelist SGF_NODE@global(親ノード), a, num + 1
+	//------------------------------------
+	sdim open_id_list, 1024 * 4 //配列の空き情報リスト
+	dim open_id_list_num //配列の空き情報の数
+	
+	node_count = 0 //配列の最大（未使用要素も含む）
+
+	SEP = " "
+	poke SEP, 0, $1F
+	
 	return
 
-#define global ctype get_SGF_childs(%1, %2) _get_SGF_childs(SGF_NODE@global(%1), %2)
-#modcfunc _get_SGF_childs array a
-	dim a, 子ノードの数
-	memcpy a, 子ノード, 子ノードの数 * 4
-	return 子ノードの数
+#defcfunc make_new_SGFnode int p1
+	if open_id_list_num{
+		open_id_list_num--
+		new_id = lpeek(open_id_list, open_id_list_num * 4)
+	}else{
+		new_id = node_count
+		node_count++
+	}
 
-#define global set_property_data(%1,%2,%3) _set_property_data SGF_NODE@global(%1), %2, %3
-#modfunc _set_property_data str s, str d
+	init_node new_id, p1
+	
+	return new_id
 
+#deffunc add_sgf_property int node_id, str s1, str s2
+
+	sgf_properties_data(node_id) += s1 + KEY_VALUE_SEP + s2 + SEP
+	sgf_properties_num(node_id)++
+	
+	return
+#deffunc del_sgf_property int node_id, str s1
+
+	dup data, sgf_properties_data(node_id)
+	
+	index = instr(data, 0, SEP + s1 + KEY_VALUE_SEP)
+	if index == -1: return
+	
+	next_index = index + 1 + instr(data, index + 1, SEP)
+
+	left = strmid(data, 0, index)
+	right = strmid(data, next_index, 999999)
+
+	data = left + right
+
+	sgf_properties_num(node_id)--
+
+	return
+
+#deffunc add_SGFchild int node_id, int p1
+    if search_SGFchild(node_id, p1) == -1 {
+        index = child_num(node_id) * 4  // 4バイト単位で格納
+        memexpand sgf_node_childs(node_id), index + 4
+        lpoke sgf_node_childs(node_id), index, p1
+        child_num(node_id)++
+    }
+    return
+
+#deffunc del_sgf_node int node_id
+	lpoke open_id_list, open_id_list_num * 4, node_id
+	open_id_list_num++
+	init_node node_id, -1
+	return
+
+#deffunc set_property_data int node_id, str s, str d
 	if s == "B"{
-		turn = 1
+		sgf_node_turn(node_id) = 1
 		tmp = d
-		x = peek(tmp, 0) - 'a'
-		y = peek(tmp, 1) - 'a'
+		sgf_node_x(node_id) = peek(tmp, 0) - 'a'
+		sgf_node_y(node_id) = peek(tmp, 1) - 'a'
 	}else: if s == "W"{
-		turn = 2
+		sgf_node_turn(node_id) = 2
 		tmp = d
-		x = peek(tmp, 0) - 'a'
-		y = peek(tmp, 1) - 'a'
+		sgf_node_x(node_id) = peek(tmp, 0) - 'a'
+		sgf_node_y(node_id) = peek(tmp, 1) - 'a'
 	}else{
-		already_exist = 0
-		repeat properties_num
-			if property_number_to_str(properties(cnt)) == s{
-				index = cnt
-				properties_data(cnt) = d
-				already_exist++
-				break
-			}
-		loop
-		if already_exist == 0{
-			index = properties_num
-			properties(properties_num) = property_str_to_number(s)
-			properties_data(properties_num) = d
-			properties_num++
-		}
+		//登録
+		del_sgf_property node_id, s
+		add_sgf_property node_id, s, d
 	}
-	
 	return
 
+#defcfunc get_property_data int node_id, str property_name
+	dup data, sgf_properties_data(node_id)
 	
-#modcfunc search_SGFchild int p1
-	result = -1
-	repeat 子ノードの数
-		if 子ノード(cnt) == p1{
-			result = cnt
-			break
-		}
-	loop
+	// プロパティの名前と値を探す
+	index = instr(data, 0, SEP + property_name + KEY_VALUE_SEP)
+	if index == -1: return ""  // 見つからなかった場合は空文字を返す
+	
+	// データの最後までのインデックスを取得
+	next_index = index + 1 + instr(data, index + 1, SEP) //最後のSEPは必ず存在する事はモジュール全体で保証。
+	
+	value_start = index + 1 + strlen(property_name) + strlen(KEY_VALUE_SEP) //+1はstrlen(SEP)
+	value_end = next_index
+
+	// プロパティの値を抽出して返す
+	result = strmid(data, value_start, value_end - value_start)
+	
+	;logmes "@@@@" + result
 	return result
 
-#define global ctype search_SGFchild_byxy(%1,%2,%3) _search_SGFchild_byxy(SGF_NODE@global(%1), %2, %3)
-#modcfunc _search_SGFchild_byxy str s1, str s2
+#defcfunc get_property_coordinate_cash int node_id, array xy
+	xy = sgf_node_x(node_id), sgf_node_y(node_id)
+	return sgf_node_turn(node_id)
+
+#defcfunc get_SGF_childs int node_id, array a
+	dup a, sgf_node_childs(node_id)
+	return child_num(node_id)
+
+#defcfunc search_SGFchild int node_id, int target
 	result = -1
-	repeat 子ノードの数
-		if get_property_data(子ノード(cnt), s1) == s2{
-			result = 子ノード(cnt)
-			break
-		}
-	loop
+    repeat child_num(node_id)
+        if lpeek(sgf_node_childs(node_id), cnt * 4) == target{
+	    	result = cnt
+	    	break
+	    }
+    loop
+    return result
+
+#defcfunc get_node_sgf int p1
+	result = "("
+	_get_node_sgf p1, result
+	result += ")"
 	return result
 
-#define global add_SGFchild(%1,%2) _add_SGFchild SGF_NODE@global(%1), %2
-#modfunc _add_SGFchild int p1
-
-	if search_SGFchild(thismod, p1) == -1{
-		子ノード(子ノードの数) = p1
-		子ノードの数++
-	}
-	
-	return
-
-#modfunc del_SGFchild int p1
-
-	if search_SGFchild(thismod, p1) >= 0{
-		memcpy 子ノード, 子ノード, 子ノードの数 - stat - 1 << 2, stat << 2
-		子ノードの数--
-	}
-	return
-
-#deffunc get_node_sgf int p1, var s
-	s = "("
-	_get_node_sgf SGF_NODE@global(p1), s
-	s += ")"
-	return
-
-#modfunc _get_node_sgf var s, local i
+#deffunc _get_node_sgf int node_id, var s, local i, local n, local child
 
 	s += ";"
 	
-	if turn != -1{
+	if sgf_node_turn(node_id) != -1{
 		座標 = "  "
-		poke 座標, 0, 'a' + x
-		poke 座標, 1, 'a' + y
+		poke 座標, 0, 'a' + sgf_node_x(node_id)
+		poke 座標, 1, 'a' + sgf_node_y(node_id)
 		
-		if turn == 1{
+		if sgf_node_turn(node_id) == 1{
 			s += "B[" + 座標 + "]"
 		}else{
 			s += "W[" + 座標 + "]"
-		}	
+		}
 	}
 
-	repeat properties_num
-		a = property_number_to_str(properties(cnt))
-		if a == "AB"{
-			aa = properties_data(cnt)
-			s += a
-			repeat strlen(aa) / 2
-				s += "[" + strmid(aa,cnt*2,2) + "]"
+	split sgf_properties_data(node_id), SEP, tmp
+	repeat sgf_properties_num(node_id), 1
+		split tmp(cnt), KEY_VALUE_SEP, kv
+		if kv == "AB"{
+			s += kv
+			repeat strlen(kv.1) / 2
+				s += "[" + strmid(kv.1,cnt*2,2) + "]"
 			loop
 		}else{
-			s += a + "[" + properties_data(cnt) + "]"
+			s += kv + "[" + kv.1 + "]"
 		}
 	loop
+
+	n = get_SGF_childs(node_id, child)
+	for i,, n
 	
-	for i,, 子ノードの数
-	
-		if 子ノードの数 >= 2{
-			s += "("
+		if n >= 2{
+			s+="("
 		}
 		
-		_get_node_sgf SGF_NODE@global(子ノード(i)), s
+		_get_node_sgf lpeek(child, i * 4), s
 		
-		if 子ノードの数 >= 2{
-			s += ")"
+		if n >= 2{
+			s+=")"
 		}
 	next
 
+	return
+
+#deffunc get_nodelist int node_id, array a
+	dim a
+	_get_nodelist node_id, a
+	return
+#deffunc _get_nodelist int node_id, array a, int num
+	a(num) = node_id
+	if parent(node_id) != -1{
+		_get_nodelist parent(node_id), a, num + 1
+	}
 	return
 
 //特定のノードまでのSGFを取得
-#deffunc get_node_sgf_nowpoint int p1, var s, local i
-	logmes "get_node_sgf_nowpoint -> " + p1
+#defcfunc get_node_sgf_nowpoint int p1, local i
 	get_nodelist p1, a
-	s = "("
+	result = "("
 	for i, length(a)-1,-1,-1
-		s += get_node_sgf_nowpoint_main(SGF_NODE@global(a(i)))
+		result += get_node_sgf_nowpoint_main(a(i))
 	next
-	s += ")"
-	logmes s
-	return
-#modcfunc get_node_sgf_nowpoint_main local i
+	result += ")"
+	return result
+	
+#defcfunc get_node_sgf_nowpoint_main int node_id, local i
 	i = ";"
-	if turn != -1{
+	if sgf_node_turn(node_id) != -1{
 		座標 = "  "
-		poke 座標, 0, 'a' + x
-		poke 座標, 1, 'a' + y
-		if turn == 1{
+		poke 座標, 0, 'a' + sgf_node_x(node_id)
+		poke 座標, 1, 'a' + sgf_node_y(node_id)
+		if sgf_node_turn(node_id) == 1{
 			i += "B[" + 座標 + "]"
 		}else{
 			i += "W[" + 座標 + "]"
 		}	
 	}
 
-	repeat properties_num
-		s = property_number_to_str(properties(cnt))
-		if s == "AB" || s == "AW"{
-			aa = properties_data(cnt)
-			i += s
-			repeat strlen(aa)/2
-				i += "[" + strmid(aa,cnt*2,2) + "]"
+	split sgf_properties_data(node_id), SEP, tmp
+	repeat sgf_properties_num(node_id), 1
+		split tmp(cnt), KEY_VALUE_SEP, kv
+		if kv == "AB" || kv == "AW"{
+			i += kv
+			repeat strlen(kv.1)/2
+				i += "[" + strmid(kv.1,cnt*2,2) + "]"
 			loop
 		}else{
-			i += s + "[" + properties_data(cnt) + "]"
+			i += kv + "[" + kv.1 + "]"
 		}
 	loop
 	return i
 
-#modfunc set_root int p1
+#deffunc local init_node int node_id, int p1
 
-	repeat 子ノードの数
-		if 子ノード(cnt) == p1{
-			memcpy 子ノード,子ノード, cnt * 4, 4
-			子ノード(0) = p1
-		}
-	loop
+	parent(node_id) = p1
 	
-	return
+	sgf_node_turn(node_id) = -1
+	sgf_node_x(node_id) = -1
+	sgf_node_y(node_id) = -1
+	
+	sgf_properties_data(node_id) = SEP //SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
+	sgf_properties_num(node_id) = 0
+	
+	sgf_node_childs(node_id) = ""
+	child_num(node_id) = 0
 
-#modfunc set_root_thisnode local thismod_ID
-	mref thismod_ID, 2
-	set_root SGF_NODE@global(親ノード), thismod_ID //このノードが親の子ノードリストの最上位になる
-	if get_SGFparent(親ノード) ! -1{ //親ノードが親を持っていたら
-		set_root_thisnode SGF_NODE@global(親ノード) //親ノードに対しても繰り返す
-	}
 	return
 #global
+init_sgf_module
 
 #module
 #defcfunc 対応する括弧まで取得 str ss, var index, str s1, str s2, var result
@@ -257,8 +267,8 @@ dimtype SGF_NODE@global, 5
 	loop
 	result = strmid(s, index + 1, r2 - index - 1)
 	return r2
+	
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
-
 	i = instr(ss,index,s1)
 	result = strmid(ss,index,i)
 	return index + i
@@ -281,8 +291,8 @@ dimtype SGF_NODE@global, 5
 		}
 	}
 	
-	make_new_SGFnode nownode
-	new = stat
+	
+	new = make_new_SGFnode(nownode)
 	if nownode >= 0: add_SGFchild nownode, new
 	set_property_data new, 手番, 座標
 		
@@ -305,9 +315,8 @@ dimtype SGF_NODE@global, 5
 		return -1
 	}
 	
-	make_new_SGFnode node
-	topnode = stat
-	
+	topnode = make_new_SGFnode(node)
+
 	onerror *er
 		load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	onerror 0
@@ -315,7 +324,7 @@ dimtype SGF_NODE@global, 5
 	return topnode
 
 *er
-	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(SGF_NODE@global) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
+	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(node_count@sgf_node) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
 	end
 
 #deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn, local sgf_length
@@ -341,8 +350,8 @@ dimtype SGF_NODE@global, 5
 			
 		}else:if (token == ';'){
 			
-			make_new_SGFnode nn
-			new_id = stat
+			new_id = make_new_SGFnode(nn)
+			
 			add_SGFchild nn, new_id
 			nn = new_id
 			point++
@@ -363,4 +372,11 @@ dimtype SGF_NODE@global, 5
 	wend
 	return
 #global
+#endif
+
+#if 0
+
+mes get_node_sgf(load_sgf("(;B[ii] ;W[jj]  (; W[kk]C[ヒャッホー])  (;W[ll]))"))
+
+
 #endif

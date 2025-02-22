@@ -39,7 +39,7 @@ if strsize == -1{
 	alpha_interval = 10000
 	m_interval = 10000
 
-	KIFU_LOAD_MAX = 4100
+	KIFU_LOAD_MAX = 10000
 }else{
 	notesel s
 	chdir dirname
@@ -116,7 +116,7 @@ if 0{
 }
 
 #include "modules/keyfps.hsp"
-#include "modules/sgf2.hsp"
+#include "modules/sgf.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
 #include "GobanPatternManager.hsp"
@@ -278,7 +278,6 @@ pre_window_size = -9999,-9999
 		pre_window_size = window_size, window_size.1
 		gosub *save_window_size_main
 	}
-	logmes slowdown()
 
 	if kifu_update{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
@@ -305,13 +304,7 @@ pre_window_size = -9999,-9999
 						notesel sgf
 							chdir kifu_dirname
 							noteload sgf_file_name
-							logmes "start loading sgf -> " + sgf_file_name
-							start_time = keyfpstime // 計測開始
-							lsgf = load_sgf(sgf)
-							end_time = keyfpstime // 計測終了
-							new_value sgf_file_name, str(lsgf) //ファイル名とトップノードの番号を紐づける
-							end_time2 = keyfpstime
-							logmes "loaded sgf -> " + sgf_file_name + " (time: " + (end_time - start_time) + " ms) "+(end_time2 - start_time) + " ms)  " + next_kifuload_index
+							new_value sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
 						noteunsel
 						break
 					}
@@ -485,6 +478,7 @@ pre_window_size = -9999,-9999
 		}
 	}
 
+	starttime = keyfpstime
 	color 128,128,128:boxf 0,0,ginfo_winx, ginfo_winy
 	a = double(c_list) * 255: color a,a,a
 	get_rect goban_body_area, goban_back_rect
@@ -493,7 +487,6 @@ pre_window_size = -9999,-9999
 	碁盤表示 board , 着手番号表示, 20
 	draw_set_list_on_board board, v
 	
-
 	foreach kifulist
 		my_listbox_draw kifulist.cnt
 	loop
@@ -527,6 +520,7 @@ pre_window_size = -9999,-9999
 			save_window_size = window_size, window_size.1
 		}
 	return
+	
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
 	
 	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
@@ -630,7 +624,6 @@ pre_window_size = -9999,-9999
 	return
 *getsgf
 	if topnode >= 0{
-		
 		clipset get_node_sgf(topnode)
 	}
 	return
@@ -699,10 +692,11 @@ pre_window_size = -9999,-9999
 	
 *loadfile
 	chdir kifu_dirname
-	棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
+		棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
 	chdir dirname
 	
 	init_hash_manager
+	init_sgf_module
 
 	gosub*load_kifu_folder
 	
