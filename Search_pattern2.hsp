@@ -11,7 +11,7 @@
 	dim vlist , 3, 16 //パターンリスト
 	data_num = (2 + 16 * 3)
 	init_ringbuffer data_num * 4, 512
-	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
+	sdim node_data, data_num * 4 // キュー要素のデータ構造 50要素 * 整数(4バイト)
 
 	colorflip_num = 1 + colorflip
 	
