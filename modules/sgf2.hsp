@@ -1,3 +1,4 @@
+#ifndef sgf_node
 #module sgf_node
 
 #define KEY_VALUE_SEP "|||"
@@ -130,13 +131,13 @@
     loop
     return -1
 
-#deffunc get_node_sgf int p1, var s
-	s = "("
-	_get_node_sgf p1, s
-	s += ")"
-	return
+#defcfunc get_node_sgf int p1
+	result = "("
+	_get_node_sgf p1, result
+	result += ")"
+	return result
 
-#deffunc _get_node_sgf int node_id, var s, local i
+#deffunc _get_node_sgf int node_id, var s, local i, local n, local child
 
 	s += ";"
 	
@@ -145,7 +146,7 @@
 		poke 座標, 0, 'a' + sgf_node_x(node_id)
 		poke 座標, 1, 'a' + sgf_node_y(node_id)
 		
-		if turn == 1{
+		if sgf_node_turn(node_id) == 1{
 			s += "B[" + 座標 + "]"
 		}else{
 			s += "W[" + 座標 + "]"
@@ -165,16 +166,16 @@
 		}
 	loop
 
-	split sgf_node_childs, SEP, tmp
-	for i,, child_num(node_id)
+	n = get_SGF_childs(node_id, child)
+	for i,, n
 	
-		if child_num(node_id) >= 2{
+		if n >= 2{
 			s+="("
 		}
 		
-		_get_node_sgf 0 + tmp.i, s
+		_get_node_sgf lpeek(child, i * 4), s
 		
-		if child_num(node_id) >= 2{
+		if n >= 2{
 			s+=")"
 		}
 	next
@@ -193,21 +194,21 @@
 	return
 
 //特定のノードまでのSGFを取得
-#deffunc get_node_sgf_nowpoint int p1, var s, local i
+#defcfunc get_node_sgf_nowpoint int p1, local i
 	get_nodelist p1, a
-	s = "("
+	result = "("
 	for i, length(a)-1,-1,-1
-		s += get_node_sgf_nowpoint_main(a(i))
+		result += get_node_sgf_nowpoint_main(a(i))
 	next
-	s += ")"
-	return s
+	result += ")"
+	return result
 #defcfunc get_node_sgf_nowpoint_main int node_id, local i
 	i = ";"
 	if sgf_node_turn(node_id) != -1{
 		座標 = "  "
 		poke 座標, 0, 'a' + sgf_node_x(node_id)
 		poke 座標, 1, 'a' + sgf_node_y(node_id)
-		if turn == 1{
+		if sgf_node_turn(node_id) == 1{
 			i += "B[" + 座標 + "]"
 		}else{
 			i += "W[" + 座標 + "]"
@@ -365,3 +366,11 @@ init_sgf_module
 	wend
 	return
 #global
+#endif
+
+#if 1
+
+mes get_node_sgf(load_sgf("(;B[ii] ;W[jj]  (; W[kk]C[ヒャッホー])  (;W[ll]))"))
+
+
+#endif
