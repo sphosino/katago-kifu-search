@@ -2,3 +2,4 @@ title: "勉強ログ"
 description: "勉強の進捗と学びの記録"
 theme: jekyll-theme-minimal
 permalink: /:year/:month/:day/:title.html
+baseurl: "/katago-kifu-search"
