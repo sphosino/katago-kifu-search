@@ -1,7 +1,8 @@
-#include "GobanPatternManager.hsp"
+#ifndef search
+#include "GobanPatternManager.hsp" //パターン生成-> (make_rotated_patterns)
 #include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
-#include "modules/ringbuffer.hsp"
-#include "memorize_hit_rect.hsp"
+#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, r_push, r_shift)
+#include "memorize_hit_rect.hsp" //検索用メモ化関連-> (clear_mem, memorize_hit_rect)
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
 
@@ -194,3 +195,4 @@
 	wend
 	return 0
 #global
+#endif
