@@ -266,7 +266,7 @@ dim pre_xy, 2
 pretime = keyfpstime
 setfps 40
 
-#const INACTIVITY_TIMEOUT 2000
+#const INACTIVITY_TIMEOUT 1800
 
 pre_window_size = -9999,-9999
 

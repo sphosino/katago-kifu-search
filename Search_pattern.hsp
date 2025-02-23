@@ -29,6 +29,7 @@
 	notesel ss
 	ss = SGF_list
 
+	titlestr = ""
 
 	starttime = keyfpstime
 
@@ -86,7 +87,7 @@
 	loop
 	noteunsel
 
-	title titlestr + strf("ŒŸõŠ®—¹ (%dms)  %d Œ", keyfpstime -starttime, rn)
+	title titlestr + strf("ŒŸõŠ®—¹ %dŒ (%dms)", rn, keyfpstime - starttime)
 	
 	return rn
 
