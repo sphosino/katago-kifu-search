@@ -29,6 +29,9 @@
 	notesel ss
 	ss = SGF_list
 
+
+	starttime = keyfpstime
+
 	if kifu_update{		
 		repeat , next_kifuload_index@
 			noteget sgf, cnt
@@ -41,13 +44,15 @@
 				topnode = load_sgf(f)
 				new_value sgf, str(topnode)
 				await
-				title "棋譜読み込み中 -> "+ cnt * 100 / notemax + "% 完了  しばらくお待ちください"
+				titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
+				title titlestr
 			}
 		loop
 	}
 
-	title "棋譜読み込み完了。　検索中・・・"
-
+	titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
+	title titlestr
+	
 	starttime = keyfpstime
 	repeat notemax
 		noteget sgf,cnt
@@ -81,7 +86,7 @@
 	loop
 	noteunsel
 
-	title "検索完了 -> " + (keyfpstime - starttime) + " ms  -> " + rn + " 件
+	title titlestr + strf("検索完了 (%dms)  %d 件", keyfpstime -starttime, rn)
 	
 	return rn
 

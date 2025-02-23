@@ -387,9 +387,52 @@ init_sgf_module
 #global
 #endif
 
+
 #if 0
+//testcode by chatgpt
 
-mes get_node_sgf(load_sgf("(;B[ii] ;W[jj]  (; W[kk]C[ヒャッホー])  (;W[ll]))"))
+dim coord, 2
+coord(0) = 3  // 'd' の座標
+coord(1) = 4  // 'e' の座標
 
+// ルートノード作成
+root = make_new_SGFnode(-1)
+
+test1 = make_SGFnode(root, coord, 1) // 黒の手
+set_property_data test1, "C", "First move"
+
+test2 = make_SGFnode(test1, coord, 2) // 白の手 (同じ座標)
+set_property_data test2, "C", "Second move"
+
+test3 = make_SGFnode(test2, coord, 1) // 黒の手
+set_property_data test3, "C", "Third move"
+
+// 子ノードの検索
+found = search_SGFchild(root, test1)
+if found != -1 {
+    mes "Child node found: " + found
+} else {
+    mes "Child node not found"
+}
+
+// プロパティの取得
+data1 = get_property_data(test1, "C")
+data2 = get_property_data(test2, "C")
+data3 = get_property_data(test3, "C")
+mes "Node 1 comment: " + data1
+mes "Node 2 comment: " + data2
+mes "Node 3 comment: " + data3
+
+// SGF 形式への変換
+sgf_data = get_node_sgf(root)
+mes "Generated SGF: " + sgf_data
+
+// SGF の読み込み
+top_node = load_sgf(sgf_data)
+if top_node != -1 {
+    mes "SGF loaded successfully."
+} else {
+    mes "Failed to load SGF."
+}
 
 #endif
