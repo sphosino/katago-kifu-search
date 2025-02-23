@@ -80,17 +80,19 @@
 	init_node node_id, -1
 	return
 
+#deffunc set_property_move int node_id, int turn, int x, int y
+	sgf_node_turn(node_id) = turn
+	sgf_node_x(node_id) = x
+	sgf_node_y(node_id) = y
+	return
+	
 #deffunc set_property_data int node_id, str s, str d
 	if s == "B"{
-		sgf_node_turn(node_id) = 1
 		tmp = d
-		sgf_node_x(node_id) = peek(tmp, 0) - 'a'
-		sgf_node_y(node_id) = peek(tmp, 1) - 'a'
+		set_property_move node_id, 1, peek(tmp, 0) - 'a', peek(tmp, 1) - 'a'
 	}else: if s == "W"{
-		sgf_node_turn(node_id) = 2
 		tmp = d
-		sgf_node_x(node_id) = peek(tmp, 0) - 'a'
-		sgf_node_y(node_id) = peek(tmp, 1) - 'a'
+		set_property_move node_id, 2, peek(tmp, 0) - 'a', peek(tmp, 1) - 'a'
 	}else{
 		//登録
 		del_sgf_property node_id, s
@@ -135,6 +137,20 @@
     loop
     return result
 
+#defcfunc search_SGFchild_byxy int node_id, int x, int y, int turn, local child
+
+	result = -1
+	repeat get_SGF_childs(node_id, child)
+		if turn == get_property_coordinate_cash(lpeek(child, cnt * 4), xy){
+			if x == xy && y == xy.1{
+				result = lpeek(child, cnt * 4): break
+			}
+		}
+	loop
+	
+	return result
+
+
 #defcfunc get_node_sgf int p1
 	result = "("
 	_get_node_sgf p1, result
@@ -160,7 +176,7 @@
 	split sgf_properties_data(node_id), SEP, tmp
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
-		if kv == "AB"{
+		if kv == "AB" || kv = "AW"{
 			s += kv
 			repeat strlen(kv.1) / 2
 				s += "[" + strmid(kv.1,cnt*2,2) + "]"
@@ -277,24 +293,21 @@ init_sgf_module
 
 #module
 
-#defcfunc make_SGFnode int nownode, array coordinate, str 手番
-
-	new = nownode
-
-	座標 = "  "
-	poke 座標, 0, 'a' + coordinate
-	poke 座標, 1, 'a' + coordinate.1
+#defcfunc make_SGFnode int nownode, array coordinate, int 手番
 
 	if nownode >= 0{
-		if search_SGFchild_byxy(nownode, 手番, 座標) >= 0{
+		if search_SGFchild_byxy(nownode, coordinate, coordinate.1 , 手番) >= 0{
 			return stat //すでにノードが存在
 		}
 	}
 	
-	
 	new = make_new_SGFnode(nownode)
-	if nownode >= 0: add_SGFchild nownode, new
-	set_property_data new, 手番, 座標
+	
+	if nownode >= 0{
+		add_SGFchild nownode, new
+	}
+	
+	set_property_move new, 手番, coordinate, coordinate.1
 		
 	return new
 

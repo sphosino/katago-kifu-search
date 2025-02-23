@@ -1,0 +1,61 @@
+#include "namespace_base.hsp" // use -> get_value, new_value, NOT_DEFINED_HASH
+#module
+
+#deffunc circle_cash int x, int y, int c
+	//ハッシュを取得
+	d = strf("%d,%d,%d", x, y, c)
+	buf_id = get_value(d)
+	
+	if buf_id == NOT_DEFINED_HASH{
+
+		now = ginfo(3) //現在の描画先
+		
+		//新しいバッファの番号を取得
+		buf_id = ginfo_newid
+
+		buffer buf_id, x, y
+		color: boxf
+		color c >> 16 & 255, c >> 8 & 255, c & 255
+		circle 0,0,x,y
+
+		gsel now
+
+		new_value d, str(buf_id)
+
+	}
+
+	gmode 2, x, y
+	gcopy int(buf_id)
+
+	return
+#global
+
+
+#include "d3m.hsp"
+playout = 100000
+
+await 100
+start = d3timer()
+repeat playout
+pos 0,0: circle_cash 60,60, $FF0000 
+loop
+
+logmes "cash = " + (d3timer() - start) + "ms"
+
+await 100
+start = d3timer()
+
+color 255,0,0
+repeat playout
+circle 0,0, 60,60
+loop
+
+
+logmes "no_cash = " + (d3timer() - start) + "ms"
+
+/*
+cash = 2272ms
+no_cash = 1756ms
+*/
+
+//キャッシュしない方が早くて草
