@@ -264,7 +264,6 @@ c_list = "0.50"
 dim pre_xy, 2
 
 pretime = keyfpstime
-setfps 40
 
 #const INACTIVITY_TIMEOUT 1800
 
