@@ -22,8 +22,3 @@ defaults:
     values:
       layout: "home"  # トップページ用のレイアウト
       title: "勉強ログ"
-
-  - scope:
-      path: ""  # 他のファイルすべて
-    values:
-      layout: "default"  # 他のページは default レイアウト
