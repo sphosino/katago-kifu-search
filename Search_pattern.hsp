@@ -161,8 +161,8 @@
 				//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
 				goto *next_node
 			}
-			//パターンリストの末尾要素を今の位置に置き換えて再探索
-			vlist(0, v) = vlist(0, valid_pattern_count), vlist(1, valid_pattern_count), vlist(2, valid_pattern_count)
+			//今の位置をパターンリストの末尾要素で置き換えて再探索
+			memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
 			goto *check_pattern_list
 			
 			*matched
