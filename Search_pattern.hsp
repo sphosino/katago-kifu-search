@@ -24,7 +24,6 @@
 	}
 	sdim result,,2
 	rn = 0
-	vlist(1) = 0
 	prexy = -1, -1
 	
 	//logmes "’Tõ‚ğŠJn‚µ‚Ü‚·-> Î” = " + stone_num
