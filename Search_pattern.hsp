@@ -1,9 +1,10 @@
 #ifndef search
-#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF)
-#include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE) 
-#include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
-#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift)
-#include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect)
+#include "modules/keyfps.hsp" //タイマー -> ( keyfpstime )
+#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
+#include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
+#include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
+#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift )
+#include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
@@ -11,82 +12,76 @@
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
 
-	dim vlist , 3, 16 //パターンリスト
-	data_num = (3 + 16 * 3)
-	init_ringbuffer data_num * 4, 512
-	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
-
 	colorflip_num = 1 + colorflip
 	
 	最大の深さ = 50
 	if max_depth{
 		最大の深さ = max_depth
 	}
-	sdim result,,2
 	rn = 0
 	prexy = -1, -1
 	
 	//logmes "探索を開始します-> 石数 = " + stone_num
 	
 	notesel ss
-	ss = SGF_list
-
-	titlestr = ""
-
-	starttime = keyfpstime
-
-	if kifu_update{		
-		repeat , next_kifuload_index@
-			noteget sgf, cnt
-			next_kifuload_index@++
-			if sgf == "": break
-			notesel f
-			noteload sgf
-			noteunsel
-			if get_value(sgf) == NOT_DEFINED_HASH{
-				topnode = load_sgf(f)
-				new_value sgf, str(topnode)
-				await
-				titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
-				title titlestr
-			}
-		loop
-	}
-
-	titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
-	title titlestr
+		ss = SGF_list
 	
-	starttime = keyfpstime
-	repeat notemax
-		noteget sgf,cnt
-		if get_value(sgf) == NOT_DEFINED_HASH: dialog "ERROR -> " + refstr ,, __FILE__: end
+		titlestr = ""
+	
+		starttime = keyfpstime
+	
+		if kifu_update{		
+			repeat , next_kifuload_index@
+				noteget sgf_filename, cnt
+				next_kifuload_index@++
+				if sgf_filename == "": break
+				if get_value(sgf_filename) == NOT_DEFINED_HASH{
+					notesel sgf
+						noteload sgf_filename
+					noteunsel
+					topnode = load_sgf(sgf)
+					new_value sgf_filename, str(topnode)
+					await
+					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
+					title titlestr
+				}
+			loop
+		}
+	
+		titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
+		title titlestr
 		
-		topnode = int(refstr)
-		
-		get_board_size_from_SGF topnode, xy
-
-		//前回検索した棋譜とボードサイズが違う場合
-		if prexy != xy || prexy.1 != xy.1{
-			//新たなパターンを生成
-			make_rotated_patterns pattern, xy,xy.1 , rotated_p
-			clear_mem
-			prexy = xy,xy.1
+		starttime = keyfpstime
+		repeat notemax
+			noteget sgf,cnt
+			if get_value(sgf) == NOT_DEFINED_HASH: dialog "ERROR -> " + refstr ,, __FILE__: end
 			
-		}
-		
-		//サーチメイン関数用の変数設定
-		r_pattern_num = 4 << (xy == xy.1)
-		all_pattern_num = r_pattern_num * colorflip_num
-		
-		//検索実行
-		if search_main(topnode, rotated_p, match_node){
-			result(0, rn) = sgf //一致したSGFを結果に追加
-			result(1, rn) = str(match_node)
-			;logmes str(match_node)
-			rn++
-		}
-		
-	loop
+			topnode = int(refstr)
+			
+			get_board_size_from_SGF topnode, xy
+	
+			//前回検索した棋譜とボードサイズが違う場合
+			if prexy != xy || prexy.1 != xy.1{
+				//新たなパターンを生成
+				make_rotated_patterns pattern, xy,xy.1 , rotated_p
+				clear_mem
+				prexy = xy,xy.1
+				
+			}
+			
+			//サーチメイン関数用の変数設定
+			r_pattern_num = 4 << (xy == xy.1)
+			all_pattern_num = r_pattern_num * colorflip_num
+			
+			//検索実行
+			if search_main(topnode, rotated_p, match_node){
+				result(0, rn) = sgf //一致したSGFを結果に追加
+				result(1, rn) = str(match_node)
+				;logmes str(match_node)
+				rn++
+			}
+			
+		loop
 	noteunsel
 
 	title titlestr + strf("検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
@@ -190,5 +185,14 @@
 		loop
 	wend
 	return 0
+
+#deffunc search_init
+	sdim result,,2,10000
+	dim vlist , 3, 16
+	data_num = (3 + 16 * 3)
+	init_ringbuffer data_num * 4, 512
+	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
+	return
 #global
+search_init
 #endif
