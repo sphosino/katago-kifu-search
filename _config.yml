@@ -14,11 +14,3 @@ collections:
     output: true
     permalink: /:year/:month/:day/:title.html
     dir: docs/_posts  # _posts の場所を docs/_posts に指定
-
-# docs/index.md をトップページに指定
-defaults:
-  - scope:
-      path: "index.md"  # index.md のみ
-    values:
-      layout: "home"  # トップページ用のレイアウト
-      title: "勉強ログ"
