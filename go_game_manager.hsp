@@ -26,8 +26,8 @@
 
 	//表示したいノードまでノードを着手する
 	for i, length(nodelist)-2, -1, -1
-		tmp = get_property_coordinate_cash(nodelist(i),xy)
-		着手 board, xy, xy.1
+		tmp = get_property_coordinate_cash(nodelist(i), x, y)
+		着手 board, x, y
 	next
 	
 	return
@@ -47,7 +47,7 @@
 	okiisi = get_property_data(SGF_topnode,"AB")
 	if okiisi != ""{
 		repeat strlen(okiisi) / 2
-		置き石 board,peek(okiisi,cnt*2) - 'a', peek(okiisi,cnt*2+1) - 'a', 1
+			置き石 board,peek(okiisi,cnt*2) - 'a', peek(okiisi,cnt*2+1) - 'a', 1
 		loop
 		toggle_turn board
 	}

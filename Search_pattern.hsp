@@ -1,7 +1,7 @@
 #ifndef search
 #include "GobanPatternManager.hsp" //パターン生成-> (make_rotated_patterns)
 #include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH)
-#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, r_push, r_shift)
+#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift)
 #include "memorize_hit_rect.hsp" //検索用メモ化関連-> (clear_mem, memorize_hit_rect)
 #module
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
@@ -106,11 +106,11 @@
 */
 
 	//キュー初期化
-	ln = 0
+	valid_pattern_count = 0
 	repeat r_pattern_num
 		for i,, colorflip_num
-			vlist(0, ln) = i, cnt, 0
-			ln++
+			vlist(0, valid_pattern_count) = i, cnt, 0
+			valid_pattern_count++
 		next
 	loop
 
@@ -119,7 +119,6 @@
 	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
 	memcpy node_data, vlist  , 48 * 4, 3 * 4
 	r_push node_data
-
 	
 	*next_node
 	while ringbuffer_count
@@ -129,40 +128,36 @@
 		//ノードデータ展開
 		depth = lpeek(node_data) : if depth > 最大の深さ: return 0
 		node = lpeek(node_data, 4)
-		ln = lpeek(node_data, 8)
+		valid_pattern_count = lpeek(node_data, 8)
 		memcpy vlist  , node_data, 48*4,, 3 * 4
 		
-		turn = get_property_coordinate_cash(node, coordinate) //ノードの手番、座標を取得
+		turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
-		if coordinate < 0: goto *get_child //; 着手がないノード（トップノードか、パス、もしくは投了したと考える）
+		if x < 0: goto *get_child //; 着手がないノード（トップノードか、パス、もしくは投了したと考える）
 
-		y = coordinate.1
-
-		for v,,ln
+		for v,,valid_pattern_count
 			*check_pattern_list
 		
 			r_p = vlist(1, v)
 			
-			//パターンに対するx,y,rotate_pattern入力で、jにヒットするrect番号, iにヒットする石番号を取得
-			j = memorize_hit_rect(r_p, coordinate, y, pattern, i)　
-			if j == -1{
+			if memorize_hit_rect(r_p, x, y, pattern, hit_stone) == -1{
 				_continue
 			}
 
-			if i >= 0{
-				split pattern(j, 1, vlist(0, v), r_p),"-", stones
-				split stones(i), ":", tmp
+			if hit_stone >= 0{
+				split pattern(stat, 1, vlist(0, v), r_p),"-", stones
+				split stones(hit_stone), ":", stone_info
 				if turn == 1{
-					if PATTERN_BLACK & tmp.2: goto *matched
+					if PATTERN_BLACK & stone_info.2: goto *matched
 				}else: if turn == 2{
-					if PATTERN_WHITE & tmp.2: goto *matched
+					if PATTERN_WHITE & stone_info.2: goto *matched
 				}
 			}
 			
-			ln--
-			if v == ln{
+			valid_pattern_count--
+			if v == valid_pattern_count{
 				//有効パターンリストを全て探索した。
-				if ln{
+				if valid_pattern_count{
 					//まだ有効リストが残っているので、子ノードを積みに行く
 					goto *get_child
 				}
@@ -170,9 +165,9 @@
 				goto *next_node
 			}
 			//パターンリストの末尾要素を今の位置に置き換えて再探索
-			vlist(0, v) = vlist(0, ln)
-			vlist(1, v) = vlist(1, ln)
-			vlist(2, v) = vlist(2, ln)
+			vlist(0, v) = vlist(0, valid_pattern_count)
+			vlist(1, v) = vlist(1, valid_pattern_count)
+			vlist(2, v) = vlist(2, valid_pattern_count)
 			goto *check_pattern_list
 			
 			*matched
@@ -188,7 +183,7 @@
 		repeat get_SGF_childs(node, child)
 			lpoke node_data,  , depth + 1
 			lpoke node_data, 4, lpeek(child, cnt * 4)
-			lpoke node_data, 8, ln
+			lpoke node_data, 8, valid_pattern_count
 			memcpy node_data, vlist, 48 * 4, 3 * 4
 			r_push node_data
 		loop

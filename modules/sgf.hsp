@@ -119,8 +119,9 @@
 	;logmes "@@@@" + result
 	return result
 
-#defcfunc get_property_coordinate_cash int node_id, array xy
-	xy = sgf_node_x(node_id), sgf_node_y(node_id)
+#defcfunc get_property_coordinate_cash int node_id, var x, var y
+	x = sgf_node_x(node_id)
+	y = sgf_node_y(node_id)
 	return sgf_node_turn(node_id)
 
 #defcfunc get_SGF_childs int node_id, array a
@@ -137,12 +138,12 @@
     loop
     return result
 
-#defcfunc search_SGFchild_byxy int node_id, int x, int y, int turn, local child
+#defcfunc search_SGFchild_byxy int node_id, int _x, int _y, int turn, local child
 
 	result = -1
 	repeat get_SGF_childs(node_id, child)
-		if turn == get_property_coordinate_cash(lpeek(child, cnt * 4), xy){
-			if x == xy && y == xy.1{
+		if turn == get_property_coordinate_cash(lpeek(child, cnt * 4), x, y){
+			if _x == x && y == y{
 				result = lpeek(child, cnt * 4): break
 			}
 		}

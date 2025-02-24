@@ -236,7 +236,7 @@ newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
 
-newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 2000 , 14 , 16
+newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
@@ -269,7 +269,7 @@ pretime = keyfpstime
 
 pre_window_size = -9999,-9999
 
-
+setfps 60
 *main
 	manage_keyfps
 	window_size = ginfo(12), ginfo(13)
@@ -474,6 +474,10 @@ pre_window_size = -9999,-9999
 			}
 		}else{
 			pre_jidou = 0
+			if ginfo_act == -1{
+				skipdraw = 1
+				skipcount++
+			}
 		}
 	}
 
@@ -725,13 +729,13 @@ pre_window_size = -9999,-9999
 *syncboard
 	nownode = get_current_node(t)
 
-	tmp = get_property_coordinate_cash(get_tree_item_id(nownode), xy)
+	tmp = get_property_coordinate_cash(get_tree_item_id(nownode), x, y)
 
-	マンハッタン距離 = abs(xy - pre_xy)   +   abs(xy.1 - pre_xy.1)
+	マンハッタン距離 = abs(x - pre_xy)   +   abs(y - pre_xy.1)
 
 	logmes "マンハッタン距離 = "+マンハッタン距離
 
-	pre_xy = xy, xy.1
+	pre_xy = x, y
 
 	if get_tree_item_id(nownode) == topnode{
 		tmp = "0.50"

@@ -11,6 +11,7 @@ packfile
 *.exe
 *.ico
 *.bmp
+*.var
 window.txt
 test/
 katago-kifu-search/
