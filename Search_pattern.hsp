@@ -128,53 +128,52 @@
 		
 		turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
-		if x < 0: goto *get_child //; 着手がないノード（トップノードか、パス、もしくは投了したと考える）
+		if x >= 0{
 
-		for v,,valid_pattern_count
-			*check_pattern_list
-		
-			r_p = vlist(1, v)
+			for v,, valid_pattern_count
+				*check_pattern_list
 			
-			if memorize_hit_rect(r_p, x, y, pattern, hit_stone) == -1{
-				_continue
-			}
-
-			if hit_stone >= 0{
-				split pattern(stat, 1, vlist(0, v), r_p),"-", stones
-				split stones(hit_stone), ":", stone_info
-				if turn == 1{
-					if PATTERN_BLACK & stone_info.2: goto *matched
-				}else{
-					;if turn == 2{
-					if PATTERN_WHITE & stone_info.2: goto *matched
-					;}
+				r_p = vlist(1, v)
+				
+				if memorize_hit_rect(r_p, x, y, pattern, hit_stone) == -1{
+					_continue
 				}
-			}
-			
-			valid_pattern_count--
-			if v == valid_pattern_count{
-				//有効パターンリストを全て探索した。
-				if valid_pattern_count{
-					//まだ有効リストが残っているので、子ノードを積みに行く
-					goto *get_child
+	
+				if hit_stone >= 0{
+					split pattern(stat, 1, vlist(0, v), r_p),"-", stones
+					split stones(hit_stone), ":", stone_info
+					if turn == 1{
+						if PATTERN_BLACK & stone_info.2: goto *matched
+					}else{
+						;if turn == 2{
+						if PATTERN_WHITE & stone_info.2: goto *matched
+						;}
+					}
 				}
-				//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
-				goto *next_node
-			}
-			//今の位置をパターンリストの末尾要素で置き換えて再探索
-			memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
-			goto *check_pattern_list
-			
-			*matched
-			vlist(2, v)++
-			if vlist(2, v) == stone_num{
-				result_node = node //一致したSGFノード
-				; result_v = v //一致したパターン
-				return 1 //検索成功
-			}
-		next
-		
-		*get_child
+				
+				valid_pattern_count--
+				if v == valid_pattern_count{
+					//有効パターンリストを全て探索した。
+					if valid_pattern_count{
+						//まだ有効リストが残っているので、子ノードを積みに行く
+						_break
+					}
+					//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
+					goto *next_node
+				}
+				//今の位置をパターンリストの末尾要素で置き換えて再探索
+				memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
+				goto *check_pattern_list
+				
+				*matched
+				vlist(2, v)++
+				if vlist(2, v) == stone_num{
+					result_node = node //一致したSGFノード
+					; result_v = v //一致したパターン
+					return 1 //検索成功
+				}
+			next
+		}
 		repeat get_SGF_childs(node, child)
 			lpoke node_data,  , depth + 1
 			lpoke node_data, 4, lpeek(child, cnt * 4)
@@ -186,8 +185,13 @@
 	return 0
 
 #deffunc search_init
-	sdim result,,2,10000
+
+	sdim result,, 2, 10000
+	
 	dim vlist , 3, 16
+	; vlist = (色反転フラグ,回転パターンタイプ, マッチした数 ) が 最大で 16 要素
+	;         (    0-1     ,  0-7             ,              )
+	
 	data_num = (3 + 16 * 3)
 	init_ringbuffer data_num * 4, 512
 	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
