@@ -16,3 +16,10 @@ collections:
     output: true
     permalink: /:year/:month/:day/:title.html
     dir: docs/_posts  # _posts の場所を docs/_posts に指定
+
+defaults:
+  - scope:
+      path: "" 
+    values:
+      layout: "default"  # トップページ用のレイアウト
+      title: "勉強ログ"
