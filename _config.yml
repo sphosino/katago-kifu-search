@@ -18,7 +18,7 @@ collections:
 # docs/index.md をトップページに指定
 defaults:
   - scope:
-      path: "docs/index.md"  # index.md のみ
+      path: "index.md"  # index.md のみ
     values:
       layout: "home"  # トップページ用のレイアウト
       title: "勉強ログ"
