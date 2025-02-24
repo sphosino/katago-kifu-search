@@ -1,13 +1,10 @@
-source: docs   # ソースを docs フォルダに設定
+source: docs  # ソースを docs フォルダに設定
 destination: _site  # ビルド結果の保存先
 baseurl: "/katago-kifu-search"  # 必要に応じて設定
 
 title: "勉強ログ"
 description: "勉強の進捗と学びの記録"
 theme: jekyll-theme-minimal
-
-# _posts の場所を docs/_posts に指定
-posts_dir: docs/_posts
 
 # ペルマリンク設定
 permalink: "/:year/:month/:day/:title.html"
@@ -16,4 +13,12 @@ collections:
   posts:
     output: true
     permalink: /:year/:month/:day/:title.html
-    dir: docs/_posts  # この行が必要です
+    dir: docs/_posts  # _posts の場所を docs/_posts に指定
+
+# docs/index.md をトップページに指定
+defaults:
+  - scope:
+      path: ""  # すべてのファイル
+    values:
+      layout: "home"  # トップページ用のレイアウト
+      title: "勉強ログ"
