@@ -144,8 +144,10 @@
 				split stones(hit_stone), ":", stone_info
 				if turn == 1{
 					if PATTERN_BLACK & stone_info.2: goto *matched
-				}else: if turn == 2{
+				}else{
+					;if turn == 2{
 					if PATTERN_WHITE & stone_info.2: goto *matched
+					;}
 				}
 			}
 			
@@ -160,9 +162,7 @@
 				goto *next_node
 			}
 			//パターンリストの末尾要素を今の位置に置き換えて再探索
-			vlist(0, v) = vlist(0, valid_pattern_count)
-			vlist(1, v) = vlist(1, valid_pattern_count)
-			vlist(2, v) = vlist(2, valid_pattern_count)
+			vlist(0, v) = vlist(0, valid_pattern_count), vlist(1, valid_pattern_count), vlist(2, valid_pattern_count)
 			goto *check_pattern_list
 			
 			*matched
