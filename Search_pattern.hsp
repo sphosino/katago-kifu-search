@@ -53,17 +53,16 @@
 		
 		starttime = keyfpstime
 		repeat notemax
-			noteget sgf,cnt
-			if get_value(sgf) == NOT_DEFINED_HASH: dialog "ERROR -> " + refstr ,, __FILE__: end
+			noteget sgf_filename, cnt
 			
-			topnode = int(refstr)
+			topnode = int(get_value(sgf_filename))
 			
 			get_board_size_from_SGF topnode, xy
 	
 			//前回検索した棋譜とボードサイズが違う場合
 			if prexy != xy || prexy.1 != xy.1{
 				//新たなパターンを生成
-				make_rotated_patterns pattern, xy,xy.1 , rotated_p
+				make_rotated_patterns pattern, xy, xy.1 , rotated_p
 				clear_mem
 				prexy = xy,xy.1
 				
@@ -75,7 +74,7 @@
 			
 			//検索実行
 			if search_main(topnode, rotated_p, match_node){
-				result(0, rn) = sgf //一致したSGFを結果に追加
+				result(0, rn) = sgf_filename //一致したSGFを結果に追加
 				result(1, rn) = str(match_node)
 				;logmes str(match_node)
 				rn++
