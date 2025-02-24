@@ -1,7 +1,7 @@
 
 
 #ifndef hash_module
-#module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  ƒf[ƒ^”
+#module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  ãƒ‡ãƒ¼ã‚¿æ•°
 
 #ifdef __hsp64__@
 #const mrefget 4
@@ -10,7 +10,7 @@
 #const mrefget 2
 #const __INTSIZE__ 4
 #endif
-#const MAX_KEYS 10000
+#const MAX_KEYS 12000
 
 #enum KEY = 0
 #enum VALUE
@@ -44,7 +44,7 @@
 	return thismod_ID
 
 
-#modfunc hash_set str s1, str s2, int ì¬‚Í‚µ‚È‚¢
+#modfunc hash_set str s1, str s2, int ä½œæˆã¯ã—ãªã„
 
 	hash = get_hash(s1)
 
@@ -55,13 +55,13 @@
 		}
 	next
 
-	if ì¬‚Í‚µ‚È‚¢: return 0
+	if ä½œæˆã¯ã—ãªã„: return 0
 
 	if data_deleted_list_num{
 		data_deleted_list_num--
 		newid = data_deleted_list(data_deleted_list_num)
 	}else{
-		newid = ƒf[ƒ^”
+		newid = ãƒ‡ãƒ¼ã‚¿æ•°
 	}
 	
 	data(newid, KEY) = s1
@@ -69,7 +69,7 @@
 	hashtable(hash, hashcount(hash)) = newid
 	hashcount(hash)++
 	
-	ƒf[ƒ^”++
+	ãƒ‡ãƒ¼ã‚¿æ•°++
 
 	return 1
 
@@ -102,7 +102,7 @@
 			hashcount(hash)--
 			id = hashtable(hash, hashcount(hash))
 
-			ƒf[ƒ^”--
+			ãƒ‡ãƒ¼ã‚¿æ•°--
 			
 			return
 		}
@@ -112,7 +112,7 @@
 	
 #modcfunc hash_get_data_num
 
-	return ƒf[ƒ^”
+	return ãƒ‡ãƒ¼ã‚¿æ•°
 
 #global
 
@@ -124,26 +124,26 @@
 #define global new_namespace(%1 = -1) _new_namespace(%1)
 #deffunc _new_namespace int p1
 
-	//Œ»İ‚ÌƒJƒŒƒ“ƒgid‚ğ•Û‘¶
+	//ç¾åœ¨ã®ã‚«ãƒ¬ãƒ³ãƒˆidã‚’ä¿å­˜
 	tmp_parent_id = current_id
 
 	if p1 >= 0{
 		this_id = p1
 		current_id = this_id
 	}else{
-		//À‘Ì‚ğì¬
+		//å®Ÿä½“ã‚’ä½œæˆ
 		newmod data, hash_module
 		this_id = stat
 		current_id = this_id
-		//e‚ğİ’è
+		//è¦ªã‚’è¨­å®š
 		parent(current_id) == -1
 		hash_set_parent tmp_parent_id
 		
-		//qƒm[ƒhƒŠƒXƒg‚ğ‰Šú‰»
+		//å­ãƒãƒ¼ãƒ‰ãƒªã‚¹ãƒˆã‚’åˆæœŸåŒ–
 		init_childs_list childs(current_id)
 	}
 
-	//ƒXƒ^ƒbƒN‚ÉÏ‚Ş
+	//ã‚¹ã‚¿ãƒƒã‚¯ã«ç©ã‚€
 	namespace_stack(namespace_stack_num) = this_id
 	namespace_stack_num++
 	
@@ -151,19 +151,19 @@
 
 #deffunc break_namespace
 	namespace_stack_num--
-	current_id = namespace_stack(namespace_stack_num - 1) //ˆê‚Â‰º‚ÌŠK‘w‚ğæ‚èo‚µ‚Äİ’è
+	current_id = namespace_stack(namespace_stack_num - 1) //ä¸€ã¤ä¸‹ã®éšå±¤ã‚’å–ã‚Šå‡ºã—ã¦è¨­å®š
 	return
 
 #deffunc hash_set_parent int parent_id
 
 	if parent(current_id) >= 0{
-		//‚·‚Å‚Ée‚ğİ’èÏ‚İ‚È‚Ì‚ÅA‚»‚Ìe‚©‚ç‚±‚Ìƒm[ƒh‚ğŠO‚·
+		//ã™ã§ã«è¦ªã‚’è¨­å®šæ¸ˆã¿ãªã®ã§ã€ãã®è¦ªã‹ã‚‰ã“ã®ãƒãƒ¼ãƒ‰ã‚’å¤–ã™
 		del_child_id childs(parent(current_id)), current_id
-		//V‚µ‚¢e‚É“o˜^
+		//æ–°ã—ã„è¦ªã«ç™»éŒ²
 		add_child_id childs(parent_id), current_id
 	}
 
-	//e‚ğ“o˜^
+	//è¦ªã‚’ç™»éŒ²
 	parent(current_id) = parent_id
 	return
 
@@ -176,15 +176,15 @@
 	_set_value s1, s2, current_id
 	return
 #deffunc _set_value str s1, str s2, int id
-	hash_set data(id), s1, s2, 1 //‘ã“ü
+	hash_set data(id), s1, s2, 1 //ä»£å…¥
 	if stat == 0{
-		//’l‚ª‚»‚Ì‹óŠÔ‚É‘¶İ‚µ‚È‚©‚Á‚½
+		//å€¤ãŒãã®ç©ºé–“ã«å­˜åœ¨ã—ãªã‹ã£ãŸ
 		if parent(id) >= 0{
 			_set_value s1, s2, parent(id)
 			return
 		}else{
-			//ÅãˆÊ‹óŠÔ‚É“’B‚µ‚½
-			hash_set data(id), s1, s2 //ÅãˆÊ‹óŠÔ‚Éì¬
+			//æœ€ä¸Šä½ç©ºé–“ã«åˆ°é”ã—ãŸ
+			hash_set data(id), s1, s2 //æœ€ä¸Šä½ç©ºé–“ã«ä½œæˆ
 		}
 	}
 	return
@@ -248,25 +248,25 @@ init_hash_manager
 
 
 #if 0
-	new_value "A","e‚Ì•Ï”‚P"
-	new_value "B","e‚Ì•Ï”‚Q"
+	new_value "A","è¦ªã®å¤‰æ•°ï¼‘"
+	new_value "B","è¦ªã®å¤‰æ•°ï¼’"
 	new_value "Z","fafa"
 	
 	new_namespace: t = stat 
-		//e‹óŠÔQÆ
+		//è¦ªç©ºé–“å‚ç…§
 		mes get_value("A")
 
 		new_value "C","testvalue"
 		new_value "C","testvalue2"
 
 		new_namespace: z = stat
-			//•Ï”éŒ¾
-			new_value "A","q‚Ì•Ï”"
+			//å¤‰æ•°å®£è¨€
+			new_value "A","å­ã®å¤‰æ•°"
 			mes get_value("A")
 	
-			//•Ï”‚ğ‘‚«Š·‚¦‚é
-			set_value "A","hogehoge" //q‚É‘¶İ
-			set_value "B","‘‚«Š·‚¦‚½‚æ" //e‚É‘¶İ‚·‚é
+			//å¤‰æ•°ã‚’æ›¸ãæ›ãˆã‚‹
+			set_value "A","hogehoge" //å­ã«å­˜åœ¨
+			set_value "B","æ›¸ãæ›ãˆãŸã‚ˆ" //è¦ªã«å­˜åœ¨ã™ã‚‹
 
 			mes get_value("C")
 		break_namespace
@@ -278,7 +278,7 @@ init_hash_manager
 
 	new_namespace
 		new_value "T","hoyoyo"
-		new_namespace z //’è‹`‚³‚ê‚½“_‚Ì‹óŠÔó‘Ô‚É‚È‚é
+		new_namespace z //å®šç¾©ã•ã‚ŒãŸæ™‚ç‚¹ã®ç©ºé–“çŠ¶æ…‹ã«ãªã‚‹
 			mes get_value("T")
 			mes get_value("Z")
 			mes get_value("C")
