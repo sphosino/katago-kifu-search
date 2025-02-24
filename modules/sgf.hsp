@@ -251,6 +251,19 @@
 	loop
 	return i
 
+#deffunc get_board_size_from_SGF int SGF_topnode, array xy
+
+	size = get_property_data(SGF_topnode, "SZ")
+	if size == ""{
+		logmes "SGFにボードサイズが設定されていません"
+		xy = 19,19
+	}else{
+		split size,":", x, y
+		if stat = 1: y = x
+		xy = int(x), int(y)
+	}
+	return
+
 #deffunc local init_node int node_id, int p1
 
 	parent(node_id) = p1

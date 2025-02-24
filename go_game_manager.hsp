@@ -2,6 +2,7 @@
 
 #include "treebox.hsp"
 #include "modules/namespace_base.hsp"
+#include "modules/sgf.hsp"
 
 #module
 
@@ -54,19 +55,7 @@
 	
 	return
 
-#deffunc get_board_size_from_SGF int SGF_topnode, array a
 
-	size = get_property_data(SGF_topnode, "SZ")
-	if size == ""{
-		logmes "SGFにボードサイズが設定されていません"
-		a = 19,19
-	}else{
-		split size,":", x, y
-		if stat = 1: y = x
-		a = int(x),int(y)
-	}
-
-	return
 
 
 #defcfunc load_sgf_set_board var _treebox, int node, var _board
