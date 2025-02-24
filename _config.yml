@@ -20,7 +20,7 @@ defaults:
   - scope:
       path: "index.md"  # index.md のみ
     values:
-      layout: "home"  # トップページ用のレイアウト
+      layout: "default"  # トップページ用のレイアウト
       title: "勉強ログ"
 
   - scope:
