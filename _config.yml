@@ -4,7 +4,7 @@ baseurl: "/katago-kifu-search"  # 必要に応じて設定
 
 title: "勉強ログ"
 description: "勉強の進捗と学びの記録"
-theme: minima
+theme: jekyll-theme-cayman
 
 # ペルマリンク設定
 permalink: "/:year/:month/:day/:title.html"
@@ -20,7 +20,7 @@ defaults:
   - scope:
       path: "index.md"  # index.md のみ
     values:
-      layout: "default"  # トップページ用のレイアウト
+      layout: "home"  # トップページ用のレイアウト
       title: "勉強ログ"
 
   - scope:
