@@ -20,5 +20,5 @@ defaults:
   - scope:
       path: ""  # すべてのファイル
     values:
-      layout: "home"  # トップページ用のレイアウト
+      layout: home  # トップページ用のレイアウト
       title: "勉強ログ"
