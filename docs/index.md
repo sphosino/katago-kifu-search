@@ -6,8 +6,6 @@ title: "勉強ログ"
 
 以下に最新の勉強ログを表示します：
 
-{{ site.description }}
-
 {% for post in site.posts %}
   * [{{ post.title }}]({{ site.baseurl }}{{ post.url }}) - {{ post.date | date: "%Y-%m-%d" }}
 {% endfor %}
