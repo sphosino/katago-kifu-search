@@ -10,7 +10,7 @@
 #const mrefget 2
 #const __INTSIZE__ 4
 #endif
-#const MAX_KEYS 12000
+#const MAX_KEYS 10000 * 40 //データ件数の１３倍ぐらいがいいらしい by chatgpt
 
 #enum KEY = 0
 #enum VALUE
@@ -19,15 +19,18 @@
 
 #define global NOT_DEFINED_HASH "__undefined__"
 
+#const FNV_OFFSET 2166136261
+#const FNV_PRIME 16777619
+#const SEED 0x811C9DC5
+
 #defcfunc local get_hash str s1
-    #const SEED 0x811C9DC5
+    s = SEED ^ FNV_OFFSET    ; 初期値にFNV_OFFSETを加える
     t = s1
-    s = SEED
-    
-    repeat length(t)
-        s = (s ^ peek(t,cnt)) * 0x01000193
+    repeat strlen(t)
+        c = peek(t, cnt)
+        s = (s ^ c) * FNV_PRIME ; FNVの素数を掛ける
+        s = (s ^ (c << (cnt & 7)))
     loop
-    
     return (s & 0x7FFFFFFF) \ MAX_KEYS
 
 #modinit
@@ -68,6 +71,12 @@
 	data(newid, VALUE) = s2
 	hashtable(hash, hashcount(hash)) = newid
 	hashcount(hash)++
+
+	#ifdef _debug
+		if hashcount(hash)>1{
+			logmes "hash_collision" + (hashcount(hash)-1) + ": hash= " + hash + ":  str = " + s1
+		}
+	#endif
 	
 	データ数++
 
