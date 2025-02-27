@@ -3,7 +3,7 @@ title: "勉強ログ"
 ---
 
 # 勉強ログ一覧
-[github](https://github.com/hosinobu/katago-kifu-search)
+[katago-kifu-search](https://github.com/hosinobu/katago-kifu-search)  
 以下に最新の勉強ログを表示します：
 
 {% for post in site.posts %}
