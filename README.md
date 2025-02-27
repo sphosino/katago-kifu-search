@@ -9,7 +9,7 @@ Katagoのrating自己対戦の棋譜を集めていますが、数百-数千visi
 
 本プログラムにはAIを動かす機能はありません。あくまで、棋譜鑑賞、検索用です。
 
-[My Study Logs on GitHub Pages](https://username.github.io)
+[My Study Logs on GitHub Pages](https://hosinobu.github.io)
 
 ***
 囲碁AI、KataGoのサイト  
