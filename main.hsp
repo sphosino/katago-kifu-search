@@ -252,6 +252,8 @@ rn = 0
 dim rect, 4
 dim rect_stack, 4
 
+//ŒŸõŒ‹‰Êó‚¯æ‚è—p
+sdim search_result,, 2, 10000
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 20
@@ -654,7 +656,8 @@ setfps 60
 *create_pattern
 	logmes "ŒŸõŠJn"
 	time = keyfpstime
-	initialize_rects v,r, stones
+	initialize_rects v, r, stones
+
 	
 	repeat load_stones_from_board(board, n)
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
@@ -667,7 +670,6 @@ setfps 60
 
 	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip, kifu_update)
 	kifu_update = 0
-
 
 	search_result_sgflist = ""
 	

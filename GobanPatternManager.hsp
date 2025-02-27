@@ -248,3 +248,8 @@
 	return
 #global
 #endif
+
+/*
+patternの構造（四次元）
+矩形番号、情報の種類、色、回転
+*/

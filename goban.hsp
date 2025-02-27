@@ -272,9 +272,9 @@
 #modfunc Draw_set_list_on_board var set_list
 
 	repeat get_coordinates_set(set_list, sets)
-		x = int(strmid(sets(cnt), 0, 2))
-		y = int(strmid(sets(cnt), 2, 2))			
-		boxfa px + x * masx, py + y * masy ,px + x * masx + masx, py + y * masy + masy
+		x = px + masx * strmid(sets(cnt), 0, 2)
+		y = py + masy * strmid(sets(cnt), 2, 2)
+		boxfa x , y, x + masx, y + masy
 	loop
 	
 	return
@@ -282,16 +282,16 @@
 #modfunc 碁盤に矩形データを表示 array rects
 
 	
-		x1 = rects(0)
-		y1 = rects(1)
-		x2 = rects(2)
-		y2 = rects(3)
+		x1 = px + rects(0) * masx
+		y1 = py + rects(1) * masy
+		x2 = px + rects(2) * masx
+		y2 = py + rects(3) * masy
 
 		if x1 > x2: tmp = x1:x1 = x2: x2 = tmp
-		if y1 > y2: tmp = y1:y1 = y2: y2 = tmp 
-		color 200,200,200
+		if y1 > y2: tmp = y1:y1 = y2: y2 = tmp
 		
-		boxfa px + (x1 * masx), py + (y1 * masx), px + (x2 * masx) + masx, py + (y2 * masy) + masy
+		color 200,200,200
+		boxfa x1, y1, x2 + masx, y2 + masy
 	
 
 	return

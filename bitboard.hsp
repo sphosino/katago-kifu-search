@@ -1,0 +1,159 @@
+#module bitboard
+
+#define blockpos (x/5 + y/5 * 5)
+#define bitpos   ((x\4 + y\4 * 4) * 2)
+
+#deffunc move_bitboard array board, int turn, int x, int y
+	valid_xy x, y
+    board(blockpos) |= turn << bitpos
+    return
+
+#defcfunc get_bitboard array board, int x, int y
+	valid_xy x, y
+    return board(blockpos) >> bitpos & 3
+
+#deffunc init_board array board
+    dim board, 25
+    return
+
+#deffunc bitboard_view array board
+	//1文字のサイズ
+	xsize = 10
+	ysize = 10
+	//ブロック間のマージン
+	xblockmargin = 10
+	yblockmargin = 10
+	//2bit単位のマージン
+	xbitmargin = 2
+	ybitmargin = 5
+
+	blocksizex = (xsize * 2) * 4 + (xbitmargin * 3) + xblockmargin
+	blocksizey = (ysize * 1) * 4 + (ybitmargin * 3) + yblockmargin
+
+
+	repeat 25
+		bx = cnt \ 5
+		by = cnt / 5
+		block_num = by * 5 + cnt \ 5
+
+		repeat 16
+			bit_num = cnt / 4 + cnt \ 4
+
+			if board(block_num) >> cnt * 2 + 1 && 1{
+				tbit = "1"
+			}else{
+				tbit = "0"
+			}
+			if board(block_num) >> cnt * 2     && 1{
+				tbit += "1"
+			}else{
+				tbit += "0"
+			}
+			
+			pos blocksizex * bx + cnt \ 4 * (xsize * 2 + xbitmargin), blocksizey * by + cnt / 4 * (ysize + ybitmargin)
+			mes tbit
+		loop
+	loop
+
+	return
+
+#defcfunc flipVertical_4x4_2bit int bb
+    b = ((bb & 0xFFFF0000) >> 16) | ((bb & 0x0000FFFF) << 16);  // 上下の2行を入れ替え
+    b = ((b  & 0xFF00FF00) >> 8)  | ((b  & 0x00FF00FF) << 8);
+    return b;
+
+
+#deffunc pattern_init array p, array p_mask
+
+    dim valid_blocks
+    dim vn
+    dim added_list, 25
+    dim p,25
+    dim p_mask,25
+    return
+
+#deffunc pattern_add array p, array p_mask, int turn, int x, int y
+
+    valid_xy x, y
+    
+ 
+    if added_list(blockpos) == 0{
+		valid_blocks(vn) = blockpos
+		vn++
+		added_list(blockpos) = 1
+	}
+
+    // マスク設定 (この場所の2ビットを比較対象とする)
+    p_mask(blockpos) |= 3 << bitpos
+    
+    p(blockpos) |= turn << bitpos // 指定の石をセット
+
+    return
+
+#defcfunc pattern_match array board, array p, array p_mask
+	mes "有効なブロックの数" + vn
+    for i, 0, vn
+    	v = valid_blocks(i)
+        if (board(v) & p_mask(v)) != (p(v) & p_mask(v)): return 0
+    next
+    return 1
+
+#deffunc local valid_xy int x, int y
+	if x < 0 || y < 0 || x >= 19 || y >= 19: dialog "入力が範囲外です": end
+	return
+
+#global
+
+#if 1
+
+init_board board
+
+board(24) = flipVertical_4x4_2bit(7)
+bitboard_view board
+mes board(24)
+
+#endif
+
+/*  bitboard_イメージ
+
+     0             1             2             3             4
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+
+	 5             6             7             8            9      
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+
+	 10           11            12            13           14
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+
+	 15            16           17            18            19
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+
+	 20            21           22           23             24
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
+
+
+
+2,5の地点に打つ場合の計算方法
+
+(2/5) + (5/5 * 5) == 5番の整数の
+
+(2\4) + (5\4 * 4) == 2番のbitを立てる
+
+*/
+
+

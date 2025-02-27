@@ -7,7 +7,27 @@
 #include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
 #module
+
+#deffunc search_init
+	
+	#const NODE_INFO_NUM 3
+	#const NODE_INFO_SIZE NODE_INFO_NUM * 4
+
+	dim vlist , 3, 16
+	; vlist = (色反転フラグ,回転パターンタイプ, マッチした数 ) が 最大で 16 要素
+	;         (    0-1     ,  0-7             ,              )
+	#const VLIST_NUM 3 * 16
+	#const VLIST_SIZE VLIST_NUM * 4
+	
+	#const DATA_NUM NODE_INFO_NUM + VLIST_NUM
+	#const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
+	
+	init_ringbuffer DATA_SIZE, 128
+	sdim node_data, DATA_SIZE
+	return
+
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
+
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
@@ -50,7 +70,7 @@
 	
 		titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
 		title titlestr
-		
+
 		starttime = keyfpstime
 		repeat notemax
 			noteget sgf_filename, cnt
@@ -84,7 +104,8 @@
 	noteunsel
 
 	title titlestr + strf("検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
-	
+
+	dup res, result
 	return rn
 
 #defcfunc search_main int t, array pattern, array result_node
@@ -112,7 +133,7 @@
 	lpoke node_data, , 1               //現在の深さ
 	lpoke node_data,4, t               //
 	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
-	memcpy node_data, vlist  , 48 * 4, 3 * 4
+	memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
 	r_push node_data
 	
 	*next_node
@@ -124,7 +145,7 @@
 		depth = lpeek(node_data) : if depth > 最大の深さ: return 0
 		node = lpeek(node_data, 4)
 		valid_pattern_count = lpeek(node_data, 8)
-		memcpy vlist  , node_data, 48*4,, 3 * 4
+		memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
 		
 		turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
@@ -140,15 +161,7 @@
 				}
 	
 				if hit_stone >= 0{
-					split pattern(stat, 1, vlist(0, v), r_p),"-", stones
-					split stones(hit_stone), ":", stone_info
-					if turn == 1{
-						if PATTERN_BLACK & stone_info.2: goto *matched
-					}else{
-						;if turn == 2{
-						if PATTERN_WHITE & stone_info.2: goto *matched
-						;}
-					}
+					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
 				}
 				
 				valid_pattern_count--
@@ -178,24 +191,12 @@
 			lpoke node_data,  , depth + 1
 			lpoke node_data, 4, lpeek(child, cnt * 4)
 			lpoke node_data, 8, valid_pattern_count
-			memcpy node_data, vlist, 48 * 4, 3 * 4
+			memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
 			r_push node_data
 		loop
 	wend
 	return 0
 
-#deffunc search_init
-
-	sdim result,, 2, 10000
-	
-	dim vlist , 3, 16
-	; vlist = (色反転フラグ,回転パターンタイプ, マッチした数 ) が 最大で 16 要素
-	;         (    0-1     ,  0-7             ,              )
-	
-	data_num = (3 + 16 * 3)
-	init_ringbuffer data_num * 4, 512
-	sdim node_data, data_num * 4 // キュー要素のデータ構造 51要素 * 整数(4バイト)
-	return
 #global
 search_init
 #endif

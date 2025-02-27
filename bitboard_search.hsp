@@ -1,0 +1,59 @@
+#module
+#deffunc search_bitboard int topnode, array board, array vlist, array blocklist
+/*
+topnode 開始ノード番号
+board 開始ボード状態（碁盤のbitboard)
+vlist 回転パターン
+blocklist それぞれの回転パターンにおける、調べるべきブロックリスト
+
+*/
+	memcpy nodedata, board, 25 * 4 //25整数 * 1整数のサイズ
+	memcpy nodedata, vlist, 32 * 4, 25 * 4 //有効なパターンのリスト（回転８パターン　＊　２（色反転)） 
+	lpoke  nodedata, 25 * 4 + 32 * 4     , 16 //有効なパターンの数
+	lpoke  nodedata, 25 * 4 + 32 * 4 + 4 , topnode
+
+	r_push nodedata //キューにデータをpush
+
+	while ringbuffer_count //キューにデータがあるうちは繰り返す
+
+		//キューからノードデータを取り出して展開
+		rshift nodedata
+		memcpy b,nodedata, 25 * 4
+		memcpy v,nodedata, 32 * 4
+		valid_pattern_num = lpeek(nodedata, 25 * 4 + 32 * 4)
+		node_number = lpeek(nodedata, 25 * 4 + 32 * 4 + 4)
+
+		//ボードに着手
+		move b, get_node_xy(node_number)
+
+		//回転パターンリストを走査する
+
+		for i,, valid_pattern_num
+			e = matchPatternWithConstraints(b, v(0, i), v(1, i), blocklist(i))
+
+			if e == 1{
+				return 1
+			}else: if e == 2{
+				//無効な回転パターンになったのでリストから除外
+				valid_pattern_num--
+				memcpy v(0,i), v(0, valid_pattern_num), 2 * 4 // 照合したいパターンと、からチェック用パターン）　で２要素、を末尾の要素でうめる
+				i--
+			}else{
+				//e == 0
+				//なにもしない
+			}
+		next
+		
+		if valid_pattern_num == 0: _continue //有効な回転パターンが存在していない　このノードは可能性がなくなった
+		
+		repeat get_sgf_childs(node_number,child)
+			memcpy nodedata, b, 25 * 4 //25整数 * 1整数のサイズ
+			memcpy nodedata, v, 16 * 4, 25 * 4 //有効な回転パターンのリスト
+			lpoke  nodedata, 25 * 4 + 16 * 4, 16 //有効な回転パターンの数
+			lpoke  nodedata, 25 * 4 + 16 * 4 + 4, lpeek(child,cnt *4)
+			r_push nodedata //キューにデータをpush
+		loop
+	wend
+	return 0
+
+#global

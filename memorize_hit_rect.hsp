@@ -1,6 +1,7 @@
 #ifndef memorize_hit_rect
 #module
 
+#const MAX_BOARD_SIZE 26
 #const UNMEMORIZED -9999
 
 #defcfunc memorize_hit_rect int rotate_pattern, int x, int y, array pattern, var v
@@ -25,29 +26,67 @@
 		next
 	}
 	v = memory(1,rotate_pattern,x,y)
-	onerror 0
 	return memory(0,rotate_pattern, x, y)
-	return
+	
 #defcfunc local in_rect array a, int x, int y
 	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
 
 #deffunc init_mem
-	dim memory,2, 8, 99, 99
-	dim minus ,2, 8, 99, 99
-	for i,,99
-		for j,,99
+	dim memory,2, 8, MAX_BOARD_SIZE, MAX_BOARD_SIZE
+	dim minus ,2, 8, MAX_BOARD_SIZE, MAX_BOARD_SIZE
+	for i,,MAX_BOARD_SIZE
+		for j,,MAX_BOARD_SIZE
 			for k,,8
 				minus(0, k,i,j) = UNMEMORIZED,UNMEMORIZED
 			next
 		next
 	next
+	
+	dim emem, 99, 16, 99, 3
+	dim mem, 99, 16, 99, 3
+	repeat length(emem)
+		a = cnt
+		repeat length2(emem)
+			b = cnt
+			repeat length3(emem)
+				c = cnt
+				repeat length4(emem)
+					emem(a,b,c,cnt) = UNMEMORIZED
+				loop
+			loop
+		loop
+	loop
 	minus_size = varsize(minus)
+	memsize = varsize(mem)
 	clear_mem
 	return
 #deffunc clear_mem
 	logmes "clear_mem called"
 	memcpy memory, minus, minus_size
+	memcpy mem,emem,memsize
 	return
+
+#defcfunc memorize_hit_color int rect_number, int color_pattern, int rotate_pattern, int stone_num, int turn, array pattern
+
+#define memdef mem(rect_number, color_pattern << 3 | rotate_pattern, stone_num, turn)
+
+;logmes strf("%d,%d,%d,%d", rect_number, color_pattern << 3 | rotate_pattern, stone_num, turn)
+if memdef == UNMEMORIZED{
+	memdef = 0
+	split pattern(rect_number, 1, color_pattern, rotate_pattern),"-", stones
+	split stones(stone_num), ":", stone_info
+	if turn == 1{
+		if PATTERN_BLACK & stone_info.2{
+			memdef = 1
+		}
+	}else{
+		;if turn == 2{
+		if PATTERN_WHITE & stone_info.2{
+			memdef = 1
+		}
+		;}
+	}
+}
+return memdef
 #global
 init_mem
-#endif
