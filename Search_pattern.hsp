@@ -161,7 +161,7 @@
 				}
 	
 				if hit_stone >= 0{
-					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
+					if memorize_hit_color( stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
 				}
 				
 				valid_pattern_count--

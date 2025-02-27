@@ -42,8 +42,8 @@
 		next
 	next
 	
-	dim emem, 99, 16, 99, 3
-	dim mem, 99, 16, 99, 3
+	dim emem, 25, 16, 360, 2
+	dim mem , 25, 16, 360, 2
 	repeat length(emem)
 		a = cnt
 		repeat length2(emem)
@@ -66,7 +66,8 @@
 	memcpy mem,emem,memsize
 	return
 
-#defcfunc memorize_hit_color int rect_number, int color_pattern, int rotate_pattern, int stone_num, int turn, array pattern
+#define global ctype memorize_hit_color(%1,%2,%3,%4,%5, %6) _memorize_hit_color(%1,%2,%3,%4,%5 - 1, %6)
+#defcfunc _memorize_hit_color int rect_number, int color_pattern, int rotate_pattern, int stone_num, int turn, array pattern
 
 #define memdef mem(rect_number, color_pattern << 3 | rotate_pattern, stone_num, turn)
 
