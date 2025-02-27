@@ -161,6 +161,8 @@ kifu_upadate = 1
 
 topnode = -1
 
+init_mem max_depth
+
 //ƒGƒŠƒAì¬
 root = make_area_child(1,2)
 	header_area = make_area_child(,,root)

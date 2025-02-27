@@ -31,6 +31,7 @@
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
 	if stone_num == 0: return 0
+	if stone_num > max_depth: return 0
 
 	colorflip_num = 1 + colorflip
 	
@@ -130,7 +131,7 @@
 		next
 	loop
 
-	lpoke node_data, , 1               //現在の深さ
+	lpoke node_data, , 0               //現在の深さ
 	lpoke node_data,4, t               //
 	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
 	memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE

@@ -31,7 +31,7 @@
 #defcfunc local in_rect array a, int x, int y
 	return (int(a) <= x) && (int(a(1)) <= y) && (int(a(2)) >= x) && (int(a(3)) >= y)
 
-#deffunc init_mem
+#deffunc init_mem int p1
 	dim memory,2, 8, MAX_BOARD_SIZE, MAX_BOARD_SIZE
 	dim minus ,2, 8, MAX_BOARD_SIZE, MAX_BOARD_SIZE
 	for i,,MAX_BOARD_SIZE
@@ -42,8 +42,8 @@
 		next
 	next
 	
-	dim emem, 25, 16, 360, 2
-	dim mem , 25, 16, 360, 2
+	dim emem, 25, 16, p1, 2
+	dim mem , 25, 16, p1, 2
 	repeat length(emem)
 		a = cnt
 		repeat length2(emem)
@@ -90,4 +90,4 @@ if memdef == UNMEMORIZED{
 }
 return memdef
 #global
-init_mem
+init_mem 360
