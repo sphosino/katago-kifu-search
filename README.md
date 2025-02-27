@@ -12,7 +12,7 @@ Katagoのrating自己対戦の棋譜を集めていますが、数百-数千visi
 [開発日誌](https://hosinobu.github.io/katago-kifu-search)
 
 ***
-囲碁AI、KataGoのサイト  ー　マジで神いつもありがとうございます。
+囲碁AI、KataGoのサイト  ー　マジで神いつもありがとうございます。  
 https://katagotraining.org/
 
 KataGoを動かす検討ソフトを導入する場合、seventeenさんが開発されている、BadukMegapackがおすすめ。とても使いやすい！  
