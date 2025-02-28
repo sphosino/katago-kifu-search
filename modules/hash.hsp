@@ -23,10 +23,10 @@
     
 #deffunc init_hash_manager
 
-	sdim data,,MAX_KEYS, ENUM_MAX
+	sdim data,, MAX_KEYS, ENUM_MAX
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS, 3 //同じハッシュ値は３個までに抑えるよう他を調整（自動拡張されるけど）
-	dim data_deleted_list,,MAX_KEYS
+	dim data_deleted_list
 	dim data_deleted_list_num
 
 	return
