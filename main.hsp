@@ -7,10 +7,12 @@ SetWindowLong hwnd, -16, stat | $10000 | $40000
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\hsp"
+	kifu_dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\Šû•ˆ"
 #else
 	dirname = dir_exe
+	kifu_dirname = dirname + "/Šû•ˆ"
 #endif
-kifu_dirname = dirname + "/Šû•ˆ"
+
 
 chdir dirname
 exist window_file_name
