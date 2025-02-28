@@ -291,13 +291,14 @@ setfps 60
 			pat = keyfpstime
 			pre_ = new_
 		}
-
+		logmes getrealfpsf()
 		//ユーザーがアクティブでない時
-		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
+		if keyfpstime - pat >= INACTIVITY_TIMEOUT{ //（読み込み中はFPSが低下します）
 			//毎フレーム１棋譜読み込む
-			filelist = get_name_all_items(kifulist)
+			
 			notesel filelist
 				repeat
+				
 					noteget sgf_file_name, next_kifuload_index
 					next_kifuload_index++
 					if sgf_file_name == ""{
@@ -762,17 +763,16 @@ setfps 60
 	dirlist files,"*.sgf"
 	notesel ss 
 		ss = shuffle_notepad(files)
-		sdim s
+		sdim filelist
 		repeat limit(notemax,,KIFU_LOAD_MAX)
 			noteget tmp, cnt
-			s += tmp + "\n"
+			filelist += tmp + "\n"
 		loop
 	noteunsel
-	
-	add_item kifulist, s
-
+	add_item kifulist, filelist
 	next_kifuload_index = 0
 	kifu_update = 1
+	
 	return
 	
 #deffunc treeview移動 int ddd
