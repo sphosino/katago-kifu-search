@@ -1,5 +1,3 @@
-
-
 #ifndef hash_module
 #module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  データ数
 
@@ -152,6 +150,7 @@ init_hash_manager
 	new_value "E","F"
 
 	mes get_value("C")
+	mes get_value("E")
 #endif
 
 //衝突チェック
