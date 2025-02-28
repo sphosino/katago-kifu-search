@@ -26,7 +26,7 @@
 	sdim node_data, DATA_SIZE
 	return
 
-#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index
 
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
@@ -52,9 +52,9 @@
 		starttime = keyfpstime
 	
 		if kifu_update{		
-			repeat , next_kifuload_index@
+			repeat , next_kifuload_index
 				noteget sgf_filename, cnt
-				next_kifuload_index@++
+				next_kifuload_index++
 				if sgf_filename == "": break
 				if get_value(sgf_filename) == NOT_DEFINED_HASH{
 					notesel sgf

@@ -1,0 +1,29 @@
+
+
+
+#module layer child_list, pushstyle
+#enum global LAYER_FREE_STYLE = 0
+#enum global LAYER_GRID_STYLE
+
+
+#deffunc push_child layer_id, int p1, int p2
+	new_id = get_new_id()
+	
+	return
+#defcfunc get_new_id
+	if deleted_layer_list(deleted_layer_num){
+		//削除された（空いたレイヤー番号があればそれを利用)
+		deleted_layer_num--
+		new_id = deleted_layer_list(deleted_layer_num)
+	}else{
+		new_id = max_num
+	}
+	return
+
+#deffunc init
+	dim deleted_layer_list//自動拡張
+	dim deleted_layer_num
+	max_num = 0 //layerの数（未使用IDを含む）
+	return
+#global
+init
