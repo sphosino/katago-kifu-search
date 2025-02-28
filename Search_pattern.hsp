@@ -2,7 +2,7 @@
 #include "modules/keyfps.hsp" //タイマー -> ( keyfpstime )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
 #include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
-#include "modules/namespace_base.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
+#include "modules/hash.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift )
 #include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
@@ -131,7 +131,7 @@
 		next
 	loop
 
-	lpoke node_data, , 0               //現在の深さ
+	lpoke node_data, , 0               //現在の深さ(手数)
 	lpoke node_data,4, t               //
 	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
 	memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
@@ -162,7 +162,7 @@
 				}
 	
 				if hit_stone >= 0{
-					if memorize_hit_color( stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
+					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
 				}
 				
 				valid_pattern_count--

@@ -1,0 +1,176 @@
+
+
+#ifndef hash_module
+#module hash_module data, data_deleted_list, data_deleted_list_num, hashtable, hashcount,  データ数
+
+#enum KEY = 0
+#enum VALUE
+
+#enum ENUM_MAX
+
+#define global NOT_DEFINED_HASH "__undefined__"
+
+
+#const MAX_KEYS 666667
+#const FNV_PRIME 73091
+#const SEED 72889
+    
+#defcfunc local get_hash str s1
+
+    s = SEED
+    t = s1
+    repeat strlen(t)
+        s ^= peek(t, cnt) 
+        s *= FNV_PRIME 
+    loop    
+    return (s & 0x7FFFFFFF) \ MAX_KEYS
+    
+#modinit
+	sdim data,,MAX_KEYS, ENUM_MAX
+	dim data_deleted_list,,MAX_KEYS
+	dim data_deleted_list_num
+	
+	dim hashcount, MAX_KEYS
+	dim hashtable, MAX_KEYS
+
+	
+	mref thismod_ID, mrefget
+	
+	return thismod_ID
+
+
+#modfunc hash_set str s1, str s2
+
+	hash = get_hash(s1)
+
+	for i,, hashcount(hash)
+		if data(hashtable(hash, i), KEY) == s1{
+			data(hashtable(hash ,i), VALUE) = s2
+			return 1
+		}
+	next
+
+	if data_deleted_list_num{
+		data_deleted_list_num--
+		newid = data_deleted_list(data_deleted_list_num)
+	}else{
+		newid = データ数
+	}
+	
+	data(newid, KEY) = s1
+	data(newid, VALUE) = s2
+	hashtable(hash, hashcount(hash)) = newid
+	hashcount(hash)++
+
+	#ifdef _debug
+		if hashcount(hash)>1{
+			e@hash_manager++
+			logmes "collision" + (hashcount(hash)-1) + ": hash= " + hash + ":  str = " + s1 + " count ->" + e@hash_manager
+		}
+	#endif
+	
+	データ数++
+
+	return 1
+
+
+#modcfunc hash_get str s1
+
+	hash = get_hash(s1)
+	
+	for i,,hashcount(hash)
+		if data(hashtable(hash, i), KEY) == s1{
+			return data(hashtable(hash, i), VALUE)
+		}
+	next
+
+	return NOT_DEFINED_HASH
+
+#modfunc hash_del str s1
+
+	hash = get_hash(s1)
+	
+	for i,, hashcount(hash)
+	
+		dup id, hashtable(hash, i)
+		
+		if data(id, KEY) == s1{
+			
+			data_deleted_list(data_deleted_list_num) == id
+			data_deleted_list_num++
+
+			hashcount(hash)--
+			id = hashtable(hash, hashcount(hash))
+
+			データ数--
+			
+			return
+		}
+	next
+	
+	return
+	
+#modcfunc hash_get_data_num
+
+	return データ数
+
+#global
+//-----------------------------------
+
+#module hash_manager
+//セッタ
+#deffunc new_value str s1, str s2
+	hash_set data, s1, s2
+	return
+//ゲッタ
+#defcfunc get_value str s1
+	return hash_get(data,s1)
+//削除
+#deffunc del_value str s1
+	hash_del data, s1
+	return
+
+#deffunc init_hash_manager
+	newmod data, hash_module
+	e = 0
+	return
+	
+#global
+init_hash_manager
+#endif
+
+//基本チェック
+#if 0
+	new_value "A","B"
+	new_value "C","D"
+
+	mes get_value("A")
+	mes get_value("C")
+
+	del_value "C"
+
+	new_value "E","F"
+
+	mes get_value("C")
+#endif
+
+//衝突チェック
+#if 0
+
+	#include "d3m.hsp"
+	randomize
+	start = d3timer()
+	num = 6000
+	repeat num
+		sdim s
+		repeat 7
+			poke s,cnt,rnd(10) + '0'
+		loop
+		new_value s, "a"
+	loop
+	mes "" + num + "件の入力"
+	mes "" + (d3timer()- start) + " ms"
+	mes "衝突数=" + e@hash_manager
+	
+
+#endif
