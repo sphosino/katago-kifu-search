@@ -109,7 +109,7 @@
 	dup res, result
 	return rn
 
-#defcfunc search_main int t, array pattern, array result_node
+#defcfunc search_main int t, array pattern, array result_match_node
 
 /*
  t:
@@ -182,8 +182,9 @@
 				*matched
 				vlist(2, v)++
 				if vlist(2, v) == stone_num{
-					result_node = node //ˆê’v‚µ‚½SGFƒm[ƒh
-					; result_v = v //ˆê’v‚µ‚½ƒpƒ^[ƒ“
+					result_match_node = node //ˆê’v‚µ‚½SGFƒm[ƒh
+					; result_match_colorflip = vlist(0,v) 
+					; result_match_rotatepattern = vlist(1,v)
 					return 1 //ŒŸõ¬Œ÷
 				}
 			next
