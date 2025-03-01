@@ -1,8 +1,8 @@
 ---
-title: "勉強ログ"
+title: "開発記録"
 ---
 
-# 勉強ログ一覧
+# ログ一覧
 [katago-kifu-search](https://github.com/hosinobu/katago-kifu-search)  
 以下に最新の勉強ログを表示します：
 
