@@ -1,5 +1,6 @@
 ---
 title: "開発記録"
+layout: "home"
 ---
 [katago-kifu-search(github)](https://github.com/hosinobu/katago-kifu-search)  
 # ログ一覧
