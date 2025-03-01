@@ -3,7 +3,7 @@ title: "開発記録"
 ---
 
 # ログ一覧
-[katago-kifu-search](https://github.com/hosinobu/katago-kifu-search)  
+[katago-kifu-search(github)](https://github.com/hosinobu/katago-kifu-search)  
 以下に最新の勉強ログを表示します：
 
 {% for post in site.posts %}
