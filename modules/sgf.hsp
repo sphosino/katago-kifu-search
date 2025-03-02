@@ -75,6 +75,9 @@
     return
 
 #deffunc del_sgf_node int node_id
+	repeat get_sgf_childs(node_id,child)
+		del_sgf_node(lpeek(child, cnt * 4))
+	loop
 	lpoke open_id_list, open_id_list_num * 4, node_id
 	open_id_list_num++
 	init_node node_id, -1

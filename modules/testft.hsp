@@ -1,0 +1,126 @@
+#module
+#deffunc find_tags_bytag str s1, str tag, array result, int start
+	sdim self_closing_tags
+	self_closing_tags = "br,img,input,meta,link,hr,"
+    s = s1
+    point = start
+    sdim result
+    repeat
+        p = instr(s, point, "<" + tag)
+        if p < 0: break
+        if strmid(s,point,1) = "":break
+        left = p
+        point = p + strlen(tag) + 1
+        
+        tmp = instr(s, point, ">") ; `>` を探す
+        if tmp < 0: break
+        
+        endpoint = tmp + 1
+        
+        if is_self_closing(tag) {
+            result(cnt) = strmid(s, left, endpoint - left)
+            point = endpoint
+            continue
+        }
+        
+        ; 閉じタグを探す
+        p2 = instr(s, endpoint, "</" + tag + ">")
+        if p2 >= 0 {
+            endpoint = p2 + strlen(tag) + 3
+        }
+        
+        result(cnt) = strmid(s, left, endpoint - left)
+        point = endpoint
+    loop
+    return
+#defcfunc is_self_closing str tag
+    if instr(self_closing_tags,0, tag + ",") >= 0 : return 1
+    return 0
+#global
+a = {"
+<div>
+    <p>Hello</p>
+    <a href='link'>Link</a>
+    < img src='image.png'>
+    <br>
+    <div class='nested'>
+        <span>Text</span>
+    </div>
+</div>
+"}
+
+sdim result
+
+mes "【テスト開始】"
+
+; 1. divタグ (基本)
+find_tags_bytag a, "div", result, 0
+mes "divタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 2. pタグ (基本)
+sdim result
+find_tags_bytag a, "p", result, 0
+mes "pタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 3. aタグ (属性あり)
+sdim result
+find_tags_bytag a, "a", result, 0
+mes "aタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 4. imgタグ (空白つき)
+sdim result
+find_tags_bytag a, "img", result, 0
+mes "imgタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 5. brタグ (自己閉タグ)
+sdim result
+find_tags_bytag a, "br", result, 0
+mes "brタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 6. spanタグ (ネスト)
+sdim result
+find_tags_bytag a, "span", result, 0
+mes "spanタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+; 7. 存在しないタグ
+sdim result
+find_tags_bytag a, "nonexistent", result, 0
+mes "nonexistentタグ:"
+repeat length(result)
+    mes result(cnt)
+loop
+
+mes ""
+
+mes "【テスト終了】"
+end

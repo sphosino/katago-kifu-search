@@ -1,7 +1,5 @@
 #module 
-#deffunc _find_tags_bytag str s1, str tag, array result, int start
-	point = start
-	return
+
 #deffunc find_tags_bytag str s1, str tag, array result, int start
 
 // find_tags_bytag 対象の文字列, 対象のタグ, 結果を受け取る配列, オフセット(0)
@@ -23,19 +21,19 @@
 		if p2 < 0{
 			
 			//まずタグを登録　"<>の形式になってなければ終了"
-			tmp = instr(s,left,">")
+			tmp = instr(s, left, ">")
 			if tmp < 0: break
 			
 			//閉じタグはないタグ（<br>など）として登録
-			result(cnt) = strmid(s,point-strlen(tag)-2, tmp + 2)
+			result(cnt) = strmid(s, point - strlen(tag) - 2, tmp + 2)
 			point += strlen(result(cnt))
-			p = instr(s,point,"<" + tag)
+			p = instr(s, point, "<" + tag)
 			if p >= 0: continue
 			
 		}else{
 			point += p2 + strlen(tag) + 3
 			//閉じタグまでを登録 <div> ----- </div>
-			result(cnt) = strmid(s,left, point - left)
+			result(cnt) = strmid(s, left, point - left)
 		}
 	loop
 	return
@@ -44,7 +42,7 @@
 	s = s1
 	point = -1
 	token_start = 0 ; トークン開始位置
-	mode = 2:       ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
+	mode = 2       ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
 	mode2 = 0       ; 0 = トークン開始位置検索中, 1 = トークン開始済み
 	
 	result = ""
@@ -52,7 +50,7 @@
 	repeat
 		point++
 		if point >= strlen(s): break
-		a = peek(s,point)
+		a = peek(s, point)
 
 		token_str = strmid(s, token_start, point-token_start)
 
@@ -91,7 +89,7 @@
 			if mode = 1{
 				t = " "
 				poke t,0,a
-				mlen = instr(s, point+1,t)
+				mlen = instr(s, point + 1, t)
 				if mlen < 0: dialog "シングルもしくはダブルクォートが閉じられていません": end
 				if mode == 1{
 					result = strmid(s,point+1,mlen)
