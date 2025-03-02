@@ -1,6 +1,7 @@
 ---
 title: "gridsystem改善構想"
 date: 2025-03-01
+layout: post
 ---
 
 # gridsystemを改良案の構想。
