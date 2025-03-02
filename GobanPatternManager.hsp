@@ -109,9 +109,9 @@
     - 検索する石パターン。例【　(PATTERN_BLUE | PATTERN_RED)　-> 青か赤ならマッチ 】
     */
 
-	stone_info(0) = strf("%02d:%02d:%d", x, y, col)
-	stone_info(1) = strf("%02d:%02d:%d", x, y, col ^ (PATTERN_BLACK | PATTERN_WHITE))
-	
+
+	stone_info(0) = strf("%02d:%02d:%d", x, y, col ^ (PATTERN_BLACK | PATTERN_WHITE))
+	stone_info(1) = strf("%02d:%02d:%d", x, y, col)
 	repeat length2(rects)
 	
 		x1 = rects(0,cnt)
