@@ -19,5 +19,5 @@ defaults:
   - scope:
       path: "" 
     values:
-      layout: "default"  # トップページ用のレイアウト
+      layout: "home"  # トップページ用のレイアウト
       title: "勉強ログ"

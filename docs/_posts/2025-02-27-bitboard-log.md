@@ -1,6 +1,7 @@
 ---
 title: "bitboardを採用できるか検討中"
 date: 2025-02-27
+layout: post
 ---
 
 
