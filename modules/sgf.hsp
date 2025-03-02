@@ -146,7 +146,7 @@
 	result = -1
 	repeat get_SGF_childs(node_id, child)
 		if turn == get_property_coordinate_cash(lpeek(child, cnt * 4), x, y){
-			if _x == x && y == y{
+			if _x == x && _y == y{
 				result = lpeek(child, cnt * 4): break
 			}
 		}
@@ -266,7 +266,23 @@
 		xy = int(x), int(y)
 	}
 	return
+#defcfunc fetch_or_create_SGFnode int nownode, array coordinate, int 手番
 
+	if nownode >= 0{
+		if search_SGFchild_byxy(nownode, coordinate, coordinate.1 , 手番) >= 0{
+			return stat //すでにノードが存在
+		}
+	}
+	
+	new = make_new_SGFnode(nownode)
+	
+	if nownode >= 0{
+		add_SGFchild nownode, new
+	}
+	
+	set_property_move new, 手番, coordinate, coordinate.1
+		
+	return new
 #deffunc local init_node int node_id, int p1
 
 	parent(node_id) = p1
@@ -286,49 +302,14 @@
 init_sgf_module
 
 #module
-#defcfunc 対応する括弧まで取得 str ss, var index, str s1, str s2, var result
-	s = ss
-	counter = 0
-	repeat , index
-		t = strmid(s,cnt,1)
-		if t == s1{
-			counter++
-		}else:if t == s2{
-			counter--
-		}
-		if counter == 0: r2 = cnt: break
-	loop
-	result = strmid(s, index + 1, r2 - index - 1)
-	return r2
-	
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
-	i = instr(ss,index,s1)
-	result = strmid(ss,index,i)
+	i = instr(ss, index, s1)
+	result = strmid(ss, index, i)
 	return index + i
 #global
 
-
 #module
-
-#defcfunc make_SGFnode int nownode, array coordinate, int 手番
-
-	if nownode >= 0{
-		if search_SGFchild_byxy(nownode, coordinate, coordinate.1 , 手番) >= 0{
-			return stat //すでにノードが存在
-		}
-	}
-	
-	new = make_new_SGFnode(nownode)
-	
-	if nownode >= 0{
-		add_SGFchild nownode, new
-	}
-	
-	set_property_move new, 手番, coordinate, coordinate.1
-		
-	return new
-
-#define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1,%2)
+#define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1, %2)
 #defcfunc _load_sgf str ss, int node
 	
 	sss = ss
@@ -346,59 +327,53 @@ init_sgf_module
 	}
 	
 	topnode = make_new_SGFnode(node)
-
-	onerror *er
-		load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
-	onerror 0
+	load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	
 	return topnode
 
-*er
-	dialog "エラーコード = "+err+"\n 総ノード数 -> " + length(node_count@sgf_node) + "\n 棋譜数 -> " + next_kifuload_index@,, __FILE__
-	end
-
-#deffunc load_sgf_main str ss, int node, local sgfs, local point, local nn, local sgf_length
+#deffunc load_sgf_main str ss, int node
 	sgfs = ss
-	nn = node
-	
 	sgf_length = strlen(sgfs)
+	nn = node
+	point = 0
 	//解析
 	while point < sgf_length
 		
 		token = peek(sgfs, point)
-		
-		if token >= 'A' && token <= 'Z'{
-			
-			point = 対応する文字まで取得(sgfs, point, "[", P) + 1
-			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
-			set_property_data nn, P, D
-			
-		}else:if token = '('{
-			
-			point = 対応する括弧まで取得(sgfs, point, "(", ")", f) + 1
-			load_sgf_main f, nn
-			
-		}else:if (token == ';'){
+
+		if (token == ';'){
 			
 			new_id = make_new_SGFnode(nn)
-			
 			add_SGFchild nn, new_id
 			nn = new_id
-			point++
+			
+		}else:if token >= 'A' && token <= 'Z'{
+			
+			point = 対応する文字まで取得(sgfs, point, "[", P)
+			point = 対応する文字まで取得(sgfs, point + 1, "]", D)
+			set_property_data nn, P, D
 			
 		}else:if token == '['{
 			
-			point++
-			point = 対応する文字まで取得(sgfs, point, "]", D) + 1
+			point = 対応する文字まで取得(sgfs, point + 1, "]", D)
 			set_property_data nn, P, get_property_data(nn, P) + D
 			
+		}else:if token = '('{
+			
+			stack(pn) = nn
+			pn++
+			
+		}else:if token == ')'{
+			
+			pn--
+			nn = stack(pn)
+			
 		}else{
-
+			
 			logmes "不正なトークンが含まれています"
 			
-			point++
-			
 		}
+		point++
 	wend
 	return
 #global

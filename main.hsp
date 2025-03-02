@@ -398,7 +398,7 @@ setfps 60
 								logmes now_sgfnode
 									
 								//指定した座標のノードを作成、すでにあればそれを返す
-								new = make_SGFnode(now_sgfnode, point, 逆手番(get_turn(board)))
+								new = fetch_or_create_SGFnode(now_sgfnode, point, 逆手番(get_turn(board)))
 	
 								//現在のツリーノード直下にそのSGFノードがあるか？あれば、そのノードを取得
 								new_treeID = search_tree_child_by_item_ID(nownode, new)
