@@ -2,11 +2,9 @@ source: docs  # ソースを docs フォルダに設定
 destination: _site  # ビルド結果の保存先
 baseurl: "/katago-kifu-search"  # 必要に応じて設定
 
-title: "勉強ログ"
-description: "勉強の進捗と学びの記録"
-remote_theme: pages-themes/modernist@v0.2.0
-plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have one
+title: "開発ログ"
+description: "開発記録"
+theme: minima
 
 # ペルマリンク設定
 permalink: "/:year/:month/:day/:title.html"
