@@ -4,7 +4,7 @@ baseurl: "/katago-kifu-search"  # 必要に応じて設定
 
 title: "開発ログ"
 description: "開発記録"
-theme: minima
+
 
 # ペルマリンク設定
 permalink: "/:year/:month/:day/:title.html"
@@ -24,5 +24,3 @@ defaults:
 
 plugins:
  - jekyll-sitemap
- - jekyll-feed
- - jekyll-seo-tag
