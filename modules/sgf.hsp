@@ -18,10 +18,10 @@
 	dim child_num, MAX_NODE //子ノードの数
 
 	//------------------------------------
-	sdim open_id_list, 1024 * 4 //配列の空き情報リスト
-	dim open_id_list_num //配列の空き情報の数
-	
-	node_count = 0 //配列の最大（未使用要素も含む）
+	sdim open_id_list, 1024 * 4 //配列の未使用番号リスト
+	lpoke open_id_list, 0, 0
+	open_id_list_num = 1 //配列の未使用番号の数
+	node_count = 1 //配列のサイズ（未使用要素も含む）
 
 	SEP = " "
 	poke SEP, 0, $1F

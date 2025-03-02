@@ -37,6 +37,8 @@ netinit
 	
 	netgetv@ buf
 
+	logmes buf
+
 	find_tags_bytag buf, "tr", data // テーブルの要素
 
 	repeat limit(max,,length(data)-1)

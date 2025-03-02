@@ -78,17 +78,20 @@
 			}else: if mode == 2{;タグ名
 				mode = 0
 			}else: if mode == 1{;属性値
-				if mode2 && hit{
+				if mode2{
+					if hit{
 					result = strmid(s, token_start,point - token_start)
 					break
+					}
+					mode = 0
 				}
-				mode = 0
 			}
 			mode2 = 0
 		swbreak
 		case '"'
 			if mode = 1{
 				mlen = instr(s, point+1,"\"")
+				if mlen < 0: dialog "引用符が閉じられていません": end
 				if hit{
 					result = strmid(s,point+1,mlen)
 					break
@@ -97,7 +100,7 @@
 			}
 		swbreak
 		default
-			if (a >='a' && a <= 'z') || (a >= 'A' &&  a <= 'Z') || (a >='0' && a <= '9'){
+			if (a >='a' && a <= 'z') || (a >= 'A' &&  a <= 'Z') || (a >='0' && a <= '9') || (a == '?'){
 				if mode2 = 0{
 					token_start = point
 					mode2 = 1
@@ -124,8 +127,7 @@
 #global
 
 
-#if 0
-screen ,800
+#if 1
 
 a={"
 <table class="table mt-3">
@@ -145,6 +147,8 @@ a={"
 
 find_tags_bytag a,"a",r
 
+find_attribute_byname r,"href",e
+mes e
+
 
 #endif
-
