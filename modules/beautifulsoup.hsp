@@ -40,8 +40,7 @@
 	loop
 	return
 	
-#deffunc find_attribute_byname str s1, str name, array result, int start
-	point = start
+#deffunc find_attribute_byname str s1, str name, array result
 	s = s1
 	point = -1
 	token_start = 0 ; トークン開始位置
