@@ -19,7 +19,7 @@ defaults:
   - scope:
       path: "" 
     values:
-      layout: "home"  # トップページ用のレイアウト
+      layout: "default"  # トップページ用のレイアウト
       title: "勉強ログ"
 
 plugins:
