@@ -21,5 +21,6 @@ defaults:
       layout: "default"  # トップページ用のレイアウト
       title: "勉強ログ"
 includes_dir: "docs/_includes"
+includes_dir: "_includes"
 plugins:
   - jekyll-sitemap
