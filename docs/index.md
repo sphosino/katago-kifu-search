@@ -1,6 +1,6 @@
 ---
 title: "開発記録"
-layout: home
+layout: default
 ---
 
 # ログ一覧
