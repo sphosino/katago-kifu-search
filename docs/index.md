@@ -1,5 +1,9 @@
 ---
 title: "開発記録"
+<<<<<<< HEAD
+=======
+layout: "default"
+>>>>>>> 0ed7181ec380554ad19bede3afcd6648494d3730
 ---
 
 # ログ一覧
