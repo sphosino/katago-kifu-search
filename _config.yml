@@ -21,6 +21,3 @@ defaults:
     values:
       layout: "home"  # トップページ用のレイアウト
       title: "勉強ログ"
-
-plugins:
- - jekyll-sitemap

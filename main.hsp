@@ -250,7 +250,6 @@ newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox
-
 //‹éŒ`”ÍˆÍŽw’è—p
 rn = 0
 dim rect, 4
