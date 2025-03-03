@@ -1,6 +1,6 @@
 ---
 title: "開発記録"
-layout: home
+layout: default
 ---
 
 [KataGo棋譜検索システム(github)](https://github.com/hosinobu/katago-kifu-search)
