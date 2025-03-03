@@ -6,15 +6,13 @@ title: "開発ログ"
 description: "開発記録"
 theme: minima
 
-
-# ペルマリンク設定
 permalink: "/:year/:month/:day/:title.html"
 
 collections:
   posts:
     output: true
     permalink: /:year/:month/:day/:title.html
-    dir: docs/_posts  # _posts の場所を docs/_posts に指定
+    dir: docs/_posts 
 
 defaults:
   - scope:
