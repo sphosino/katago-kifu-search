@@ -22,5 +22,7 @@ defaults:
     values:
       layout: "default"  # トップページ用のレイアウト
       title: "勉強ログ"
+include:
+  - includes
 plugins:
   - jekyll-sitemap
