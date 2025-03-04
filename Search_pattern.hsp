@@ -109,97 +109,102 @@
 	dup res, result
 	return rn
 
+
+
 #defcfunc search_main int t, array pattern, array result_match_node
 
 /*
- t:
- - 検索開始のノード番号
- pattern:
- - 検索に使うパターン
- result_node:
- - 検索に一致した場合そのノード番号を返す
+  t:
+  - 検索開始のノード番号
+  pattern:
+  - 検索に使うパターン
+  result_node:
+  - 検索に一致した場合そのノード番号を返す
 
- return_value -> マッチしたかどうかの　1か0の値
+  return_value -> マッチしたかどうかの　1か0の値
 */
 
-	//キュー初期化
-	valid_pattern_count = 0
-	repeat r_pattern_num
-		for i,, colorflip_num
-			vlist(0, valid_pattern_count) = i, cnt, 0
-			valid_pattern_count++
-		next
-	loop
 
-	lpoke node_data, , 0               //現在の深さ(手数)
-	lpoke node_data,4, t               //
-	lpoke node_data,8, all_pattern_num //全ての有効なパターン数
-	memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
-	r_push node_data
-	
-	*next_node
-	while ringbuffer_count
+#define COLOR_INFO 0
+#define ROTATE_INFO 1
+#define MATCH_STONE_COUNT 2
 
-		r_shift node_data //キューからノードデータを復元
+  //キュー初期化
+  valid_pattern_count = 0
+  repeat r_pattern_num
+    for i,, colorflip_num
+      vlist(COLOR_INFO, valid_pattern_count) = i, cnt, 0
+      valid_pattern_count++
+    next
+  loop
 
-		//ノードデータ展開
-		depth = lpeek(node_data) : if depth > 最大の深さ: return 0
-		node = lpeek(node_data, 4)
-		valid_pattern_count = lpeek(node_data, 8)
-		memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
-		
-		turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
+  lpoke node_data, , 0         //現在の深さ(手数)
+  lpoke node_data, 4, t         //
+  lpoke node_data, 8, all_pattern_num //全ての有効なパターン数
+  memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+  r_push node_data
 
-		if x >= 0{
+  *next_node
+  while ringbuffer_count
 
-			for v,, valid_pattern_count
-				*check_pattern_list
-			
-				r_p = vlist(1, v)
-				
-				if memorize_hit_rect(r_p, x, y, pattern, hit_stone) == -1{
-					_continue
-				}
-	
-				if hit_stone >= 0{
-					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern){
-						vlist(2, v) += stat & 1 //PATTERN_NONEが含まれていないフラグが立っていたら加算
-						if vlist(2, v) == stone_num{
-							result_match_node = node //一致したSGFノード
-							; result_match_colorflip = vlist(0,v) 
-							; result_match_rotatepattern = vlist(1,v)
-							return 1 //検索成功
-						}
-						_continue
-					}
-				}
-				
-				valid_pattern_count--
-				if v == valid_pattern_count{
-					//有効パターンリストを全て探索した。
-					if valid_pattern_count{
-						//まだ有効リストが残っているので、子ノードを積みに行く
-						_break
-					}
-					//有効なパターンがなくなった。　＝　このノードは可能性がなくなった。
-					goto *next_node
-				}
-				//今の位置をパターンリストの末尾要素で置き換えて再探索
-				memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
-				goto *check_pattern_list
-				
+    r_shift node_data //キューからノードデータを復元
 
-			next
-		}
-		repeat get_SGF_childs(node, child)
-			lpoke node_data,  , depth + 1
-			lpoke node_data, 4, lpeek(child, cnt * 4)
-			lpoke node_data, 8, valid_pattern_count
-			memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
-			r_push node_data
-		loop
-	wend
-	return 0
+    //ノードデータ展開
+    depth = lpeek(node_data) : if depth > 最大の深さ: return 0
+    node = lpeek(node_data, 4)
+    valid_pattern_count = lpeek(node_data, 8)
+    memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
+
+    turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
+
+    if x >= 0{
+
+      for v,, valid_pattern_count
+
+        *check_pattern_list
+
+        if memorize_hit_rect(vlist(ROTATE_INFO, v), x, y, pattern, hit_stone) == -1{
+          _continue
+        }
+
+        if hit_stone >= 0{
+          if memorize_hit_color(stat, vlist(COLOR_INFO, v), vlist(ROTATE_INFO, v), hit_stone, turn, pattern){
+            vlist(MATCH_STONE_COUNT, v) += stat & 1 //PATTERN_NONEが含まれていないフラグが立っていたら加算
+            if vlist(MATCH_STONE_COUNT, v) == stone_num{
+              result_match_node = node //一致したSGFノード
+              ; result_match_colorflip = vlist(COLOR_INFO,v)
+              ; result_match_rotatepattern = vlist(ROTATE_INFO,v)
+              return 1 //検索成功
+            }
+            _continue
+          }
+        }
+
+        valid_pattern_count--
+        if v == valid_pattern_count{
+          //有効パターンリストを全て探索した。
+          if valid_pattern_count{
+            //まだ有効リストが残っているので、子ノードを積みに行く
+            _break
+          }
+          //有効なパターンがなくなった。  ＝  このノードは可能性がなくなった。
+          goto *next_node
+        }
+        //今の位置をパターンリストの末尾要素で置き換えて再探索
+        memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
+        goto *check_pattern_list
+
+      next
+    }
+    repeat get_SGF_childs(node, child)
+      lpoke node_data,  , depth + 1
+      lpoke node_data, 4, lpeek(child, cnt * 4)
+      lpoke node_data, 8, valid_pattern_count
+      memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+      r_push node_data
+    loop
+  wend
+  return 0
 
 #global
 search_init
