@@ -159,21 +159,21 @@
 
     if x >= 0{
 
-      for v,, valid_pattern_count
+      for i,, valid_pattern_count
 
         *check_pattern_list
 
-        if memorize_hit_rect(vlist(ROTATE_INFO, v), x, y, pattern, hit_stone) == -1{
+        if memorize_hit_rect(vlist(ROTATE_INFO, i), x, y, pattern, hit_stone) == -1{
           _continue
         }
 
         if hit_stone >= 0{
-          if memorize_hit_color(stat, vlist(COLOR_INFO, v), vlist(ROTATE_INFO, v), hit_stone, turn, pattern){
-            vlist(MATCH_STONE_COUNT, v) += stat & 1 //PATTERN_NONEが含まれていないフラグが立っていたら加算
-            if vlist(MATCH_STONE_COUNT, v) == stone_num{
+          if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
+            vlist(MATCH_STONE_COUNT, i) += stat & 1 //PATTERN_NONEが含まれていないフラグが立っていたら加算
+            if vlist(MATCH_STONE_COUNT, i) == stone_num{
               result_match_node = node //一致したSGFノード
-              ; result_match_colorflip = vlist(COLOR_INFO,v)
-              ; result_match_rotatepattern = vlist(ROTATE_INFO,v)
+              ; result_match_colorflip = vlist(COLOR_INFO, i)
+              ; result_match_rotatepattern = vlist(ROTATE_INFO, i)
               return 1 //検索成功
             }
             _continue
@@ -181,7 +181,7 @@
         }
 
         valid_pattern_count--
-        if v == valid_pattern_count{
+        if i == valid_pattern_count{
           //有効パターンリストを全て探索した。
           if valid_pattern_count{
             //まだ有効リストが残っているので、子ノードを積みに行く
@@ -191,7 +191,7 @@
           goto *next_node
         }
         //今の位置をパターンリストの末尾要素で置き換えて再探索
-        memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
+        memcpy vlist(0, i), vlist(0, valid_pattern_count), 12
         goto *check_pattern_list
 
       next
