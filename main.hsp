@@ -666,6 +666,7 @@ setfps 60
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
 	loop
 
+
 	create_pattern_with_rects_and_stones r,stones,p
 
 	logmes patterns_to_notepad(p)
@@ -700,7 +701,7 @@ setfps 60
 	
 *loadfile
 	chdir kifu_dirname
-		棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
+		棋譜取得 kifu_dirname, 20 // katagoホームページから最新棋譜をダウンロード
 	chdir dirname
 	
 	init_hash_manager

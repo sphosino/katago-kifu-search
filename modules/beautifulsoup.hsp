@@ -45,7 +45,7 @@
 	mode = 2       ; 0 = 属性名取得中, 1 = 属性値取得中, 2 = タグ名取得中
 	mode2 = 0       ; 0 = トークン開始位置検索中, 1 = トークン開始済み
 	
-	result = ""
+	sdim result
 	
 	repeat
 		point++
@@ -112,17 +112,17 @@
 	return
 	
 #defcfunc get_content_tag str s1
-	result = ""
+	r = ""
 	s = s1
 	left =  instr(s,0,">") + 1
 	if left{
 		l = instr(s,left,"<") 
 		if l >= 0{
-			result = strmid(s,left,l)
+			r = strmid(s,left,l)
 		}
 		
 	}
-	return result
+	return r
 #global
 
 
@@ -131,7 +131,7 @@
 a={"
  <div id="main" class="container" data-role="page">
     <p title = "greeting">Hello, World!</p>
-    <a href= "search?query=go&lang=en" target="_blank">Visit Example</a>
+    <a href= "?search?query=go&lang=en" target="_blank">Visit Example</a>
     <img src= 'image.png' alt="Sample Image">
     <input type= text>
  </div>

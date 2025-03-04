@@ -1,11 +1,12 @@
 #include "hspinet.as"
+#include "keyfps.hsp"
 netinit
 #include "beautifulsoup.hsp"
 
 #module
 
 #deffunc 棋譜取得 str dirname, int max
-
+	starttime = keyfpstime
 	dim result
 	now_dir = dir_cur
 	
@@ -27,6 +28,8 @@ netinit
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
 	find_attribute_byname r.1, "href", f
+	
+	next_link = ""
 
 	neturl@ url + f
 
@@ -37,7 +40,11 @@ netinit
 	
 	netgetv@ buf
 
+	*@
+
 	find_tags_bytag buf, "tr", data // テーブルの要素
+
+
 
 	repeat limit(max,,length(data)-1)
 	
@@ -45,7 +52,10 @@ netinit
 
 		game_id = int(get_content_tag(target_infos(0)))
 
-		if check_exist_sgf(files, game_id): continue
+			logmes ""+ game_id + "::" +next_link
+			
+
+		if check_exist_sgf(files, game_id):await 100: continue
 
 		find_tags_bytag data(cnt + 1), "a", result
 		find_attribute_byname result, "href", t
@@ -62,10 +72,42 @@ netinit
 
 		logmes "取得完了 -> " + game_id + ".sgf"
 		
-
+		get_count++
 		await 300
 
 	loop
+	await 300
+	if keyfpstime - starttime >= 5000: chdir now_dir: return
+	if get_count < max{
+		sdim divs
+		find_tags_bytag buf, "div",divs
+		sdim pp
+		find_tags_bytag divs.4,"a",pp
+
+
+		find_attribute_byname pp,"href", next_link
+
+		if next_link = "?"{
+			if length(pp) == 2{
+				chdir now_dir:return
+			}
+			find_attribute_byname pp.2,"href",next_link
+		}
+
+
+		neturl@ url + f
+		netrequest_get@ next_link
+			next_link = ""
+
+
+		if stat : goto *bad
+		gosub *通信待ち
+		
+		netgetv@ buf
+
+		
+		goto*@b
+	}
 
 	chdir now_dir
 	return

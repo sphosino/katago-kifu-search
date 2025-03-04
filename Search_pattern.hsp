@@ -162,7 +162,16 @@
 				}
 	
 				if hit_stone >= 0{
-					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern): goto*matched
+					if memorize_hit_color(stat, vlist(0, v), r_p, hit_stone, turn, pattern){
+						vlist(2, v) += stat & 1 //PATTERN_NONE‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚½‚ç‰ÁZ
+						if vlist(2, v) == stone_num{
+							result_match_node = node //ˆê’v‚µ‚½SGFƒm[ƒh
+							; result_match_colorflip = vlist(0,v) 
+							; result_match_rotatepattern = vlist(1,v)
+							return 1 //ŒŸõ¬Œ÷
+						}
+						_continue
+					}
 				}
 				
 				valid_pattern_count--
@@ -179,14 +188,7 @@
 				memcpy vlist(0, v), vlist(0, valid_pattern_count), 12
 				goto *check_pattern_list
 				
-				*matched
-				vlist(2, v)++
-				if vlist(2, v) == stone_num{
-					result_match_node = node //ˆê’v‚µ‚½SGFƒm[ƒh
-					; result_match_colorflip = vlist(0,v) 
-					; result_match_rotatepattern = vlist(1,v)
-					return 1 //ŒŸõ¬Œ÷
-				}
+
 			next
 		}
 		repeat get_SGF_childs(node, child)

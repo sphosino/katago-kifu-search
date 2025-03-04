@@ -93,7 +93,7 @@
 	//矩形を作成
 	num_rects = create_rect_from_coordinate_set(rect_set, rects)
 	//矩形に合わせて、石情報リストを初期化
-	sdim stones,, num_rects,2
+	sdim stones,, num_rects
 	return
 
 //石情報リストに石を追加
@@ -110,8 +110,7 @@
     */
 
 
-	stone_info(0) = strf("%02d:%02d:%d", x, y, col ^ (PATTERN_BLACK | PATTERN_WHITE))
-	stone_info(1) = strf("%02d:%02d:%d", x, y, col)
+	stone_info = strf("%02d:%02d:%d", x, y, col ^ (PATTERN_BLACK | PATTERN_WHITE))
 	repeat length2(rects)
 	
 		x1 = rects(0,cnt)
@@ -121,13 +120,11 @@
 		
 		if x >= x1 && x <= x2 && y >= y1 && y <= y2{
 
-			for i,,2
-				if strlen(stones(cnt,i)) == 0{
-					stones(cnt,i) = stone_info(i)
+				if strlen(stones(cnt)) == 0{
+					stones(cnt) = stone_info
 				}else{
-					stones(cnt,i) += "-" + stone_info(i)
+					stones(cnt) += "-" + stone_info
 				}
-			next
 			
 			break
 		}
@@ -141,22 +138,36 @@
     sdim patterns,,length2(rects), 3, 2
 
     repeat length2(rects)
-    	//矩形データ
+    	//---矩形データ
         patterns(cnt,0,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
         patterns(cnt,0,1) = patterns(cnt,0,0)
-        //石データ(x:y:bits)形式
-        patterns(cnt,1,0) = stones(cnt,0)
-        patterns(cnt,1,1) = stones(cnt,1)
-        //石数の情報
-		if stones(cnt, 0) == ""{
-			patterns(cnt,2,0) == "0"
-			patterns(cnt,2,1) == "0"
-		}else{
-			split stones(cnt, 0),"-",tmp
-			patterns(cnt,2,0) = str(stat)
 
-			split stones(cnt, 1),"-", tmp
-			patterns(cnt,2,1) = str(stat)
+		//---石データ(x:y:bits)形式
+    	//色反転を作成
+     	s = ""
+     	split stones(cnt),"-",stone_data
+     	info_num = stat
+     	none_count = 0
+        repeat info_num
+      		if cnt != 0: s += "-"
+        	split stone_data(cnt),":",tmp
+        	none_count += (int(tmp.2) & PATTERN_NONE) != 0
+			s += tmp.0 + ":" + tmp.1 + ":" + str(int(tmp.2) ^ (PATTERN_BLACK | PATTERN_WHITE))
+        loop
+        
+
+        patterns(cnt,1,0) = stones(cnt)
+		patterns(cnt,1,1) = s
+		logmes stones(cnt)
+		logmes s
+        
+        //---必要マッチ数の情報
+		if stones(cnt) == ""{
+			patterns(cnt,2,0) = "0"
+			patterns(cnt,2,1) = "0"
+		}else{
+			patterns(cnt,2,0) = str(info_num - none_count)
+			patterns(cnt,2,1) = patterns(cnt, 2, 0)
 		}
     loop
     return

@@ -78,12 +78,12 @@ if memdef == UNMEMORIZED{
 	split stones(stone_num), ":", stone_info
 	if turn == 1{
 		if PATTERN_BLACK & stone_info.2{
-			memdef = 1
+			memdef = 2 | ((PATTERN_NONE & stone_info.2) == 0)  //PATTERN_NONEÇ™ä‹Ç‹ÇÍÇƒÇ¢Ç»Ç¢ÉtÉâÉOÇ‡ä‹ÇﬂÇƒï‘Ç∑ÇÊÇ§Ç…ÇµÇΩÅB
 		}
 	}else{
 		;if turn == 2{
 		if PATTERN_WHITE & stone_info.2{
-			memdef = 1
+			memdef = 2 | ((PATTERN_NONE & stone_info.2) == 0)
 		}
 		;}
 	}
