@@ -38,9 +38,9 @@
     if color_bits & PATTERN_ORANGE { i += "ORANGE," }
     if color_bits & PATTERN_PURPLE { i += "PURPLE," }
     
-    return strtrim(i, 2, ',') // ÅŒã‚ÌƒJƒ“ƒ}‚ğœ‹
+    return strtrim(i, 2, ',') // æœ€å¾Œã®ã‚«ãƒ³ãƒã‚’é™¤å»
 
-//ƒpƒ^[ƒ“ƒoƒŠƒf[ƒVƒ‡ƒ“
+//ãƒ‘ã‚¿ãƒ¼ãƒ³ãƒãƒªãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³
 #define global ctype pattern_validation(%1) \
 		( \
 		((%1) != PATTERN_NONE) && \
@@ -52,9 +52,9 @@
 
 	/*
 	board:
-	-ƒ{[ƒhƒIƒuƒWƒFƒNƒg
+	-ãƒœãƒ¼ãƒ‰ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 	a:
-	-(x:y:bits)Œ`®‚ÌÎî•ñ‚ÌŒ‹‰Ê‚ª•Ô‚éA”’l‚Ì”z—ñ
+	-(x:y:bits)å½¢å¼ã®çŸ³æƒ…å ±ã®çµæœãŒè¿”ã‚‹ã€æ•°å€¤ã®é…åˆ—
 	*/
 
 	get_board_data board, b
@@ -65,15 +65,15 @@
 	repeat length(b): m = cnt
 		repeat length2(b)
 			switch b(m,cnt)
-			case 1 //•Î
+			case 1 //é»’çŸ³
 				a(0, an) = m, cnt, PATTERN_BLACK
 				an++
 			swbreak
-			case 2 //”’Î
+			case 2 //ç™½çŸ³
 				a(0, an) = m, cnt, PATTERN_WHITE
 				an++
 			swbreak
-			//“ÁêğŒ
+			//ç‰¹æ®Šæ¡ä»¶
 			case 3
 				a(0, an) = m, cnt, PATTERN_BLACK | PATTERN_WHITE
 			swbreak
@@ -90,23 +90,23 @@
 	return an
 
 #deffunc initialize_rects var rect_set, array rects, array stones
-	//‹éŒ`‚ğì¬
+	//çŸ©å½¢ã‚’ä½œæˆ
 	num_rects = create_rect_from_coordinate_set(rect_set, rects)
-	//‹éŒ`‚É‡‚í‚¹‚ÄAÎî•ñƒŠƒXƒg‚ğ‰Šú‰»
+	//çŸ©å½¢ã«åˆã‚ã›ã¦ã€çŸ³æƒ…å ±ãƒªã‚¹ãƒˆã‚’åˆæœŸåŒ–
 	sdim stones,, num_rects
 	return
 
-//Îî•ñƒŠƒXƒg‚ÉÎ‚ğ’Ç‰Á
+//çŸ³æƒ…å ±ãƒªã‚¹ãƒˆã«çŸ³ã‚’è¿½åŠ 
 #deffunc add_stone_pattern array rects, array stones, int x, int y, int col, local i
     /*
     rects:
-    - ‹éŒ`ƒŠƒXƒg (x1, y1, x2, y2)
+    - çŸ©å½¢ãƒªã‚¹ãƒˆ (x1, y1, x2, y2)
     stones:
-    - ‹éŒ`‚²‚Æ‚ÌÎî•ñƒŠƒXƒg (‰Šú‰»Ï‚İ‚Å‚ ‚é‚±‚Æ)
+    - çŸ©å½¢ã”ã¨ã®çŸ³æƒ…å ±ãƒªã‚¹ãƒˆ (åˆæœŸåŒ–æ¸ˆã¿ã§ã‚ã‚‹ã“ã¨)
     x, y:
-    - Î‚ÌÀ•W
+    - çŸ³ã®åº§æ¨™
     col:
-    - ŒŸõ‚·‚éÎƒpƒ^[ƒ“B—áy@(PATTERN_BLUE | PATTERN_RED)@-> Â‚©Ô‚È‚çƒ}ƒbƒ` z
+    - æ¤œç´¢ã™ã‚‹çŸ³ãƒ‘ã‚¿ãƒ¼ãƒ³ã€‚ä¾‹ã€ã€€(PATTERN_BLUE | PATTERN_RED)ã€€-> é’ã‹èµ¤ãªã‚‰ãƒãƒƒãƒ ã€‘
     */
 
 
@@ -132,18 +132,18 @@
 
 	return
 
-//‹éŒ`ƒŠƒXƒg‚ÆÎî•ñƒŠƒXƒg‚©‚çŠî–{ƒpƒ^[ƒ“‚ğ¶¬
+//çŸ©å½¢ãƒªã‚¹ãƒˆã¨çŸ³æƒ…å ±ãƒªã‚¹ãƒˆã‹ã‚‰åŸºæœ¬ãƒ‘ã‚¿ãƒ¼ãƒ³ã‚’ç”Ÿæˆ
 #deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
 
     sdim patterns,,length2(rects), 3, 2
 
     repeat length2(rects)
-    	//---‹éŒ`ƒf[ƒ^
+    	//---çŸ©å½¢ãƒ‡ãƒ¼ã‚¿
         patterns(cnt,0,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
         patterns(cnt,0,1) = patterns(cnt,0,0)
 
-		//---Îƒf[ƒ^(x:y:bits)Œ`®
-    	//F”½“]‚ğì¬
+		//---çŸ³ãƒ‡ãƒ¼ã‚¿(x:y:bits)å½¢å¼
+    	//è‰²åè»¢ã‚’ä½œæˆ
      	s = ""
      	split stones(cnt),"-",stone_data
      	info_num = stat
@@ -161,7 +161,7 @@
 		logmes stones(cnt)
 		logmes s
         
-        //---•K—vƒ}ƒbƒ`”‚Ìî•ñ
+        //---å¿…è¦ãƒãƒƒãƒæ•°ã®æƒ…å ±
 		if stones(cnt) == ""{
 			patterns(cnt,2,0) = "0"
 			patterns(cnt,2,1) = "0"
@@ -181,7 +181,7 @@
 	return i
 
 
-//¶¬‚µ‚½ƒpƒ^[ƒ“‚ğ‰Â‹‰»iƒƒOo—Í—p)
+//ç”Ÿæˆã—ãŸãƒ‘ã‚¿ãƒ¼ãƒ³ã‚’å¯è¦–åŒ–ï¼ˆãƒ­ã‚°å‡ºåŠ›ç”¨)
 #defcfunc patterns_to_notepad array a
 	notesel s
 	s = "["
@@ -192,15 +192,15 @@
 	noteunsel
 	return s
 
-//Šî–{ƒpƒ^[ƒ“‚Æƒ{[ƒhƒTƒCƒY‚ğó‚¯æ‚è‚W‚Ü‚½‚Í‚Sƒpƒ^[ƒ“‰»‚·‚éŠÖ”
+//åŸºæœ¬ãƒ‘ã‚¿ãƒ¼ãƒ³ã¨ãƒœãƒ¼ãƒ‰ã‚µã‚¤ã‚ºã‚’å—ã‘å–ã‚Šï¼˜ã¾ãŸã¯ï¼”ãƒ‘ã‚¿ãƒ¼ãƒ³åŒ–ã™ã‚‹é–¢æ•°
 #deffunc make_rotated_patterns array a, int board_size_x, int board_size_y , array result
     /*
     a:
-    - Šî–{ƒpƒ^[ƒ“
+    - åŸºæœ¬ãƒ‘ã‚¿ãƒ¼ãƒ³
     x, y:
-    - ’Tõ‘ÎÛ‚Ìƒ{[ƒhƒTƒCƒY
+    - æ¢ç´¢å¯¾è±¡ã®ãƒœãƒ¼ãƒ‰ã‚µã‚¤ã‚º
     result:
-    - À•W•ÏŠ·‚ğs‚Á‚½ƒpƒ^[ƒ“ƒŠƒXƒg
+    - åº§æ¨™å¤‰æ›ã‚’è¡Œã£ãŸãƒ‘ã‚¿ãƒ¼ãƒ³ãƒªã‚¹ãƒˆ
     */
 
 	num_rotate_patterns = 8
@@ -210,11 +210,11 @@
 	
     repeat num_rotate_patterns
     	t_pattern = cnt
-    	//ƒpƒ^[ƒ““à‚ÌŠe‹éŒ`‚É‘Î‚µ‚Ä
+    	//ãƒ‘ã‚¿ãƒ¼ãƒ³å†…ã®å„çŸ©å½¢ã«å¯¾ã—ã¦
 
 		for r,,length(a)
 		
-			//‹éŒ`ƒf[ƒ^•ÏŠ·
+			//çŸ©å½¢ãƒ‡ãƒ¼ã‚¿å¤‰æ›
 			split a(r,0), ",", tmp
 			x1 = int(tmp)
 			y1 = int(tmp.1)
@@ -225,11 +225,11 @@
 
 			rect_str = "" + rect(0) + "," + rect(1) + "," + rect(2) + "," + rect(3)
 			
-			//F”½“]
+			//è‰²åè»¢
 			for i,,2
 			
 				
-				//Îƒf[ƒ^•ÏŠ·
+				//çŸ³ãƒ‡ãƒ¼ã‚¿å¤‰æ›
 				split a(r,1,i), "-", stone_datas
 				sdata = ""
 				repeat stat
@@ -248,9 +248,9 @@
 					}
 				loop
 
-				result(r,0,i,t_pattern) = rect_str //‹éŒ`î•ñ
-				result(r,1,i,t_pattern) = sdata    //Îƒf[ƒ^
-				result(r,2,i,t_pattern) = a(r,2) //Î”ƒf[ƒ^
+				result(r,0,i,t_pattern) = rect_str //çŸ©å½¢æƒ…å ±
+				result(r,1,i,t_pattern) = sdata    //çŸ³ãƒ‡ãƒ¼ã‚¿
+				result(r,2,i,t_pattern) = a(r,2) //çŸ³æ•°ãƒ‡ãƒ¼ã‚¿
 				
 			next
 		next
@@ -261,6 +261,6 @@
 #endif
 
 /*
-pattern‚Ì\‘¢ilŸŒ³j
-‹éŒ`”Ô†Aî•ñ‚Ìí—ŞAFA‰ñ“]
+patternã®æ§‹é€ ï¼ˆå››æ¬¡å…ƒï¼‰
+çŸ©å½¢ç•ªå·ã€çŸ³æƒ…å ±ï¼ˆï¼“ç¨®é¡ï¼‰ã€è‰²åè»¢ã—ã¦ã‚‹ã‹ã®ãƒ•ãƒ©ã‚°ï¼ˆ0or1)ã€å›è»¢ï¼ˆ0-7)
 */
