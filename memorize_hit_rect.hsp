@@ -79,9 +79,9 @@ if memdef == UNMEMORIZED{
 	split stones(stone_num), ":", stone_info
 	p = int(stone_info.2)
 	if turn == 1{
-		
+
 		if PATTERN_BLACK & p{
-			memdef = 2 | ((PATTERN_NONE & p) == 0)
+			memdef = 2 | ((PATTERN_NONE & p) == 0) 
 		}
 		
 	}else: if turn == 2{
