@@ -119,10 +119,11 @@ if 0{
 
 #include "modules/keyfps.hsp"
 #include "modules/sgf.hsp"
+#include "GobanPatternManager.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
-#include "GobanPatternManager.hsp"
-#include "Search_pattern.hsp"
+
+#include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_button.hsp"
@@ -248,6 +249,7 @@ newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
 
 newmod board, goban, 19,19,26,26, goban_body_area
+newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox
 //矩形範囲指定用
@@ -285,9 +287,9 @@ setfps 60
 	if pre_mode != mode {
 		pre_mode = mode
 		if mode = 0{
-			gosub *clearboard
 		}else{
-			get_board_data board, user_board
+			get_board_data board  , user_board
+			set_board_data board.1, user_board
 		}
 	}
 
@@ -342,9 +344,14 @@ setfps 60
 				set_current_node t, treebox_onmouseid(t)
 				Treebox_toggle_openflag t, treebox_onmouseid(t)
 			}
-			if mode == 0{//矩形描画モード
+			if mode == 1 && dragging_flag == 0{//矩形描画モード
 				if in_board{
-
+					if treebox_onmouseid(t) < 0{
+						if in_board{
+							user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
+							set_board_data board.1, user_board
+						}
+					}
 				}
 			}
 		}
@@ -359,6 +366,7 @@ setfps 60
 				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
 				}
+				if sel >= 0: mode = 0
 			loop
 			
 			if inlistbox == 0{
@@ -366,75 +374,35 @@ setfps 60
 				get_treeview_position tmp
 				dragstartx = mousex - tmp
 				dragstarty = mousey - tmp.1
-					if treebox_onmouseid(t) >=0{
+				if treebox_onmouseid(t) >=0{
+
+					clicked_node = stat
+
+					logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "
+
+					set_current_node t, clicked_node 			
+					sync_treebox_board t, board 
+				}
 	
-						clicked_node = stat
-	
-						logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "
-	
-						set_current_node t, clicked_node 			
-						sync_treebox_board t, board 
-					}
-		
-				if mode = 0{//矩形描画モード
-					if in_board{
-						rect = limit(point,0,18),limit(point.1,0,18)
-						rect(2) = rect, rect.1
-					}else{
-						rect = -1
-					}
+				if in_board{
+					rect = limit(point,0,18),limit(point.1,0,18)
+					rect(2) = rect, rect.1
 				}else{
-				
-					if treebox_onmouseid(t) < 0{
-						if in_board{
-							着手 board, point, point.1
-							
-							if stat{　//着手成功
-								dragging_flag = 0
-								
-								if nownode = -1{ //棋譜未選択状態なら
-	
-									make_tree_topnode t
-									nownode = stat
-									topnode = nownode
-									
-								}
-								
-								now_sgfnode = get_tree_item_id(nownode)
-								logmes now_sgfnode
-									
-								//指定した座標のノードを作成、すでにあればそれを返す
-								new = fetch_or_create_SGFnode(now_sgfnode, point, 逆手番(get_turn(board)))
-	
-								//現在のツリーノード直下にそのSGFノードがあるか？あれば、そのノードを取得
-								new_treeID = search_tree_child_by_item_ID(nownode, new)
-								
-								if new_treeID == -1{
-									//新たにツリーノードを作る
-									new_treeID = make_treenode(nownode, new)
-									if now_sgfnode == -1: topnode = new_tree_ID
-								}
-								set_current_node t, new_treeID
-							}
-						}
-					}
+					rect = -1
 				}
 			}
 		}
 	
 		if dragging_flag{
 			
-			if mode = 0{
 				rect(2) = limit(point(0),0,18)
 				rect(3) = limit(point(1),0,18)
-			}else{
-				set_treeview_position mousex - dragstartx, mousey - dragstarty
-			}
+
 			
 			if _getkey(1) == -1{//マウスが離されたとき
 				
 				dragging_flag = 0
-				if mode = 0 && rect(0) >= 0{
+				if rect(0) >= 0{
 					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
 					rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
 					rn++
@@ -503,8 +471,13 @@ setfps 60
 	a = double(c_list) * 255: color a,a,a
 	get_rect goban_body_area, goban_back_rect
 	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
-	
-	碁盤表示 board , 着手番号表示, 20
+
+	if mode = 0{
+		碁盤表示 board , 着手番号表示, 20
+	}else{
+		
+		碁盤表示 board.1 , , 20
+	}
 	draw_set_list_on_board board, v
 	
 	foreach kifulist
@@ -676,16 +649,18 @@ setfps 60
 	if mode == 0{
 		get_board_data board, m
 	}else{
-		get_board_data user_board, m
+		get_board_data board.1, m
 	}
 	repeat load_stones_from_board(m, n)
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
+		logmes n(2,cnt)
 	loop
 
 
 	create_pattern_with_rects_and_stones r,stones,p
 
 	logmes patterns_to_notepad(p)
+
 
 	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
 	kifu_update = 0

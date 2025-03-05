@@ -1,4 +1,4 @@
-#include "goban.hsp"
+#include "modules/goban.hsp"
 
 #include "treebox.hsp"
 #include "modules/hash.hsp"

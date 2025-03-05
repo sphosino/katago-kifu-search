@@ -7,16 +7,21 @@
 #include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
 #module
-	#const VLIST_NUM 3 * 16
-	#const VLIST_SIZE VLIST_NUM * 4
-	#const NODE_INFO_NUM 3
-	#const NODE_INFO_SIZE NODE_INFO_NUM * 4
-	#const DATA_NUM NODE_INFO_NUM + VLIST_NUM
-	#const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
-
 
 #deffunc search_init
+	
+	#const NODE_INFO_NUM 3
+	#const NODE_INFO_SIZE NODE_INFO_NUM * 4
+
 	dim vlist , 3, 16
+	; vlist = (色反転フラグ,回転パターンタイプ, マッチした数 ) が 最大で 16 要素
+	;         (    0-1     ,  0-7             ,              )
+	#const VLIST_NUM 3 * 16
+	#const VLIST_SIZE VLIST_NUM * 4
+	
+	#const DATA_NUM NODE_INFO_NUM + VLIST_NUM
+	#const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
+	
 	init_ringbuffer DATA_SIZE, 128
 	sdim node_data, DATA_SIZE
 	return
@@ -25,7 +30,6 @@
 
 
 	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
-	logmes "SNUM = " + stone_num
 	if stone_num == 0: return 0
 	if stone_num > max_depth: return 0
 
@@ -101,14 +105,12 @@
 	noteunsel
 
 	title titlestr + strf("検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
+
 	dup res, result
-	logmes "AAAAAAAAA A " + count@
 	return rn
 
 
-#define COLOR_INFO 0
-#define ROTATE_INFO 1
-#define MATCH_STONE_COUNT 2
+
 #defcfunc search_main int t, array pattern, array result_match_node
 
 /*
@@ -123,13 +125,15 @@
 */
 
 
-
+#define COLOR_INFO 0
+#define ROTATE_INFO 1
+#define MATCH_STONE_COUNT 2
 
   //キュー初期化
   valid_pattern_count = 0
   repeat r_pattern_num
     for i,, colorflip_num
-      vlist(0, valid_pattern_count) = i, cnt, 0
+      vlist(COLOR_INFO, valid_pattern_count) = i, cnt, 0
       valid_pattern_count++
     next
   loop
@@ -151,12 +155,6 @@
     valid_pattern_count = lpeek(node_data, 8)
     memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
 
-	sss = ""
-    repeat valid_pattern_count
-    sss += "  "+vlist(MATCH_STONE_COUNT,cnt) + "," + (vlist(ROTATE_INFO, cnt)*(vlist(COLOR_INFO,cnt)+1))
-    loop
-    logmes sss:await
-
     turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
     if x >= 0{
@@ -166,23 +164,22 @@
         *check_pattern_list
 
         if memorize_hit_rect(vlist(ROTATE_INFO, i), x, y, pattern, hit_stone) == -1{
-            _continue
+          _continue
         }
 
         if hit_stone >= 0{
-            if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
-	            
-	            vlist(MATCH_STONE_COUNT, i) += stat & 1
-	            if vlist(MATCH_STONE_COUNT, i) == stone_num{
-	              result_match_node = node //一致したSGFノード
-	              ; result_match_colorflip = vlist(COLOR_INFO, i)
-	              ; result_match_rotatepattern = vlist(ROTATE_INFO, i)
-	              return 1 //検索成功
-	            }
-	            _continue
-	      	}
-	      	
+          if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
+            vlist(MATCH_STONE_COUNT, i) += stat & 1 //PATTERN_NONEが含まれていないフラグが立っていたら加算
+            if vlist(MATCH_STONE_COUNT, i) == stone_num{
+              result_match_node = node //一致したSGFノード
+              ; result_match_colorflip = vlist(COLOR_INFO, i)
+              ; result_match_rotatepattern = vlist(ROTATE_INFO, i)
+              return 1 //検索成功
+            }
+            _continue
+          }
         }
+
         valid_pattern_count--
         if i == valid_pattern_count{
           //有効パターンリストを全て探索した。

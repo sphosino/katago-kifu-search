@@ -263,6 +263,37 @@
 					mes stepboard(m,cnt)
 				}
 			swbreak
+			case 3
+				color 210/2,210/2,210/2
+				circle posx, posy , posx + masx, posy + masy
+				gosub*draw_last_move_mark
+				if 碁石番号表示{
+					color
+					mes stepboard(m,cnt)
+				}
+			swbreak
+			case 4
+				color
+				circle posx, posy , posx + masx, posy + masy
+				color 210,210,210
+				pos posx, posy: mes "?"
+				gosub*draw_last_move_mark
+				if 碁石番号表示{
+					color
+					mes stepboard(m,cnt)
+				}
+			swbreak
+			case 5
+				color 210,210,210
+				circle posx, posy , posx + masx, posy + masy
+				color 0,0,0
+				pos posx, posy: mes "?"
+				gosub*draw_last_move_mark
+				if 碁石番号表示{
+					color
+					mes stepboard(m,cnt)
+				}
+				
 			swend
 		loop
 	loop
@@ -313,6 +344,17 @@
 		loop
 	loop
 	return
+#modfunc set_board_data array a
+	repeat length(a)
+		m = cnt
+		repeat length2(a)
+			board(m,cnt) = a(m,cnt)
+		loop
+	loop
+	return
+#modcfunc get_goban_position_color int _x, int _y
+
+	return board(_x,_y)
 //各モジュールで追加に必要なコードはこれだけ。コピペ推奨
 #modfunc local thisrect array mocklist, int area_number_mock
 	if mock_flag@global{
