@@ -12,7 +12,8 @@
 			if in_rect(rect, x, y){
 				memory(0,rotate_pattern, x, y) = j
 				split pattern(j, 1, 0, rotate_pattern),"-", stones
-				for i,,int(pattern(j, 2, 0, rotate_pattern))
+				e = stat
+				for i,,e
 					split stones(i), ":", tmp
 					p_x = int(tmp)
 					p_y = int(tmp.1)
@@ -78,7 +79,7 @@ if memdef == UNMEMORIZED{
 	split stones(stone_num), ":", stone_info
 	if turn == 1{
 		if PATTERN_BLACK & stone_info.2{
-			memdef = 2 | ((PATTERN_NONE & stone_info.2) == 0)  //PATTERN_NONE‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ƒtƒ‰ƒO‚àŠÜ‚ß‚Ä•Ô‚·‚æ‚¤‚É‚µ‚½B
+			memdef = 2 | ((PATTERN_NONE & stone_info.2) == 0)  //PATTERN_NONEãŒå«ã¾ã‚Œã¦ã„ãªã„ãƒ•ãƒ©ã‚°ã‚‚å«ã‚ã¦è¿”ã™ã‚ˆã†ã«ã—ãŸã€‚
 		}
 	}else{
 		;if turn == 2{
