@@ -71,6 +71,7 @@
 #define global ctype memorize_hit_color(%1,%2,%3,%4,%5, %6) _memorize_hit_color(%1,%2,%3,%4,%5 - 1, %6)
 #defcfunc _memorize_hit_color int rect_number, int color_pattern, int rotate_pattern, int stone_num, int turn, array pattern
 
+//turn -> 0: •”Ô   1: ”’”Ô 
 #define memdef mem(rect_number, color_pattern << 3 | rotate_pattern, stone_num, turn)
 
 if memdef == UNMEMORIZED{
@@ -78,13 +79,15 @@ if memdef == UNMEMORIZED{
 	split pattern(rect_number, 1, color_pattern, rotate_pattern),"-", stones
 	split stones(stone_num), ":", stone_info
 	p = int(stone_info.2)
-	if turn == 1{
+
+	
+	if turn == 0{
 
 		if PATTERN_BLACK & p{
-			memdef = 2 | ((PATTERN_NONE & p) == 0) 
+			memdef = 2 | ((PATTERN_NONE & p) == 0)
 		}
 		
-	}else: if turn == 2{
+	}else{
 		
 		if PATTERN_WHITE & p{
 			memdef = 2 | ((PATTERN_NONE & p) == 0)

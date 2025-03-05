@@ -151,12 +151,6 @@
     valid_pattern_count = lpeek(node_data, 8)
     memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
 
-	sss = ""
-    repeat valid_pattern_count
-    sss += "  "+vlist(MATCH_STONE_COUNT,cnt) + "," + (vlist(ROTATE_INFO, cnt)*(vlist(COLOR_INFO,cnt)+1))
-    loop
-    logmes sss:await
-
     turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
     if x >= 0{

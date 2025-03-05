@@ -123,7 +123,7 @@ if 0{
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
 
-#include "Search_pattern2.hsp"
+#include "Search_pattern.hsp"
 #include "shuffle_notepad.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_button.hsp"
