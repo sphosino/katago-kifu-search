@@ -135,6 +135,8 @@ if 0{
 
 
 
+#const MODE_KIFU_VIEW 0
+#const MODE_BOARD_EDIT 1
 
 randomize
 
@@ -286,7 +288,8 @@ setfps 60
 	}
 	if pre_mode != mode {
 		pre_mode = mode
-		if mode = 0{
+		if mode = MODE_KIFU_VIEW{
+			
 		}else{
 			get_board_data board  , user_board
 			set_board_data board.1, user_board
@@ -344,7 +347,7 @@ setfps 60
 				set_current_node t, treebox_onmouseid(t)
 				Treebox_toggle_openflag t, treebox_onmouseid(t)
 			}
-			if mode == 1 && dragging_flag == 0{//矩形描画モード
+			if mode == MODE_BOARD_EDIT && dragging_flag == 0{//矩形描画モード
 				if in_board{
 					if treebox_onmouseid(t) < 0{
 						if in_board{
@@ -354,7 +357,6 @@ setfps 60
 					}
 				}
 			}
-
 		}
 
 		//右長押しで、指定された範囲を除外
@@ -377,7 +379,7 @@ setfps 60
 				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
 				}
-				if sel >= 0: mode = 0
+				if sel >= 0: mode = MODE_KIFU_VIEW
 			loop
 			
 			if inlistbox == 0{
@@ -456,8 +458,8 @@ setfps 60
 		//自動再生
 
 		//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
-		if jidou{
-			if pre_jidou = 0{
+		if jidou & (mode == MODE_KIFU_VIEW){
+			if pre_jidou == 0{
 				前の形勢 = double(c_list)
 				pre_jidou = 1
 			}
@@ -483,7 +485,7 @@ setfps 60
 	get_rect goban_body_area, goban_back_rect
 	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
 
-	if mode = 0{
+	if mode == MODE_KIFU_VIEW{
 		碁盤表示 board , 着手番号表示, 20
 	}else{
 		
@@ -608,6 +610,7 @@ setfps 60
 	set_current_node t
 	gosub*syncboard
 	return
+	
 *to_sgfend
 
 	if topnode < 0: return
@@ -657,7 +660,7 @@ setfps 60
 	time = keyfpstime
 	initialize_rects v, r, stones
 
-	if mode == 0{
+	if mode == MODE_KIFU_VIEW{
 		get_board_data board, m
 	}else{
 		get_board_data board.1, m

@@ -1,42 +1,98 @@
 #module
-#deffunc find_tags_bytag str s1, str tag, array result, int start
-	sdim self_closing_tags
-	self_closing_tags = "br,img,input,meta,link,hr,"
+#deffunc find_tags_bytag str s1, str tag, array result
     s = s1
-    point = start
+    point = 0 //読み取り中の位置
+    result_num = 0 // 結果の数
+    mode = 0 //0 = searching_starttag   1 = searching_endtag
+    token_start = 0 //トークン開始済みかどうか
+    current_tag = "" //現在処理中のタグ名
+    tag_content = "" //タグの内容
+    
     sdim result
-    repeat
-        p = instr(s, point, "<" + tag)
-        if p < 0: break
-        if strmid(s,point,1) = "":break
-        left = p
-        point = p + strlen(tag) + 1
+    
+    while point < strlen(s)
+        token = peek(s, point)
         
-        tmp = instr(s, point, ">") ; `>` を探す
-        if tmp < 0: break
-        
-        endpoint = tmp + 1
-        
-        if is_self_closing(tag) {
-            result(cnt) = strmid(s, left, endpoint - left)
-            point = endpoint
-            continue
-        }
-        
-        ; 閉じタグを探す
-        p2 = instr(s, endpoint, "</" + tag + ">")
-        if p2 >= 0 {
-            endpoint = p2 + strlen(tag) + 3
-        }
-        
-        result(cnt) = strmid(s, left, endpoint - left)
-        point = endpoint
-    loop
-    return
+        switch token
+            case '<'
+               if mode == 0 { // 開始タグを探している
+                    token_start = 1
+                    current_tag = ""
+                    tag_start_pos = point
+               }else{ // 終了タグを探している
+               		
+                    if peek(s, point+1) == '/' { // 閉じタグの開始 </
+                        endtag_start = point
+                   }
+               }
+            swbreak
+                
+            case '>'
+                if token_start {
+                    if mode == 0 {
+                        // タグ名が一致するか確認
+                        if current_tag == tag {
+                            mode = 1 // 終了タグ探索モードへ
+                            tag_content = ""
+                            content_start = point + 1
+                            
+                            // 自己閉じタグの場合
+                            if peek(s, point-1) == '/' || is_self_closing(current_tag) {
+                                // タグ全体を結果に追加
+                                tag_text = strmid(s, tag_start_pos, point - tag_start_pos + 1)
+                                result(result_num) = tag_text
+                                result_num++
+                                mode = 0 // 再び開始タグ探索へ
+                            }
+                        }
+                    } else { // mode == 1
+                        // 終了タグが見つかった場合
+                        if strmid(s, endtag_start+2, strlen(current_tag)) == current_tag {
+                            // タグの内容を取得
+                            tag_content = strmid(s, content_start, endtag_start - content_start)
+                            // タグ全体（開始タグ + 内容 + 終了タグ）を結果に追加
+                            tag_text = strmid(s, tag_start_pos, point - tag_start_pos + 1)
+                            result(result_num) = tag_text
+                            result_num++
+                            mode = 0 // 再び開始タグ探索へ
+                        }
+                    }
+                    token_start = 0
+                }
+                swbreak
+                
+            default
+                if token_start && mode == 0 {
+                    // 開始タグの名前を読み取る（スペースまで）
+                    if token != ' ' && token != '\t' && token != '\n' && token != '\r' && token != '/' {
+                        current_tag += strmid(s, point, 1)
+                    } else {
+                        // スペースなどが来たらタグ名の読み取り終了
+                        token_start = 0
+                    }
+                } else :if mode == 1 {
+                    // タグの内容を蓄積
+                    if point >= content_start && point < endtag_start {
+                        tag_content += strmid(s, point, 1)
+                    }
+                }
+            swbreak
+        swend
+        point++
+    wend
+    return result_num
+    
 #defcfunc is_self_closing str tag
-    if instr(self_closing_tags,0, tag + ",") >= 0 : return 1
+    if instr(self_closing_tags, 0, tag + ",") >= 0 : return 1
     return 0
+    
+#deffunc init
+    self_closing_tags = "br,img,input,meta,link,hr,"
+    return
 #global
+init
+
+
 a = {"
 <div>
     <p>Hello</p>
@@ -54,7 +110,7 @@ sdim result
 mes "【テスト開始】"
 
 ; 1. divタグ (基本)
-find_tags_bytag a, "div", result, 0
+find_tags_bytag a, "div", result
 mes "divタグ:"
 repeat length(result)
     mes result(cnt)
@@ -64,7 +120,7 @@ mes ""
 
 ; 2. pタグ (基本)
 sdim result
-find_tags_bytag a, "p", result, 0
+find_tags_bytag a, "p", result
 mes "pタグ:"
 repeat length(result)
     mes result(cnt)
@@ -74,7 +130,7 @@ mes ""
 
 ; 3. aタグ (属性あり)
 sdim result
-find_tags_bytag a, "a", result, 0
+find_tags_bytag a, "a", result
 mes "aタグ:"
 repeat length(result)
     mes result(cnt)
@@ -84,7 +140,7 @@ mes ""
 
 ; 4. imgタグ (空白つき)
 sdim result
-find_tags_bytag a, "img", result, 0
+find_tags_bytag a, "img", result
 mes "imgタグ:"
 repeat length(result)
     mes result(cnt)
@@ -94,7 +150,7 @@ mes ""
 
 ; 5. brタグ (自己閉タグ)
 sdim result
-find_tags_bytag a, "br", result, 0
+find_tags_bytag a, "br", result
 mes "brタグ:"
 repeat length(result)
     mes result(cnt)
@@ -104,7 +160,7 @@ mes ""
 
 ; 6. spanタグ (ネスト)
 sdim result
-find_tags_bytag a, "span", result, 0
+find_tags_bytag a, "span", result
 mes "spanタグ:"
 repeat length(result)
     mes result(cnt)
@@ -114,7 +170,7 @@ mes ""
 
 ; 7. 存在しないタグ
 sdim result
-find_tags_bytag a, "nonexistent", result, 0
+find_tags_bytag a, "nonexistent", result
 mes "nonexistentタグ:"
 repeat length(result)
     mes result(cnt)
@@ -123,4 +179,3 @@ loop
 mes ""
 
 mes "【テスト終了】"
-end
