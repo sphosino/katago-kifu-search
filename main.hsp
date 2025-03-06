@@ -157,6 +157,7 @@ v = "" //矩形選択用
 
 jidou = 0
 着手番号表示 = 0
+ui_mode = MODE_KIFU_VIEW
 
 set_treeview 50,50
 set_treeview_position 20,20
@@ -235,7 +236,7 @@ newmod g_buttons, grid_button, ">", *move_next, go_one
 newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 
-newmod g_chkbox, grid_checkbox, mode           , "着手" , chkbox_tyakusyu
+newmod g_chkbox, grid_checkbox, ui_mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
@@ -277,7 +278,7 @@ pretime = keyfpstime
 #const INACTIVITY_TIMEOUT 1800
 
 pre_window_size = -9999,-9999
-pre_mode = -1
+pre_ui_mode = -1
 setfps 60
 *main
 	manage_keyfps
@@ -286,9 +287,9 @@ setfps 60
 		pre_window_size = window_size, window_size.1
 		gosub *save_window_size_main
 	}
-	if pre_mode != mode {
-		pre_mode = mode
-		if mode = MODE_KIFU_VIEW{
+	if pre_ui_mode != ui_mode {
+		pre_ui_mode = ui_mode
+		if ui_mode = MODE_KIFU_VIEW{
 			
 		}else{
 			get_board_data board  , user_board
@@ -347,7 +348,7 @@ setfps 60
 				set_current_node t, treebox_onmouseid(t)
 				Treebox_toggle_openflag t, treebox_onmouseid(t)
 			}
-			if mode == MODE_BOARD_EDIT && dragging_flag == 0{//矩形描画モード
+			if ui_mode == MODE_BOARD_EDIT && dragging_flag == 0{//矩形描画モード
 				if in_board{
 					if treebox_onmouseid(t) < 0{
 						if in_board{
@@ -379,7 +380,7 @@ setfps 60
 				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
 				}
-				if sel >= 0: mode = MODE_KIFU_VIEW
+				if sel >= 0: ui_mode = MODE_KIFU_VIEW
 			loop
 			
 			if inlistbox == 0{
@@ -458,7 +459,7 @@ setfps 60
 		//自動再生
 
 		//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
-		if jidou & (mode == MODE_KIFU_VIEW){
+		if jidou & (ui_mode == MODE_KIFU_VIEW){
 			if pre_jidou == 0{
 				前の形勢 = double(c_list)
 				pre_jidou = 1
@@ -485,7 +486,7 @@ setfps 60
 	get_rect goban_body_area, goban_back_rect
 	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
 
-	if mode == MODE_KIFU_VIEW{
+	if ui_mode == MODE_KIFU_VIEW{
 		碁盤表示 board , 着手番号表示, 20
 	}else{
 		
@@ -660,7 +661,7 @@ setfps 60
 	time = keyfpstime
 	initialize_rects v, r, stones
 
-	if mode == MODE_KIFU_VIEW{
+	if ui_mode == MODE_KIFU_VIEW{
 		get_board_data board, m
 	}else{
 		get_board_data board.1, m
