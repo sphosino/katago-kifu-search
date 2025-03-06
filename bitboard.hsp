@@ -1,159 +1,253 @@
-#module bitboard
+#ifndef init_bitboard
+#module
+#const NODE_MAX 1500000
 
-#define blockpos (x/5 + y/5 * 5)
-#define bitpos   ((x\4 + y\4 * 4) * 2)
+#deffunc init_bitboard
+	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368マスを最大とする
+	dim sizex, NODE_MAX //ビットボードの形状を表現
+	dim sizey, NODE_MAX
+	dim capture_black, NODE_MAX //取石
+	dim capture_white, NODE_MAX
+	dim コウ禁止点,2,NODE_MAX
 
-#deffunc move_bitboard array board, int turn, int x, int y
-	valid_xy x, y
-    board(blockpos) |= turn << bitpos
-    return
+	dim open_board_list, 1024
+	board_num = 1 //配列の最大、空き要素含む
+	open_board_list(0) = 0
+	open_board_list_num = 1
 
-#defcfunc get_bitboard array board, int x, int y
-	valid_xy x, y
-    return board(blockpos) >> bitpos & 3
+	//上下左右の定義
+	sx = 1,0,-1,0
+	sy = 0,-1,0,1
+	コウ禁止点 = -1,-1
 
-#deffunc init_board array board
-    dim board, 25
-    return
-
-#deffunc bitboard_view array board
-	//1文字のサイズ
-	xsize = 10
-	ysize = 10
-	//ブロック間のマージン
-	xblockmargin = 10
-	yblockmargin = 10
-	//2bit単位のマージン
-	xbitmargin = 2
-	ybitmargin = 5
-
-	blocksizex = (xsize * 2) * 4 + (xbitmargin * 3) + xblockmargin
-	blocksizey = (ysize * 1) * 4 + (ybitmargin * 3) + yblockmargin
-
-
-	repeat 25
-		bx = cnt \ 5
-		by = cnt / 5
-		block_num = by * 5 + cnt \ 5
-
-		repeat 16
-			bit_num = cnt / 4 + cnt \ 4
-
-			if board(block_num) >> cnt * 2 + 1 && 1{
-				tbit = "1"
-			}else{
-				tbit = "0"
-			}
-			if board(block_num) >> cnt * 2     && 1{
-				tbit += "1"
-			}else{
-				tbit += "0"
-			}
-			
-			pos blocksizex * bx + cnt \ 4 * (xsize * 2 + xbitmargin), blocksizey * by + cnt / 4 * (ysize + ybitmargin)
-			mes tbit
-		loop
-	loop
-
+	//アゲハマ一時記録用
+	dim r,2
 	return
 
-#defcfunc flipVertical_4x4_2bit int bb
-    b = ((bb & 0xFFFF0000) >> 16) | ((bb & 0x0000FFFF) << 16);  // 上下の2行を入れ替え
-    b = ((b  & 0xFF00FF00) >> 8)  | ((b  & 0x00FF00FF) << 8);
-    return b;
-
-
-#deffunc pattern_init array p, array p_mask
-
-    dim valid_blocks
-    dim vn
-    dim added_list, 25
-    dim p,25
-    dim p_mask,25
-    return
-
-#deffunc pattern_add array p, array p_mask, int turn, int x, int y
-
-    valid_xy x, y
-    
- 
-    if added_list(blockpos) == 0{
-		valid_blocks(vn) = blockpos
-		vn++
-		added_list(blockpos) = 1
+#defcfunc make_new_bitboard int x, int y
+	if open_board_list_num{
+		open_board_list_num--
+		new_id = open_board_list(open_board_list_num)
+	}else{
+		new_id = board_num
 	}
 
-    // マスク設定 (この場所の2ビットを比較対象とする)
-    p_mask(blockpos) |= 3 << bitpos
-    
-    p(blockpos) |= turn << bitpos // 指定の石をセット
+	memset bitboard(0, new_id), 0, 23 * 4
+	sizex(new_id) = x
+	sizey(new_id) = y
+	capture_black(new_id) = 0
+	capture_white(new_id) = 0
+	コウ禁止点(0, new_id) = -1, -1
 
-    return
+	return new_id
 
-#defcfunc pattern_match array board, array p, array p_mask
-	mes "有効なブロックの数" + vn
-    for i, 0, vn
-    	v = valid_blocks(i)
-        if (board(v) & p_mask(v)) != (p(v) & p_mask(v)): return 0
-    next
-    return 1
-
-#deffunc local valid_xy int x, int y
-	if x < 0 || y < 0 || x >= 19 || y >= 19: dialog "入力が範囲外です": end
+#deffunc del_bitboard int node
+	//未使用チェック
+	opened = 0
+	repeat open_board_list_num
+		if open_board_list(cnt) == node{
+			opened = 1
+			break
+		}
+	loop
+	if opened: return
+	//-------
+	open_board_list(open_board_list_num) = node
+	open_board_list_num++
 	return
+	
+#defcfunc get_bitboard_status_xy int node, int x, int y
+    index = (y * sizex(node) + x) * 2  // ビット位置を計算
+    int_index = index / 32    // 使用する整数のインデックス
+    bit_offset = index \ 32    // 整数内のビットオフセット
+    return bitboard(int_index, node) >> bit_offset & 0b11
+    
+#deffunc bitboard_to_array int node, array a
+	dim a, sizex(node), sizey(node)
+	repeat sizex(node): m = cnt
+		repeat sizey(node)
+			a(m,cnt) = get_bitboard_status_xy(node, m, cnt)
+		loop
+	loop
+	return
+	
+// 2次元配列をビットボードに変換
+#defcfunc array_to_bitboard array a, int node
+	if node == -1{
+		new_id = make_new_bitboard(length(a), length2(a))
+	}else{
+		new_id = node
+	}
+	memset bitboard(0, new_id), 0, 23 * 4
+    repeat length(a): m = cnt
+        repeat length2(a)
+            index = (cnt * length(a) + m) * 2
+            int_index = index / 32
+            bit_offset = index \ 32
+            bitboard(int_index, new_id) |= (a(m, cnt) & 0b11) << bit_offset
+        loop
+    loop
+    return new_id
+	
+#defcfunc play_move int node, int x, int y, int turn
+
+	bitboard_to_array node, board
+
+	if ( コウ禁止点(0, node) == x && コウ禁止点(1, node) == y){
+		return 0
+	}
+	move_capture = 打てるかチェック(board, x, y, turn, cap) //打てないとき-1 打てるなら取れる数とcapにその情報
+	if  move_capture == -1{
+		return 0
+	}
+
+	board(x,y) = turn
+	
+	repeat move_capture
+		board(cap(0,cnt),cap(1,cnt)) = 0
+	loop
+
+	if turn == 1: capture_black(node) += move_capture
+	if turn == 2: capture_white(node) += move_capture
+
+	コウ禁止点(0, node) = -1, -1
+	if move_capture == 1{ //1個とったとき
+		if 打てるかチェック(board, cap(0,0), cap(1,0), 3 - turn, r) == 1{ //そこに打って1個とれるならその地点はコウ
+			コウ禁止点(0, node) = cap(0,0), cap(1,0)
+		}
+	}
+
+	tmp = array_to_bitboard(board, node)
+
+	return move_capture
+
+#defcfunc 打てるかチェック array a, int x, int y,int t, array c
+
+	if x < 0 || x >= length(a): return -1
+	if y < 0 || y >= length2(a): return -1
+	if a(x,y) != 0: return -1
+	
+	num_n = 0
+
+	dim c,2 ;　アゲハマ記録用の配列初期化
+	dim kk, length(a),length2(a) //検索用のボード初期化
+
+	//盤面を取得して
+	memcpy kk, a, length(a) * length2(a) * 4
+
+	kk(x,y) = t //石を置いてスタート
+
+	repeat 4
+		nnx = x + sx(cnt)
+		nny = y + sy(cnt)
+		if nnx < 0 || nnx >= length(a): continue
+		if nny < 0 || nny >= length2(a): continue
+		if kk(nnx,nny) == (3 - t){
+			repeat ある地点が取られ状態か？(kk, nnx, nny , r)
+				c(0,num_n) = r(0,cnt), r(1,cnt)
+				kk(r(0,cnt),r(1,cnt)) = t //取った場所を全て着手側に置き換えて重複して抜くことを避ける。
+				num_n++
+			loop
+		}
+	loop
+	
+	if num_n == 0 {
+		//一つも取れずにうとうとしている地点が取られているなら、打てない
+		if ある地点が取られ状態か？(kk,x,y, r): return -1
+	}
+	
+	return num_n
+	
+#defcfunc ある地点が取られ状態か？ array a, int x, int y, array agehama
+	
+	if a(x,y) == 0: return 0
+	
+	//対象地点の色取得
+	turn = a(x,y)
+
+	//碁盤コピー
+	dim b,length(a),length2(a)
+	memcpy b,a,length(a)*length2(a)*4
+
+	
+	num = 0 //アゲハマの数
+
+	//スタック初期化
+	sn = 0
+	stackx(sn) = x
+	stacky(sn) = y
+	sn++
+
+	//スタックに積んだタイミングでその地点を相手の石に置き換えるのが重要。
+	//取り出したタイミングで置き換えるのでは、スタックに積まれている地点を他のノードからもカウントしてしまうことがある。
+	b(x,y) = 3 - turn
+	
+	while sn
+		sn--
+		nx = stackx(sn)
+		ny = stacky(sn)
+		agehama(0, num) = nx, ny
+		num++
+		for i,,4
+			nnx = nx + sx(i)
+			nny = ny + sy(i)
+			if nnx < 0 || nnx >= length(b): _continue
+			if nny < 0 || nny >= length2(b): _continue
+
+			switch b(nnx, nny)
+			case 0: return 0
+			case turn
+				stackx(sn) = nnx
+				stacky(sn) = nny
+				sn++
+				b(nnx, nny) = 3 - turn
+			swbreak
+			swend
+		next
+	wend
+	return num
+
+#global
+init_bitboard
+#endif
+
+//--------------------------------------
+#if 1
+
+#const global MAS_X  20
+#const global MAS_Y  20
+
+
+#module
+// テスト用の碁盤を表示
+#deffunc print_board array a
+    repeat length(a): x = cnt
+        repeat length2(a): y = cnt
+        	pos x * MAS_X, y * MAS_Y
+            switch a(x, y)
+            case 0: mes "・":swbreak // 空点
+            case 1: mes "●":swbreak // 黒石
+            case 2: mes "○":swbreak // 白石
+            swend
+        loop
+    loop
+    return
 
 #global
 
-#if 1
 
-init_board board
-
-board(24) = flipVertical_4x4_2bit(7)
-bitboard_view board
-mes board(24)
-
+node = make_new_bitboard(19, 19)
+*main
+	mx = mousex / MAS_X
+	my = mousey / MAS_Y
+	stick key
+	if key&256: title""+ play_move(node,mx,my,1)
+	if key&512: title""+ play_move(node,mx,my,2)
+	color 255,255,255:boxf:color
+	bitboard_to_array node, board
+	print_board board
+	redraw:redraw 2
+	await 16
+	goto*main
+	
 #endif
-
-/*  bitboard_イメージ
-
-     0             1             2             3             4
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-
-	 5             6             7             8            9      
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-
-	 10           11            12            13           14
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-
-	 15            16           17            18            19
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-
-	 20            21           22           23             24
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00 | 00 00 00 00
-
-
-
-2,5の地点に打つ場合の計算方法
-
-(2/5) + (5/5 * 5) == 5番の整数の
-
-(2\4) + (5\4 * 4) == 2番のbitを立てる
-
-*/
-
-
