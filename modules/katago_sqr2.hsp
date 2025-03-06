@@ -55,7 +55,7 @@ netinit
 			logmes ""+ game_id + "::" +next_link
 			
 
-		if check_exist_sgf(files, game_id):await 100: continue
+		if check_exist_sgf(files, game_id): await 17: continue
 
 		find_tags_bytag data(cnt + 1), "a", result
 		find_attribute_byname result, "href", t
@@ -77,7 +77,7 @@ netinit
 
 	loop
 	await 300
-	if keyfpstime - starttime >= 5000: chdir now_dir: return
+	if keyfpstime - starttime >= 20000: chdir now_dir: return
 	if get_count < max{
 		sdim divs
 		find_tags_bytag buf, "div",divs

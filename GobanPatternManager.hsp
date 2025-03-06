@@ -38,9 +38,8 @@
     if color_bits & PATTERN_ORANGE { i += "ORANGE," }
     if color_bits & PATTERN_PURPLE { i += "PURPLE," }
     
-    return strtrim(i, 2, ',') // 譛蠕後・繧ｫ繝ｳ繝槭ｒ髯､蜴ｻ
+    return strtrim(i, 2, ',') 
 
-//繝代ち繝ｼ繝ｳ繝舌Μ繝・・繧ｷ繝ｧ繝ｳ
 #define global ctype pattern_validation(%1) \
 		( \
 		((%1) != PATTERN_NONE) && \
@@ -49,13 +48,6 @@
 		)
 
 #defcfunc load_stones_from_board array b, array a
-
-	/*
-	board:
-	-繝懊・繝峨が繝悶ず繧ｧ繧ｯ繝・
-	a:
-	-(x:y:bits)蠖｢蠑上・遏ｳ諠・ｱ縺ｮ邨先棡縺瑚ｿ斐ｋ縲∵焚蛟､縺ｮ驟榊・
-	*/
 
 	dim a, 3
 	an = 0
