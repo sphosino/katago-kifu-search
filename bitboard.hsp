@@ -3,24 +3,23 @@
 #const NODE_MAX 1500000
 
 #deffunc init_bitboard
-	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368ƒ}ƒX‚ğÅ‘å‚Æ‚·‚é
-	dim sizex, NODE_MAX //ƒrƒbƒgƒ{[ƒh‚ÌŒ`ó‚ğ•\Œ»
+	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368ãƒã‚¹ã‚’æœ€å¤§ã¨ã™ã‚‹
+	dim sizex, NODE_MAX //ãƒ“ãƒƒãƒˆãƒœãƒ¼ãƒ‰ã®å½¢çŠ¶ã‚’è¡¨ç¾
 	dim sizey, NODE_MAX
-	dim capture_black, NODE_MAX //æÎ
+	dim capture_black, NODE_MAX //å–çŸ³
 	dim capture_white, NODE_MAX
-	dim ƒRƒE‹Ö~“_,2,NODE_MAX
+	dim ã‚³ã‚¦ç¦æ­¢ç‚¹,2,NODE_MAX
 
 	dim open_board_list, 1024
-	board_num = 1 //”z—ñ‚ÌÅ‘åA‹ó‚«—v‘fŠÜ‚Ş
+	board_num = 1 //é…åˆ—ã®æœ€å¤§ã€ç©ºãè¦ç´ å«ã‚€
 	open_board_list(0) = 0
 	open_board_list_num = 1
 
-	//ã‰º¶‰E‚Ì’è‹`
+	//ä¸Šä¸‹å·¦å³ã®å®šç¾©
 	sx = 1,0,-1,0
 	sy = 0,-1,0,1
-	ƒRƒE‹Ö~“_ = -1,-1
 
-	//ƒAƒQƒnƒ}ˆê‹L˜^—p
+	//ã‚¢ã‚²ãƒãƒä¸€æ™‚è¨˜éŒ²ç”¨
 	dim r,2
 	return
 
@@ -37,12 +36,12 @@
 	sizey(new_id) = y
 	capture_black(new_id) = 0
 	capture_white(new_id) = 0
-	ƒRƒE‹Ö~“_(0, new_id) = -1, -1
+	ã‚³ã‚¦ç¦æ­¢ç‚¹(0, new_id) = -1, -1
 
 	return new_id
 
 #deffunc del_bitboard int node
-	//–¢g—pƒ`ƒFƒbƒN
+	//æœªä½¿ç”¨ãƒã‚§ãƒƒã‚¯
 	opened = 0
 	repeat open_board_list_num
 		if open_board_list(cnt) == node{
@@ -57,9 +56,9 @@
 	return
 	
 #defcfunc get_bitboard_status_xy int node, int x, int y
-    index = (y * sizex(node) + x) * 2  // ƒrƒbƒgˆÊ’u‚ğŒvZ
-    int_index = index / 32    // g—p‚·‚é®”‚ÌƒCƒ“ƒfƒbƒNƒX
-    bit_offset = index \ 32    // ®”“à‚ÌƒrƒbƒgƒIƒtƒZƒbƒg
+    index = (y * sizex(node) + x) * 2  // ãƒ“ãƒƒãƒˆä½ç½®ã‚’è¨ˆç®—
+    int_index = index / 32    // ä½¿ç”¨ã™ã‚‹æ•´æ•°ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
+    bit_offset = index \ 32    // æ•´æ•°å†…ã®ãƒ“ãƒƒãƒˆã‚ªãƒ•ã‚»ãƒƒãƒˆ
     return bitboard(int_index, node) >> bit_offset & 0b11
     
 #deffunc bitboard_to_array int node, array a
@@ -71,7 +70,7 @@
 	loop
 	return
 	
-// 2ŸŒ³”z—ñ‚ğƒrƒbƒgƒ{[ƒh‚É•ÏŠ·
+// 2æ¬¡å…ƒé…åˆ—ã‚’ãƒ“ãƒƒãƒˆãƒœãƒ¼ãƒ‰ã«å¤‰æ›
 #defcfunc array_to_bitboard array a, int node
 	if node == -1{
 		new_id = make_new_bitboard(length(a), length2(a))
@@ -93,10 +92,10 @@
 
 	bitboard_to_array node, board
 
-	if ( ƒRƒE‹Ö~“_(0, node) == x && ƒRƒE‹Ö~“_(1, node) == y){
+	if ( ã‚³ã‚¦ç¦æ­¢ç‚¹(0, node) == x && ã‚³ã‚¦ç¦æ­¢ç‚¹(1, node) == y){
 		return 0
 	}
-	move_capture = ‘Å‚Ä‚é‚©ƒ`ƒFƒbƒN(board, x, y, turn, cap) //‘Å‚Ä‚È‚¢‚Æ‚«-1 ‘Å‚Ä‚é‚È‚çæ‚ê‚é”‚Æcap‚É‚»‚Ìî•ñ
+	move_capture = æ‰“ã¦ã‚‹ã‹ãƒã‚§ãƒƒã‚¯(board, x, y, turn, cap) //æ‰“ã¦ãªã„ã¨ã-1 æ‰“ã¦ã‚‹ãªã‚‰å–ã‚Œã‚‹æ•°ã¨capã«ãã®æƒ…å ±
 	if  move_capture == -1{
 		return 0
 	}
@@ -110,10 +109,10 @@
 	if turn == 1: capture_black(node) += move_capture
 	if turn == 2: capture_white(node) += move_capture
 
-	ƒRƒE‹Ö~“_(0, node) = -1, -1
-	if move_capture == 1{ //1ŒÂ‚Æ‚Á‚½‚Æ‚«
-		if ‘Å‚Ä‚é‚©ƒ`ƒFƒbƒN(board, cap(0,0), cap(1,0), 3 - turn, r) == 1{ //‚»‚±‚É‘Å‚Á‚Ä1ŒÂ‚Æ‚ê‚é‚È‚ç‚»‚Ì’n“_‚ÍƒRƒE
-			ƒRƒE‹Ö~“_(0, node) = cap(0,0), cap(1,0)
+	ã‚³ã‚¦ç¦æ­¢ç‚¹(0, node) = -1, -1
+	if move_capture == 1{ //1å€‹ã¨ã£ãŸã¨ã
+		if æ‰“ã¦ã‚‹ã‹ãƒã‚§ãƒƒã‚¯(board, cap(0,0), cap(1,0), 3 - turn, r) == 1{ //ãã“ã«æ‰“ã£ã¦1å€‹ã¨ã‚Œã‚‹ãªã‚‰ãã®åœ°ç‚¹ã¯ã‚³ã‚¦
+			ã‚³ã‚¦ç¦æ­¢ç‚¹(0, node) = cap(0,0), cap(1,0)
 		}
 	}
 
@@ -121,7 +120,7 @@
 
 	return move_capture
 
-#defcfunc ‘Å‚Ä‚é‚©ƒ`ƒFƒbƒN array a, int x, int y,int t, array c
+#defcfunc æ‰“ã¦ã‚‹ã‹ãƒã‚§ãƒƒã‚¯ array a, int x, int y,int t, array c
 
 	if x < 0 || x >= length(a): return -1
 	if y < 0 || y >= length2(a): return -1
@@ -129,13 +128,13 @@
 	
 	num_n = 0
 
-	dim c,2 ;@ƒAƒQƒnƒ}‹L˜^—p‚Ì”z—ñ‰Šú‰»
-	dim kk, length(a),length2(a) //ŒŸõ—p‚Ìƒ{[ƒh‰Šú‰»
+	dim c,2 ;ã€€ã‚¢ã‚²ãƒãƒè¨˜éŒ²ç”¨ã®é…åˆ—åˆæœŸåŒ–
+	dim kk, length(a),length2(a) //æ¤œç´¢ç”¨ã®ãƒœãƒ¼ãƒ‰åˆæœŸåŒ–
 
-	//”Õ–Ê‚ğæ“¾‚µ‚Ä
+	//ç›¤é¢ã‚’å–å¾—ã—ã¦
 	memcpy kk, a, length(a) * length2(a) * 4
 
-	kk(x,y) = t //Î‚ğ’u‚¢‚ÄƒXƒ^[ƒg
+	kk(x,y) = t //çŸ³ã‚’ç½®ã„ã¦ã‚¹ã‚¿ãƒ¼ãƒˆ
 
 	repeat 4
 		nnx = x + sx(cnt)
@@ -143,43 +142,43 @@
 		if nnx < 0 || nnx >= length(a): continue
 		if nny < 0 || nny >= length2(a): continue
 		if kk(nnx,nny) == (3 - t){
-			repeat ‚ ‚é’n“_‚ªæ‚ç‚êó‘Ô‚©H(kk, nnx, nny , r)
+			repeat ã‚ã‚‹åœ°ç‚¹ãŒå–ã‚‰ã‚ŒçŠ¶æ…‹ã‹ï¼Ÿ(kk, nnx, nny , r)
 				c(0,num_n) = r(0,cnt), r(1,cnt)
-				kk(r(0,cnt),r(1,cnt)) = t //æ‚Á‚½êŠ‚ğ‘S‚Ä’…è‘¤‚É’u‚«Š·‚¦‚Äd•¡‚µ‚Ä”²‚­‚±‚Æ‚ğ”ğ‚¯‚éB
+				kk(r(0,cnt),r(1,cnt)) = t //å–ã£ãŸå ´æ‰€ã‚’å…¨ã¦ç€æ‰‹å´ã«ç½®ãæ›ãˆã¦é‡è¤‡ã—ã¦æŠœãã“ã¨ã‚’é¿ã‘ã‚‹ã€‚
 				num_n++
 			loop
 		}
 	loop
 	
 	if num_n == 0 {
-		//ˆê‚Â‚àæ‚ê‚¸‚É‚¤‚Æ‚¤‚Æ‚µ‚Ä‚¢‚é’n“_‚ªæ‚ç‚ê‚Ä‚¢‚é‚È‚çA‘Å‚Ä‚È‚¢
-		if ‚ ‚é’n“_‚ªæ‚ç‚êó‘Ô‚©H(kk,x,y, r): return -1
+		//ä¸€ã¤ã‚‚å–ã‚Œãšã«ã†ã¨ã†ã¨ã—ã¦ã„ã‚‹åœ°ç‚¹ãŒå–ã‚‰ã‚Œã¦ã„ã‚‹ãªã‚‰ã€æ‰“ã¦ãªã„
+		if ã‚ã‚‹åœ°ç‚¹ãŒå–ã‚‰ã‚ŒçŠ¶æ…‹ã‹ï¼Ÿ(kk,x,y, r): return -1
 	}
 	
 	return num_n
 	
-#defcfunc ‚ ‚é’n“_‚ªæ‚ç‚êó‘Ô‚©H array a, int x, int y, array agehama
+#defcfunc ã‚ã‚‹åœ°ç‚¹ãŒå–ã‚‰ã‚ŒçŠ¶æ…‹ã‹ï¼Ÿ array a, int x, int y, array agehama
 	
 	if a(x,y) == 0: return 0
 	
-	//‘ÎÛ’n“_‚ÌFæ“¾
+	//å¯¾è±¡åœ°ç‚¹ã®è‰²å–å¾—
 	turn = a(x,y)
 
-	//Œé”ÕƒRƒs[
+	//ç¢ç›¤ã‚³ãƒ”ãƒ¼
 	dim b,length(a),length2(a)
 	memcpy b,a,length(a)*length2(a)*4
 
 	
-	num = 0 //ƒAƒQƒnƒ}‚Ì”
+	num = 0 //ã‚¢ã‚²ãƒãƒã®æ•°
 
-	//ƒXƒ^ƒbƒN‰Šú‰»
+	//ã‚¹ã‚¿ãƒƒã‚¯åˆæœŸåŒ–
 	sn = 0
 	stackx(sn) = x
 	stacky(sn) = y
 	sn++
 
-	//ƒXƒ^ƒbƒN‚ÉÏ‚ñ‚¾ƒ^ƒCƒ~ƒ“ƒO‚Å‚»‚Ì’n“_‚ğ‘Šè‚ÌÎ‚É’u‚«Š·‚¦‚é‚Ì‚ªd—vB
-	//æ‚èo‚µ‚½ƒ^ƒCƒ~ƒ“ƒO‚Å’u‚«Š·‚¦‚é‚Ì‚Å‚ÍAƒXƒ^ƒbƒN‚ÉÏ‚Ü‚ê‚Ä‚¢‚é’n“_‚ğ‘¼‚Ìƒm[ƒh‚©‚ç‚àƒJƒEƒ“ƒg‚µ‚Ä‚µ‚Ü‚¤‚±‚Æ‚ª‚ ‚éB
+	//ã‚¹ã‚¿ãƒƒã‚¯ã«ç©ã‚“ã ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ãã®åœ°ç‚¹ã‚’ç›¸æ‰‹ã®çŸ³ã«ç½®ãæ›ãˆã‚‹ã®ãŒé‡è¦ã€‚
+	//å–ã‚Šå‡ºã—ãŸã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§ç½®ãæ›ãˆã‚‹ã®ã§ã¯ã€ã‚¹ã‚¿ãƒƒã‚¯ã«ç©ã¾ã‚Œã¦ã„ã‚‹åœ°ç‚¹ã‚’ä»–ã®ãƒãƒ¼ãƒ‰ã‹ã‚‰ã‚‚ã‚«ã‚¦ãƒ³ãƒˆã—ã¦ã—ã¾ã†ã“ã¨ãŒã‚ã‚‹ã€‚
 	b(x,y) = 3 - turn
 	
 	while sn
@@ -219,15 +218,15 @@ init_bitboard
 
 
 #module
-// ƒeƒXƒg—p‚ÌŒé”Õ‚ğ•\¦
+// ãƒ†ã‚¹ãƒˆç”¨ã®ç¢ç›¤ã‚’è¡¨ç¤º
 #deffunc print_board array a
     repeat length(a): x = cnt
         repeat length2(a): y = cnt
         	pos x * MAS_X, y * MAS_Y
             switch a(x, y)
-            case 0: mes "E":swbreak // ‹ó“_
-            case 1: mes "œ":swbreak // •Î
-            case 2: mes "›":swbreak // ”’Î
+            case 0: mes "ãƒ»":swbreak // ç©ºç‚¹
+            case 1: mes "â—":swbreak // é»’çŸ³
+            case 2: mes "â—‹":swbreak // ç™½çŸ³
             swend
         loop
     loop
