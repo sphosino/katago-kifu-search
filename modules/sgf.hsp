@@ -1,9 +1,10 @@
 #ifndef sgf_node
+#include "bitboard.hsp"
 #module sgf_node
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 1500000
+#define MAX_NODE 2000000
 
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //親ノード
@@ -14,6 +15,9 @@
 	sdim sgf_properties_data,, MAX_NODE //その他のプロパティ
 	dim sgf_properties_num,MAX_NODE //その他のプロパティの数
 
+	dim bitboard, MAX_NODE //ビットボード(番号を保存、実体は別モジュール管理） NEW !!!!
+	
+	
 	sdim sgf_node_childs,, MAX_NODE //子ノードリスト
 	dim child_num, MAX_NODE //子ノードの数
 
@@ -78,6 +82,9 @@
 	repeat get_sgf_childs(node_id, child)
 		del_sgf_node(lpeek(child, cnt * 4))
 	loop
+	if bitboard(node_id) != -1 {
+        del_bitboard(bitboard(node_id))
+    }
 	lpoke open_id_list, open_id_list_num * 4, node_id
 	open_id_list_num++
 	init_node node_id, -1
@@ -203,7 +210,6 @@
 			s+=")"
 		}
 	next
-
 	return
 
 #deffunc get_nodelist int node_id, array a
@@ -219,10 +225,10 @@
 
 //特定のノードまでのSGFを取得
 #defcfunc get_node_sgf_nowpoint int p1, local i
-	get_nodelist p1, a
+	get_nodelist p1, nodelist
 	result = "("
-	for i, length(a)-1,-1,-1
-		result += get_node_sgf_nowpoint_main(a(i))
+	for i, length(nodelist)-1,-1,-1
+		result += get_node_sgf_nowpoint_main(nodelist(i))
 	next
 	result += ")"
 	return result
@@ -283,6 +289,48 @@
 	set_property_move new, 手番, coordinate, coordinate.1
 		
 	return new
+
+//  NEW!!!
+#defcfunc get_bitboard int node_id
+    if bitboard(node_id) == -1 {
+        // 親ノードの存在チェック
+        parent_id = parent(node_id)
+        
+        // ルートノードの場合の初期化
+        if parent_id == -1 {
+            get_board_size_from_SGF node_id, size
+            if (size(0) == 0) | (size(1) == 0) {
+                // デフォルト19路盤
+                bitboard(node_id) = make_new_bitboard(19, 19)
+            } else {
+                bitboard(node_id) = make_new_bitboard(size(0), size(1))
+            }
+        } else {
+            // 親ノードからビットボードを継承
+            if bitboard(parent_id) == -1 {
+                // 親ノードも未初期化の場合は再帰的に初期化
+                get_bitboard parent_id, tmp
+            }
+            bitboard(node_id) = copy_bitboard(bitboard(parent_id))
+        }
+
+        // SGFノードの着手情報を取得
+        turn = sgf_node_turn(node_id)
+        x = sgf_node_x(node_id)
+        y = sgf_node_y(node_id)
+
+        // パス（座標が-1）でない場合のみ着手処理
+        if (x != -1) & (y != -1) {
+            if play_move(bitboard(node_id), x, y, turn) == 0 {
+                // 無効な着手の場合の処理
+                del_bitboard(bitboard(node_id))
+                bitboard(node_id) = -1
+                return -1
+            }
+        }
+    }
+    return bitboard(node_id)
+    
 #deffunc local init_node int node_id, int p1
 
 	parent(node_id) = p1
@@ -290,6 +338,7 @@
 	sgf_node_turn(node_id) = -1
 	sgf_node_x(node_id) = -1
 	sgf_node_y(node_id) = -1
+	bitboard(node_id) = -1  //---   NEW !!!
 	
 	sgf_properties_data(node_id) = SEP //SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
 	sgf_properties_num(node_id) = 0
@@ -298,6 +347,7 @@
 	child_num(node_id) = 0
 
 	return
+
 #global
 init_sgf_module
 
@@ -377,54 +427,4 @@ init_sgf_module
 	wend
 	return
 #global
-#endif
-
-
-#if 0
-//testcode by chatgpt
-
-dim coord, 2
-coord(0) = 3  // 'd' の座標
-coord(1) = 4  // 'e' の座標
-
-// ルートノード作成
-root = make_new_SGFnode(-1)
-
-test1 = make_SGFnode(root, coord, 1) // 黒の手
-set_property_data test1, "C", "First move"
-
-test2 = make_SGFnode(test1, coord, 2) // 白の手 (同じ座標)
-set_property_data test2, "C", "Second move"
-
-test3 = make_SGFnode(test2, coord, 1) // 黒の手
-set_property_data test3, "C", "Third move"
-
-// 子ノードの検索
-found = search_SGFchild(root, test1)
-if found != -1 {
-    mes "Child node found: " + found
-} else {
-    mes "Child node not found"
-}
-
-// プロパティの取得
-data1 = get_property_data(test1, "C")
-data2 = get_property_data(test2, "C")
-data3 = get_property_data(test3, "C")
-mes "Node 1 comment: " + data1
-mes "Node 2 comment: " + data2
-mes "Node 3 comment: " + data3
-
-// SGF 形式への変換
-sgf_data = get_node_sgf(root)
-mes "Generated SGF: " + sgf_data
-
-// SGF の読み込み
-top_node = load_sgf(sgf_data)
-if top_node != -1 {
-    mes "SGF loaded successfully."
-} else {
-    mes "Failed to load SGF."
-}
-
 #endif

@@ -118,7 +118,7 @@ if 0{
 }
 
 #include "modules/keyfps.hsp"
-#include "modules/sgf2.hsp"
+#include "modules/sgf.hsp"
 #include "GobanPatternManager.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
