@@ -24,10 +24,11 @@ netinit
 
 	netgetv@ buf
 
-	
+	sdim r
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
-	find_attribute_byname r.1, "href", f
+	repeat length(r) / 2
+	find_attribute_byname r(1+cnt*2), "href", f
 	
 	next_link = ""
 
@@ -40,10 +41,9 @@ netinit
 	
 	netgetv@ buf
 
-	*@
+	*next_page
 
 	find_tags_bytag buf, "tr", data // テーブルの要素
-
 
 
 	repeat limit(max,,length(data)-1)
@@ -73,11 +73,11 @@ netinit
 		logmes "取得完了 -> " + game_id + ".sgf"
 		
 		get_count++
-		await 300
+		await 1000
 
 	loop
-	await 300
-	if keyfpstime - starttime >= 20000: chdir now_dir: return
+	await 1000
+	if keyfpstime - starttime >= 20000: break
 	if get_count < max{
 		sdim divs
 		find_tags_bytag buf, "div",divs
@@ -89,15 +89,15 @@ netinit
 
 		if next_link = "?"{
 			if length(pp) == 2{
-				chdir now_dir:return
+				continue
 			}
 			find_attribute_byname pp.2,"href",next_link
 		}
 
 
+		logmes next_link
 		neturl@ url + f
 		netrequest_get@ next_link
-			next_link = ""
 
 
 		if stat : goto *bad
@@ -106,9 +106,9 @@ netinit
 		netgetv@ buf
 
 		
-		goto*@b
+		goto *next_page
 	}
-
+	loop
 	chdir now_dir
 	return
 
