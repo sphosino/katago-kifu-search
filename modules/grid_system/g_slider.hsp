@@ -1,69 +1,49 @@
 
 #include "area_grid_system.hsp"
 #addition "../keyfps.hsp"
-#module grid_slider v, min, max, horizontal, x, y, center_x, center_y,tickness,長さ,dragging, area, r, pre_value, oya, rect
+#module grid_slider v, min, max, horizontal, x, y, tickness,長さ, dragging, area, r
 
 #include "rectmock.hsp"
-#modinit var a, int _horizontal, int area_number, int _min, int _max, int 太さ, int つまみサイズ, local thismod_ID
+#modinit var a, int _horizontal, int area_number, int _min, int _max, int 太さ, int つまみサイズ, int _x, int _y, local thismod_ID
+
     dup v, a
 
+	//スライダーの方向
     horizontal = _horizontal
+    //エリア番号
     area = area_number
+
+    //値の変化範囲
     min = _min
     max = _max
+    //バーのサイズ情報
+    tickness = 太さ
+    r = つまみサイズ
+    
+	set_position_g_slider thismod, _x, _y
 
-
+	//エリア番号から親レクト取得
 	thisrect thismod, oya, area
-	if　horizontal{
-		init_size = oya.2 - oya
-		init_x = 0
-		init_y = oya.3 - oya.1 - 太さ >> 1
-		
-	}else{
-		init_size = oya.3 - oya.1
-		init_x = oya.2 - oya - 太さ >> 1
-		init_y = 0
-	}
 	
-	set_size_g_slider thismod, init_size, 太さ, つまみサイズ
-    set_position_g_slider thismod, init_x, init_y
-
-
+	if　horizontal{
+		長さ = oya.2 - oya
+	}else{
+		長さ = oya.3 - oya.1
+	}
     mref thismod_ID, 2
     return thismod_ID
 
 #modfunc set_position_g_slider int _x, int _y
 	x = _x
 	y = _y
-	calc_position_g_slider thismod
 	return
 
 #modfunc set_size_g_slider int _sizex, int _sizey, int _sizer
 	長さ = _sizex
 	tickness = _sizey
 	r = _sizer
-	calc_position_g_slider thismod
 	return
 
-#modfunc calc_position_g_slider
-	if max == min{ //ゼロ除算防止
-		center_x = x + 長さ / 2
-	}else{
-		center_x = limit(x + r + (長さ - 2 * r) * (v - min) / (max - min), limit(x+r,,x+長さ-r), limit(x+r,x+長さ-r))
-	}
-	center_y = y + tickness / 2
-	calc_v_position_g_slider thismod
-	return
-
-#modfunc calc_v_position_g_slider
-	可動範囲 = (長さ - r * 2)
-	if 可動範囲 > 0{
-		if dragging{
-			v = limit(min + (mx - (rect + r)) * (max - min) / 可動範囲, limit(max,,min), limit(max,min))
-		}
-	}
-	pre_value = v
-	return
 
 #modcfunc get_value_g_slider
 	return v
@@ -71,74 +51,60 @@
 #modfunc slider_manager
 
 	thisrect thismod, oya, area
-	if horizontal{
-		//水平
-		init_size = oya.2 - oya
-		init_x = 0
-		init_y = oya.3 - oya.1 - tickness >> 1
+
+	if horizontal = 1{
+		bar_rect = oya + x, oya.1 + y, limit(oya + x + 長さ    ,, oya.2),  limit(oya.1 + y + tickness,,oya.3)
 	}else{
-		//垂直
-		init_size = oya.3 - oya.1
-		init_x = oya.2 - oya - tickness >> 1
-		init_y = 0
+		bar_rect = oya + x, oya.1 + y, limit(oya + x + tickness,, oya.2),  limit(oya.1 + y + 長さ    ,,oya.3)
 	}
 	
-	mx = mousex - oya
-	my = mousey - oya.1
-
-
-	rect = x, y, x + 長さ,  y + tickness
-	cx = center_x
-	cy = center_y
-	
-	tumami = cx - r, cy - r, cx + r, cy + r
-	
-	if horizontal == 0{
-		swap mx,my
-	}
 	if _getkey(1) == 1{
-		if in_rect(rect): dragging = 1
-	}
-	
-	if horizontal == 0{
-		swap rect  ,rect.1
-		swap rect.2,rect.3
-		swap tumami  ,tumami.1
-		swap tumami.2,tumami.3
-	}
-	
-	set_size_g_slider thismod, init_size, tickness, r
-    set_position_g_slider thismod, init_x, init_y
-    
-	if dragging{
-		center_x = limit(mx, rect + r, rect + 長さ - r)
-		calc_v_position_g_slider thismod
-
-	}
-
-	if pre_value != v{
-		calc_position_g_slider thismod
+		if in_rect(bar_rect){
+			dragging = 1
+		}
 	}
 
 	if _getkey(1) == -1{
 		dragging = 0
 	}
 
-	color ,255:boxf oya,oya.1,oya.2,oya.3
+	//ドラッグで値を変更
+	if dragging{
+		if horizontal{
+			v = min + limit((max - min) * (mousex - bar_rect.0 - r ) / (bar_rect.2 - bar_rect.0 - r), 0, max-min)
+		}else{
+			v = min + limit((max - min) * (mousey - bar_rect.1 - r ) / (bar_rect.3 - bar_rect.1 - r), 0, max-min)
+		}
+	}
+
+
+	//値をもとにつまみ位置を計算
+	if max != min{
+		if horizontal{
+			tumami(0) = limit(bar_rect.0 + r/2 + (bar_rect.2 - bar_rect.0 - r) * (v - min) / (max - min), bar_rect.0, bar_rect.2)
+			tumami(1) = bar_rect.1 + bar_rect.3 >> 1
+		}else{
+			tumami(0) = bar_rect + bar_rect.2 >> 1
+			tumami(1) = limit(bar_rect.1 + r/2 + (bar_rect.3 - bar_rect.1 - r) * (v - min) / (max - min), bar_rect.1, bar_rect.3)
+		}
+	}
+
+	;color 0,255,0:boxf oya,oya.1,oya.2,oya.3 //単体デバッグ用
+
 	color
-	rboxf oya + rect, oya.1 + rect.1, oya + rect.2, oya.1 + rect.3
+	rboxf bar_rect,bar_rect.1,bar_rect.2,bar_rect.3
 	color 255
-	circle oya + tumami, oya.1 + tumami.1, oya + tumami.2, oya.1 + tumami.3
 	
-	pre_value = v
+	circle tumami - r/2, tumami.1 -r/2, tumami + r/2, tumami.1 + r/2
+	
 	return
 	
 #defcfunc local in_rect array a
-	return a(0) <= mx && a(1) <= my && a(2) >= mx && a(3) >= my
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
-#deffunc local swap var aa, var b
+#deffunc local swap var a, var b
 	tmp = aa
-	aa = b
+	a = b
 	b = tmp
 	return
 #global
@@ -148,14 +114,10 @@
 
 mock_flag@global = 1
 
-set_rect_mock 99, 150, 50, 100, 300 // モック矩形設定（垂直スライダー用）
-set_rect_mock 66, 200, 100, 400, 150 // モック矩形設定（水平スライダー用）
-vertical = 50     : newmod a, grid_slider, vertical  , 1, 99, 100, 200  , 10, 15
-horizontal = 0    : newmod a, grid_slider, horizontal, 1, 66, 100, 200, 10, 15
-
-
-
-
+set_rect_mock 99, 100, 100, 200, 300 // モック矩形設定（垂直スライダー用）
+set_rect_mock 66, 300, 100, 500, 150 // モック矩形設定（水平スライダー用）
+vertical = 0     : newmod a, grid_slider, vertical  , 0, 99, 0   , 300 , 10, 15, 0, 60:
+horizontal = 0   : newmod a, grid_slider, horizontal, 1, 66, -100, 300 , 10, 15, 0, 0 :
 
 //メインループ
 repeat
@@ -172,7 +134,7 @@ repeat
 	//連動チェック
 	
 	if _getkey(2) == 1{ //右クリック
-		horizontal = rnd( 100)//値を直接書き換えてつまみが移動するか？
+		vertical = rnd(300)//値を直接書き換えてつまみが移動するか？
 	}
 loop
 

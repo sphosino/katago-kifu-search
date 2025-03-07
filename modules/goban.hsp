@@ -1,6 +1,7 @@
 #ifndef goban
 #include "modules/coordinate_set.hsp"
 #include "modules/boxfa.hsp"
+#include "bitboard.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 
 #const global 空点 0
@@ -48,129 +49,16 @@
 	return 手数
 #modfunc 着手 int x, int y
 
-	if ( コウ禁止点 == x && コウ禁止点.1 == y): return 0
-	res = 打てるかチェック(board, x, y, 手番)
+	res = play_move_on_array(board, x, y, 手番, 黒が取った数,白が取った数, コウ禁止点,コウ禁止点.1)
+	if res >= 0: toggle_turn thismod
 
-	if res{
-
-		board(x,y) = 手番
-		最後の着手 = x,y
-		手数++
-		stepboard(x,y) = 手数
-		
-		repeat num_n
-			board(xx(cnt),yy(cnt)) = 空点
-		loop
-		if 手番 == 黒番: 黒が取った数 += num_n
-		if 手番 == 白番: 白が取った数 += num_n
-
-		手番 = 逆手番(手番)
-
-		コウ禁止点 = -1, -1
-		
-		if num_n = 1{ // コウによる禁止点発生チェック
-			tmpxx = xx
-			tmpyy = yy
-			if 打てるかチェック(board, xx, yy, 手番){
-				if num_n = 1{
-					コウ禁止点 = tmpxx, tmpyy
-				}
-			}
-		}
-	}
+	最後の着手 = x, y
 
 	return res
 	
 #modfunc goban_getcapture array a
 	a = 黒が取った数,白が取った数
 	return
-
-
-
-#defcfunc 打てるかチェック array a, int x, int y,int t
-
-	if x < 0 || x >= length(a): return 0
-	if y < 0 || y >= length2(a): return 0
-	if a(x,y) != 空点: return 0
-	
-	dim kk, length(a),length2(a)
-	memcpy kk, a, length(a) * length2(a) * 4
-	
-	kk(x,y) = t
-
-	num_n = 0
-
-	repeat 4
-		nnx = x + sx(cnt)
-		nny = y + sy(cnt)
-		if nnx < 0 || nnx >= length(a): continue
-		if nny < 0 || nny >= length2(a): continue
-		if kk(nnx,nny) == 逆手番(t){
-			if ある地点が取られ状態か？ (kk, nnx, nny ){
-				repeat stat
-					xx(num_n) = agehamax(cnt)
-					yy(num_n) = agehamay(cnt)
-					num_n++
-				loop
-			}
-		}
-	loop
-	
-	if num_n = 0 { //一つも取れずに
-	
-		dim kk, length(a),length2(a)
-		memcpy kk, a, length(a) * length2(a) * 4
-		
-		kk(x,y) = t
-
-		;うとうとしている地点が取られているなら、打てない
-		if ある地点が取られ状態か？(kk,x,y): return 0
-	}
-	
-	return 1
-#defcfunc ある地点が取られ状態か？ array a, int x, int y
-	if a(x,y) == 空点: return 0
-	num = 0
-	turn = a(x,y)
-	aturn = 逆手番(turn)
-	sn = 0
-	dim b,length(a),length2(a)
-	memcpy b,a,length(a)*length2(a)*4
-	スタックに積んで置き換える b, x, y, aturn
-	
-	while sn
-		sn--
-		nx = stackx(sn)
-		ny = stacky(sn)
-		for i,,4
-			nnx = nx + sx(i)
-			nny = ny + sy(i)
-			if nnx < 0 || nnx >= length(b): _continue
-			if nny < 0 || nny >= length2(b): _continue
-
-			switch b(nnx, nny)
-			case 空点: return 0
-			case turn
-			スタックに積んで置き換える b, nnx, nny, aturn
-			swbreak
-			swend
-		next
-	wend
-	return num
-#deffunc スタックに積んで置き換える array a, int x, int y, int t
-	agehamax(num) = x
-	agehamay(num) = y
-	num++
-	stackx(sn) = x
-	stacky(sn) = y
-	sn++
-	a(x,y) = t
-	return
-#defcfunc 逆手番 int p1
-	if p1 == 黒番: return 白番
-	if p1 == 白番: return 黒番
-	return 空点
-
 
 
 

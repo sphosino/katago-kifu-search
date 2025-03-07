@@ -118,7 +118,7 @@ if 0{
 }
 
 #include "modules/keyfps.hsp"
-#include "modules/sgf.hsp"
+#include "modules/sgf2.hsp"
 #include "GobanPatternManager.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
@@ -129,7 +129,7 @@ if 0{
 #include "modules/grid_system/g_button.hsp"
 #include "modules/grid_system/g_chkbox.hsp"
 #include "modules/grid_system/g_listbox.hsp"
-#include "modules/grid_system/g_slider2.hsp"
+#include "modules/grid_system/g_slider.hsp"
 #include "modules/grid_system/g_stepper.hsp"
 #include "hspext.as"
 

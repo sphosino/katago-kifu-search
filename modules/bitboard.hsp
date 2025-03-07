@@ -40,6 +40,28 @@
 
 	return new_id
 
+#defcfunc copy_bitboard int src_node
+    // 新しいビットボードを作成
+    new_id = make_new_bitboard(sizex(src_node), sizey(src_node))
+
+    // 元のビットボードデータをコピー
+    memcpy bitboard(0, new_id), bitboard(0, src_node), 23 * 4
+
+    // 付随情報をコピー
+    sizex(new_id) = sizex(src_node)
+    sizey(new_id) = sizey(src_node)
+    capture_black(new_id) = capture_black(src_node)
+    capture_white(new_id) = capture_white(src_node)
+    コウ禁止点(0, new_id) = コウ禁止点(0, src_node)
+    コウ禁止点(1, new_id) = コウ禁止点(1, src_node)
+
+    return new_id
+
+//実データ取得
+#deffunc copy_bitboard_data int src_node, array a
+	dup a, bitboard(0,src_node)
+	return
+
 #deffunc del_bitboard int node
 	//未使用チェック
 	opened = 0
@@ -90,34 +112,44 @@
 	
 #defcfunc play_move int node, int x, int y, int turn
 
-	bitboard_to_array node, board
+	bitboard_to_array node, array_board
 
-	if ( コウ禁止点(0, node) == x && コウ禁止点(1, node) == y){
-		return 0
+
+	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
+
+	tmp = array_to_bitboard(array_board, node)
+
+	return move_capture
+
+#defcfunc play_move_on_array array board, int x, int y, int t, var cap_b, var cap_w, var ko_x, var ko_y
+	if (ko_x == x && ko_y == y){
+		return -2
 	}
-	move_capture = 打てるかチェック(board, x, y, turn, cap) //打てないとき-1 打てるなら取れる数とcapにその情報
+	move_capture = 打てるかチェック(board, x, y, t, cap) //打てないとき-1 打てるなら取れる数とcapにその情報
 	if  move_capture == -1{
-		return 0
+		return -1
 	}
 
-	board(x,y) = turn
+	board(x,y) = t
 	
 	repeat move_capture
 		board(cap(0,cnt),cap(1,cnt)) = 0
 	loop
 
-	if turn == 1: capture_black(node) += move_capture
-	if turn == 2: capture_white(node) += move_capture
-
-	コウ禁止点(0, node) = -1, -1
-	if move_capture == 1{ //1個とったとき
-		if 打てるかチェック(board, cap(0,0), cap(1,0), 3 - turn, r) == 1{ //そこに打って1個とれるならその地点はコウ
-			コウ禁止点(0, node) = cap(0,0), cap(1,0)
-		}
+	if t == 1{
+		cap_b += move_capture
+	}else: if t == 2{
+		cap_w += move_capture
 	}
 
-	tmp = array_to_bitboard(board, node)
-
+	ko_x = -1
+	ko_y = -1
+	if move_capture == 1{ //1個とったとき
+		if 打てるかチェック(board, cap(0,0), cap(1,0), 3 - t, r) == 1{ //そこに打って1個とれるならその地点はコウ
+			ko_x = cap(0,0)
+			ko_y = cap(1,0)
+		}
+	}
 	return move_capture
 
 #defcfunc 打てるかチェック array a, int x, int y,int t, array c
@@ -208,15 +240,6 @@
 
 #global
 init_bitboard
-#endif
-
-//--------------------------------------
-#if 1
-
-#const global MAS_X  20
-#const global MAS_Y  20
-
-
 #module
 // テスト用の碁盤を表示
 #deffunc print_board array a
@@ -233,6 +256,15 @@ init_bitboard
     return
 
 #global
+#endif
+
+//--------------------------------------
+#if 0
+
+#const global MAS_X  20
+#const global MAS_Y  20
+
+
 
 
 node = make_new_bitboard(19, 19)
