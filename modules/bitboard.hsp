@@ -242,7 +242,7 @@
 init_bitboard
 #module
 // テスト用の碁盤を表示
-#deffunc print_board array a
+#deffunc print_board array a, int MAS_X, int MAS_Y
     repeat length(a): x = cnt
         repeat length2(a): y = cnt
         	pos x * MAS_X, y * MAS_Y
@@ -264,9 +264,6 @@ init_bitboard
 #const global MAS_X  20
 #const global MAS_Y  20
 
-
-
-
 node = make_new_bitboard(19, 19)
 *main
 	mx = mousex / MAS_X
@@ -276,7 +273,7 @@ node = make_new_bitboard(19, 19)
 	if key&512: title""+ play_move(node,mx,my,2)
 	color 255,255,255:boxf:color
 	bitboard_to_array node, board
-	print_board board
+	print_board board, MAS_X, MAS_Y
 	redraw:redraw 2
 	await 16
 	goto*main

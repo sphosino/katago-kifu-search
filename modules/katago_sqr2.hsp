@@ -28,86 +28,73 @@ netinit
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
 	repeat length(r) / 2
-	find_attribute_byname r(1+cnt*2), "href", f
-	
-	next_link = ""
-
-	neturl@ url + f
-
-	netrequest_get@ ""
-	
-	if stat : goto *bad
-	gosub *通信待ち
-	
-	netgetv@ buf
-
-	*next_page
-
-	find_tags_bytag buf, "tr", data // テーブルの要素
-
-
-	repeat limit(max,,length(data)-1)
-	
-		find_tags_bytag data(cnt + 1), "td", target_infos
-
-		game_id = int(get_content_tag(target_infos(0)))
-
-			logmes ""+ game_id + "::" +next_link
-			
-
-		if check_exist_sgf(files, game_id): await 17: continue
-
-		find_tags_bytag data(cnt + 1), "a", result
-		find_attribute_byname result, "href", t
-
-		netdlname@ dirname + "/" + game_id + ".sgf"
-
-		neturl@ url + t
-
-		logmes "取得開始 -> " + game_id + ".sgf"
+		find_attribute_byname r(1+cnt*2), "href", f
 		
-		netrequest@ ""
-		if stat : goto *bad
-		gosub *通信待ち
-
-		logmes "取得完了 -> " + game_id + ".sgf"
-		
-		get_count++
-		await 1000
-
-	loop
-	await 1000
-	if keyfpstime - starttime >= 20000: break
-	if get_count < max{
-		sdim divs
-		find_tags_bytag buf, "div",divs
-		sdim pp
-		find_tags_bytag divs.4,"a",pp
+		next_link = ""
 
 
-		find_attribute_byname pp,"href", next_link
-
-		if next_link = "?"{
-			if length(pp) == 2{
-				continue
-			}
-			find_attribute_byname pp.2,"href",next_link
-		}
-
-
+		*next_page
 		logmes next_link
 		neturl@ url + f
 		netrequest_get@ next_link
-
-
 		if stat : goto *bad
 		gosub *通信待ち
-		
 		netgetv@ buf
 
+	
+		find_tags_bytag buf, "tr", data // テーブルの要素
+	
+	
+		repeat limit(max,,length(data)-1)
 		
-		goto *next_page
-	}
+			find_tags_bytag data(cnt + 1), "td", target_infos
+	
+			game_id = int(get_content_tag(target_infos(0)))
+	
+				logmes ""+ game_id + "::" +next_link
+				
+	
+			if check_exist_sgf(files, game_id): await 17: continue
+	
+			find_tags_bytag data(cnt + 1), "a", result
+			find_attribute_byname result, "href", t
+	
+			netdlname@ dirname + "/" + game_id + ".sgf"
+	
+			neturl@ url + t
+	
+			logmes "取得開始 -> " + game_id + ".sgf"
+			
+			netrequest@ ""
+			if stat : goto *bad
+			gosub *通信待ち
+	
+			logmes "取得完了 -> " + game_id + ".sgf"
+			
+			get_count++
+			await 1000
+	
+		loop
+		await 1000
+		if keyfpstime - starttime >= 20000: break
+		if get_count < max{
+			sdim divs
+			find_tags_bytag buf, "div",divs
+			sdim pp
+			find_tags_bytag divs.4,"a",pp
+	
+	
+			find_attribute_byname pp,"href", next_link
+	
+			if next_link == "?"{
+				if length(pp) == 2{
+					continue
+				}
+				find_attribute_byname pp.2,"href",next_link
+			}
+			
+			goto *next_page
+		}
 	loop
 	chdir now_dir
 	return
@@ -122,9 +109,9 @@ netinit
 
 *bad
 	; エラー処理
-	logmes "ERROR -> " +res
+	dialog "ERROR -> " +res,,__FILE__
 
-	stop
+	end
 
 #defcfunc check_exist_sgf str s1, int p1
 
