@@ -6,7 +6,9 @@ netinit
 #module
 
 #deffunc Šû•ˆæ“¾ str dirname, int max
+
 	starttime = keyfpstime
+	get_count = 0
 	dim result
 	now_dir = dir_cur
 	
@@ -24,7 +26,6 @@ netinit
 
 	netgetv@ buf
 
-	sdim r
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
 	repeat length(r) / 2
@@ -78,9 +79,7 @@ netinit
 		await 1000
 		if keyfpstime - starttime >= 20000: break
 		if get_count < max{
-			sdim divs
 			find_tags_bytag buf, "div",divs
-			sdim pp
 			find_tags_bytag divs.4,"a",pp
 	
 	
