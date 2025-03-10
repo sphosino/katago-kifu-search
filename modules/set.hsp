@@ -19,7 +19,7 @@
 
 	sdim data,, MAX_KEYS
 	dim hashcount, MAX_KEYS
-	dim hashtable, MAX_KEYS, 3 //Õ“Ë‚Í‚RŒÂ‚Ü‚Å‚É—}‚¦‚é‚æ‚¤‘¼‚ğ’²®
+	dim hashtable, MAX_KEYS, 4 //Õ“Ë‚Í‚R‰ñ‚Ü‚Å‚É—}‚¦‚é‚æ‚¤‚ÉA‘¼‚Å’²®
 	dim data_deleted_list, MAX_KEYS
 	dim data_deleted_list_num
 	dim valid_buckets, MAX_KEYS
@@ -34,7 +34,6 @@
 
 	for i,, hashcount(hash)
 		if data(hashtable(hash, i)) == s1{
-			data(hashtable(hash ,i)) = s1
 			return 1
 		}
 	next
