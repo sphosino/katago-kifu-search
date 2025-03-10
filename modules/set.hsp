@@ -1,0 +1,313 @@
+#ifndef set
+#module set data,hashcount,hashtable,data_deleted_list,data_deleted_list_num,データ数, valid_buckets,vn
+
+#const MAX_KEYS 666667
+#const FNV_PRIME 73091
+#const SEED 72889
+    
+#defcfunc local get_hash str s1
+
+    s = SEED
+    t = s1
+    repeat strlen(t)
+        s ^= peek(t, cnt) 
+        s *= FNV_PRIME 
+    loop
+    return (s & 0x7FFFFFFF) \ MAX_KEYS
+    
+#modinit 
+
+	sdim data,, MAX_KEYS
+	dim hashcount, MAX_KEYS
+	dim hashtable, MAX_KEYS, 3 //衝突は３個までに抑えるよう他を調整
+	dim data_deleted_list, MAX_KEYS
+	dim data_deleted_list_num
+	dim valid_buckets, MAX_KEYS
+	dim vn
+
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modfunc set_push str s1
+
+	hash = get_hash(s1)
+
+	for i,, hashcount(hash)
+		if data(hashtable(hash, i)) == s1{
+			data(hashtable(hash ,i)) = s1
+			return 1
+		}
+	next
+
+	if data_deleted_list_num{
+		data_deleted_list_num--
+		newid = data_deleted_list(data_deleted_list_num)
+	}else{
+		newid = データ数
+	}
+
+	if hashcount(hash) == 0{
+		valid_buckets(vn) = hash
+		vn++
+	}
+		
+	
+	data(newid) = s1
+	hashtable(hash, hashcount(hash)) = newid
+	hashcount(hash)++
+	
+	データ数++
+
+	return 1
+
+#modcfunc is_in_set str s1
+
+	hash = get_hash(s1)
+	
+	for i,,hashcount(hash)
+		if data(hashtable(hash, i)) == s1{
+			return 1
+		}
+	next
+
+	return 0
+
+#modfunc set_del str s1
+
+	hash = get_hash(s1)
+	
+	for i,, hashcount(hash)
+	
+		dup id, hashtable(hash, i)
+		
+		if data(id) == s1{
+			
+			data_deleted_list(data_deleted_list_num) = id
+			data_deleted_list_num++
+
+			hashcount(hash)--
+			id = hashtable(hash, hashcount(hash))
+
+			if hashcount(hash) == 0{
+				repeat vn
+					if valid_buckets(cnt) == hash{
+						vn--
+						valid_buckets(cnt) = valid_buckets(vn)
+						break
+					}
+				loop
+			}
+
+			データ数--
+			
+			return
+		}
+	next
+
+
+#modcfunc set_get_all array result
+
+	sdim result
+	rn = 0
+	repeat vn
+		m = cnt
+		repeat hashcount(valid_buckets(m))
+			result(rn) = data(hashtable(valid_buckets(m), cnt))
+			rn++
+		loop
+	loop
+
+	return rn
+
+#modcfunc get_cardinality
+	count = 0
+	repeat vn
+		count += hashcount(valid_buckets(cnt))
+	loop
+	return count
+#global
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+#module set_manager
+
+//新たな空のセットを作成
+#defcfunc make_new_set
+	newmod data, set
+	return stat ;セットのIDを返す。
+
+//セットに要素追加
+#deffunc push_data int setID, str key
+
+	set_push data(setID), key
+
+	return
+
+//セットの要素削除
+#deffunc del_data int setID, str key
+
+	set_del data(setID), key
+	return
+
+
+//セットの全データ取得
+#defcfunc get_all int setID, array a
+	return set_get_all(data(setID), a)
+
+// セット同士の足し算
+#defcfunc set_plus_set int setID, int setID2
+
+    // 新しいセットを作成
+    newSetID = make_new_set()
+
+    // 1つ目のセットのデータを取得して追加
+    
+    repeat get_all(setID, tmp)
+        push_data newSetID, tmp(cnt)
+    loop
+
+    // 2つ目のセットのデータを取得して追加
+    
+    repeat get_all(setID2, tmp)
+        push_data newSetID, tmp(cnt)
+    loop
+
+    return newSetID ; 新しいセットIDを返す
+    
+#defcfunc set_minus_set int setID, int setID2
+
+    // 新しいセットを作成
+    newSetID = make_new_set()
+
+    // 1つ目のセットのデータを取得
+    // `setB` に存在しない要素だけを新セットに追加
+    repeat get_all(setID, tmp)
+        if is_in_set(data(setID2), tmp(cnt)) == 0{
+	        push_data newSetID, tmp(cnt)
+        }
+    loop
+
+    return newSetID ; 新しいセットIDを返す
+
+#defcfunc set_and_set int setID, int setID2
+
+    // 新しいセットを作成
+    newSetID = make_new_set()
+
+    // `setA` のデータを取得
+    // `setB` にも存在するデータのみ追加
+    repeat get_all(setID, tmp)
+        if is_in_set(data(setID2), tmp(cnt)){
+            push_data newSetID, tmp(cnt)
+       	}
+    loop
+
+    return newSetID ; 新しいセットIDを返す
+
+#defcfunc set_sym_diff int setID, int setID2
+    newSetID = make_new_set()
+
+    // `setA - setB`
+
+    repeat get_all(setID, tmpA)
+        if is_in_set(data(setID2), tmpA(cnt)) == 0{
+            push_data newSetID, tmpA(cnt)
+        }
+    loop
+
+    // `setB - setA`
+    
+    repeat get_all(setID2, tmpB)
+        if is_in_set(data(setID), tmpB(cnt)) == 0{
+            push_data newSetID, tmpB(cnt)
+        }
+    loop
+
+    return newSetID
+
+#defcfunc is_subset int setID, int setID2
+
+    n = get_all(setID, tmp)
+    for i,, n
+        if is_in_set(data(setID2), tmp(i)) == 0{
+	        return 0
+        }
+    next
+	return 1
+
+#defcfunc is_proper_subset int setID, int setID2
+	if get_cardinality(data(setID)) >= get_cardinality(data(setID2)): return 0
+	return is_subset(setID, setID2)
+	
+#global
+#endif
+
+
+#if 0
+a = make_new_set()
+b = make_new_set()
+c = make_new_set()
+
+push_data a,"A"
+push_data a,"B"
+
+push_data b,"B"
+push_data b,"C"
+
+
+push_data c, "C"
+
+//足し算
+result = set_plus_set(a, b)
+repeat get_all(result, f)
+	mes f.cnt
+loop
+mes
+
+//引き算
+result = set_minus_set(a, b)
+repeat get_all(result, f)
+	mes f.cnt
+loop
+mes
+
+//AND
+result = set_and_set(a, b)
+repeat get_all(result, f)
+	mes f.cnt
+loop
+mes
+
+//差
+result = set_sym_diff(a,c)
+repeat get_all(result, f)
+	mes f.cnt
+loop
+mes 
+
+mes is_subset(b,a)
+mes is_subset(c,b)
+mes is_subset(c,a)
+
+#endif
+
+/* 出力
+
+A
+B
+C
+
+A
+
+B
+
+A
+B
+C
+
+0
+1
+0
+
+*/

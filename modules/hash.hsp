@@ -18,7 +18,7 @@
     repeat strlen(t)
         s ^= peek(t, cnt) 
         s *= FNV_PRIME 
-    loop    
+    loop
     return (s & 0x7FFFFFFF) \ MAX_KEYS
     
 #deffunc init_hash_manager

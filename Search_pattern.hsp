@@ -102,7 +102,6 @@
 
 	title titlestr + strf("ŒŸõŠ®—¹ %dŒ (%dms)", rn, keyfpstime - starttime)
 	dup res, result
-	logmes "AAAAAAAAA A " + count@
 	return rn
 
 
