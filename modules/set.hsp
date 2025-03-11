@@ -19,11 +19,11 @@
 
 	sdim data,, MAX_KEYS
 	dim hashcount, MAX_KEYS
-	dim hashtable, MAX_KEYS, 4 //Õ“Ë‚Í‚R‰ñ‚Ü‚Å‚É—}‚¦‚é‚æ‚¤‚ÉA‘¼‚Å’²®
+	dim hashtable, MAX_KEYS, 4 //Õ“Ë‚Í‘½‚­‚Ä‚à‚R‰ñ‚Ü‚Å‚É—}‚¦‚½‚¢(ˆê‰©“®Šg’£‚³‚ê‚é‚¯‚Çj
 	dim data_deleted_list, MAX_KEYS
 	dim data_deleted_list_num
 	dim valid_buckets, MAX_KEYS
-	dim vn
+	dim valid_bucketes_num
 
 	mref thismod_ID, 2
 	return thismod_ID
@@ -46,8 +46,8 @@
 	}
 
 	if hashcount(hash) == 0{
-		valid_buckets(vn) = hash
-		vn++
+		valid_buckets(valid_bucketes_num) = hash
+		valid_bucketes_num++
 	}
 		
 	
@@ -88,10 +88,10 @@
 			id = hashtable(hash, hashcount(hash))
 
 			if hashcount(hash) == 0{
-				repeat vn
+				repeat valid_bucketes_num
 					if valid_buckets(cnt) == hash{
-						vn--
-						valid_buckets(cnt) = valid_buckets(vn)
+						valid_bucketes_num--
+						valid_buckets(cnt) = valid_buckets(valid_bucketes_num)
 						break
 					}
 				loop
@@ -108,7 +108,7 @@
 
 	sdim result
 	rn = 0
-	repeat vn
+	repeat valid_bucketes_num
 		m = cnt
 		repeat hashcount(valid_buckets(m))
 			result(rn) = data(hashtable(valid_buckets(m), cnt))
@@ -120,7 +120,7 @@
 
 #modcfunc get_cardinality
 	count = 0
-	repeat vn
+	repeat valid_bucketes_num
 		count += hashcount(valid_buckets(cnt))
 	loop
 	return count
@@ -245,8 +245,6 @@
 
 
 #defcfunc notepad_minus_notepad var s, str s2
-	
-	
 	newSetID = notepad_to_set(s2)
 	notesel s
 		result = ""
@@ -256,10 +254,10 @@
 		        result += tmp + "\n"
 	        }
 	    loop
-	    
 	noteunsel
 	del_set newSetID
     return strmid(result, 0, strlen(result) - 2)
+    
 //---------------------------
 
 #defcfunc array_to_set array a
@@ -288,7 +286,6 @@
 	return strmid(s,0,strlen(s)-2)
 	
 #global
-
 
 
 #module
