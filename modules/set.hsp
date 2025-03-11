@@ -149,9 +149,13 @@
 	set_del data(setID), key
 	return
 
+#deffunc del_set int setID
+	delmod data(setID)
+	return
+
 
 //セットの全データ取得
-#defcfunc get_all int setID, array a
+#defcfunc set_to_array int setID, array a
 	return set_get_all(data(setID), a)
 
 // セット同士の足し算
@@ -162,13 +166,13 @@
 
     // 1つ目のセットのデータを取得して追加
     
-    repeat get_all(setID, tmp)
+    repeat set_to_array(setID, tmp)
         push_data newSetID, tmp(cnt)
     loop
 
     // 2つ目のセットのデータを取得して追加
     
-    repeat get_all(setID2, tmp)
+    repeat set_to_array(setID2, tmp)
         push_data newSetID, tmp(cnt)
     loop
 
@@ -181,7 +185,7 @@
 
     // 1つ目のセットのデータを取得
     // `setB` に存在しない要素だけを新セットに追加
-    repeat get_all(setID, tmp)
+    repeat set_to_array(setID, tmp)
         if is_in_set(data(setID2), tmp(cnt)) == 0{
 	        push_data newSetID, tmp(cnt)
         }
@@ -196,7 +200,7 @@
 
     // `setA` のデータを取得
     // `setB` にも存在するデータのみ追加
-    repeat get_all(setID, tmp)
+    repeat set_to_array(setID, tmp)
         if is_in_set(data(setID2), tmp(cnt)){
             push_data newSetID, tmp(cnt)
        	}
@@ -209,7 +213,7 @@
 
     // `setA - setB`
 
-    repeat get_all(setID, tmpA)
+    repeat set_to_array(setID, tmpA)
         if is_in_set(data(setID2), tmpA(cnt)) == 0{
             push_data newSetID, tmpA(cnt)
         }
@@ -217,7 +221,7 @@
 
     // `setB - setA`
     
-    repeat get_all(setID2, tmpB)
+    repeat set_to_array(setID2, tmpB)
         if is_in_set(data(setID), tmpB(cnt)) == 0{
             push_data newSetID, tmpB(cnt)
         }
@@ -227,7 +231,7 @@
 
 #defcfunc is_subset int setID, int setID2
 
-    n = get_all(setID, tmp)
+    n = set_to_array(setID, tmp)
     for i,, n
         if is_in_set(data(setID2), tmp(i)) == 0{
 	        return 0
@@ -238,7 +242,75 @@
 #defcfunc is_proper_subset int setID, int setID2
 	if get_cardinality(data(setID)) >= get_cardinality(data(setID2)): return 0
 	return is_subset(setID, setID2)
+
+
+#defcfunc notepad_minus_notepad var s, str s2
 	
+	
+	newSetID = notepad_to_set(s2)
+	notesel s
+		result = ""
+	    repeat notemax
+	    	noteget tmp, cnt
+	        if is_in_set(data(newSetID), tmp) == 0{
+		        result += tmp + "\n"
+	        }
+	    loop
+	    
+	noteunsel
+	del_set newSetID
+    return strmid(result, 0, strlen(result) - 2)
+//---------------------------
+
+#defcfunc array_to_set array a
+	newSetId = make_new_set()
+	repeat length(a)
+		push_data newSetId, a(cnt)
+	loop
+	return newSetId
+
+#defcfunc notepad_to_set str s1
+	newSetId = make_new_set()
+	s = s1
+	notesel s
+		repeat notemax
+			noteget tmp,cnt
+			push_data newSetId, tmp
+		loop
+	noteunsel
+	return newSetId
+
+#defcfunc set_to_notepad int setID
+	s = ""
+	repeat set_to_array(setID,tmp)
+		s += tmp(cnt) + "\n" 
+	loop
+	return strmid(s,0,strlen(s)-2)
+	
+#global
+
+
+
+#module
+#defcfunc array_to_notepad array a
+
+	s = ""
+	repeat length(a)
+		s += a.cnt
+		if cnt != 0: s += "\n"
+	loop
+	
+	return s
+#defcfunc notepad_to_array str s1, array a
+	s = s1
+	notesel s
+		sdim a
+		repeat notemax
+			noteget tmp, cnt
+			a(cnt) = tmp
+		loop
+	noteunsel
+	return length(a)
 #global
 #endif
 
@@ -259,28 +331,28 @@ push_data c, "C"
 
 //足し算
 result = set_plus_set(a, b)
-repeat get_all(result, f)
+repeat set_to_array(result, f)
 	mes f.cnt
 loop
 mes
 
 //引き算
 result = set_minus_set(a, b)
-repeat get_all(result, f)
+repeat set_to_array(result, f)
 	mes f.cnt
 loop
 mes
 
 //AND
 result = set_and_set(a, b)
-repeat get_all(result, f)
+repeat set_to_array(result, f)
 	mes f.cnt
 loop
 mes
 
 //差
 result = set_sym_diff(a,c)
-repeat get_all(result, f)
+repeat set_to_array(result, f)
 	mes f.cnt
 loop
 mes 

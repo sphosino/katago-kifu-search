@@ -122,7 +122,7 @@ if 0{
 #include "GobanPatternManager.hsp"
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr2.hsp"
-
+#include "modules/set.hsp"
 #include "Search_pattern.hsp"
 #include "shuffle_notepad.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
@@ -176,9 +176,15 @@ root = make_area_child(1,2)
 	
 		sidebar_area = make_area_child(1,2,body_area)
 		goban_area = make_area_child(1,2)
-		
-			goban_body_area = make_area_child(,,goban_area)
-			goban_footer = make_area_child(8): set_margin goban_footer,2,5
+			goban_body_flame = make_area_child(2,,goban_area)
+				goban_body_area = make_area_child(,,goban_body_flame)
+				goban_tool_area = make_area_child(1,6)
+					button_search = make_area_child(,,goban_tool_area)
+					button_exclude_search = make_area_child()
+					chkbox_tyakusyu = make_area_child()
+					chkbox_colorflip = make_area_child()
+				
+			goban_footer = make_area_child(7,,goban_area): set_margin goban_footer,2,5
 			
 				back_top = make_area_child(,,goban_footer)
 				back_one = make_area_child()
@@ -187,7 +193,6 @@ root = make_area_child(1,2)
 				go_one = make_area_child()
 				go_end = make_area_child()
 				button_clearboard = make_area_child()
-				chkbox_tyakusyu = make_area_child()
 				
 			sidebar_buttons = make_area_child(2,3,sidebar_area)
 			sidebar_kifu_area = make_area_child(1,2)
@@ -211,8 +216,8 @@ root = make_area_child(1,2)
 				button_loadfile = make_area_child(,,sidebar_buttons)
 				button_getsgf = make_area_child()
 				button_getsgf_nowpoint = make_area_child()
-				button_search = make_area_child()
-				chkbox_colorflip = make_area_child()
+				
+				
 				chkbox_view_hosi = make_area_child()
 
 				
@@ -227,6 +232,7 @@ newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
+newmod g_buttons, grid_button, "除外検索"      , *create_pattern2, button_exclude_search
 newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
 newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
 newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
@@ -657,6 +663,15 @@ setfps 60
 	return
 
 *create_pattern
+
+	kl = kifulist_notepad
+	gosub*create_pattern_main
+	return
+*create_pattern2
+	kl = notepad_minus_notepad(kifulist_notepad, get_name_all_items(kifulist.matchlist))
+	gosub*create_pattern_main
+	return
+*create_pattern_main
 	logmes "検索開始"
 	time = keyfpstime
 	initialize_rects v, r, stones
@@ -677,7 +692,7 @@ setfps 60
 	logmes patterns_to_notepad(p)
 
 
-	result_num = search(get_name_all_items(kifulist), p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+	result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
 	kifu_update = 0
 
 	search_result_sgflist = ""
@@ -776,7 +791,7 @@ setfps 60
 	add_item kifulist, filelist
 	next_kifuload_index = 0
 	kifu_update = 1
-	
+	kifulist_notepad = get_name_all_items(kifulist)
 	return
 	
 #deffunc treeview移動 int ddd

@@ -29,6 +29,9 @@
 	dim data_deleted_list
 	dim data_deleted_list_num
 
+	#ifdef _debug
+		e = 0
+	#endif
 	return
 
 #deffunc new_value str s1, str s2
