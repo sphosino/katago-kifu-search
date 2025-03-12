@@ -12,6 +12,7 @@ packfile
 *.bmp
 *.var
 *.link
+*.lnk
 *.log
 window.txt
 test/

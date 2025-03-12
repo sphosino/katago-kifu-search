@@ -1,5 +1,5 @@
 #ifndef set
-#module set data,hashcount,hashtable,data_deleted_list,data_deleted_list_num,データ数, valid_buckets,vn
+#module set data, hashcount, hashtable, data_deleted_list, data_deleted_list_num, データ数, valid_buckets, valid_buckets_num
 
 #const MAX_KEYS 666667
 #const FNV_PRIME 73091
@@ -23,7 +23,7 @@
 	dim data_deleted_list, MAX_KEYS
 	dim data_deleted_list_num
 	dim valid_buckets, MAX_KEYS
-	dim valid_bucketes_num
+	dim valid_buckets_num
 
 	mref thismod_ID, 2
 	return thismod_ID
@@ -46,8 +46,8 @@
 	}
 
 	if hashcount(hash) == 0{
-		valid_buckets(valid_bucketes_num) = hash
-		valid_bucketes_num++
+		valid_buckets(valid_buckets_num) = hash
+		valid_buckets_num++
 	}
 		
 	
@@ -88,10 +88,10 @@
 			id = hashtable(hash, hashcount(hash))
 
 			if hashcount(hash) == 0{
-				repeat valid_bucketes_num
+				repeat valid_buckets_num
 					if valid_buckets(cnt) == hash{
-						valid_bucketes_num--
-						valid_buckets(cnt) = valid_buckets(valid_bucketes_num)
+						valid_buckets_num--
+						valid_buckets(cnt) = valid_buckets(valid_buckets_num)
 						break
 					}
 				loop
@@ -108,7 +108,7 @@
 
 	sdim result
 	rn = 0
-	repeat valid_bucketes_num
+	repeat valid_buckets_num
 		m = cnt
 		repeat hashcount(valid_buckets(m))
 			result(rn) = data(hashtable(valid_buckets(m), cnt))
@@ -148,6 +148,9 @@
 
 	set_del data(setID), key
 	return
+
+#defcfunc is_inset int setID, str s1
+	return is_in_set(data(setID),s1)
 
 #deffunc del_set int setID
 	delmod data(setID)
@@ -323,7 +326,6 @@ push_data a,"B"
 push_data b,"B"
 push_data b,"C"
 
-
 push_data c, "C"
 
 //足し算
@@ -332,7 +334,6 @@ repeat set_to_array(result, f)
 	mes f.cnt
 loop
 mes
-
 //引き算
 result = set_minus_set(a, b)
 repeat set_to_array(result, f)

@@ -767,8 +767,6 @@ setfps 60
 
 	マンハッタン距離 = abs(x - pre_xy)   +   abs(y - pre_xy.1)
 
-	logmes "マンハッタン距離 = "+マンハッタン距離
-
 	pre_xy = x, y
 
 	if get_tree_item_id(nownode) == topnode{

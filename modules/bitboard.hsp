@@ -61,6 +61,13 @@
 #deffunc copy_bitboard_data int src_node, array a
 	dup a, bitboard(0,src_node)
 	return
+//実データ複製
+#deffunc copy_bitboard_data_deep int src_node, array a
+	dim a, 23
+	repeat 23
+		a.cnt = bitboard(cnt,src_node)
+	loop
+	return
 
 #deffunc del_bitboard int node
 	//未使用チェック
@@ -109,7 +116,18 @@
         loop
     loop
     return new_id
-	
+
+//盤上のある点を変化させる
+#defcfunc play_stone int node, int x, int y, int turn
+
+	index = (y * sizex(node) + x) * 2
+    int_index = index / 32
+    bit_offset = index \ 32
+    bitboard(int_index, new_id) |= (turn & 0b11) << bit_offset
+
+	return 1
+
+//盤上のある点に着手する（囲碁のルール適用）
 #defcfunc play_move int node, int x, int y, int turn
 
 	bitboard_to_array node, array_board
@@ -250,6 +268,7 @@ init_bitboard
             case 0: mes "・":swbreak // 空点
             case 1: mes "●":swbreak // 黒石
             case 2: mes "○":swbreak // 白石
+            case 3: mes "M":swbreak
             swend
         loop
     loop
@@ -265,6 +284,10 @@ init_bitboard
 #const global MAS_Y  20
 
 node = make_new_bitboard(19, 19)
+mask = make_new_bitboard(19, 19)
+tmp = play_stone(mask,15,5, 3)
+
+
 *main
 	mx = mousex / MAS_X
 	my = mousey / MAS_Y
@@ -273,7 +296,9 @@ node = make_new_bitboard(19, 19)
 	if key&512: title""+ play_move(node,mx,my,2)
 	color 255,255,255:boxf:color
 	bitboard_to_array node, board
+	bitboard_to_array mask, maskboard
 	print_board board, MAS_X, MAS_Y
+	print_board maskboard, MAS_X, MAS_Y
 	redraw:redraw 2
 	await 16
 	goto*main
