@@ -123,7 +123,7 @@
 	index = (y * sizex(node) + x) * 2
     int_index = index / 32
     bit_offset = index \ 32
-    bitboard(int_index, new_id) |= (turn & 0b11) << bit_offset
+    bitboard(int_index, node) = (bitboard(int_index,node) & (0b11 << bit_offset ^ 0xFFFFFFFF)) | (turn & 0b11) << bit_offset
 
 	return 1
 
@@ -273,27 +273,39 @@ init_bitboard
         loop
     loop
     return
-
 #global
 #endif
 
 //--------------------------------------
-#if 0
+#if 1
 
 #const global MAS_X  20
 #const global MAS_Y  20
 
 node = make_new_bitboard(19, 19)
 mask = make_new_bitboard(19, 19)
-tmp = play_stone(mask,15,5, 3)
+
 
 
 *main
 	mx = mousex / MAS_X
 	my = mousey / MAS_Y
 	stick key
-	if key&256: title""+ play_move(node,mx,my,1)
-	if key&512: title""+ play_move(node,mx,my,2)
+	title strf("%d,%d",get_bitboard_status_xy(node,mx,my),get_bitboard_status_xy(mask,mx,my))
+	if key&256{
+		if get_bitboard_status_xy(node,mx,my) == 1{
+			tmp = play_stone(node,mx,my, 2)
+		}else{
+			tmp = play_stone(node,mx,my, 1)
+		}
+	}
+	if key&512{
+		if get_bitboard_status_xy(mask,mx,my) == 0{
+			tmp = play_stone(mask,mx,my, 3)
+		}else{
+			tmp = play_stone(mask,mx,my, 0)
+		}
+	}
 	color 255,255,255:boxf:color
 	bitboard_to_array node, board
 	bitboard_to_array mask, maskboard
@@ -302,5 +314,5 @@ tmp = play_stone(mask,15,5, 3)
 	redraw:redraw 2
 	await 16
 	goto*main
-	
+
 #endif
