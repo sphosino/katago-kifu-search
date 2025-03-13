@@ -321,8 +321,9 @@
 
         // パス（座標が-1）でない場合のみ着手処理
         if (x != -1) & (y != -1) {
+	        //囲碁のルールに基づいて着手
             if play_move(bitboard(node_id), x, y, turn) < 0 {
-                // 無効な着手の場合の処理
+                // 着手無効だった時の処理（棋譜がおかしいかも）
                 ;del_bitboard(bitboard(node_id))
                 ;bitboard(node_id) = -1
                 ;return -1 

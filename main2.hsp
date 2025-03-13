@@ -121,6 +121,7 @@ if 0{
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/set.hsp"
+#include "Search_pattern.hsp"
 #include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
@@ -183,6 +184,7 @@ root = make_area_child(1,2)
 					button_narrow_down_search = make_area_child()
 					chkbox_tyakusyu = make_area_child()
 					chkbox_colorflip = make_area_child()
+					chkbox_use_bitboard = make_area_child()
 				
 			goban_footer = make_area_child(7,,goban_area): set_margin goban_footer,2,5
 			
@@ -247,6 +249,7 @@ newmod g_chkbox, grid_checkbox, ui_mode           , "íÖéË" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"åüçıÇ…\nêFîΩì]Ç‡ä‹Çﬁ", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"é©ìÆçƒê∂",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"êØï\é¶", chkbox_view_hosi
+newmod g_chkbox, grid_checkbox, use_bitboard, "åµñßåüçı", chkbox_use_bitboard
 
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result,kifustart_result: set_stepper_limit g_stepper(stat), -50
@@ -664,7 +667,7 @@ setfps 60
 	return
 
 *create_pattern
-		time = keyfpstime
+	time = keyfpstime
 	kl = kifulist_notepad
 	gosub*create_pattern_main
 	return
@@ -688,6 +691,7 @@ setfps 60
 	}else{
 		get_board_data board.1, m
 	}
+
 	
 	repeat load_stones_from_board(m, n)
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
@@ -699,8 +703,13 @@ setfps 60
 
 	logmes patterns_to_notepad(p)
 
-	;result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
-	result_num =  search(kl, m, search_result, 20, v, kifu_update, next_kifuload_index)
+	if use_bitboard{
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index)
+		
+	}else{
+		result_num =  search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+	}
+	
 	
 	kifu_update = 0
 

@@ -126,6 +126,7 @@
      	none_count = 0
         repeat info_num
       		if cnt != 0: s += "-"
+      		if stone_data(cnt) == "":continue
         	split stone_data(cnt),":",tmp
         	none_count += (int(tmp.2) & PATTERN_NONE) != 0
 			s += tmp.0 + ":" + tmp.1 + ":" + str(int(tmp.2) ^ (PATTERN_BLACK | PATTERN_WHITE))

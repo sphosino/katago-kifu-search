@@ -1,9 +1,9 @@
-#ifndef search
+#ifndef search2
 #include "modules/ringbuffer.hsp"
 #include "modules/bitboard.hsp"
 #module
 
-#defcfunc search var SGF_list, array 探したい局面, array result, int max_depth, str mask, int kifu_update, var next_kifuload_index
+#defcfunc search2 var SGF_list, array 探したい局面, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index
 
 	
 	dim patterns, 23,16
@@ -14,16 +14,29 @@
 
 	create_mask 探したい局面, mask, patterns, pattern_masks //patternに16種類, maskに８種類格納する
 
-	/*
-	dim vv
-	repeat 23
-		vv(cnt) = patterns(cnt,0)
-	loop
-	log_bitboard vv
+	/* パターンをログに出力
+	for i,,8
+		dim vv
+		repeat 23
+			vv(cnt) = patterns(cnt,i)
+		loop
+		log_bitboard vv
+	next
+	stop
+	;/*/
+
+	/* マスクをログに出力
+	for i,,8
+		dim vv
+		repeat 23
+			vv(cnt) = pattern_masks(cnt,i)
+		loop
+		log_bitboard vv
+	next
 	stop
 	;/*/
 	
-
+	titlestr = ""
 	notesel SGF_list
 		if kifu_update{		
 			repeat , next_kifuload_index
@@ -44,12 +57,13 @@
 		}
 
 		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ,初期要素数)
-		
+		clear_mem
+		starttime = keyfpstime
 		repeat notemax
 			noteget sgf_filename, cnt
 			topnode = int(get_value(sgf_filename))
 	　
-			if search_main(topnode, patterns, pattern_masks, max_depth) >= 0{
+			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, max_depth) >= 0{
 				result(0, result_num) = sgf_filename
 				result(1, result_num) = str(stat)
 				result_num++
@@ -57,10 +71,11 @@
 			
 		loop
 	noteunsel
+	title titlestr + strf("検索完了 %d件 (%dms)", result_num, keyfpstime - starttime)
 	return result_num
 
 
-#defcfunc search_main int t, array pattern, array pattern_mask, int max_depth
+#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int max_depth
 
   lpoke node_data, , 0         //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
@@ -75,29 +90,32 @@
     if depth > max_depth: return -1
     
     node = lpeek(node_data, 4)
-    turn = get_property_coordinate_cash(node,x,y)
+    turn = get_property_coordinate_cash(node,x,y)　//ノードの手番と着手座標を取得
+    
 
     if x >= 0{
 	    copy_bitboard_data get_bitboard(node), board
-	    for i,,2 //色反転
-	    	for j,,8 //回転
-	    		OK = 1
-	    		repeat 23
-	    			bd = board(cnt) //盤面
-	    			pt = pattern(cnt, j + i * 8)　//パターン
-	    			mk = pattern_mask(cnt, j) //マスク
-	    			if ((bd ^ pt) & mk) != 0{
-	    				OK = 0
-		    			break
-		    		}
-	    		loop
-	    		if OK{ //盤面が一致した
-		    		return node
-		    	}
-	    	next
+	   	for j,,8 //回転
+	   		if memorize_hit_mask(j, x, y, pattern_mask){ //ノードの着手がmaskにない場合、このノードでは一致しない。
+		   		for i,,colorflip //色反転
+	
+		    		OK = 1
+		    		repeat 23
+		    			bd = board(cnt) //盤面
+		    			pt = pattern(cnt, j + i * 8)　//パターン
+		    			mk = pattern_mask(cnt, j) //マスク
+		    			if ((bd ^ pt) & mk) != 0{
+		    				OK = 0
+			    			break
+			    		}
+		    		loop
+		    		if OK{ //盤面が一致した
+			    		return node
+			    	}
+		    	next
+		    }
 	    next
 	}
-	await
     repeat get_SGF_childs(node, child)
       lpoke node_data,  , depth + 1
       lpoke node_data, 4, lpeek(child, cnt * 4)

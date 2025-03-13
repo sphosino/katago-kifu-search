@@ -101,7 +101,6 @@
 	noteunsel
 
 	title titlestr + strf("ŒŸõŠ®—¹ %dŒ (%dms)", rn, keyfpstime - starttime)
-	dup res, result
 	return rn
 
 
