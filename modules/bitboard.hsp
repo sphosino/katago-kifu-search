@@ -137,12 +137,12 @@
 
 	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
 
-	;tmp = array_to_bitboard(array_board, node)
-
-	tmp = play_stone(node, x, y, turn)
-	repeat move_capture
-		tmp = play_stone(node, mcap(0,cnt),mcap(1,cnt), 0)
-	loop
+	if move_capture >= 0{
+		tmp = play_stone(node, x, y, turn)
+		repeat move_capture 
+			tmp = play_stone(node, mcap(0,cnt),mcap(1,cnt), 0)
+		loop
+	}
 
 	return move_capture
 
