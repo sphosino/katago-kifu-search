@@ -137,7 +137,12 @@
 
 	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
 
-	tmp = array_to_bitboard(array_board, node)
+	;tmp = array_to_bitboard(array_board, node)
+
+	tmp = play_stone(node, x, y, turn)
+	repeat move_capture
+		tmp = play_stone(node, mcap(0,cnt),mcap(1,cnt), 0)
+	loop
 
 	return move_capture
 
@@ -145,7 +150,7 @@
 	if (ko_x == x && ko_y == y){
 		return -2
 	}
-	move_capture = 打てるかチェック(board, x, y, t, cap) //打てないとき-1 打てるなら取れる数とcapにその情報
+	move_capture = 打てるかチェック(board, x, y, t, mcap) //打てないとき-1 打てるなら取れる数とcapにその情報
 	if  move_capture == -1{
 		return -1
 	}
@@ -153,7 +158,7 @@
 	board(x,y) = t
 	
 	repeat move_capture
-		board(cap(0,cnt),cap(1,cnt)) = 0
+		board(mcap(0,cnt),mcap(1,cnt)) = 0
 	loop
 
 	if t == 1{
@@ -165,9 +170,9 @@
 	ko_x = -1
 	ko_y = -1
 	if move_capture == 1{ //1個とったとき
-		if 打てるかチェック(board, cap(0,0), cap(1,0), 3 - t, r) == 1{ //そこに打って1個とれるならその地点はコウ
-			ko_x = cap(0,0)
-			ko_y = cap(1,0)
+		if 打てるかチェック(board, mcap(0,0), mcap(1,0), 3 - t, r) == 1{ //そこに打って1個とれるならその地点はコウ
+			ko_x = mcap(0,0)
+			ko_y = mcap(1,0)
 		}
 	}
 	return move_capture

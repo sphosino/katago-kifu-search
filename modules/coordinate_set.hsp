@@ -24,8 +24,8 @@
 	return instr(a,,strf("%02d",x) + strf("%02d",y))
 
 #defcfunc get_coordinates_set str a, array result, local tmp
-	if a == "": return 0
 	sdim result
+	if a == "": return 0
 	_a = a
 	tmp = strtrim(_a,2,',')
 	split tmp,",", result
