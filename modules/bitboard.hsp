@@ -121,14 +121,14 @@
     return new_id
 
 //盤上のある点を変化させる
-#defcfunc play_stone int node, int x, int y, int turn
+#deffunc play_stone int node, int x, int y, int turn
 
 	index = (y * sizex(node) + x) * 2
     int_index = index / 32
     bit_offset = index \ 32
     bitboard(int_index, node) = (bitboard(int_index,node) & (0b11 << bit_offset ^ 0xFFFFFFFF)) | (turn & 0b11) << bit_offset
 
-	return 1
+	return
 
 //盤上のある点に着手する（囲碁のルール適用）
 #defcfunc play_move int node, int x, int y, int turn
@@ -138,9 +138,9 @@
 	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
 
 	if move_capture >= 0{
-		tmp = play_stone(node, x, y, turn)
+		play_stone node, x, y, turn
 		repeat move_capture 
-			tmp = play_stone(node, mcap(0,cnt),mcap(1,cnt), 0)
+			play_stone node, mcap(0,cnt), mcap(1,cnt)
 		loop
 	}
 
@@ -366,16 +366,16 @@ v = ""
 	title strf("%d,%d",get_bitboard_status_xy(node,mx,my),get_bitboard_status_xy(mask,mx,my))
 	if key&256{
 		if get_bitboard_status_xy(node,mx,my) == 1{
-			tmp = play_stone(node,mx,my, 2)
+			play_stone node, mx, my, 2
 		}else{
-			tmp = play_stone(node,mx,my, 1)
+			play_stone node, mx, my, 1
 		}
 	}
 	if key&512{
 		if get_bitboard_status_xy(mask,mx,my) == 0{
-			tmp = play_stone(mask,mx,my, 3)
+			play_stone mask, mx, my, 3
 		}else{
-			tmp = play_stone(mask,mx,my, 0)
+			play_stone mask, mx, my
 		}
 	}
 	if key&32{
