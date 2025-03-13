@@ -121,8 +121,7 @@ if 0{
 #include "go_game_manager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/set.hsp"
-#include "modules/coordinate_set.hsp"
-#include "Search_pattern.hsp"
+#include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_button.hsp"
@@ -166,8 +165,9 @@ kifu_upadate = 1
 
 topnode = -1
 
+#ifdef init_mem
 init_mem max_depth
-
+#endif
 //ÉGÉäÉAçÏê¨
 root = make_area_child(1,2)
 	header_area = make_area_child(,,root)
@@ -688,6 +688,7 @@ setfps 60
 	}else{
 		get_board_data board.1, m
 	}
+	
 	repeat load_stones_from_board(m, n)
 		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
 		logmes n(2,cnt)
@@ -698,8 +699,9 @@ setfps 60
 
 	logmes patterns_to_notepad(p)
 
-
-	result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+	;result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+	result_num =  search(kl, m, search_result, 20, v, kifu_update, next_kifuload_index)
+	
 	kifu_update = 0
 
 	search_result_sgflist = ""

@@ -1,5 +1,5 @@
-#ifndef set
-#module set data, hashcount, hashtable, data_deleted_list, data_deleted_list_num, データ数, valid_buckets, valid_buckets_num
+#ifndef set_str
+#module set_str data, hashcount, hashtable, data_deleted_list, data_deleted_list_num, データ数, valid_buckets, valid_buckets_num
 
 #const MAX_KEYS 666667
 #const FNV_PRIME 73091
@@ -19,7 +19,7 @@
 
 	sdim data,, MAX_KEYS
 	dim hashcount, MAX_KEYS
-	dim hashtable, MAX_KEYS, 4 //衝突は多くても３回までに抑えたい(一応自動拡張されるけど）
+	dim hashtable, MAX_KEYS, 3 //(自動的に拡張される）
 	dim data_deleted_list, MAX_KEYS
 	dim data_deleted_list_num
 	dim valid_buckets, MAX_KEYS
@@ -133,7 +133,7 @@
 
 //新たな空のセットを作成
 #defcfunc make_new_set
-	newmod data, set
+	newmod data, set_str
 	return stat ;セットのIDを返す。
 
 //セットに要素追加

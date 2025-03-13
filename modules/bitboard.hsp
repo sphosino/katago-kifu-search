@@ -1,4 +1,6 @@
 #ifndef init_bitboard
+#include "rotate_coordinate.hsp"
+#include "coordinate_set.hsp"
 #module
 #const NODE_MAX 2000000
 
@@ -28,7 +30,7 @@
 		open_board_list_num--
 		new_id = open_board_list(open_board_list_num)
 	}else{
-		new_id = board_num
+		new_id = データ数
 	}
 
 	memset bitboard(0, new_id), 0, 23 * 4
@@ -37,6 +39,8 @@
 	capture_black(new_id) = 0
 	capture_white(new_id) = 0
 	コウ禁止点(0, new_id) = -1, -1
+
+	データ数++
 
 	return new_id
 
@@ -58,15 +62,13 @@
     return new_id
 
 //実データ取得
-#deffunc copy_bitboard_data int src_node, array a
+#deffunc copy_bitboard_data int src_node, var a
 	dup a, bitboard(0,src_node)
 	return
 //実データ複製
 #deffunc copy_bitboard_data_deep int src_node, array a
 	dim a, 23
-	repeat 23
-		a.cnt = bitboard(cnt,src_node)
-	loop
+	memcpy a, bitboard(0, src_node), 23 * 4
 	return
 
 #deffunc del_bitboard int node
@@ -82,6 +84,7 @@
 	//-------
 	open_board_list(open_board_list_num) = node
 	open_board_list_num++
+	データ数--
 	return
 	
 #defcfunc get_bitboard_status_xy int node, int x, int y
@@ -131,7 +134,6 @@
 #defcfunc play_move int node, int x, int y, int turn
 
 	bitboard_to_array node, array_board
-
 
 	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
 
@@ -273,11 +275,76 @@ init_bitboard
         loop
     loop
     return
+#deffunc log_bitboard array a
+	repeat 19:m = cnt
+		s = ""
+		repeat 19
+			index = (m * 19 + cnt) * 2  // ビット位置を計算
+		    int_index = index / 32    // 使用する整数のインデックス
+		    bit_offset = index \ 32    // 整数内のビットオフセット
+		    s+= str(a(int_index) >> bit_offset & 0b11)
+		loop
+		logmes s
+		
+	loop
+	logmes
+	return
+#global
+
+
+#module
+#deffunc make_new_mask str v, array new_bitboard
+
+	dim new_bitboard, 23,8
+	num = get_coordinates_set_int(v,r)
+	repeat 8
+		m = cnt
+		repeat num
+			rotate_coordinate xy,r(0,cnt),r(1,cnt),m
+			index = (xy.1 * 19 + xy) * 2
+		    int_index = index / 32
+		    bit_offset = index \ 32
+		    new_bitboard(int_index, m) |= 3 << bit_offset	    
+		loop
+	loop
+	return
+
+//二次元配列ボードから bitboardを作成
+#deffunc make_pattern array a, array new_pattern
+	dim new_pattern, 23,16 //１局面を２３intで表現、１６種用意、
+	for i,,2 //色反転
+		for j,,8 //回転
+			repeat length(a): x = cnt
+				repeat length2(a): y = cnt
+					col = a(x,y) & 3
+					if i{
+						if (col == 1) || (col == 2){
+							col = 3 - col
+						}
+					}
+
+					//xyに結果を受け取る, x座標,y座標, 回転パターン, 盤サイズx,盤サイズy
+					rotate_coordinate xy, x    ,y    , j           , length(a),length2(a)
+					
+					bit = (xy.1 * length(a) + xy.0 ) * 2
+					int_index = bit / 32
+					bitoffset = bit \ 32
+					new_pattern(int_index, j + i * 8) |= col << bitoffset
+					
+				loop
+			loop
+		next
+	next
+	
+	return
+#deffunc create_mask array a, str mask, array pattern, array pattern_mask
+	make_pattern a, pattern
+	make_new_mask mask, pattern_mask
+	return
 #global
 #endif
-
 //--------------------------------------
-#if 1
+#if 0
 
 #const global MAS_X  20
 #const global MAS_Y  20
@@ -285,11 +352,11 @@ init_bitboard
 node = make_new_bitboard(19, 19)
 mask = make_new_bitboard(19, 19)
 
-
+v = ""
 
 *main
-	mx = mousex / MAS_X
-	my = mousey / MAS_Y
+	mx = limit(mousex / MAS_X, 0, 18)
+	my = limit(mousey / MAS_Y, 0, 18)
 	stick key
 	title strf("%d,%d",get_bitboard_status_xy(node,mx,my),get_bitboard_status_xy(mask,mx,my))
 	if key&256{
@@ -306,11 +373,33 @@ mask = make_new_bitboard(19, 19)
 			tmp = play_stone(mask,mx,my, 0)
 		}
 	}
+	if key&32{
+		add_coordinate_set v, mx, my
+		
+	}
+	if key&16{
+
+
+		
+		make_new_mask v, tmp_bitboard
+		copy_bitboard_data mask, a
+		copy_bitboard_data tmp_bitboard(1), b
+		memcpy a,b,23 * 4
+		log_bitboard a
+		
+	}
 	color 255,255,255:boxf:color
 	bitboard_to_array node, board
 	bitboard_to_array mask, maskboard
 	print_board board, MAS_X, MAS_Y
 	print_board maskboard, MAS_X, MAS_Y
+
+	repeat get_coordinates_set(v, r)
+			x = 0+strmid(r.cnt,0,2)
+			y = 0+strmid(r.cnt,2,2)
+		pos MAS_X * x, MAS_Y * y
+		mes "×"
+	loop
 	redraw:redraw 2
 	await 16
 	goto*main

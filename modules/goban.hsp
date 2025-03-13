@@ -1,5 +1,4 @@
 #ifndef goban
-#include "modules/coordinate_set.hsp"
 #include "modules/boxfa.hsp"
 #include "bitboard.hsp"
 #include "modules/grid_system/area_grid_system.hsp"

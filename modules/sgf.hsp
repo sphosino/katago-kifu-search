@@ -291,7 +291,7 @@
 	return new
 
 //  NEW!!!
-#defcfunc get_bitboard int node_id
+#defcfunc get_bitboard int node_id, local parent_id
     if bitboard(node_id) == -1 {
         // 親ノードの存在チェック
         parent_id = parent(node_id)
@@ -305,11 +305,11 @@
             } else {
                 bitboard(node_id) = make_new_bitboard(size(0), size(1))
             }
-        } else {
+        }else{
             // 親ノードからビットボードを継承
             if bitboard(parent_id) == -1 {
                 // 親ノードも未初期化の場合は再帰的に初期化
-                get_bitboard parent_id, tmp
+                tmp = get_bitboard(parent_id)
             }
             bitboard(node_id) = copy_bitboard(bitboard(parent_id))
         }
@@ -321,11 +321,11 @@
 
         // パス（座標が-1）でない場合のみ着手処理
         if (x != -1) & (y != -1) {
-            if play_move(bitboard(node_id), x, y, turn) == 0 {
+            if play_move(bitboard(node_id), x, y, turn) < 0 {
                 // 無効な着手の場合の処理
-                del_bitboard(bitboard(node_id))
-                bitboard(node_id) = -1
-                return -1
+                ;del_bitboard(bitboard(node_id))
+                ;bitboard(node_id) = -1
+                ;return -1 
             }
         }
     }

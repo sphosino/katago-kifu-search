@@ -1,0 +1,111 @@
+#ifndef search
+#include "modules/ringbuffer.hsp"
+#include "modules/bitboard.hsp"
+#module
+
+#defcfunc search var SGF_list, array 探したい局面, array result, int max_depth, str mask, int kifu_update, var next_kifuload_index
+
+	
+	dim patterns, 23,16
+	dim pattern_masks, 23, 8
+	sdim node_data
+	sdim result,, 2
+	result_num = 0
+
+	create_mask 探したい局面, mask, patterns, pattern_masks //patternに16種類, maskに８種類格納する
+
+	/*
+	dim vv
+	repeat 23
+		vv(cnt) = patterns(cnt,0)
+	loop
+	log_bitboard vv
+	stop
+	;/*/
+	
+
+	notesel SGF_list
+		if kifu_update{		
+			repeat , next_kifuload_index
+				noteget sgf_filename, cnt
+				next_kifuload_index++
+				if sgf_filename == "": break
+				if get_value(sgf_filename) == NOT_DEFINED_HASH{
+					notesel sgf
+						noteload sgf_filename
+					noteunsel
+					topnode = load_sgf(sgf)
+					new_value sgf_filename, str(topnode)
+					await
+					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
+					title titlestr
+				}
+			loop
+		}
+
+		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ,初期要素数)
+		
+		repeat notemax
+			noteget sgf_filename, cnt
+			topnode = int(get_value(sgf_filename))
+	　
+			if search_main(topnode, patterns, pattern_masks, max_depth) >= 0{
+				result(0, result_num) = sgf_filename
+				result(1, result_num) = str(stat)
+				result_num++
+			}
+			
+		loop
+	noteunsel
+	return result_num
+
+
+#defcfunc search_main int t, array pattern, array pattern_mask, int max_depth
+
+  lpoke node_data, , 0         //現在の深さ(手数)
+  lpoke node_data, 4, t        //ノード番号
+  r_push node_data
+  
+  while ringbuffer_count
+
+    r_shift node_data //キューからノードデータを復元
+
+    //ノードデータ展開
+    depth = lpeek(node_data) 
+    if depth > max_depth: return -1
+    
+    node = lpeek(node_data, 4)
+    turn = get_property_coordinate_cash(node,x,y)
+
+    if x >= 0{
+	    copy_bitboard_data get_bitboard(node), board
+	    for i,,2 //色反転
+	    	for j,,8 //回転
+	    		OK = 1
+	    		repeat 23
+	    			bd = board(cnt) //盤面
+	    			pt = pattern(cnt, j + i * 8)　//パターン
+	    			mk = pattern_mask(cnt, j) //マスク
+	    			if ((bd ^ pt) & mk) != 0{
+	    				OK = 0
+		    			break
+		    		}
+	    		loop
+	    		if OK{ //盤面が一致した
+		    		return node
+		    	}
+	    	next
+	    next
+	}
+	await
+    repeat get_SGF_childs(node, child)
+      lpoke node_data,  , depth + 1
+      lpoke node_data, 4, lpeek(child, cnt * 4)
+      r_push node_data
+    loop
+  wend
+  
+  return -1
+
+#global
+#endif
