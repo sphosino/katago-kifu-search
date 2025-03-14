@@ -12,7 +12,7 @@
 	dim capture_white, NODE_MAX
 	dim コウ禁止点,2,NODE_MAX
 
-	dim open_board_list, 1024
+	dim open_board_list, NODE_MAX
 	board_num = 1 //配列の最大、空き要素含む
 	open_board_list(0) = 0
 	open_board_list_num = 1

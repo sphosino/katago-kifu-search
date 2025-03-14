@@ -13,10 +13,22 @@
 	dim sgf_node_x, MAX_NODE //ノードの座標ｘ
 	dim sgf_node_y, MAX_NODE //ノードの座標ｙ
 	sdim sgf_properties_data,, MAX_NODE //その他のプロパティ
-	dim sgf_properties_num,MAX_NODE //その他のプロパティの数
-
-	dim bitboard, MAX_NODE //ビットボード(番号を保存、実体は別モジュール管理） NEW !!!!
+	dim sgf_properties_num, MAX_NODE //その他のプロパティの数
 	
+	
+	repeat bitboard_used_count
+
+		del_bitboard bitboard(bitboard_used(cnt))
+		#ifdef _debug
+			await
+			logmes ""+bitboard_used_count + ": "+ cnt
+		#endif
+	loop
+	bitboard_used_count = 0
+	dim bitboard_used, MAX_NODE //ビットボード使用ノードリスト(SGFノード番号)
+	dim node_to_bitboard_used_list, MAX_NODE //ノードがビットボード使用ノードリストのどこに配置されているか。１スタートの値を保存(0= ビットボード未使用, 1 =bitboard_used(0) , 2 =bitboard_used(1) )
+	
+	dim bitboard, MAX_NODE //ビットボード(番号を保存、実体は別モジュール管理） NEW !!!!
 	
 	sdim sgf_node_childs,, MAX_NODE //子ノードリスト
 	dim child_num, MAX_NODE //子ノードの数
@@ -84,6 +96,10 @@
 	loop
 	if bitboard(node_id) != -1 {
         del_bitboard(bitboard(node_id))
+        bitboard_used_count--
+       	bitboard_used(node_to_bitboard_used_list(node_id) - 1) = bitboard_used(bitboard_used_count) //末尾から移動
+        node_to_bitboard_used_list(bitboard_used(bitboard_used_count)) = node_to_bitboard_used_list(node_id) //移動されたノードの情報更新
+        node_to_bitboard_used_list(node_id) = 0
     }
 	lpoke open_id_list, open_id_list_num * 4, node_id
 	open_id_list_num++
@@ -323,12 +339,14 @@
         if (x != -1) & (y != -1) {
 	        //囲碁のルールに基づいて着手
             if play_move(bitboard(node_id), x, y, turn) < 0 {
-                // 着手無効だった時の処理（棋譜がおかしいかも）
-                ;del_bitboard(bitboard(node_id))
-                ;bitboard(node_id) = -1
-                ;return -1 
+               logmes "着手が無効です。SGFが壊れているかもしれません",, __FILE__
             }
         }
+
+		bitboard_used(bitboard_used_count) = node_id
+		bitboard_used_count++
+		node_to_bitboard_used_list(node_id) = bitboard_used_count
+        
     }
     return bitboard(node_id)
     

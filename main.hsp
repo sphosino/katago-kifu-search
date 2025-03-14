@@ -38,8 +38,7 @@ if strsize == -1{
 	auto_interval = 1000
 	alpha_interval = 10000
 	m_interval = 10000
-
-	KIFU_LOAD_MAX = 10000
+	
 }else{
 	notesel s
 	chdir dirname
@@ -60,7 +59,6 @@ if strsize == -1{
 	noteget_ m_interval
 	noteget_ 最小化
 	noteget_ 最大化
-	noteget_ KIFU_LOAD_MAX
 
 	//wx, wyがなぜか -32000 という数値で保存されてしまう場合があるようなので、その場合の処理
 	if wx < 0{
@@ -110,7 +108,6 @@ if 0{
 	IsZoomed hwnd: 最大化 = stat
 	noteadd str(最小化)
 	noteadd str(最大化)
-	noteadd str(KIFU_LOAD_MAX)
 	notesave window_file_name
 	end
 }
@@ -684,7 +681,6 @@ setfps 60
 *create_pattern_main
 	logmes "検索開始"
 
-	initialize_rects v, r, stones
 
 	if ui_mode == MODE_KIFU_VIEW{
 		get_board_data board, m
@@ -692,21 +688,26 @@ setfps 60
 		get_board_data board.1, m
 	}
 
-	
-	repeat load_stones_from_board(m, n)
-		add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
-		logmes n(2,cnt)
-	loop
-
-
-	create_pattern_with_rects_and_stones r,stones,p
-
-	logmes patterns_to_notepad(p)
 
 	if use_bitboard{
+		
 		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index)
 		
 	}else{
+
+
+		initialize_rects v, r, stones
+		
+		repeat load_stones_from_board(m, n)
+			add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
+			logmes n(2,cnt)
+		loop
+	
+	
+		create_pattern_with_rects_and_stones r,stones,p
+	
+		logmes patterns_to_notepad(p)
+		
 		result_num =  search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
 	}
 	
@@ -741,9 +742,6 @@ setfps 60
 	chdir kifu_dirname
 		棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
 	chdir dirname
-	
-	init_hash_manager
-	init_sgf_module
 
 	gosub*load_kifu_folder
 	
@@ -794,18 +792,16 @@ setfps 60
 	treebox_clear t
 	chdir kifu_dirname
 	del_item_all kifulist
-	del_item_all kifulist.matchlist
 	dirlist files,"*.sgf"
 	notesel ss 
 		ss = shuffle_notepad(files)
 		sdim filelist
-		repeat limit(notemax,,KIFU_LOAD_MAX)
+		repeat notemax
 			noteget tmp, cnt
 			filelist += tmp + "\n"
 		loop
 	noteunsel
 	add_item kifulist, filelist
-	next_kifuload_index = 0
 	kifu_update = 1
 	kifulist_notepad = get_name_all_items(kifulist)
 	return
