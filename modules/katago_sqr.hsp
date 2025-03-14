@@ -5,6 +5,8 @@ netinit
 
 #module
 
+#const LOADTIME 20000
+
 #deffunc 棋譜取得 str dirname, int max
 
 	starttime = keyfpstime
@@ -52,7 +54,7 @@ netinit
 	
 			game_id = int(get_content_tag(target_infos(0)))
 	
-				logmes ""+ game_id + "::" +next_link
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
 				
 	
 			if check_exist_sgf(files, game_id): await 17: continue
@@ -77,7 +79,7 @@ netinit
 	
 		loop
 		await 1000
-		if keyfpstime - starttime >= 20000: break
+		if keyfpstime - starttime >= LOADTIME: break
 		if get_count < max{
 			find_tags_bytag buf, "div",divs
 			find_tags_bytag divs.4,"a",pp
