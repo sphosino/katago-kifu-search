@@ -38,6 +38,10 @@
 	
 	titlestr = ""
 	notesel SGF_list
+
+		titlestr = ""
+		starttime = keyfpstime
+		
 		if kifu_update{		
 			repeat , next_kifuload_index
 				noteget sgf_filename, cnt
@@ -58,7 +62,8 @@
 
 		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ,初期要素数)
 		clear_mem
-		starttime = keyfpstime
+		titlestr += strf("(%dms) -> 厳密検索開始 -> ", keyfpstime - starttime)
+		title titlestr
 		repeat notemax
 			noteget sgf_filename, cnt
 			topnode = int(get_value(sgf_filename))
@@ -71,7 +76,7 @@
 			
 		loop
 	noteunsel
-	title titlestr + strf("検索完了 %d件 (%dms)", result_num, keyfpstime - starttime)
+	title titlestr + strf("厳密検索完了 %d件 (%dms)", result_num, keyfpstime - starttime)
 	return result_num
 
 
