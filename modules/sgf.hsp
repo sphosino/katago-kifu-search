@@ -15,9 +15,7 @@
 	sdim sgf_properties_data,, MAX_NODE //その他のプロパティ
 	dim sgf_properties_num, MAX_NODE //その他のプロパティの数
 	
-	
 	repeat bitboard_used_count
-
 		del_bitboard bitboard(bitboard_used(cnt))
 		#ifdef _debug
 			await
@@ -27,8 +25,7 @@
 	bitboard_used_count = 0
 	dim bitboard_used, MAX_NODE //ビットボード使用ノードリスト(SGFノード番号)
 	dim node_to_bitboard_used_list, MAX_NODE //ノードがビットボード使用ノードリストのどこに配置されているか。１スタートの値を保存(0= ビットボード未使用, 1 =bitboard_used(0) , 2 =bitboard_used(1) )
-	
-	dim bitboard, MAX_NODE //ビットボード(番号を保存、実体は別モジュール管理） NEW !!!!
+	dim bitboard, MAX_NODE //ビットボード(番号を保存、実体は別モジュール管理）
 	
 	sdim sgf_node_childs,, MAX_NODE //子ノードリスト
 	dim child_num, MAX_NODE //子ノードの数
@@ -339,7 +336,7 @@
         if (x != -1) & (y != -1) {
 	        //囲碁のルールに基づいて着手
             if play_move(bitboard(node_id), x, y, turn) < 0 {
-               logmes "着手が無効です。SGFが壊れているかもしれません",, __FILE__
+               logmes "着手が無効です。SGFが壊れているかもしれません : " + __FILE__ 
             }
         }
 
