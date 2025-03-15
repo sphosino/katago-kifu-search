@@ -82,12 +82,14 @@
 				make_rotated_patterns pattern, xy, xy.1 , rotated_p
 				clear_mem
 				prexy = xy,xy.1
+
+				//サーチメイン関数用の変数設定
+				r_pattern_num = 4 << (xy == xy.1)
+				all_pattern_num = r_pattern_num * colorflip_num
 				
 			}
 			
-			//サーチメイン関数用の変数設定
-			r_pattern_num = 4 << (xy == xy.1)
-			all_pattern_num = r_pattern_num * colorflip_num
+
 			
 			//検索実行
 			if search_main(topnode, rotated_p, match_node){
