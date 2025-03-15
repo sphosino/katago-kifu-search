@@ -102,13 +102,12 @@
 	    copy_bitboard_data get_bitboard(node), board
 	   	for j,,8 //回転
 	   		if memorize_hit_mask(j, x, y, pattern_mask){ //ノードの着手がmaskにない場合、このノードでは一致しない。
+	   			dup mk, pattern_mask(0, j)
 		   		for i,,colorflip //色反転
+		   			dup pt, pattern(0, j + i * 8)
 		    		OK = 1
 		    		repeat 23
-		    			; board(cnt) //盤面
-		    			; pattern(cnt, j + i * 8)　//パターン
-		    			; pattern_mask(cnt, j) //マスク
-		    			if ((board(cnt) ^ pattern(cnt, j + i * 8)) & pattern_mask(cnt, j)) != 0{
+		    			if ((board(cnt) ^ pt(cnt)) & mk(cnt)) != 0{
 		    				OK = 0
 			    			break
 			    		}
