@@ -97,6 +97,7 @@ netinit
 			goto *next_page
 		}
 	loop
+	title "Šû•ˆŽæ“¾Š®—¹"
 	chdir now_dir
 	return
 
