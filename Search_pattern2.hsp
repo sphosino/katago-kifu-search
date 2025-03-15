@@ -103,13 +103,12 @@
 	   	for j,,8 //回転
 	   		if memorize_hit_mask(j, x, y, pattern_mask){ //ノードの着手がmaskにない場合、このノードでは一致しない。
 		   		for i,,colorflip //色反転
-	
 		    		OK = 1
 		    		repeat 23
-		    			bd = board(cnt) //盤面
-		    			pt = pattern(cnt, j + i * 8)　//パターン
-		    			mk = pattern_mask(cnt, j) //マスク
-		    			if ((bd ^ pt) & mk) != 0{
+		    			; board(cnt) //盤面
+		    			; pattern(cnt, j + i * 8)　//パターン
+		    			; pattern_mask(cnt, j) //マスク
+		    			if ((board(cnt) ^ pattern(cnt, j + i * 8)) & pattern_mask(cnt, j)) != 0{
 		    				OK = 0
 			    			break
 			    		}
