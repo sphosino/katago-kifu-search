@@ -5,36 +5,12 @@
 
 #defcfunc search2 var SGF_list, array 探したい局面, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index
 
-	
 	dim patterns, 23,16
 	dim pattern_masks, 23, 8
 	sdim node_data
 	sdim result,, 2
 	result_num = 0
-
-	create_mask 探したい局面, mask, patterns, pattern_masks //patternに16種類, maskに８種類格納する
-
-	/* パターンをログに出力
-	for i,,8
-		dim vv
-		repeat 23
-			vv(cnt) = patterns(cnt,i)
-		loop
-		log_bitboard vv
-	next
-	stop
-	;/*/
-
-	/* マスクをログに出力
-	for i,,8
-		dim vv
-		repeat 23
-			vv(cnt) = pattern_masks(cnt,i)
-		loop
-		log_bitboard vv
-	next
-	stop
-	;/*/
+	prexy = -1,-1
 	
 	titlestr = ""
 	notesel SGF_list
@@ -60,15 +36,26 @@
 			loop
 		}
 
-		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ,初期要素数)
+		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ, 初期要素数)
 		clear_mem
 		titlestr += strf("(%dms) -> 厳密検索開始 -> ", keyfpstime - starttime)
 		title titlestr
 		repeat notemax
 			noteget sgf_filename, cnt
 			topnode = int(get_value(sgf_filename))
+
+			get_board_size_from_SGF topnode, xy
+	
+			//前回検索した棋譜とボードサイズが違う場合
+			if prexy != xy || prexy.1 != xy.1{
+				create_mask 探したい局面, mask, patterns, pattern_masks, xy, xy.1 //patternに16種類, maskに８種類格納する
+				int_count = calc_int_count(xy, xy.1)
+				clear_mem
+				prexy = xy,xy.1
+				
+			}
 	　
-			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, max_depth) >= 0{
+			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, int_count, max_depth) >= 0{
 				result(0, result_num) = sgf_filename
 				result(1, result_num) = str(stat)
 				result_num++
@@ -80,7 +67,7 @@
 	return result_num
 
 
-#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int max_depth
+#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int use_int_count, int max_depth
 
   lpoke node_data, , 0         //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
@@ -106,7 +93,7 @@
 		   		for i,,colorflip //色反転
 		   			dup pt, pattern(0, j + i * 8)
 		    		OK = 1
-		    		repeat 23
+		    		repeat use_int_count
 		    			if ((board(cnt) ^ pt(cnt)) & mk(cnt)) != 0{
 		    				OK = 0
 			    			break

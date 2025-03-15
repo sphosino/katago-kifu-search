@@ -24,7 +24,7 @@
 #defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index
 
 
-	stone_num = get_pattern_all_stones_num(pattern) //パターン内の全ての石数を取得
+	stone_num = get_pattern_all_stones_num(pattern) //パターンのhit判定に必要な石数を取得
 	logmes "SNUM = " + stone_num
 	if stone_num == 0: return 0
 	if stone_num > max_depth: return 0
@@ -120,9 +120,6 @@
   return_value -> マッチしたかどうかの　1か0の値
 */
 
-
-
-
   //キュー初期化
   valid_pattern_count = 0
   repeat r_pattern_num
@@ -164,7 +161,7 @@
         if hit_stone >= 0{
             if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
 	            
-	            vlist(MATCH_STONE_COUNT, i) += stat & 1
+	            vlist(MATCH_STONE_COUNT, i) += stat & 1 // ?指定以外で加算
 	            if vlist(MATCH_STONE_COUNT, i) == stone_num{
 	              result_match_node = node //一致したSGFノード
 	              ; result_match_colorflip = vlist(COLOR_INFO, i)

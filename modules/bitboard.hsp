@@ -298,15 +298,20 @@ init_bitboard
 
 
 #module
-#deffunc make_new_mask str v, array new_bitboard
+#deffunc make_new_mask str v, array new_bitboard, int board_size_x, int board_size_y
 
+	bx = 19
+	by = 19
+	if board_size_x: bx = board_size_x
+	if board_size_y: by = board_size_y
+	
 	dim new_bitboard, 23,8
 	num = get_coordinates_set_int(v,r)
 	repeat 8
 		m = cnt
 		repeat num
-			rotate_coordinate xy,r(0,cnt),r(1,cnt),m
-			index = (xy.1 * 19 + xy) * 2
+			rotate_coordinate xy,r(0,cnt),r(1,cnt), m, bx, by
+			index = (xy.1 * bx + xy) * 2
 		    int_index = index / 32
 		    bit_offset = index \ 32
 		    new_bitboard(int_index, m) |= 3 << bit_offset	    
@@ -342,10 +347,13 @@ init_bitboard
 	next
 	
 	return
-#deffunc create_mask array a, str mask, array pattern, array pattern_mask
+#deffunc create_mask array a, str mask, array pattern, array pattern_mask, int board_size_x, int board_size_y
 	make_pattern a, pattern
-	make_new_mask mask, pattern_mask
+	make_new_mask mask, pattern_mask, board_size_x, board_size_y
 	return
+#defcfunc calc_int_count int board_size_x, int board_size_y
+    bit_count = (board_size_x * board_size_y) * 2
+    return (bit_count + 31) / 32   // Ø‚èã‚°ŒvŽZ
 #global
 #endif
 //--------------------------------------
@@ -383,15 +391,11 @@ v = ""
 		
 	}
 	if key&16{
-
-
-		
 		make_new_mask v, tmp_bitboard
 		copy_bitboard_data mask, a
 		copy_bitboard_data tmp_bitboard(1), b
 		memcpy a,b,23 * 4
-		log_bitboard a
-		
+		log_bitboard a		
 	}
 	color 255,255,255:boxf:color
 	bitboard_to_array node, board
