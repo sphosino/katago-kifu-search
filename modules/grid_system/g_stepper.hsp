@@ -1,7 +1,8 @@
 #ifndef grid_stepper
 #include "area_grid_system.hsp"
+#include "color_manager.hsp"
 #addition "../keyfps.hsp"
-#module grid_stepper area_number, v, under_limit, top_limit, gap
+#module grid_stepper area_number, v, under_limit, top_limit, gap, backcolor
 
 
 #modinit array value, int _area
@@ -10,6 +11,7 @@
 	under_limit = -99999
 	top_limit = 99999
 	gap = 1
+	backcolor = 色をまとめる(0,0,0)
 	mref thismod_ID, 2
 	return thismod_ID
 
@@ -30,8 +32,8 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 
 	thisrect thismod, rect, area_number
 	
-	color
-	boxf rect,rect.1,rect.2,rect.3
+	色を設定 backcolor
+	aboxf rect
 	color 255,255,255
 	pos rect,rect.1: mes v
 
@@ -41,14 +43,36 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	half_y = (rect.3 - rect.1) / 2
 	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
 	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
-	if getPhold_ms(1, 400 , 100) == 1{
-		if in_rect(uprect)  : v += gap
-		if in_rect(downrect): v -= gap
-		v = limit(v, under_limit, top_limit)
+
+
+
+	色を設定 backcolor
+	if in_rect(uprect){
+		色を設定 色を加算する(backcolor, 50):logmes 色を加算する(backcolor,50)
+		if getPhold_ms(1, 400 , 100){
+			v += gap
+			v = limit(v, under_limit, top_limit)
+		}
 	}
+	aboxf uprect
 	color 255,30,30
 	aboxfl uprect, 1
+
+	color 255,30,30
 	aboxfl downrect, 1
+
+	色を設定 backcolor
+	if in_rect(downrect){
+		色を設定 色を加算する(backcolor, 50)
+		if getPhold_ms(1, 400 , 100){
+			v -= gap
+			v = limit(v, under_limit, top_limit)
+		}
+	}
+	aboxf downrect
+	color 255,30,30
+	aboxfl downrect, 1
+	
 	return
 
 #include "rectmock.hsp"

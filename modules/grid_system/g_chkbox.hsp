@@ -11,14 +11,23 @@
 	return
 
 #modfunc toggle_g_checkbox
-	flag^1
+	flag ^ 1
 	return
 
 #modfunc draw_g_chkbox
 
 	thisrect thismod, rect, area_number
-	
-	color
+	rx = rect.2 + rect.0 - check_size >> 1
+	ry = rect.3 + rect.1 - check_size >> 1
+	checkrect = rect.2 - check_size - margin,ry,rect.2 - margin, ry + check_size
+	backcolor = $000000
+	if in_rect(rect){
+		if _getkey(1) == 1{
+			toggle_g_checkbox thismod
+		}
+		backcolor = $222222
+	}
+	color backcolor >> 16 & 255, backcolor >> 8 & 255, backcolor & 255
 	rboxf rect,rect.1,rect.2,rect.3
 	color 255,255,255
 	m = 5, 5, 5, 5
@@ -27,12 +36,7 @@
 
 	color 180,180,180
 
-	rx = rect.2 + rect.0 - check_size >> 1
-	ry = rect.3 + rect.1 - check_size >> 1
-	checkrect = rect.2 - check_size - margin,ry,rect.2 - margin, ry + check_size
-	if _getkey(1) == 1{
-		if in_rect(rect): toggle_g_checkbox thismod
-	}
+
 	if flag: color 255,30,30
 	boxf checkrect,checkrect.1,checkrect.2,checkrect.3
 	return

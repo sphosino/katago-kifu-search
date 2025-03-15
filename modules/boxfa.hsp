@@ -1,6 +1,9 @@
 #ifndef boxfa
 #module
 
+#deffunc aboxf array a
+	boxf a, a.1, a.2, a.3
+	return
 //ìßâﬂboxf
 #deffunc aboxfa array a, int alpha
 	boxfa a,a.1,a.2,a.3, alpha
@@ -27,7 +30,7 @@
 
 //ìßâﬂâèéÊÇËboxf
 #deffunc aboxfal array a, int alpha, int w
-	aboxfal a,a.1,a.2,a.3, alpha, w
+	boxfal a,a.1,a.2,a.3, alpha, w
 	return
 #deffunc boxfal int ax, int ay, int bx, int by, int alpha, int w
 	boxfa ax, ay, ax + w, by, alpha

@@ -1,4 +1,4 @@
-
+;#define global MODULE_DEBUG
 #include "area_grid_system.hsp"
 #addition "../keyfps.hsp"
 #module grid_slider v, min, max, horizontal, x, y, tickness,長さ, dragging, area, r
@@ -89,8 +89,10 @@
 		}
 	}
 
-	;color 0,255,0:boxf oya,oya.1,oya.2,oya.3 //単体デバッグ用
-
+	#ifdef MODULE_DEBUG
+		color 0,255,0:boxf oya,oya.1,oya.2,oya.3 //単体デバッグ用
+	#endif
+	
 	color
 	rboxf bar_rect,bar_rect.1,bar_rect.2,bar_rect.3
 	color 255
@@ -102,22 +104,17 @@
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
-#deffunc local swap var a, var b
-	tmp = aa
-	a = b
-	b = tmp
-	return
 #global
 
 
-#if 0 //テストコード
+#ifdef MODULE_DEBUG //テストコード
 
 mock_flag@global = 1
 
 set_rect_mock 99, 100, 100, 200, 300 // モック矩形設定（垂直スライダー用）
 set_rect_mock 66, 300, 100, 500, 150 // モック矩形設定（水平スライダー用）
-vertical = 0     : newmod a, grid_slider, vertical  , 0, 99, 0   , 300 , 10, 15, 0, 60:
-horizontal = 0   : newmod a, grid_slider, horizontal, 1, 66, -100, 300 , 10, 15, 0, 0 :
+vertical = 0     : newmod a, grid_slider, vertical  , 0, 99, 0   , 300 , 10, 15, 20, 60:
+horizontal = 0   : newmod a, grid_slider, horizontal, 1, 66, -100, 300 , 10, 15, 0 , 20 :
 
 //メインループ
 repeat
