@@ -7,11 +7,16 @@
 
 	dim patterns, 23,16
 	dim pattern_masks, 23, 8
+	init_ringbuffer 64, 128
+	clear_mem
 	sdim node_data
-	sdim result,, 2
 	result_num = 0
 	prexy = -1,-1
-	
+
+	最大の深さ = 50
+	if max_depth{
+		最大の深さ = max_depth
+	}
 	titlestr = ""
 	notesel SGF_list
 
@@ -36,8 +41,7 @@
 			loop
 		}
 
-		init_ringbuffer 64, 128 //キューの初期化（スロットサイズ, 初期要素数)
-		clear_mem
+
 		titlestr += strf("(%dms) -> 厳密検索開始 -> ", keyfpstime - starttime)
 		title titlestr
 		repeat notemax
@@ -58,7 +62,7 @@
 				
 			}
 	　
-			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, max_depth) >= 0{
+			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip) >= 0{
 				result(0, result_num) = sgf_filename
 				result(1, result_num) = str(stat)
 				result_num++
@@ -70,7 +74,7 @@
 	return result_num
 
 
-#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int max_depth
+#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip
 
   lpoke node_data, , 0         //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
@@ -82,7 +86,7 @@
 
     //ノードデータ展開
     depth = lpeek(node_data) 
-    if depth > max_depth: return -1
+    if depth > 最大の深さ: return -1
     
     node = lpeek(node_data, 4)
     turn = get_property_coordinate_cash(node,x,y)　//ノードの手番と着手座標を取得

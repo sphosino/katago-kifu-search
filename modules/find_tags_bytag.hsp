@@ -46,6 +46,7 @@
     	
     	case '>'
     		// タグ名を取得
+    		if comment_mode = 1 & comment_flag == 0: comment_mode = 0: swbreak
     		if tagname_started != 0{ //空タグは処理しない
         		if tagname_started != 2{ //タグ名取得完了していない
         			now_tagname = strmid(s, tagname_start_pos, point - tagname_start_pos)//現地点までをタグ名とみなす		
@@ -100,11 +101,21 @@
     		tag_type = 0
     		now_tagname = ""
     	swbreak
+
+
+    	case '='
+    	swbreak
+
+    	case '\''
+    	case '"'
+			
+    	swbreak
     	
     	default
     		// タグ名の開始
     		if (token >='a' && token <= 'z') || (token >= 'A' &&  token <= 'Z') || (token >='0' && token <= '9') || (token=='-') || (token=='.') || (token=='_') || (token ==':') {
-        		if tag_started_flag == 1 && tagname_started == 0 {
+  		
+	        	if tag_started_flag == 1 && tagname_started == 0 {
 	        		tagname_started = 1
 	        		tagname_start_pos = point
 	        	}

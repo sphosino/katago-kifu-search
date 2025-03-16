@@ -89,13 +89,10 @@
 				
 			}
 			
-
-			
 			//検索実行
-			if search_main(topnode, rotated_p, match_node){
+			if search_main(topnode, rotated_p, match_node) >= 0{
 				result(0, rn) = sgf_filename //一致したSGFを結果に追加
-				result(1, rn) = str(match_node)
-				;logmes str(match_node)
+				result(1, rn) = str(stat)
 				rn++
 			}
 			
@@ -143,7 +140,7 @@
     r_shift node_data //キューからノードデータを復元
 
     //ノードデータ展開
-    depth = lpeek(node_data) : if depth > 最大の深さ: return 0
+    depth = lpeek(node_data) : if depth > 最大の深さ: return -1
     node = lpeek(node_data, 4)
     valid_pattern_count = lpeek(node_data, 8)
     memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
@@ -165,10 +162,7 @@
 	            
 	            vlist(MATCH_STONE_COUNT, i) += stat & 1 // ?指定以外で加算
 	            if vlist(MATCH_STONE_COUNT, i) == stone_num{
-	              result_match_node = node //一致したSGFノード
-	              ; result_match_colorflip = vlist(COLOR_INFO, i)
-	              ; result_match_rotatepattern = vlist(ROTATE_INFO, i)
-	              return 1 //検索成功
+	              return node //検索成功
 	            }
 	            _continue
 	      	}
@@ -198,7 +192,7 @@
       r_push node_data
     loop
   wend
-  return 0
+  return -1
 
 #global
 search_init

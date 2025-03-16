@@ -448,7 +448,7 @@ setfps 60
 				if mw > 0: move_scroll_index kifulist.cnt,-1
 			}
 		loop
-		if in_kifulist == 0{
+		if (in_kifulist == 0) && (ui_mode == 0){
 			if mw < 0 : gosub*move_next
 			if mw > 0 : gosub*move_back
 		}
