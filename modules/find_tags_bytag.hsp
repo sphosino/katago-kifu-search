@@ -1,0 +1,283 @@
+#ifndef find_tags_bytag
+#define MODULE_DEBUG
+#module
+#defcfunc find_tags_bytag str s1, str tag, array result
+    s = s1
+
+	sdim result
+    result_num = 0
+    
+    point = 0 //読み取り中の位置
+
+    dim tag_start_pos //タグがどこから開始されたか
+	dim tagname_start_pos //タグ名がどこから開始されたか
+	sdim now_tagname //現在処理中のタグ名
+
+	sdim tag_stack //タグスタック
+	dim tag_start_stack// そのタグの開始位置スタック 
+    tag_stack_num = 0
+
+	tagname_started = 0 ; 0 = 未開始、1 = 開始済み, 2 = 取得完了
+	tag_started_flag = 0 ; 0 = タグが開始されていない ; 1 = タグ開始済み
+	tag_type = 0 ; 0 = 開始タグ ; 1 = 終了タグ
+   
+   while point < strlen(s)
+        token = peek(s, point)
+        
+        switch token
+    	case '<'
+    		tag_started_flag = 1
+    		tag_start_pos = point
+    		tag_type = 0
+    		tagname_started = 0
+    	swbreak
+    	
+    	case '/'
+    		if tag_started_flag == 1{
+	    		if tagname_started == 0{
+        			tag_type = 1
+        		}
+	        	if tagname_started == 1{
+					now_tagname = strmid(s, tagname_start_pos, point - tagname_start_pos)
+					tagname_started = 2 //タグ名取得完了
+	        	}
+        	}
+    	swbreak
+    	
+    	case '>'
+    		// タグ名を取得
+    		if tagname_started != 0{ //空タグは処理しない
+        		if tagname_started != 2{ //タグ名取得完了していない
+        			now_tagname = strmid(s, tagname_start_pos, point - tagname_start_pos)//現地点までをタグ名とみなす		
+        		}
+        		// 開始タグ処理
+        		if tag_type == 0 {
+	        		if is_self_closing(now_tagname) == 0{
+	        			tag_stack(tag_stack_num) = now_tagname
+	        			tag_start_stack(tag_stack_num) = tag_start_pos
+	        			tag_stack_num++
+        			}else{ //自己終了タグ
+        				if now_tagname == tag{
+        					result(result_num) = strmid(s, tag_start_pos, point - tag_start_pos + 1)
+        					result_num++
+        				}
+	        		}
+        		}else: if tag_type == 1 {
+	        		is_valid_tag = 0
+					repeat tag_stack_num
+						if now_tagname == tag_stack.cnt{
+							is_valid_tag = 1
+							break
+						}
+					loop
+	        		if is_valid_tag{
+	        			while tag_stack_num
+	        				tag_stack_num--
+	        				top_tag = tag_stack(tag_stack_num)
+	    					
+	    					if now_tagname != top_tag{
+		    					自動補完 = "</" + top_tag + ">"
+		    				}else{
+			    				自動補完 = ""
+			    			}
+			    			if tag == top_tag{
+		    					result(result_num) = strmid(s, tag_start_stack(tag_stack_num), tag_start_pos - tag_start_stack(tag_stack_num))
+		    					result(result_num)+= 自動補完
+		    					result(result_num)+= strmid(s, tag_start_pos, point - tag_start_pos + 1)
+		    					result_num++
+		    				}
+	        				if top_tag == now_tagname: _break
+	        			wend
+        			}else{
+	        			logmes "オープンされていないタグが閉じられようとしています"
+	        		}
+        		}
+        	}
+    		
+    		// タグの解析をリセット
+    		tag_started_flag = 0
+    		tagname_started = 0
+    		tag_type = 0
+    		now_tagname = ""
+    	swbreak
+    	
+    	default
+    		// タグ名の開始
+    		if (token >='a' && token <= 'z') || (token >= 'A' &&  token <= 'Z') || (token >='0' && token <= '9') || (token=='-') || (token=='.') || (token=='_') || (token ==':') {
+        		if tag_started_flag == 1 && tagname_started == 0 {
+	        		tagname_started = 1
+	        		tagname_start_pos = point
+	        	}
+        	}else{
+	        	if tagname_started == 1{
+					now_tagname = strmid(s, tagname_start_pos, point - tagname_start_pos)
+					tagname_started = 2 //タグ名取得完了
+		        }
+		    }
+    	swbreak
+        swend
+
+        point++
+    wend
+
+	//閉じられずに処理が終了したら自動的に閉じる
+	while tag_stack_num
+		tag_stack_num--
+		top_tag = tag_stack(tag_stack_num)
+		自動補完 = "</" + top_tag + ">"
+		if tag == top_tag{
+			result(result_num) = strmid(s, tag_start_stack(tag_stack_num), point - tag_start_stack(tag_stack_num))
+			result(result_num)+= 自動補完
+			result_num++
+		}
+	wend
+    return result_num
+    
+#defcfunc is_self_closing str tag
+    if instr(self_closing_tags, 0, tag + ",") >= 0 : return 1
+    return 0
+    
+#deffunc init_self_closing_tags
+    self_closing_tags = "br,img,input,meta,link,hr,"
+    return
+#global
+init_self_closing_tags
+#endif
+
+
+#ifdef MODULE_DEBUG
+#undef mes 
+#define mes(%1) mes@hsp %1:logmes %1
+screen 0, 1200
+
+
+
+mes "==== 強化テスト開始 ===="
+
+;
+; テストケース8: 属性内にタグのような文字列が含まれる場合
+;
+test_input = "<div data='<fake>tag</fake>'>real</div>"
+tag = "div"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1 {
+    mes "テスト8 失敗: 結果数が不正です " + res_num
+} else : if res(0) != test_input {
+    mes "テスト8 失敗: 属性内の疑似タグを誤検出 ["+res(0)+"]"
+} else {
+    mes "テスト8 成功"
+}
+
+;
+; テストケース9: 複雑なネスト構造
+;
+test_input = "<ul><li>1<ul><li>1.1</li></ul></li><li>2</li></ul>"
+tag = "li"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+expected = "<li>1<ul><li>1.1</li></ul></li>","<li>1.1</li>", "<li>2</li>"
+
+if res_num != 3 {
+    mes "テスト9 失敗: 結果数が不正です " + res_num
+} else {
+    repeat 3
+        if res(cnt) != expected(cnt) {
+            mes "テスト9 失敗: 項目"+cnt+"\n期待: "+expected(cnt)+"\n結果: "+res(cnt)
+            break
+        }
+    loop
+    mes "テスト9 成功"
+}
+;
+; テストケース10: 混合自己終了タグ
+;
+test_input = "<p><br/><img src='a.jpg'/>text</p>"
+tag = "p"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1{
+	mes "テスト10 失敗: 結果数が不正です " + res_num
+}else : if res(0) != test_input {
+    mes "テスト10 失敗: 結果不一致 ["+res(0)+"]"
+} else {
+    mes "テスト10 成功"
+}
+
+;
+; テストケース11: 不正なネスト
+;
+test_input = "<div><span></div></span>"
+tag = "div"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1 {
+    mes "テスト11 失敗: 結果数が不正です " + res_num
+} else : if res(0) != "<div><span></div>" {
+    mes "テスト11 失敗: 不正なネスト処理 ["+res(0)+"]"
+} else {
+    mes "テスト11 成功"
+}
+
+;
+; テストケース12: コメント内のタグ無視
+;
+test_input = "<!-- <div>fake</div> --><real>true</real>"
+tag = "div"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 0 {
+    mes "テスト12 失敗: コメント内タグを誤検出 " + res_num
+} else {
+    mes "テスト12 成功"
+}
+
+;
+; テストケース13: スクリプトタグ内の処理
+;
+test_input = "<script>if (a < 0) {}</script><div>real</div>"
+tag = "script"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1 {
+    mes "テスト13 失敗: 結果数が不正です " + res_num
+} else : if instr(res(0), 0, "<script>") != 0 {
+    mes "テスト13 失敗: スクリプト内容の処理エラー ["+res(0)+"]"
+} else {
+    mes "テスト13 成功"
+}
+
+;
+; テストケース14: 長いタグ名と属性
+;
+long_tag = strf("%256s", "x")  // 256文字のタグ名
+test_input = "<" + long_tag + " a='"+strf("%512s","")+"'>test</" + long_tag + ">"
+tag = long_tag
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1 {
+    mes "テスト14 失敗: 結果数が不正です " + res_num
+} else : if strlen(res(0)) != strlen(test_input) {
+    mes "テスト14 失敗: 長いタグの処理失敗"
+} else {
+    mes "テスト14 成功"
+}
+
+;
+; テストケース15: 特殊文字を含む属性
+;
+test_input = "<input name='a[]' value='/>'>"
+tag = "input"
+sdim res
+res_num = find_tags_bytag(test_input, tag, res)
+if res_num != 1 {
+    mes "テスト15 失敗: 結果数が不正です " + res_num
+} else : if res(0) != test_input {
+    mes "テスト15 失敗: 特殊属性の処理失敗 ["+res(0)+"]"
+} else {
+    mes "テスト15 成功"
+}
+
+mes "==== 強化テスト終了 ===="
+stop
+#endif

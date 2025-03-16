@@ -49,13 +49,16 @@
 			//前回検索した棋譜とボードサイズが違う場合
 			if prexy != xy || prexy.1 != xy.1{
 				create_mask 探したい局面, mask, patterns, pattern_masks, xy, xy.1 //patternに16種類, maskに８種類格納する
-				int_count = calc_int_count(xy, xy.1)
 				clear_mem
 				prexy = xy,xy.1
+
+				//サーチメイン関数用の変数設定
+				int_count = calc_int_count(xy, xy.1)
+				r_pattern_num = 4 << (xy == xy.1)
 				
 			}
 	　
-			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, int_count, max_depth) >= 0{
+			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip, max_depth) >= 0{
 				result(0, result_num) = sgf_filename
 				result(1, result_num) = str(stat)
 				result_num++
@@ -67,7 +70,7 @@
 	return result_num
 
 
-#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int use_int_count, int max_depth
+#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip, int max_depth
 
   lpoke node_data, , 0         //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
@@ -87,13 +90,13 @@
 
     if x >= 0{
 	    copy_bitboard_data get_bitboard(node), board
-	   	for j,,8 //回転
+	   	for j,,r_pattern_num //回転
 	   		if memorize_hit_mask(j, x, y, pattern_mask){ //ノードの着手がmaskにない場合、このノードでは一致しない。
 	   			dup mk, pattern_mask(0, j)
 		   		for i,,colorflip //色反転
 		   			dup pt, pattern(0, j + i * 8)
 		    		OK = 1
-		    		repeat use_int_count
+		    		repeat int_count
 		    			if ((board(cnt) ^ pt(cnt)) & mk(cnt)) != 0{
 		    				OK = 0
 			    			break

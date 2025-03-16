@@ -307,7 +307,7 @@ init_bitboard
 	
 	dim new_bitboard, 23,8
 	num = get_coordinates_set_int(v,r)
-	repeat 8
+	repeat 4 << (board_size_x == board_size_y)
 		m = cnt
 		repeat num
 			rotate_coordinate xy,r(0,cnt),r(1,cnt), m, bx, by
@@ -323,7 +323,7 @@ init_bitboard
 #deffunc make_pattern array a, array new_pattern
 	dim new_pattern, 23,16 //‚P‹Ç–Ê‚ğ‚Q‚Rint‚Å•\Œ»A‚P‚Uí—pˆÓA
 	for i,,2 //F”½“]
-		for j,,8 //‰ñ“]
+		for j,,4 << (length(a) == length2(a)) //‰ñ“]
 			repeat length(a): x = cnt
 				repeat length2(a): y = cnt
 					col = a(x,y) & 3
