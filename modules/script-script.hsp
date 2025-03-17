@@ -1,0 +1,22 @@
+#module
+#defcfunc script_script var s, int index
+
+	point = index
+	tagstart = 0
+	while point < strlen(s)
+		token = peek(s,point)
+		switch token
+		case '<'
+			tagstart = 1
+		swbreak
+		case
+			'/'
+		swbreak
+		case'>'
+		swbreak
+		default
+		swend
+	wend
+	
+	return point
+#global

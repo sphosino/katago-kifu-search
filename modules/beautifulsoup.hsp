@@ -1,5 +1,7 @@
+;#include "find_tags_bytag.hsp"
 #module 
 
+;/*/
 #deffunc find_tags_bytag str s1, str tag, array result, int start
 
 // find_tags_bytag 対象の文字列, 対象のタグ, 結果を受け取る配列, オフセット(0)
@@ -37,6 +39,7 @@
 		}
 	loop
 	return
+;*/
 	
 #deffunc find_attribute_byname str s1, str name, array result
 	s = s1
