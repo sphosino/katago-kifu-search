@@ -1,5 +1,5 @@
 ---
-title: "開発記録"
+title: "Katago棋譜検索システムー開発記録"
 layout: home
 ---
 
