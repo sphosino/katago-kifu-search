@@ -269,6 +269,7 @@ dim rect_stack, 4
 
 //ŒŸõŒ‹‰ÊŽó‚¯Žæ‚è—p
 sdim search_result,, 2, 10000
+sdim search_result_sgflist
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 20
@@ -432,7 +433,9 @@ setfps 60
 			}
 
 			if _getkey(2) == 1{
-				modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
+				if rect(0) >= 0{
+					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
+				}
 				dragging_flag = 0
 			}
 		}
