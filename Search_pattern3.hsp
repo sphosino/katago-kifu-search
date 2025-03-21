@@ -107,7 +107,7 @@
 #define COLOR_INFO 0
 #define ROTATE_INFO 1
 #define MATCH_GROUP_COUNT 2
-#define UNMATCHED_GROUP_FLAGS 3//まだマッチしていないグループフラグ
+#define NOT_YET_MATCHED_FLAGS 3//まだマッチしていないグループフラグ
 
 #defcfunc search_main int t, array pattern
 
@@ -163,8 +163,8 @@
         if hit_stone >= 0{
             if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
 	            rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
-	            if (vlist(UNMATCHED_GROUP_FLAGS, i) & rg) == rg{
-		            vlist(UNMATCHED_GROUP_FLAGS, i) &= rg ^ $FFFFFFFF
+	            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{
+		            vlist(NOT_YET_MATCHED_FLAGS, i) &= rg ^ $FFFFFFFF
 		           	vlist(MATCH_GROUP_COUNT, i) += stat & 1 // ?指定以外で加算
 		            if vlist(MATCH_GROUP_COUNT, i) == group_num{
 		              return node //検索成功
