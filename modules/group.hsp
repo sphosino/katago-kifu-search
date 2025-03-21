@@ -76,18 +76,21 @@
 //回転に対応。検索前に作成して利用
 #deffunc make_rotated_group array rotation_table, int board_size_x, int board_size_y
 	is_square = (board_size_x == board_size_y)
-	num_rotations = 4 << is_square
-	dim rotation_table, board_size_x, board_size_y, num_rotations //正方形は８種類、長方形は４種類の回転パターン
+	num_rotations = 4 << is_square //基本４パターン、正方形は８種類
+	dim rotation_table, board_size_x, board_size_y, num_rotations 
 	repeat length(groups)
-		group_number = cnt
+		group_flag = 1 << cnt
 		split groups(cnt),",", coordinate_list
-		repeat stat - 1
+		
+		repeat stat
 			coord_str = coordinate_list(cnt)
+			if strlen(coord_str) < 4: continue
 			original_x = int(strmid(coord_str,0,2))
 			original_y = int(strmid(coord_str,2,2))
+			
 			repeat num_rotations
 				rotate_coordinate xy, original_x, original_y, cnt, board_size_x, board_size_y
-				rotation_table(xy, xy.1, cnt) = group_number
+				rotation_table(xy, xy(1) , cnt) |= group_flag
 			loop
 		loop
 	loop
