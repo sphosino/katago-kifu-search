@@ -25,4 +25,7 @@
         circle x, y, x + r * 2, y + r * 2
     loop
     return
+#deffunc rboxfa array a, int _r
+	rboxf a,a.1,a.2,a.3,_r
+    return
 #global

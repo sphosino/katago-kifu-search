@@ -1,0 +1,252 @@
+
+#ifndef GobanPatternManager
+
+#include "modules/goban.hsp"
+#include "modules/rotate_coordinate.hsp"
+#include "modules/group.hsp"
+#module GobanPatternManager
+
+#const global PATTERN_NONE 1
+#const global PATTERN_ANY_COLOR 0xFFFFFFFF & (PATTERN_NONE ^-1)
+#const global PATTERN_BLACK 1 << 1
+#const global PATTERN_WHITE 1 << 2
+#const global PATTERN_RED   1 << 3
+#const global PATTERN_GREEN 1 << 4
+#const global PATTERN_BLUE  1 << 5
+#const global PATTERN_YELLOW 1 << 6
+#const global PATTERN_ORANGE 1 << 7
+#const global PATTERN_PURPLE 1 << 8
+
+
+#defcfunc bit_to_color_names int color_bits, local i
+    i = ""
+
+    if color_bits & PATTERN_NONE{
+	    i += "NONE,"
+	}
+	
+    if (color_bits & PATTERN_ANY_COLOR) == PATTERN_ANY_COLOR{
+	    i += "ALL_COLOR"
+	    return i
+	}
+	
+    if color_bits & PATTERN_BLACK  { i += "BLACK," }
+    if color_bits & PATTERN_WHITE  { i += "WHITE," }
+    if color_bits & PATTERN_RED    { i += "RED," }
+    if color_bits & PATTERN_GREEN  { i += "GREEN," }
+    if color_bits & PATTERN_BLUE   { i += "BLUE," }
+    if color_bits & PATTERN_YELLOW { i += "YELLOW," }
+    if color_bits & PATTERN_ORANGE { i += "ORANGE," }
+    if color_bits & PATTERN_PURPLE { i += "PURPLE," }
+    
+    return strtrim(i, 2, ',') 
+
+#define global ctype pattern_validation(%1) \
+		( \
+		((%1) != PATTERN_NONE) && \
+		((%1) != (PATTERN_NONE | PATTERN_ANY_COLOR)) && \
+		((%1) != (PATTERN_ANY_COLOR & PATTERN_NONE)) \
+		)
+
+#defcfunc load_stones_from_board array b, array a
+
+	dim a, 3
+	an = 0
+
+	repeat length(b): m = cnt
+		repeat length2(b)
+			switch b(m, cnt)
+			case 1
+				a(0, an) = m, cnt, PATTERN_BLACK ;2
+				an++
+			swbreak
+			case 2 
+				a(0, an) = m, cnt, PATTERN_WHITE ;4
+				an++
+			swbreak
+			case 3
+				a(0, an) = m, cnt, PATTERN_BLACK | PATTERN_WHITE; 6
+				an++
+			swbreak
+			case 4
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_BLACK; 3
+				an++
+			swbreak
+			case 5
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_WHITE; 5
+				an++
+			swbreak
+			swend
+		loop
+	loop
+	
+	return an
+
+#deffunc initialize_rects var rect_set, array rects, array stones
+	num_rects = create_rect_from_coordinate_set(rect_set, rects)
+	sdim stones,, num_rects
+	return
+
+#deffunc add_stone_pattern array rects, array stones, int x, int y, int col, local i
+
+	stone_info = strf("%02d:%02d:%d", x, y, col)
+	logmes "AA" + stone_info
+	repeat length2(rects)
+	
+		x1 = rects(0,cnt)
+		y1 = rects(1,cnt)
+		x2 = rects(2,cnt)
+		y2 = rects(3,cnt)
+		
+		if x >= x1 && x <= x2 && y >= y1 && y <= y2{
+
+				if strlen(stones(cnt)) == 0{
+					stones(cnt) = stone_info
+				}else{
+					stones(cnt) += "-" + stone_info
+				}
+			
+			break
+		}
+	loop
+
+	return
+
+#deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
+
+    sdim patterns,,length2(rects), 3, 2
+
+    repeat length2(rects)
+        patterns(cnt,0,0) = "" + rects(0, cnt) + "," + rects(1, cnt) + "," + rects(2, cnt) + "," + rects(3, cnt)
+        patterns(cnt,0,1) = patterns(cnt,0,0)
+
+     	s = ""
+     	split stones(cnt),"-",stone_data
+     	logmes "A"+stones(cnt)
+     	info_num = stat
+     	none_count = 0
+        repeat info_num
+      		if cnt != 0: s += "-"
+      		if stone_data(cnt) == "":continue
+        	split stone_data(cnt),":",tmp
+        	none_count += (int(tmp.2) & PATTERN_NONE) != 0
+			s += tmp.0 + ":" + tmp.1 + ":" + str(int(tmp.2) ^ (PATTERN_BLACK | PATTERN_WHITE))
+        loop
+        
+        patterns(cnt,1,0) = stones(cnt)
+		patterns(cnt,1,1) = s
+
+
+		if stones(cnt) == ""{
+			patterns(cnt,2,0) = "0"
+			patterns(cnt,2,1) = "0"
+		}else{
+			patterns(cnt,2,0) = str(info_num - none_count)
+			patterns(cnt,2,1) = patterns(cnt, 2, 0)
+		}
+    loop
+    return
+
+#defcfunc get_pattern_all_stones_num array a, local i
+	
+	repeat length(a)
+		i += int(a(cnt,2))
+	loop
+
+	return i
+
+#defcfunc get_pattern_all_groups_num array a
+	count = 0
+	mask = 0
+	repeat length(a)
+		dim stone_info
+		split a(cnt,1),"-", stone_info //石情報を分離
+		repeat length(stone_info)
+			split stone_info(cnt), ":", xy
+			x = int(xy(0))
+			y = int(xy(1))
+			group_mask = get_group_by_position(x, y)
+			if group_mask == 0{ //グループ化されてなければそのままカウント
+				count++
+			}else{
+				mask |= group_mask
+			}
+		loop
+	loop
+	//フラグが立っているグループをカウント
+	groups = 0
+	repeat 4
+		if (mask & (1 << cnt)){
+			groups++
+		}
+	loop
+	
+	return count + groups //マッチと判定するために必要な数
+
+//get_group_by_positionはフラグが複数返ってきますこれでOK?
+
+#defcfunc patterns_to_notepad array a
+	notesel s
+	s = "["
+	repeat length(a)
+		noteadd a(cnt, 0)  + "@" + a(cnt, 1) + "@" + a(cnt, 2)
+	loop
+	noteadd "]"
+	noteunsel
+	return s
+#deffunc make_rotated_patterns array a, int board_size_x, int board_size_y , array result
+
+
+	num_rotate_patterns = 8
+	if board_size_x != board_size_y: num_rotate_patterns = 4
+	
+	sdim result,, length(a), length2(a), length3(a), num_rotate_patterns
+	
+    repeat num_rotate_patterns
+    	t_pattern = cnt
+
+		for r,,length(a)
+		
+			split a(r,0), ",", tmp
+			x1 = int(tmp)
+			y1 = int(tmp.1)
+			x2 = int(tmp.2)
+			y2 = int(tmp.3)
+
+			rotate_rectangle rect, x1, y1, x2, y2, t_pattern, board_size_x, board_size_y
+
+			rect_str = "" + rect(0) + "," + rect(1) + "," + rect(2) + "," + rect(3)
+			
+			for i,,2
+			
+				
+				split a(r,1,i), "-", stone_datas
+				e = stat
+				
+				sdata = ""
+				repeat e
+					split stone_datas(cnt),":", tmp
+					x = int(tmp)
+					y = int(tmp.1)
+					col = tmp.2
+
+					rotate_coordinate p, x, y, t_pattern, board_size_x, board_size_y
+
+					if sdata = ""{
+						sdata  = ""  + p + ":" + p(1) + ":" + col
+					}else{
+						sdata += "-" + p + ":" + p(1) + ":" + col
+					}
+				loop
+
+				result(r,0,i,t_pattern) = rect_str
+				result(r,1,i,t_pattern) = sdata    
+				result(r,2,i,t_pattern) = str(e)
+				
+			next
+		next
+    loop
+
+	return
+#global
+#endif

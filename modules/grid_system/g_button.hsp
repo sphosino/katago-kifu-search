@@ -66,6 +66,8 @@ init_g_button_colorlist
 
 	newmod a, grid_button, "ABC",*lab_
 
-*lab_
 	stop
+*lab_
+	mes "OK"
+	return
 #endif

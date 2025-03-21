@@ -1,0 +1,211 @@
+#ifndef search
+#include "modules/keyfps.hsp" //タイマー -> ( keyfpstime )
+#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
+#include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
+#include "modules/hash.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
+#include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift )
+#include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
+
+#module
+	#const VLIST_NUM 4 * 16
+	#const VLIST_SIZE VLIST_NUM * 4
+	#const NODE_INFO_NUM 3
+	#const NODE_INFO_SIZE NODE_INFO_NUM * 4
+	#const DATA_NUM NODE_INFO_NUM + VLIST_NUM
+	#const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
+
+
+#deffunc search_init
+	dim vlist , 4, 16
+	init_ringbuffer DATA_SIZE, 128
+	sdim node_data, DATA_SIZE
+	return
+
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index
+
+
+	group_num = get_pattern_all_groups_num(pattern) //パターンのhit判定に必要な石数を取得
+	logmes "SNUM = " + group_num
+	if group_num == 0: return 0
+	if group_num > max_depth: return 0
+
+	colorflip_num = 1 + colorflip
+	
+	最大の深さ = 50
+	if max_depth{
+		最大の深さ = max_depth
+	}
+	rn = 0
+	prexy = -1, -1
+	
+	//logmes "探索を開始します-> 石数 = " + stone_num
+	
+	notesel ss
+		ss = SGF_list
+	
+		titlestr = ""
+	
+		starttime = keyfpstime
+	
+		if kifu_update{		
+			repeat , next_kifuload_index
+				noteget sgf_filename, cnt
+				next_kifuload_index++
+				if sgf_filename == "": break
+				if get_value(sgf_filename) == NOT_DEFINED_HASH{
+					notesel sgf
+						noteload sgf_filename
+					noteunsel
+					topnode = load_sgf(sgf)
+					new_value sgf_filename, str(topnode)
+					await
+					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
+					title titlestr
+				}
+			loop
+		}
+	
+		titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
+		title titlestr
+
+		starttime = keyfpstime
+		repeat notemax
+			noteget sgf_filename, cnt
+			
+			topnode = int(get_value(sgf_filename))
+			
+			get_board_size_from_SGF topnode, xy
+	
+			//前回検索した棋譜とボードサイズが違う場合
+			if prexy != xy || prexy.1 != xy.1{
+				//新たなパターンを生成
+				make_rotated_patterns pattern, xy, xy.1 , rotated_p
+				make_rotated_group rotated_group, xy, xy.1
+				clear_mem
+				prexy = xy,xy.1
+
+				//サーチメイン関数用の変数設定
+				r_pattern_num = 4 << (xy == xy.1)
+				all_pattern_num = r_pattern_num * colorflip_num
+				
+			}
+			
+			//検索実行
+			if search_main(topnode, rotated_p) >= 0{
+				result(0, rn) = sgf_filename //一致したSGFを結果に追加
+				result(1, rn) = str(stat)
+				rn++
+			}
+			
+		loop
+	noteunsel
+
+	title titlestr + strf("検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
+	return rn
+
+
+#define COLOR_INFO 0
+#define ROTATE_INFO 1
+#define MATCH_GROUP_COUNT 2
+#define UNMATCHED_GROUP_FLAGS 3//まだマッチしていないグループフラグ
+
+#defcfunc search_main int t, array pattern
+
+/*
+  t:
+  - 検索開始のノード番号
+  pattern:
+  - 検索に使うパターン
+  result_node:
+  - 検索に一致した場合そのノード番号を返す
+
+  return_value -> マッチしたかどうかの　1か0の値
+*/
+
+  //キュー初期化
+  valid_pattern_count = 0
+  repeat r_pattern_num
+    for i,, colorflip_num
+      vlist(0, valid_pattern_count) = i, cnt, 0, (8 | 4 | 2 | 1) ;四つのグループフラグを立てておく
+      valid_pattern_count++
+    next
+  loop
+
+  lpoke node_data, , 0         //現在の深さ(手数)
+  lpoke node_data, 4, t         //
+  lpoke node_data, 8, all_pattern_num //全ての有効なパターン数
+  memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+  r_push node_data
+
+  *next_node
+  while ringbuffer_count
+
+    r_shift node_data //キューからノードデータを復元
+
+    //ノードデータ展開
+    depth = lpeek(node_data) : if depth > 最大の深さ: return -1
+    node = lpeek(node_data, 4)
+    valid_pattern_count = lpeek(node_data, 8)
+    memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
+
+    turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
+
+    if x >= 0{
+
+      for i,, valid_pattern_count
+
+        *check_pattern_list
+
+        if memorize_hit_rect(vlist(ROTATE_INFO, i), x, y, pattern, hit_stone) == -1{
+            _continue //指定エリア外（関係ない着手）
+        }
+
+        if hit_stone >= 0{
+            if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
+	            ll = stat
+	            //グループフラグをoffにする。
+	            if (vlist(UNMACTHED_GROUP_FLAGS, i) & rotated_group(x,y,vlist(ROTATE_INFO,i))) == rotated_group(x,y,vlist(ROTATE_INFO,i)){
+		            vlist(UNMACTHED_GROUP_FLAGS, i) &= rotated_group(x,y,vlist(ROTATE_INFO,i)) ^ $FFFFFFFF
+		           	vlist(MATCH_GROUP_COUNT, i) += ll & 1 // ?指定以外で加算
+		            if vlist(MATCH_GROUP_COUNT, i) == group_num{
+		              return node //検索成功
+		            }
+		            _continue
+	        	}else{
+		        	//グループに二回目のヒットなのでこのパターンはアウト
+		        }
+	      	}else{
+		      	//色が違うのでアウト
+		    }
+        }else{
+	        //エリア内でパターンの石以外に着手したのでアウト
+	    }
+        valid_pattern_count--
+        if i == valid_pattern_count{
+          //有効パターンリストを全て探索した。
+          if valid_pattern_count{
+            //まだ有効リストが残っているので、子ノードを積みに行く
+            _break
+          }
+          //有効なパターンがなくなった。  ＝  このノードは可能性がなくなった。
+          goto *next_node
+        }
+        //今の位置をパターンリストの末尾要素で置き換えて再探索
+        memcpy vlist(0, i), vlist(0, valid_pattern_count), 16
+        goto *check_pattern_list
+
+      next
+    }
+    repeat get_SGF_childs(node, child)
+      lpoke node_data,  , depth + 1
+      lpoke node_data, 4, lpeek(child, cnt * 4)
+      lpoke node_data, 8, valid_pattern_count
+      memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+      r_push node_data
+    loop
+  wend
+  return -1
+
+#global
+search_init
+#endif

@@ -1,0 +1,138 @@
+#ifndef group_manager
+#module group_manager
+
+#const BOARD_X_MAX 100
+#const BOARD_Y_MAX 100
+
+#deffunc group_init
+	group_str = "A","B","C","D" //４つまで指定できるようにする
+	dim stone_map, BOARD_X_MAX, BOARD_Y_MAX, 4
+	dim stone_map_count, BOARD_X_MAX, BOARD_Y_MAX
+	sdim groups, 500, 4 //グループごとの位置を保存(xxyy, xxyy... )形式
+	return
+#deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var board　 //碁盤が表示されている位置ｘ、ｙ、碁盤のマスの大きさx,y , 石の色（これによってグループ表示の文字色を変える）
+	for i,,BOARD_X_MAX
+		for j,,BOARD_Y_MAX
+			repeat 4
+				if stone_map(i,j, cnt){
+					switch get_goban_position_color(board,i,j)
+					case 1 ; 黒石
+						color 255,255,255
+					swbreak
+					case 2 ; 白石
+						color 0,0,0
+					swbreak
+					case 0 ; 空点
+						color 0,0,0
+					swbreak
+					swend
+					if stone_map_count(i,j) >= 2{
+						font "",MAS_X / 2
+						pos posx + i * MAS_X + (cnt \ 2) * (MAS_X / 2), posy + j * MAS_Y + (cnt / 2) * (MAS_Y / 2)		
+					}else{
+						font "",MAS_X
+						pos posx + i * MAS_X, posy + j * MAS_Y
+					}
+					mes group_str(cnt)
+				}
+			loop
+		next
+	next
+	return
+#deffunc add_group_stone int x, int y, int group_num
+	if group_num_validation(group_num){
+		return
+	}
+    if stone_map(x, y, group_num) == 0{
+ 		stone_map(x, y, group_num) = 1
+    	stone_map_count(x, y)++
+    	groups(group_num) += strf("%02d%02d,",x,y)
+	}
+    
+	return
+#deffunc del_group_stone int x, int y, int group_num
+	if group_num_validation(group_num){
+		return
+	}
+	if stone_map(x, y, group_num){
+		stone_map(x, y, group_num) = 0
+		stone_map_count(x, y)--
+		index = instr(groups(group_num),0,strf("%02d%02d",x,y))
+		groups(group_num) = strmid(groups(group_num),0,index) + strmid(groups(group_num), index + 5, 65535)
+	}
+	return
+
+#deffunc get_stones_by_group array a, int p1
+	split groups(p1),",",tmp
+	repeat stat - 1
+		a(0,cnt) = 0 + strmid(tmp(cnt),0,2)
+		a(1,cnt) = 0 + strmid(tmp(cnt),2,2)
+	loop
+	return
+	
+#defcfunc get_group_by_position int x, int y
+	return stone_map(x, y, 3) << 3 | stone_map(x, y, 2) << 2 | stone_map(x, y, 1) << 1| stone_map(x, y, 0)
+
+//回転に対応
+#deffunc make_rotated_group array a, int x, int y
+	dim a,x,y, 4 << (x == y) //正方形は８種類、長方形は４種類の回転パターン
+	repeat 4
+		m = cnt
+		split groups(cnt),",",tmp
+		repeat stat - 1
+			xx = int(strmid(tmp(cnt),0,2))
+			yy = int(strmid(tmp(cnt),2,2))
+			repeat 4 << (x == y)
+				rotate_coordinate xy, xx, yy, cnt, x, y
+				a(xy,xy.1,cnt) = m
+			loop
+		loop
+	loop
+	return
+
+#deffunc clear_group int group_num
+    if group_num_validation(group_num) {
+        return
+    }
+    
+    // グループに登録された座標を取得
+    split groups(group_num), ",", tmp
+    repeat stat
+        xy = tmp(cnt)
+        if strlen(xy) == 4 {
+            x = int(strmid(xy, 0, 2))
+            y = int(strmid(xy, 2, 2))
+            if stone_map(x, y, group_num) {
+                stone_map(x, y, group_num) = 0
+                stone_map_count(x, y)--
+            }
+        }
+    loop
+
+    // グループデータをリセット
+    groups(group_num) = ""
+    
+    return
+#defcfunc group_num_validation int group_num
+	invalid = group_num < 0 || group_num > 3
+	if invalid{
+		logmes "不正なグループ値です" + group_num
+	}
+	return invalid
+#global
+group_init
+#endif
+//事前にパターンを作成するためなので速度は気にしません。
+//チェックお願いします
+
+#if 0
+add_group_stone 5,5, 0
+add_group_stone 5,5, 1
+add_group_stone 5,5, 2
+add_group_stone 5,5, 3
+add_group_stone 5,4, 0
+add_group_stone 18,18,3
+
+group_draw 0, 0,20,20
+
+#endif

@@ -1,0 +1,117 @@
+#include "area_grid_system.hsp"
+#include "find_empty_index.hsp"
+#addition "../keyfps.hsp"
+#module grid_radiobox string, area, v,items, colors, bc, fc, w, h
+
+#modinit var a, int area_number, local thismod_ID
+	a = -1
+	dup v, a
+	area = area_number
+	colors = 0,1,2,3
+	w = 1
+	h = 1
+	dim item_indces
+	dim item_indces_num
+	sdim string
+	colors = 5,6,7,8
+
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modfunc add_item_radiobox str s1
+	if find_empty_index(item_indces,item_indces_num, w, h) >= 0{
+		//’Ç‰Á‚·‚é
+		item_indces(item_indces_num) = stat
+		string(item_indces_num) = s1
+		item_indces_num++
+		
+	}else{
+		//‰¡Šg’£
+		trans_grid item_indces, item_indces_num, w, w + 1
+		w++
+		add_item_radiobox thismod, s1
+		
+	}
+	return
+#modfunc draw_g_radiobox
+
+	thisrect thismod, rect, area
+
+	item_size_x = (rect.2-rect.0) / w
+	item_size_y = (rect.3-rect.1) / h
+	now_cx = ginfo_cx, ginfo_cy
+	
+	repeat item_indces_num
+		x = item_indces(cnt) \ w
+		y = item_indces(cnt) / w
+
+		this_rect_x = rect.0 + x * item_size_x
+		this_rect_y = rect.1 + y * item_size_y
+		this_rect_endx = this_rect_x + item_size_x
+		this_rect_endy = this_rect_y + item_size_y
+
+		this_rect = this_rect_x,this_rect_y,this_rect_endx,this_rect_endy
+		
+		backcolor = colors(0)
+		if in_rect(this_rect){
+			if _getkey(1) == 1{
+				if cnt == v{
+					v = -1
+				}else{
+					v = cnt
+				}
+			}
+			backcolor = colors(1)
+		}
+		if v == cnt{
+			backcolor = colors(2)
+		}
+		color backcolors(backcolor) >> 16 & 255, backcolors(backcolor) >> 8 & 255, backcolors(backcolor) & 255
+		rboxfa this_rect
+		color 255,255,255
+		m = 5, 5, 5, 5
+		get_rect_margin this_rect, m, nrec
+		pos nrec, nrec.1
+		mes string(cnt)
+		
+	loop
+	pos now_cx,now_cx.1
+	return
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+
+#deffunc init_g_radio_button_colorlist
+	backcolors = $00d49d,$fedf03,$e08e9f,$da85af,$f1eef7,$ae8fb1,$262626, $183883,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6
+	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9
+	return
+
+#deffunc local setcolor int p1
+	color p1>>16&255,p1>>8&255,p1&255
+	return
+#include "rectmock.hsp"
+#global
+init_g_radio_button_colorlist
+
+#if 0
+mock_flag@global = 1
+
+set_rect_mock 30,   60,60, 260,100
+
+newmod a,grid_radiobox, z, 30
+
+add_item_radiobox a, "A"
+add_item_radiobox a, "B"
+add_item_radiobox a, "C"
+add_item_radiobox a, "D"
+
+*main
+	manage_keyfps
+	color 255,255,255:boxf
+	draw_g_radiobox a
+	redraw:redraw 2
+	title "" + z
+	await 16
+	goto*main
+#endif

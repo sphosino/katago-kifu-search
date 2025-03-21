@@ -30,7 +30,7 @@ netinit
 
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
-
+	
 	repeat length(r) / 2
 		find_attribute_byname r(1+cnt*2), "href", f
 		

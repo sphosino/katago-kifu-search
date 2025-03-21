@@ -33,10 +33,7 @@
 	m = 5, 5, 5, 5
 	get_rect_margin rect, m, nrec
 	pos nrec, nrec.1: mes string
-
 	color 180,180,180
-
-
 	if flag: color 255,30,30
 	boxf checkrect,checkrect.1,checkrect.2,checkrect.3
 	return

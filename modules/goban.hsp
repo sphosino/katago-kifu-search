@@ -1,13 +1,13 @@
 #ifndef goban
-#include "modules/boxfa.hsp"
+#include "boxfa.hsp"
 #include "bitboard.hsp"
-#include "modules/grid_system/area_grid_system.hsp"
+#addition "grid_system/area_grid_system.hsp"
 
 #const global 空点 0
 #const global 黒番 1
 #const global 白番 2
 
-#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number
+#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number, masx, masy, px, py
 #modinit int x, int y, int p1, int p2, int _area
 	dim board, x, y
 	clear_board thismod
@@ -240,8 +240,8 @@
 	loop
 	return
 #modcfunc get_goban_position_color int _x, int _y
-
 	return board(_x,_y)
+	
 //各モジュールで追加に必要なコードはこれだけ。コピペ推奨
 #modfunc local thisrect array mocklist, int area_number_mock
 	if mock_flag@global{
@@ -302,6 +302,13 @@
 
 
 	return n
+
+#modfunc get_goban_mas_size array a
+	a = masx,masy
+	return 
+#modfunc get_goban_position array a
+	a = px, py
+	return
 
 #modfunc 置き石 int _x, int _y, int col
 	if _x < 0 || _x >= length(board) || _y < 0 || _y >= length2(board) {
