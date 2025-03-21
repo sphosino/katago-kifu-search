@@ -75,9 +75,9 @@
 
 //回転に対応。検索前に作成して利用
 #deffunc make_rotated_group array rotation_table, int board_size_x, int board_size_y
-	is_square = (x == y)
+	is_square = (board_size_x == board_size_y)
 	num_rotations = 4 << is_square
-	dim a, board_size_x, board_size_y, num_rotations //正方形は８種類、長方形は４種類の回転パターン
+	dim rotation_table, board_size_x, board_size_y, num_rotations //正方形は８種類、長方形は４種類の回転パターン
 	repeat length(groups)
 		group_number = cnt
 		split groups(cnt),",", coordinate_list
