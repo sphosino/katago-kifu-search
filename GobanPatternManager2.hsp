@@ -161,6 +161,7 @@
 	repeat length(a)
 		dim stone_info
 		split a(cnt,1),"-", stone_info //石情報を分離
+		if a(cnt,1) = "":continue
 		repeat length(stone_info)
 			split stone_info(cnt), ":", xy
 			x = int(xy(0))
@@ -182,8 +183,6 @@
 	loop
 	
 	return count + groups //マッチと判定するために必要な数
-
-//get_group_by_positionはフラグが複数返ってきますこれでOK?
 
 #defcfunc patterns_to_notepad array a
 	notesel s

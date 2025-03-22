@@ -93,9 +93,10 @@
 		color 0,255,0:boxf oya,oya.1,oya.2,oya.3 //単体デバッグ用
 	#endif
 	
-	color
+	color $4A,$37,$28
 	rboxf bar_rect,bar_rect.1,bar_rect.2,bar_rect.3
-	color 255
+	
+	color $5E,$8B,$7E
 	
 	circle tumami - r/2, tumami.1 -r/2, tumami + r/2, tumami.1 + r/2
 	

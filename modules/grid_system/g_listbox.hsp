@@ -47,7 +47,7 @@ dimtype listbox_items@global, 5
 
 #module grid_listbox listbox_items, item_num, area_number, px,py,sx,sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
 
-#const DEFAULT_ITEM_Y_SIZE 26
+#const DEFAULT_ITEM_Y_SIZE 30
 #const DEFAULT_SCROLLBAR_X 10
 
 

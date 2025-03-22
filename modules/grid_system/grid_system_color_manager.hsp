@@ -1,0 +1,33 @@
+#module
+#deffunc add_color_list array a
+	repeat limit(10,0,length(a))
+		colorlist(cnt,color_list_num) = a(cnt)
+	loop
+	colorlist_num++
+	return
+#deffunc set_design int p1
+	current_design = p1
+	return
+#defcfunc get_back_color
+	return colorlist(current_design, 0)
+#defcfunc get_front_color
+	return colorlist(current_design, 1)
+#deffunc set_back_color
+	set_color colorlist(current_design, 0)
+	return
+#deffunc set_front_color
+	set_color colorlist(current_design, 1)
+	return
+#deffunc set_color int p1
+	color p1 >> 16 & 255, p1 >> 8 & 255, p1 & 255
+	return
+#deffunc init_color_manager
+	dim colorlist, 10, 20
+	colorlist_num = 0
+	current_design = 0
+	return
+#global
+init_color_manager
+
+c = $F5F5DC, $4A3728, $A94438
+add_color_list c

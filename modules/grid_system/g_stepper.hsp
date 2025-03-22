@@ -11,7 +11,7 @@
 	under_limit = -99999
 	top_limit = 99999
 	gap = 1
-	backcolor = F‚ğ‚Ü‚Æ‚ß‚é(0,0,0)
+	backcolor = $F5F5DC
 	mref thismod_ID, 2
 	return thismod_ID
 
@@ -34,7 +34,7 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	
 	F‚ğİ’è backcolor
 	aboxf rect
-	color 255,255,255
+	color $4A,$37,$28
 	pos rect,rect.1: mes v
 
 	color 180,180,180
