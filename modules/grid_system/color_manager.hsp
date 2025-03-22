@@ -1,3 +1,4 @@
+#ifndef color_manager
 #module color_manager
 #defcfunc F‚ğ”–‚­‚·‚é int col, double p, int flag
 	F‚ğ•ª‚¯‚é col, r, g, b
@@ -37,3 +38,4 @@ return F‚ğ‚Ü‚Æ‚ß‚é(r,g,b)
 	color r,g,b
 	return
 #global
+#endif

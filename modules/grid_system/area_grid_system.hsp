@@ -1,14 +1,14 @@
 #ifndef area
-
 #include "transform_grid.hsp"
 #include "gridpos.hsp"
 #include "area_save_load_manager.hsp"
 #include "rboxf.hsp"
 #include "get_rect_margin.hsp"
+#include "color_manager.hsp"
 
 dimtype areagrid@global, 5
 
-#module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo, childlist,cn
+#module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
 
 #defcfunc make_area int x, int y
 	newmod areagrid@global, area, x, y
@@ -24,6 +24,8 @@ dimtype areagrid@global, 5
 	padding_y = 6
 	margin_x = 5
 	margin_y = 5
+	back_color = -1
+	
 	
 	set_grid_shape thismod_ID, 列数, 行数
 
@@ -109,6 +111,13 @@ dimtype areagrid@global, 5
 	return
 #modfunc local _set_grid_parent int p1
 	parentid = p1
+	return
+	
+#deffunc set_grid_area_back_color int p1, int p2
+	_set_grid_area_back_color areagrid@global(p1), p2
+	return 
+#modfunc _set_grid_area_back_color int p1
+	back_color = p1
 	return
 
 ///////////////////////////////////////////////////////
@@ -248,6 +257,10 @@ dimtype areagrid@global, 5
 	if in_rect(result){
 		aid = thismod_ID
 	}
+	if back_color >= 0{
+		色を設定 back_color
+		rboxfa result
+	}
 	if debug_mode{ 
 		margin = margin_x, margin_y
 		//グリッド移動処理
@@ -371,7 +384,7 @@ init_grid_system_manager
 #if 0
 	root = make_area_child(2,2)
 		a = make_area_child(3,3,root)
-			b = make_area_child(2,2,a)
+			b = make_area_child(2,2,a): set_grid_area_back_color b,$ff0000
 			c = make_area_child(2,3)
 			d = make_area_child(3,2)
 		aa = make_area_child(2,2,root)

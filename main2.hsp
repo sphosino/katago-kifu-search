@@ -176,7 +176,9 @@ root = make_area_child(1,2)
 		sidebar_buttons = make_area_child(2,3,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
 		
+		
 			sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
+			set_grid_area_back_color sidebar_kifulist_area, $333333
 			sidebar_kifulist_buttons = make_area_child(2,2)
 
 				sidebar_kifulist1 = make_area_child(,2,sidebar_kifulist_area)
@@ -193,11 +195,12 @@ root = make_area_child(1,2)
 				slider = make_area_child()
 
 			button_loadfile = make_area_child(,,sidebar_buttons)
+			chkbox_view_hosi = make_area_child()
 			button_getsgf = make_area_child()
 			button_getsgf_nowpoint = make_area_child()
 			
 			
-			chkbox_view_hosi = make_area_child()
+			
 
 		goban_area = make_area_child(1,2,body_area)
 				goban_body_area = make_area_child(,,goban_area)
@@ -214,9 +217,9 @@ root = make_area_child(1,2)
 			button_search = make_area_child(,,goban_tool_area)
 			button_exclude_search = make_area_child()
 			button_narrow_down_search = make_area_child()
-			chkbox_tyakusyu = make_area_child()
 			chkbox_colorflip = make_area_child()
 			chkbox_use_bitboard = make_area_child()
+			chkbox_tyakusyu = make_area_child()
 			radiobox_grouping = make_area_child()
 			button_group_clear = make_area_child()
 						
@@ -241,7 +244,7 @@ newmod g_buttons, grid_button, "<", *move_back, back_one
 newmod g_buttons, grid_button, ">", *move_next, go_one
 newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
-newmod g_buttons, grid_button, "グループ解除",*group_clear, button_group_clear
+newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "着手" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
@@ -280,7 +283,8 @@ sdim search_result,, 2, 10000
 sdim search_result_sgflist
 
 foreach kifulist
-	set_listbox_item_ysize kifulist.cnt, 20
+	set_listbox_item_ysize kifulist.cnt, 29
+	set_listbox_scollbar_width kifulist.cnt, 15
 loop
 gosub*load_kifu_folder
 	
@@ -297,6 +301,7 @@ pre_window_size = -9999,-9999
 pre_ui_mode = -1
 setfps 60
 *main
+	;logmes ""+getrealfpsf()
 	manage_keyfps
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
@@ -506,6 +511,7 @@ setfps 60
 	starttime = keyfpstime
 	color 128,128,128
 	boxf 0, 0, ginfo_winx, ginfo_winy
+	draw_all_rect root, debugmode
 	a = double(c_list) * 255: color a,a,a
 	get_rect goban_body_area, goban_back_rect
 	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
@@ -524,8 +530,7 @@ setfps 60
 	//検索範囲表示
 	draw_set_list_on_board board, v
 
-	set_listbox_item_ysize kifulist, 29
-	set_listbox_item_ysize kifulist.matchlist,29
+
 	
 	//各アイテム表示
 	foreach kifulist
@@ -554,7 +559,7 @@ setfps 60
 
 	font "", 23
 	treebox_draw t
-	draw_all_rect root, debugmode
+	
 
 	redraw
 	redraw 2
