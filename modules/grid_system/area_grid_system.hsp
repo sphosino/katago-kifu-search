@@ -8,7 +8,7 @@
 
 dimtype areagrid@global, 5
 
-#module area grid, 列数, 行数, grid_x, grid_y, padding_x, padding_y, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
+#module area grid, 列数, 行数, grid_x, grid_y, padding_left,padding_right, padding_top,padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
 
 #defcfunc make_area int x, int y
 	newmod areagrid@global, area, x, y
@@ -20,8 +20,10 @@ dimtype areagrid@global, 5
 	行数 = limit(y,1) ;(y)
 
 	parentid = -1
-	padding_x = 6
-	padding_y = 6
+	padding_left = 6
+	padding_right = 6
+	padding_top = 6
+	padding_bottom = 6
 	margin_x = 5
 	margin_y = 5
 	back_color = -1
@@ -73,12 +75,14 @@ dimtype areagrid@global, 5
 ///////////////////セッター////////////////////
 ///////////////////////////////////////////////
 
-#deffunc set_padding int p1, int p2, int p3
-	_set_padding areagrid@global(p1), p2, p3
-	return
-#modfunc _set_padding int x, int y
-	padding_x = x
-	padding_y = y
+#define global set_padding(%1,%2 = -1,%3 = -1,%4 = -1,%5 = -1) _set_padding areagrid@global(%1), %2, %3, %4, %5
+#modfunc _set_padding int p1, int p2, int p3, int p4
+
+	if p1 = -1{ padding_left = padding_right	}else{	padding_left = p1 	}
+	if p2 = -1{ padding_top = padding_bottom	}else{	padding_top = p2  	}
+	if p3 = -1{	paddig_right = padding_left 	}else{	padding_right = p3	}
+	if p4 = -1{	padding_bottom = padding_top	}else{	padding_bottom = p4	}
+	
 	return
 
 #deffunc set_margin int p1, int p2, int p3
@@ -133,7 +137,7 @@ dimtype areagrid@global, 5
 	//親レクト取得
 	if parentid == -1{
 		//親がなければルートエリアということで、親は画面全体とする。
-		rect = padding_x,　padding_y,　ginfo(12) - padding_x,　ginfo(13) - padding_y
+		rect = padding_left,　padding_top,　ginfo(12) - padding_right,　ginfo(13) - padding_bottom
 		;logmes "ルートウィンドウサイズ -> " + ginfo(12) + "," + ginfo(13)
 	}else{
 		//親がいれば、親のエリアを取得
@@ -159,10 +163,10 @@ dimtype areagrid@global, 5
 		loop
 		if find{
 			rp = rect(0),rect(1)
-			rect(0) = g_rect(0) + rp(0) + padding_x
-			rect(1) = g_rect(1) + rp(1) + padding_y
-			rect(2) = g_rect(2) + rp(0) - padding_x
-			rect(3) = g_rect(3) + rp(1) - padding_y
+			rect(0) = g_rect(0) + rp(0) + padding_left
+			rect(1) = g_rect(1) + rp(1) + padding_top
+			rect(2) = g_rect(2) + rp(0) - padding_right
+			rect(3) = g_rect(3) + rp(1) - padding_bottom
 		}
 	}
 	return
@@ -238,8 +242,8 @@ dimtype areagrid@global, 5
 	get_grid_rect grid_x, grid_y, margin_x, margin_y, x, y, _rect
 	rect(2) = rect(0) + _rect(2)
 	rect(3) = rect(1) + _rect(3)
-	rect(0) = rect(0) + _rect(0) + padding_x
-	rect(1) = rect(1) + _rect(1) + padding_y
+	rect(0) = rect(0) + _rect(0) + padding_left
+	rect(1) = rect(1) + _rect(1) + padding_top
 	return
 	
 #defcfunc is_valid_swap int empty, int target

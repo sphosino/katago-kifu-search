@@ -178,7 +178,7 @@ root = make_area_child(1,2)
 		
 		
 			sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
-			set_grid_area_back_color sidebar_kifulist_area, $333333
+			
 			sidebar_kifulist_buttons = make_area_child(2,2)
 
 				sidebar_kifulist1 = make_area_child(,2,sidebar_kifulist_area)
@@ -224,10 +224,18 @@ root = make_area_child(1,2)
 			button_group_clear = make_area_child()
 						
 exist "area.var"
+chdir kifu_dirname
+
 if strsize >= 0{
 	save_load_manager_load
 }
-chdir kifu_dirname
+
+//各エリアの設定
+set_grid_area_back_color sidebar_kifulist_area, $333333
+
+
+
+
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf

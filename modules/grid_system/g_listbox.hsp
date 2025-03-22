@@ -23,7 +23,7 @@ dimtype listbox_items@global, 5
 
 #define global toggle_selected_status(%1) _toggle_selected_status listbox_items@global(%1)
 #modfunc _toggle_selected_status
-	selected ^-1
+	selected ^ 1
 	return
 
 #define global ctype get_selected_status(%1) _get_selected_status(listbox_items@global(%1))
