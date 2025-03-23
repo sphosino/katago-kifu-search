@@ -21,7 +21,7 @@
     boxf x1+r, y1, x2-r, y2
     repeat 4
         x = x1 + ( cnt \ 2 ) * ( box_width - r * 2 + 1)
-        y = y1 + ( cnt / 2 ) * ( box_height - r * 2 + 1 )
+        y = y1 + ( cnt / 2 ) * ( box_height - r * 2 + 1)
         circle x, y, x + r * 2, y + r * 2
     loop
     return

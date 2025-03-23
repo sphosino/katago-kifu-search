@@ -1,7 +1,7 @@
 #ifndef search
 #include "modules/keyfps.hsp" //タイマー -> ( keyfpstime )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
-;#include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
+#include "GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
 #include "modules/hash.hsp" //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/ringbuffer.hsp" //キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift )
 #include "memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )

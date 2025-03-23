@@ -1,0 +1,59 @@
+#include "area_grid_system.hsp"
+#addition "../keyfps.hsp"
+
+#module grid_label string, area, bc, fc
+
+#modinit str s1, int area_number,int back_color, int font_color
+	string = s1
+	area = area_number
+	
+	colors = 14,1,2,3
+
+	bc = back_color
+	fc = font_color
+
+	mref thismod_ID, 2
+	return thismod_ID
+	
+	
+#modfunc draw_g_label
+
+	thisrect thismod, rect, area
+
+	now_cx = ginfo_cx, ginfo_cy
+	
+		set_color bc
+		boxf rect,rect.1,rect.2,rect.3
+
+		set_color fc
+		
+		pos rect,rect.1
+
+		font "", limit(  (rect.2-rect.0) / strlen(string),,rect.3-rect.1)
+		
+		mes string
+
+	pos now_cx,now_cx.1
+	
+	return
+
+
+#deffunc local set_color int p1
+	color p1>>16&255,p1>>8&255,p1&255
+	return
+#include "rectmock.hsp"
+#global
+
+#if 0
+	mock_flag@global = 1
+
+	set_rect_mock 30, 60,60, 160,100
+	set_rect_mock 31, 60,160,160,200
+	newmod a, grid_label, "ABC",30, $000000,$FFFFFF
+	newmod a, grid_label, "DEF",31, $000000,$FFFFFF
+
+	foreach a
+		draw_g_label a.cnt
+	loop
+
+#endif

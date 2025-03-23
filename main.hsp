@@ -128,6 +128,7 @@ if 0{
 #include "modules/grid_system/g_listbox.hsp"
 #include "modules/grid_system/g_slider.hsp"
 #include "modules/grid_system/g_stepper.hsp"
+#include "modules/grid_system/g_label.hsp"
 #include "modules/group.hsp"
 #include "hspext.as"
 
@@ -173,20 +174,22 @@ root = make_area_child(1,2)
 	header_area = make_area_child(,,root)
 	body_area = make_area_child(3,1)
 		sidebar_area = make_area_child(1,2,body_area)
-		sidebar_buttons = make_area_child(2,3,sidebar_area)
+		sidebar_buttons = make_area_child(2,2,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
-		
 		
 			sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
 			
 			sidebar_kifulist_buttons = make_area_child(2,2)
 
-				sidebar_kifulist1 = make_area_child(,2,sidebar_kifulist_area)
-				sidebar_kifulist2 = make_area_child(,2)
-				
-					sidebar_kifulist = make_area_child(,,sidebar_kifulist1)
+				sidebar_kifulist1 = make_area_child(,3,sidebar_kifulist_area)
+				sidebar_kifulist2 = make_area_child(,3,sidebar_kifulist_area)
+
+					sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist1)
+					sidebar_kifulist = make_area_child()
 					kifustart = make_area_child()
-					sidebar_kifulist_match = make_area_child(,,sidebar_kifulist2)
+
+					sidebar_kifulist_label2 = make_area_child(,,sidebar_kifulist2)
+					sidebar_kifulist_match = make_area_child()
 					kifustart_result = make_area_child()
 					
 				sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons)
@@ -213,15 +216,17 @@ root = make_area_child(1,2)
 					go_end = make_area_child()
 					button_clearboard = make_area_child()
 					
-		goban_tool_area = make_area_child(1,8,body_area)
-			button_search = make_area_child(,,goban_tool_area)
-			button_exclude_search = make_area_child()
-			button_narrow_down_search = make_area_child()
-			chkbox_colorflip = make_area_child()
-			chkbox_use_bitboard = make_area_child()
-			chkbox_tyakusyu = make_area_child()
-			radiobox_grouping = make_area_child()
-			button_group_clear = make_area_child()
+		goban_tool_area = make_area_child(1,2,body_area)
+			goban_search_area = make_area_child(1,5,goban_tool_area)
+				button_search = make_area_child(,,goban_search_area)
+				button_exclude_search = make_area_child()
+				button_narrow_down_search = make_area_child()
+				chkbox_colorflip = make_area_child()
+				chkbox_use_bitboard = make_area_child()
+			goban_edit_area = make_area_child(1,3, goban_tool_area)
+				chkbox_tyakusyu = make_area_child(,,goban_edit_area)
+				radiobox_grouping = make_area_child()
+				button_group_clear = make_area_child()
 						
 exist "area.var"
 chdir kifu_dirname
@@ -232,8 +237,11 @@ if strsize >= 0{
 
 //各エリアの設定
 set_grid_area_back_color sidebar_kifulist_area, $333333
-
-
+set_grid_area_back_color goban_search_area,$333333
+set_grid_area_back_color goban_edit_area,$333333
+set_grid_area_back_color goban_footer,$333333
+set_padding sidebar_kifulist1, 0,0,0,0
+set_padding sidebar_kifulist2, 0,0,0,0
 
 
 //実体作成
@@ -259,6 +267,9 @@ newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_c
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
+
+newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $000000,$F0F0F0
+newmod g_label, grid_label,"検索結果リスト",sidebar_kifulist_label2,$000000,$F0F0F0
 
 newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
@@ -544,7 +555,10 @@ setfps 60
 	foreach kifulist
 		my_listbox_draw kifulist.cnt
 	loop
-	font "メイリオ",29
+	foreach g_label
+		draw_g_label g_label.cnt
+	loop
+	font "メイリオ", 29
 	foreach g_chkbox
 		draw_g_chkbox g_chkbox.cnt
 	loop

@@ -174,7 +174,11 @@ dimtype listbox_items@global, 5
 				
 		//アイテム描画
 		ypos = py + item_y * cnt
-		color 0,100, get_selected_status(listbox_items(current_scroll_index + cnt)) * 100
+		if get_selected_status(listbox_items(current_scroll_index + cnt)){
+			色を設定 $00BCD4
+		}else{
+			color 0, 100,0
+		}
 		boxf px, ypos, px + sx - bar_width, ypos + item_y
 		pos px + 5, ypos
 		color 200,200,200

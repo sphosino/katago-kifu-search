@@ -316,6 +316,8 @@
 
 
 #if 0
+#undef mes
+#define mes(%1) mes@hsp %1:logmes %1:
 a = make_new_set()
 b = make_new_set()
 c = make_new_set()

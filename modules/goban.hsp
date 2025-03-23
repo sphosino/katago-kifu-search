@@ -1,7 +1,7 @@
 #ifndef goban
 #include "boxfa.hsp"
 #include "bitboard.hsp"
-#addition "grid_system/area_grid_system.hsp"
+#addition "modules/grid_system/area_grid_system.hsp"
 
 #const global ‹ó“_ 0
 #const global •”Ô 1
