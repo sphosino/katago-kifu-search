@@ -247,11 +247,11 @@ set_padding sidebar_kifulist2, 0,0,0,0
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
-newmod g_buttons, grid_button, "SGF取得(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
+newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_buttons, grid_button, "除外検索"      , *create_pattern2, button_exclude_search
-newmod g_buttons, grid_button, "絞り込み検索"  , *create_pattern3, button_narrow_down_search
+newmod g_buttons, grid_button, "絞込検索"  , *create_pattern3, button_narrow_down_search
 newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
 newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
 newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
