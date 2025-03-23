@@ -29,7 +29,7 @@
 		
 		pos rect,rect.1
 
-		font "", limit(  (rect.2-rect.0) / strlen(string),,rect.3-rect.1)
+		font "", limit(  (rect.2-rect.0)*2 / strlen(string) ,,rect.3-rect.1)
 		
 		mes string
 

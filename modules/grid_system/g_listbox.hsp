@@ -153,7 +153,7 @@ dimtype listbox_items@global, 5
 
 #modfunc my_listbox_draw
 
-	color 255,255,255
+	F‚ğİ’è $F5F5DC
 
 	thisrect thismod, rect, area_number
 	px = rect
@@ -181,7 +181,7 @@ dimtype listbox_items@global, 5
 		}
 		boxf px, ypos, px + sx - bar_width, ypos + item_y
 		pos px + 5, ypos
-		color 200,200,200
+		F‚ğİ’è $F5F5DC
 		mes listbox_item_get_str(listbox_items(current_scroll_index + cnt))
 	loop
 	
