@@ -14,7 +14,10 @@
 
 	mref thismod_ID, 2
 	return thismod_ID
-	
+
+#modfunc set_g_label str s1
+	string = s1
+	return
 	
 #modfunc draw_g_label
 
