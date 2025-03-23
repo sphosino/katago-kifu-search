@@ -2,15 +2,15 @@
 
 Katagoのレーティング自己対戦の棋譜を集めています。数百～数千visitsで打たれているようです。
 
-寝る時自動再生で眺めて勉強しましょ。
-
 本プログラムにはAIを動かす機能はありません。あくまで、棋譜鑑賞、検索用です。
+
+気になる局面を見つけたら別途検討ソフトを使って調べてください。
 
 [開発日誌](https://hosinobu.github.io/katago-kifu-search)
 
 ***
-囲碁AI、KataGoのサイト  ー　マジで神いつもありがとうございます。  
+囲碁AI、KataGoのサイト
 https://katagotraining.org/
 
-KataGoを動かす検討ソフトを導入する場合、seventeenさんが開発されている、BadukMegapackがおすすめ。とても使いやすい！  
+KataGoを動かす検討ソフトを導入する場合、BadukMegapackがおすすめ。僕も利用させてもらってます！  
 https://github.com/wonsiks/BadukMegapack
