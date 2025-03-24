@@ -34,7 +34,7 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	
 	F‚ğİ’è backcolor
 	aboxf rect
-	color $4A,$37,$28
+	F‚ğİ’è $4A3728
 	pos rect,rect.1: mes v
 
 	color 180,180,180

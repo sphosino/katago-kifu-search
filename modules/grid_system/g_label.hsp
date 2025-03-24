@@ -1,22 +1,27 @@
 #include "area_grid_system.hsp"
 #addition "../keyfps.hsp"
 
-#module grid_label string, area, bc, fc
+#module grid_label string, area, bc, fc, r, flags
 
 #modinit str s1, int area_number,int back_color, int font_color
 	string = s1
 	area = area_number
-	
-	colors = 14,1,2,3
 
 	bc = back_color
 	fc = font_color
+	r = 5
+	flags = 0
 
 	mref thismod_ID, 2
 	return thismod_ID
 
 #modfunc set_g_label str s1
 	string = s1
+	return
+
+#modfunc set_g_label_r int p1, int p2
+	r = p1
+	flags = p2
 	return
 	
 #modfunc draw_g_label
@@ -26,7 +31,7 @@
 	now_cx = ginfo_cx, ginfo_cy
 	
 		set_color bc
-		boxf rect,rect.1,rect.2,rect.3
+		rboxfa rect,r,flags
 
 		set_color fc
 		

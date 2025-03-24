@@ -175,7 +175,7 @@ dimtype listbox_items@global, 5
 		//アイテム描画
 		ypos = py + item_y * cnt
 		if get_selected_status(listbox_items(current_scroll_index + cnt)){
-			色を設定 $00BCD4
+			色を設定 $4A90E2
 		}else{
 			color 0, 100,0
 		}
@@ -189,7 +189,7 @@ dimtype listbox_items@global, 5
 	if max_visible_items < item_num{
 
 		bar_width = scrollbar_x
-		bar_height = limit(sy / (item_num - max_visible_items + 1),3)
+		bar_height = limit(sy / (item_num - max_visible_items + 1),5)
 		bar_posx = px + sx - bar_width
 		
 		//１スクロール単位の移動量は、(スクロールバーの稼働域) / (オーバーフローしている数)

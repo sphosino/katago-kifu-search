@@ -24,12 +24,8 @@
 
 	//エリア番号から親レクト取得
 	thisrect thismod, oya, area
-	
-	if　horizontal{
-		長さ = oya.2 - oya
-	}else{
-		長さ = oya.3 - oya.1
-	}
+
+	長さ = -1
     mref thismod_ID, 2
     return thismod_ID
 
@@ -52,10 +48,19 @@
 
 	thisrect thismod, oya, area
 
+	len = 長さ
+	if 長さ < 0{
+		if horizontal{
+			len = oya.2-oya.0
+		}else{
+			len = oya.3-oya.1
+		}
+	}
+
 	if horizontal = 1{
-		bar_rect = oya + x, oya.1 + y, limit(oya + x + 長さ    ,, oya.2),  limit(oya.1 + y + tickness,,oya.3)
+		bar_rect = oya + x, oya.1 + y, limit(oya + x + len    ,, oya.2),  limit(oya.1 + y + tickness,,oya.3)
 	}else{
-		bar_rect = oya + x, oya.1 + y, limit(oya + x + tickness,, oya.2),  limit(oya.1 + y + 長さ    ,,oya.3)
+		bar_rect = oya + x, oya.1 + y, limit(oya + x + tickness,, oya.2),  limit(oya.1 + y + len    ,,oya.3)
 	}
 	
 	if _getkey(1) == 1{
