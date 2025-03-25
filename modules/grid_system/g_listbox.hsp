@@ -92,15 +92,14 @@ dimtype listbox_items@global, 5
 	//‹ó‚¢‚½—v‘f‚ð‹l‚ß‚é
 	memcpy listbox_items,listbox_items,(item_num - p1)*4, p1*4, p1*4+4
 	return
-
-#modcfunc get_listbox_item_list
+	
+#modcfunc get_name_all_items
 	ss = ""
 	repeat item_num
 		ss += listbox_item_get_str(listbox_items(cnt)) + "\n"
 	loop
-
 	return ss
-
+	
 #modfunc del_item_by_str str s1
 	repeat item_num
 		if listbox_item_get_str(listbox_items.cnt) == s1{
@@ -273,12 +272,7 @@ dimtype listbox_items@global, 5
     set_scroll_index thismod, target_index - (sy / item_y) + 1
     return
 
-#modcfunc get_name_all_items
-	ss = ""
-	repeat item_num
-	ss += listbox_item_get_str(listbox_items(cnt)) + "\n"
-	loop
-	return ss
+
 
 #modcfunc get_name_item int p1
 	return listbox_item_get_str(listbox_items(p1))
