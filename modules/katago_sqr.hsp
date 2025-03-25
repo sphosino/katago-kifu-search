@@ -79,8 +79,8 @@ netinit
 			await 1000
 	
 		loop
-		await 1000
 		if keyfpstime - starttime >= LOADTIME: break
+		await 1000
 		if get_count < max{
 			find_tags_bytag buf, "div",divs
 			find_tags_bytag divs.4,"a",pp
