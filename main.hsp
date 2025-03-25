@@ -246,7 +246,8 @@ set_margin sidebar_kifulist2, 0,0
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
-newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
+;newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
+newmod g_buttons, grid_button, "SGF取得\n(検索結果統合)", *getsgf_all_result, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
 newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
 newmod g_buttons, grid_button, "除外検索"      , *create_pattern2, button_exclude_search
@@ -709,6 +710,19 @@ setfps 60
 	if nownode < 0: return
 	logmes get_tree_item_id(nownode)
 	clipset get_node_sgf_nowpoint(get_tree_item_id(nownode))
+	return
+*getsgf_all_result
+
+	s = get_name_all_items(kifulist.matchlist)
+	notesel s
+	dim nodelist
+	repeat notemax
+		noteget a,cnt
+		nodelist(cnt) = int(get_value(a))
+	loop
+	new_node = merge_node(nodelist)
+	clipset get_node_sgf(new_node)
+	del_sgf_node new_node //削除して完了
 	return
 *loadsgf
 	dim t

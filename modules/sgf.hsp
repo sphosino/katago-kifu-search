@@ -31,7 +31,7 @@
 	dim child_num, MAX_NODE //子ノードの数
 
 	//------------------------------------
-	sdim open_id_list, 1024 * 4 //配列の未使用番号リスト
+	sdim open_id_list, MAX_NODE * 4 //配列の未使用番号リスト
 	lpoke open_id_list, 0, 0
 	open_id_list_num = 1 //配列の未使用番号の数
 	node_count = 1 //配列のサイズ（未使用要素も含む）
@@ -87,10 +87,7 @@
     }
     return
 
-#deffunc del_sgf_node int node_id, local child
-	repeat get_sgf_childs(node_id, child)
-		del_sgf_node(lpeek(child, cnt * 4))
-	loop
+#deffunc del_sgf_node int node_id, local child, local i, local num
 	if bitboard(node_id) != -1 {
         del_bitboard(bitboard(node_id))
         bitboard_used_count--
@@ -200,7 +197,7 @@
 	split sgf_properties_data(node_id), SEP, tmp
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
-		if kv == "AB" || kv = "AW"{
+		if is_list_property(kv){
 			s += kv
 			repeat strlen(kv.1) / 2
 				s += "[" + strmid(kv.1,cnt*2,2) + "]"
@@ -209,7 +206,7 @@
 			s += kv + "[" + kv.1 + "]"
 		}
 	loop
-
+	
 	n = get_SGF_childs(node_id, child)
 	for i,, n
 	
@@ -218,6 +215,7 @@
 		}
 		
 		_get_node_sgf lpeek(child, i * 4), s
+		
 		
 		if n >= 2{
 			s+=")"
@@ -262,7 +260,7 @@
 	split sgf_properties_data(node_id), SEP, tmp
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
-		if kv == "AB" || kv == "AW"{
+		if is_list_property(kv){
 			i += kv
 			repeat strlen(kv.1)/2
 				i += "[" + strmid(kv.1,cnt*2,2) + "]"
@@ -347,7 +345,183 @@
     }
     return bitboard(node_id)
     
-#deffunc local init_node int node_id, int p1
+#defcfunc is_list_property str key
+    // リスト型プロパティの判定
+    list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
+    return (instr(list_props, 0, "," + key + ",") >= 0)
+
+#defcfunc is_text_property str key
+    // テキスト型プロパティの判定
+    text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
+    return (instr(text_props, 0, "," + key + ",") >= 0)
+    
+//マージ処理
+
+#defcfunc is_ancestor int target, int ancestor
+    current = target
+    while current != -1
+        if current == ancestor : return 1
+        current = parent(current)
+    wend
+    return 0
+    
+#defcfunc compare_nodes int node1, int node2
+	if parent(node1) == -1 && parent(node2) == -1: return 1
+    // ノードのプロパティ比較
+    return (sgf_node_x(node1) == sgf_node_x(node2)) && (sgf_node_y(node1) == sgf_node_y(node2)) && (sgf_node_turn(node1) == sgf_node_turn(node2))
+    
+#defcfunc get_node_properties int node_id
+    // ノード情報の文字列化
+    return "(" + sgf_node_x(node_id) + "," + sgf_node_y(node_id) + ") " + sgf_node_turn(node_id)
+
+#deffunc connect_sgf_node int parent_node_id, int child_node_id, local i
+	if child_node_id == -1: return
+	if parent_node_id == -1{
+		parent(child_node_id) = -1
+		return
+	}
+	
+	//双方向循環参照チェック
+	if is_ancestor(parent_node_id, child_node_id) || is_ancestor(child_node_id, parent_node_id){
+        logmes "Error: Circular reference detected! parent=" + parent_node_id +"child=" + child_node_id
+        return
+    }
+    
+    // プロパティベース重複チェック
+    for i,, child_num(parent_node_id)
+        current_child = lpeek(sgf_node_childs(parent_node_id), i*4)
+        if compare_nodes(child_node_id, current_child) {
+            logmes "Warning: Duplicate node. properties=" + get_node_properties(child_node_id)
+            return
+        }
+    next
+
+    ; mes parent_node_id,1
+    ;mes "," + child_node_id
+
+	//子ノード接続処理
+	memexpand sgf_node_childs(parent_node_id), child_num(parent_node_id) * 4 + 4
+	lpoke sgf_node_childs(parent_node_id), child_num(parent_node_id) * 4, child_node_id
+	child_num(parent_node_id)++
+	parent(child_node_id) = parent_node_id
+
+	return
+	
+#deffunc copy_properties int node1, int node2
+	if (node1 < 0) || (node2 < 0): return
+	sgf_node_turn(node1) = sgf_node_turn(node2)
+	sgf_node_x(node1) = sgf_node_x(node2)
+	sgf_node_y(node1) = sgf_node_y(node2)
+	sgf_properties_data(node1) = sgf_properties_data(node2) //その他のプロパティ
+	sgf_properties_num(node1) = sgf_properties_num(node2) //その他のプロパティの数
+	;logmes sgf_properties_num(node1)
+	return
+
+#defcfunc deep_copy_sgf_node int node_id, local i, local num, local c, local new_node, local sn
+
+	stack(sn) = node_id ;;コピー元
+	stackp(sn) = -1 ;;新たなノードが所属すべき番号
+	sn++
+	result = -1
+	while sn
+		sn--
+		nn = stack(sn)
+		p = stackp(sn)
+    	new_node = make_new_SGFnode(-1) // 空ノードを作成
+    	
+    	if result = -1{
+	    	result = new_node
+	    }
+  		copy_properties new_node, nn // 元のノードの情報をコピー
+  		
+ 		connect_sgf_node p, new_node // ノード接続
+ 		
+   		repeat get_sgf_childs(nn,c)
+	    	stack(sn) = lpeek(c, cnt * 4)
+	    	stackp(sn) = new_node
+	    	sn++
+      	loop
+      	
+    wend
+    return result
+
+#defcfunc has_child int node_id, int node_id2, local c
+	result = -1
+	repeat get_SGF_childs(node_id, c)
+		mes "" + lpeek(c,cnt*4) + "   " + node_id2
+		if compare_nodes(lpeek(c, cnt * 4), node_id2){
+			result = lpeek(c, cnt*4)
+			mes "" + result + ":" + node_id2 + "  " + node_id 
+			break
+		}
+	loop
+	return result
+
+#defcfunc merge_node array node_list
+	new = make_new_SGFnode(-1) //新たなトップノードを作成する
+	repeat length(node_list)
+		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
+		merge_node_main new, copied_node //マージ実行
+		await 17
+			title "マージ実行中 " + cnt * 100 / length(node_list) + "右クリック長押しで中断"
+			manage_keyfps
+			if gethold_ms(2,1000): break
+	loop
+	title "統合棋譜取得完了"
+	return new
+
+#deffunc merge_node_main int topnode1, int topnode2, local i, local c, local sn
+	stack1(sn) = topnode1
+	stack2(sn) = topnode2
+	stack3(sn) = 0 //子ノード処理済みか
+	sn++
+	while sn
+		sn--
+		tn1 = stack1(sn)
+		tn2 = stack2(sn)
+		flag = stack3(sn)
+		if flag = 0{
+			stack3(sn) = 1
+			sn++
+			for i,,get_SGF_childs(tn2, c) //全ての子供をマージする
+				tn2_child = lpeek(c, i * 4)
+				if has_child(tn1, tn2_child) >= 0{ //共通ノード発見
+					stack1(sn) = stat
+					stack2(sn) = tn2_child
+					stack3(sn) = 0
+					sn++
+				}else{
+					connect_sgf_node tn1, tn2_child	
+				}
+			next
+		}else{
+			merge_properties tn1, tn2 //棋譜情報をマージ
+			del_sgf_node tn2
+		}
+	wend
+	
+	return
+#deffunc merge_properties int node_id, int node_id2
+
+	copy_properties node_id, node_id2
+	
+	return
+
+//////////マージ処理ここまで/////////////////////////////////////////////////////////
+	
+#deffunc local init_node int node_id, int p1, local c
+
+	/*
+	if parent(node_id) != -1{
+		repeat get_sgf_childs(parent(node_id), c)
+			if lpeek(c,cnt*4) == node_id{
+				child_num(parent(node_id))--
+				lpoke sgf_node_childs(parent(node_id)), cnt*4, lpeek(sgf_node_childs(parent(node_id)), child_num(parent(node_id))*4 )
+			}
+		loop
+		;end
+	}
+	//*/
 
 	parent(node_id) = p1
 	
