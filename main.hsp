@@ -1,6 +1,28 @@
 #packopt name "KataGoŠû•ˆŒŸõ"
-#define window_file_name "window.txt"
+#include "modules/group.hsp"
+#include "modules/keyfps.hsp"
+#include "modules/sgf.hsp"
+#include "GobanPatternManager.hsp"
+#include "go_game_manager.hsp"
+#include "modules/katago_sqr.hsp"
+#include "modules/set.hsp"
+#include "Search_pattern.hsp"
+#include "Search_pattern2.hsp"
+#include "shuffle_notepad.hsp"
+#include "modules/grid_system/area_grid_system.hsp"
+#include "modules/grid_system/g_radiobox.hsp"
+#include "modules/grid_system/g_button.hsp"
+#include "modules/grid_system/g_chkbox.hsp"
+#include "modules/grid_system/g_listbox.hsp"
+#include "modules/grid_system/g_slider.hsp"
+#include "modules/grid_system/g_stepper.hsp"
+#include "modules/grid_system/g_label.hsp"
+#include "modules/group.hsp"
+#include "hspext.as"
 #include "user32.as"
+
+#define window_file_name "window.txt"
+
 screen , ginfo(20), ginfo(21)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
@@ -111,26 +133,7 @@ if 0{
 	end
 }
 
-#include "modules/group.hsp"
-#include "modules/keyfps.hsp"
-#include "modules/sgf.hsp"
-#include "GobanPatternManager.hsp"
-#include "go_game_manager.hsp"
-#include "modules/katago_sqr.hsp"
-#include "modules/set.hsp"
-#include "Search_pattern.hsp"
-#include "Search_pattern2.hsp"
-#include "shuffle_notepad.hsp"
-#include "modules/grid_system/area_grid_system.hsp"
-#include "modules/grid_system/g_radiobox.hsp"
-#include "modules/grid_system/g_button.hsp"
-#include "modules/grid_system/g_chkbox.hsp"
-#include "modules/grid_system/g_listbox.hsp"
-#include "modules/grid_system/g_slider.hsp"
-#include "modules/grid_system/g_stepper.hsp"
-#include "modules/grid_system/g_label.hsp"
-#include "modules/group.hsp"
-#include "hspext.as"
+
 
 
 
@@ -168,8 +171,9 @@ kifu_upadate = 1
 topnode = -1
 
 #ifdef init_mem
-init_mem max_depth
+	init_mem max_depth
 #endif
+
 //ƒGƒŠƒAì¬
 root = make_area_child(1,2)
 	header_area = make_area_child(,,root)
@@ -629,7 +633,7 @@ setfps 60
 			}
 		}
 		
-		items = get_listbox_item_list(kifulist.kifulist_id)
+		items = get_name_all_items(kifulist.kifulist_id)
 		notesel items
 		noteget s, itemid
 		noteunsel
@@ -723,7 +727,7 @@ setfps 60
 	loop
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
-	del_sgf_node new_node //íœ‚µ‚ÄŠ®—¹
+	del_sgf_node new_node, 1 //íœ‚µ‚ÄŠ®—¹
 	return
 *loadsgf
 	dim t

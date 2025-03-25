@@ -87,7 +87,13 @@
     }
     return
 
-#deffunc del_sgf_node int node_id, local child, local i, local num
+#deffunc del_sgf_node int node_id, int flag, local child, local i, local num
+	if flag{
+		num = get_sgf_childs(node_id,child)
+		for i,,num
+			del_sgf_node lpeek(child, i * 4) , 1
+		next
+	}
 	if bitboard(node_id) != -1 {
         del_bitboard(bitboard(node_id))
         bitboard_used_count--
