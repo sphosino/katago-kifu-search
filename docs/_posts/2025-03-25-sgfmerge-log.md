@@ -1,6 +1,6 @@
 ---
 title: "sgfマージ機能追加"
-date: 2025-03-24
+date: 2025-03-25
 layout: post
 ---
 
