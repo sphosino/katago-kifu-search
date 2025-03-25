@@ -462,10 +462,13 @@
 	repeat length(node_list)
 		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
 		merge_node_main new, copied_node //マージ実行
-		await 17
+		
+		if length(node_list) >= 10{//１０棋譜以上であればフィードバックつける。
+			await 17
 			title "マージ実行中 " + cnt * 100 / length(node_list) + "右クリック長押しで中断"
 			manage_keyfps
 			if gethold_ms(2,1000): break
+		}
 	loop
 	title "統合棋譜取得完了"
 	return new

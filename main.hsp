@@ -150,6 +150,7 @@ addkey 2 //右クリック
 addkey 17 //ctrl
 addkey 'C'
 addkey 'V'
+addkey 'A'
 
 
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -503,6 +504,13 @@ setfps 60
 			}
 			if _getkey('V') == 1 { //CTRL + V
 				gosub*loadsgf
+			}
+			if _getkey('A') == 1{ //CTRL + A
+				repeat get_item_num(kifulist.current_kifulist)
+					if get_selected_status_(kifulist.current_kifulist, cnt) == 0{
+						check_item kifulist.current_kifulist, cnt
+					}
+				loop
 			}
 		}
 	
