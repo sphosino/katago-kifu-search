@@ -1,0 +1,145 @@
+#include "grid_system/rboxf.hsp"
+#module
+#const DRAW_OBJECTS_MAX 3000
+
+#const global PRIORITY_BACK 0
+#const global PRIORITY_NORMAL 1000
+#const global PRIORITY_FRONT 2000
+
+#enum global TYPE_RECT = 0
+#enum global TYPE_CIRCLE
+
+#deffunc init_draw_objects
+	dim draw_object_type, DRAW_OBJECTS_MAX
+	sdim draw_object_params, DRAW_OBJECTS_MAX
+	dim draw_object_life, DRAW_OBJECTS_MAX
+	dim draw_object_priority, DRAW_OBJECTS_MAX
+	dim use_id_list, DRAW_OBJECTS_MAX
+	use_id_list_num = 0	
+	dim open_id_list
+	open_id_list(0) = 0
+	open_id_list_num = 1
+
+	objects_max = 1
+
+	return
+
+#deffunc make_draw_object int _type, str parameters, int life
+	if open_id_list_num{
+		open_id_list_num--
+		new_id = open_id_list(open_id_list_num)
+	}else{
+		new_id = objects_max
+		objects_max++
+	}
+	use_id_list(use_id_list_num) = new_id
+	use_id_list_num++
+	
+	draw_object_type(new_id) = _type
+	draw_object_params(new_id) = parameters
+	
+	draw_object_life(new_id) = life
+	draw_object_priority(new_id) = PRIORITY_NORMAL
+	
+	return new_id
+
+#deffunc set_priority_draw_object int id, int p
+	draw_object_priority(id) = p
+	return
+
+#deffunc draw_objects //毎フレーム呼び出す予定
+
+	sort_list_by_priority_list use_id_list, use_id_list_num, draw_object_priority
+
+	new_list_num = 0
+	repeat use_id_list_num
+		obj_id = use_id_list(cnt)
+		//描画処理
+		switch draw_object_type(obj_id)
+		case TYPE_RECT
+			split draw_object_params(obj_id),",", tmp
+			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
+			boxf int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+		swbreak
+		case TYPE_CIRCLE
+			split draw_object_params(obj_id),",", tmp
+			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
+			circle int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+		swbreak
+		swend
+		if draw_object_life(obj_id) != 0{
+			use_id_list(new_list_num) = obj_id
+			new_list_num++
+			draw_object_life(obj_id)--
+		}else{
+			open_id_list(open_id_list_num) = obj_id
+			open_id_list_num++
+		}
+	loop
+	use_id_list_num = new_list_num
+	return
+// 手動削除用関数
+#deffunc destroy_draw_object int id
+    draw_object_life(id) = 0 // 次フレームで削除
+    return
+#global
+init_draw_objects
+
+#module
+#deffunc sort_list_by_priority_list array a, int a_num, array b
+    if a_num <= 1 : return  // 要素数が1以下ならソート不要
+
+    // 作業用配列を準備
+    dim temp, a_num  // 0ベースのインデックスを使用
+
+    block_size = 1  // 初期ブロックサイズ
+    while block_size < a_num
+        start = 0  // ブロックの開始位置（0ベース）
+        while start < a_num
+            // マージする左ブロックと右ブロックの範囲を計算
+            mid = start + block_size - 1
+            if mid >= a_num : _break  // 左ブロックのみの場合
+            e = limit(start + 2 * block_size - 1,, a_num - 1) // 右ブロック終端
+
+            // マージ処理
+            i = start       // 左ブロックのインデックス
+            j = mid + 1     // 右ブロックのインデックス
+            k = 0           // temp配列のインデックス
+
+            // 両ブロックを比較しながらマージ
+            while i <= mid && j <= e
+                if b(a.i) <= b(a.j) {
+                    temp.k = a.i
+                    i++
+                } else {
+                    temp.k = a.j
+                    j++
+                }
+                k++
+            wend
+
+            // 左ブロックの残りをコピー
+            while i <= mid
+                temp.k = a.i
+                i++
+                k++
+            wend
+
+            // 右ブロックの残りをコピー
+            while j <= e
+                temp.k = a.j
+                j++
+                k++
+            wend
+
+            // 作業用配列から元の配列に戻す
+            repeat k
+                a(start + cnt) = temp.cnt
+            loop
+
+            start = e + 1  // 次のブロックへ
+        wend
+        block_size *= 2  // ブロックサイズを倍増
+    wend
+    return
+#global

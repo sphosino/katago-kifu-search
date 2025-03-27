@@ -31,7 +31,7 @@
 	now_cx = ginfo_cx, ginfo_cy
 	
 		set_color bc
-		rboxfa rect,r,flags
+		arboxf rect,r,flags
 
 		set_color fc
 		

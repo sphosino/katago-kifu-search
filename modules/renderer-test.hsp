@@ -1,0 +1,33 @@
+/*// •`‰æˆ—
+		switch draw_object_type(obj_id)
+		case TYPE_RECT
+			split draw_object_params(obj_id),",", tmp
+			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
+			boxf int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+		swbreak
+		case TYPE_CIRCLE
+			split draw_object_params(obj_id),",", tmp
+			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
+			circle int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+		swbreak
+*/
+
+#include "renderer.hsp"
+
+make_draw_object TYPE_RECT,"0,0,150,150,$00FF00", 60 //‚P•b
+	set_priority_draw_object stat, PRIORITY_FRONT //•\‚É—ˆ‚½IIOKII
+	
+make_draw_object TYPE_CIRCLE,"100,100,250,250,$FF0000", 120 //‚Q•b
+	// set_priority_draw_object stat, PRIORITY_FRONT //“¯‚¶—Dæ“x‚Í“o˜^‡I
+
+*main
+	color:boxf:color 240,240,240
+	draw_objects
+
+	if rnd(10) = 0{
+		make_draw_object rnd(2),strf("%d,%d,%d,%d,%d",rnd(400),rnd(400),rnd(400),rnd(400), rnd(256)<<16|rnd(256)<<8|rnd(256)), 120
+	}
+	await 17
+	redraw: redraw 2
+	goto*main
+

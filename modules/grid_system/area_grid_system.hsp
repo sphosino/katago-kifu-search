@@ -263,7 +263,7 @@ dimtype areagrid@global, 5
 	}
 	if back_color >= 0{
 		F‚ğİ’è back_color
-		rboxfa result
+		arboxf result
 	}
 	if debug_mode{ 
 		margin = margin_x, margin_y

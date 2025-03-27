@@ -22,6 +22,9 @@
 #include "user32.as"
 
 #define window_file_name "window.txt"
+#const INACTIVITY_TIMEOUT 1800
+#const MODE_KIFU_VIEW 0
+#const MODE_BOARD_EDIT 1
 
 screen , ginfo(20), ginfo(21)
 GetWindowLong hwnd, -16
@@ -132,14 +135,6 @@ if 0{
 	notesave window_file_name
 	end
 }
-
-
-
-
-
-#const MODE_KIFU_VIEW 0
-#const MODE_BOARD_EDIT 1
-
 randomize
 
 header_size = 40
@@ -322,10 +317,10 @@ dim pre_xy, 2
 
 pretime = keyfpstime
 
-#const INACTIVITY_TIMEOUT 1800
-font "",30
+
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
+
 setfps 60
 *main
 	;logmes ""+getrealfpsf()
@@ -354,6 +349,7 @@ setfps 60
 		}
 		//ユーザーがアクティブでない時
 		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
+			
 			//毎フレーム１棋譜読み込む
 			
 			notesel filelist
