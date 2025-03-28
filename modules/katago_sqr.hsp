@@ -33,7 +33,8 @@ netinit
 	
 	repeat length(r) / 2
 		find_attribute_byname r(1+cnt*2), "href", f
-		
+
+
 		next_link = ""
 
 
@@ -43,22 +44,30 @@ netinit
 		netrequest_get@ next_link
 		if stat : goto *bad
 		gosub *通信待ち
+
 		netgetv@ buf
 
 	
 		find_tags_bytag buf, "tr", data // テーブルの要素
 	
-	
+		
 		repeat limit(max,,length(data)-1)
 		
 			find_tags_bytag data(cnt + 1), "td", target_infos
 	
 			game_id = int(get_content_tag(target_infos(0)))
+
+			last_str = ""
+			if keyfpstime - starttime >= LOADTIME{
+				last_str = "  後処理中..."
+			}
 	
-			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了" + last_str
 				
-	
-			if check_exist_sgf(files, game_id): await 17: continue
+			if check_exist_sgf(files, game_id){
+				await 17
+				continue
+			}
 	
 			find_tags_bytag data(cnt + 1), "a", result
 			find_attribute_byname result, "href", t
@@ -81,11 +90,10 @@ netinit
 		loop
 		if keyfpstime - starttime >= LOADTIME: break
 		await 1000
+
 		if get_count < max{
 			find_tags_bytag buf, "div",divs
 			find_tags_bytag divs.4,"a",pp
-	
-	
 			find_attribute_byname pp,"href", next_link
 	
 			if next_link == "?"{
@@ -94,7 +102,7 @@ netinit
 				}
 				find_attribute_byname pp.2,"href",next_link
 			}
-			
+			if next_link == "https://github.com/lightvector/KataGo": continue
 			goto *next_page
 		}
 	loop
