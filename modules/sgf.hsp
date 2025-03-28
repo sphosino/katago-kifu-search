@@ -477,7 +477,6 @@
 			await 10
 		}
 	loop
-	title "“‡Šû•ˆæ“¾Š®—¹"
 	return new
 
 #deffunc merge_node_main int topnode1, int topnode2, local i, local c, local sn

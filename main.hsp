@@ -713,6 +713,7 @@ setfps 60
 	if nownode < 0: return
 	logmes get_tree_item_id(nownode)
 	clipset get_node_sgf_nowpoint(get_tree_item_id(nownode))
+	title "現局面をクリップボードにコピーしました"
 	return
 *getsgf
 
@@ -724,6 +725,7 @@ setfps 60
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
 	del_sgf_node new_node, 1 //削除して完了
+	title "棋譜をクリップボードにコピーしました"
 	return
 *loadsgf
 	dim t
