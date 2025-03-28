@@ -1,5 +1,4 @@
 #ifndef memorize_hit_rect
-;#include "GobanPatternManager.hsp"
 #module
 
 #const MAX_BOARD_SIZE 26

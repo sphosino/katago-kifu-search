@@ -323,7 +323,7 @@ pre_ui_mode = -1
 
 setfps 60
 *main
-	;logmes ""+getrealfpsf()
+	logmes ""+getrealfpsf()
 	manage_keyfps
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
