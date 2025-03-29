@@ -216,7 +216,7 @@
 *draw_last_move_mark
 	if (zz == 1) && m == ÅŒã‚Ì’…è && cnt == ÅŒã‚Ì’…è.1{
 		color 21,220,21
-		circle posx + masx/5, posy + masy/5, posx + masx*4/5, posy + masy*4/5
+		circle posx + masx/4, posy + masy/4, posx + masx*3/4, posy + masy*3/4
 	}
 	return
 #modfunc getBoardCoordinates array result

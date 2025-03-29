@@ -55,6 +55,9 @@ if strsize == -1{
 	
 	//星を表示するか
 	view_hosi@goban = 0
+
+	//最終手表示
+	last_move_mark = 1
 	
 	//棋譜を何手目から表示するか
 	kifu_start_num = 10
@@ -78,6 +81,7 @@ if strsize == -1{
 	noteget_ max_depth
 	noteget_ enableColorFlip
 	noteget_ view_hosi@goban
+	noteget_ last_move_mark
 	noteget_ kifu_start_num
 	noteget_ auto_interval
 	noteget_ alpha_interval
