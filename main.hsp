@@ -170,13 +170,12 @@ topnode = -1
 #endif
 
 //エリア作成
-root = make_area_child(1,2)
-	header_area = make_area_child(,,root)
-	body_area = make_area_child(3,1)
+root = make_area_child(1,1)
+	
+	body_area = make_area_child(3,1, root)
 		sidebar_area = make_area_child(1,2,body_area)
-		sidebar_buttons = make_area_child(2,2,sidebar_area)
+		sidebar_buttons = make_area_child(2,3,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
-		
 			sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
 			
 			sidebar_kifulist_buttons = make_area_child(2,2)
@@ -197,10 +196,13 @@ root = make_area_child(1,2)
 				chkbox_autoplay = make_area_child()
 				slider = make_area_child()
 
-			button_loadfile = make_area_child(,,sidebar_buttons)
+			
+			chkbox_last_move = make_area_child(,,sidebar_buttons)
 			chkbox_view_hosi = make_area_child()
 			button_getsgf = make_area_child()
 			button_getsgf_nowpoint = make_area_child()
+			button_download_file = make_area_child()
+			button_save_file = make_area_child()
 			
 		goban_area = make_area_child(1,2,body_area)
 				goban_body_area = make_area_child(,,goban_area)
@@ -213,8 +215,10 @@ root = make_area_child(1,2)
 					go_end = make_area_child()
 					button_clearboard = make_area_child()
 					
-		goban_tool_area = make_area_child(1,2,body_area)
-			goban_search_area = make_area_child(1,5,goban_tool_area)
+		goban_tool_area = make_area_child(1,3,body_area)
+			goban_graph_area = make_area_child(1,2,goban_tool_area)
+				header_area = make_area_child(,,goban_graph_area)
+			goban_search_area = make_area_child(2,3,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
 				button_exclude_search = make_area_child()
 				button_narrow_down_search = make_area_child()
@@ -239,12 +243,13 @@ set_grid_area_back_color goban_edit_area,$333333
 set_grid_area_back_color goban_footer,$333333
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
-set_margin sidebar_kifulist1, 0,0
-set_margin sidebar_kifulist2, 0,0
+set_margin sidebar_kifulist1, 0,5
+set_margin sidebar_kifulist2, 0,5
 
 
 //実体作成
-newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_loadfile
+newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_download_file
+newmod g_buttons, grid_button, "保存",*save_file,button_save_file
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
@@ -265,6 +270,7 @@ newmod g_chkbox, grid_checkbox, ui_mode           , "局面編集" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
+newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
 
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
@@ -571,10 +577,9 @@ setfps 160
 	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
 
 	if ui_mode == MODE_KIFU_VIEW{
-		碁盤表示 board , 着手番号表示, 25
+		碁盤表示 board  , 着手番号表示,last_move_mark, 20
 	}else{
-		
-		碁盤表示 board.1 , , 25
+		碁盤表示 board.1,             ,last_move_mark, 20
 	}
 
 	//グループ表示
@@ -776,6 +781,27 @@ setfps 160
 		clear_group g_type
 	}
 	
+	return
+*save_file
+	tmpdir = dir_cur
+	savedir = "save"
+
+	dim nodelist
+	repeat get_selected_items(kifulist.current_kifulist, node_ids)
+		nodelist(cnt) = int(get_value(get_name_item(kifulist.current_kifulist, node_ids(cnt))))
+	loop
+	new_node = merge_node(nodelist)
+	s = get_node_sgf(new_node)
+	notesel s
+		logmes dirname + "/" + savedir + "/" + get_name_item(kifulist.current_kifulist, node_ids(0))
+		notesave dirname + "/" + savedir + "/" + get_name_item(kifulist.current_kifulist, node_ids(0))
+	noteunsel
+
+	del_sgf_node new_node, 1 //削除して完了
+	
+	chdir tmpdir
+
+	title "棋譜をSGF形式で保存しました"
 	return
 *create_pattern
 	time = keyfpstime

@@ -1,0 +1,354 @@
+#ifndef tree
+#include "area_grid_system.hsp"
+dimtype treenode@global, 5
+
+#module tree parent, item_id, childs, cn, openflag, this_id
+
+//コンストラクタ
+#defcfunc make_treenode int p1, int p2
+	newmod treenode@global, tree, p1, p2
+	return stat
+#modinit int p1, int p2, local i
+	parent = p1
+	item_id = p2
+	openflag = 1
+	dim childs
+
+	mref i, 2
+	this_id = i
+
+	if parent >= 0{
+		add_child_treeview parent, this_id
+	}
+
+	return this_id
+//---------------
+
+
+#define global set_tree_parent(%1, %2) _set_tree_parent treenode@global(%1), %2
+#modfunc _set_tree_parent int p1
+	parent = p1
+	return
+
+#define global ctype get_tree_parent(%1) _get_tree_parent(treenode@global(%1))
+#modcfunc _get_tree_parent
+	return parent
+
+#deffunc add_child_treeview int p1, int p2
+	_add_child_treeview treenode@global(p1), p2
+	return
+#modfunc _add_child_treeview int p1, local i
+	for i,,cn
+		if i == p1: return i ; すでにその子を持っている
+	next
+	childs(cn) = p1
+	cn++
+	
+	set_tree_parent p1, this_id
+	
+	return cn - 1
+
+#define global del_child_treeview(%1, %2) _del_child_treeview treenode@global(%1), %2
+#modfunc _del_child_treeview int p1, local i
+	for i,,cn
+		if childs(i) == p1{
+			memcpy childs, childs, cn - i - 1 << 2, i << 2, i + 1 << 2
+			cn--
+			return
+		}
+	next
+	return
+
+#define global ctype search_tree_child_by_item_ID(%1, %2) _search_tree_child_by_item_ID(treenode@global(%1),%2)
+#modcfunc _search_tree_child_by_item_ID int p1, local i
+	for i,,cn
+		if get_tree_item_id(childs(i)) == p1: return childs(i)
+	next
+	return -1
+
+#define global ctype search_tree_by_item_id(%1, %2) _search_tree_by_item_id(treenode@global(%1), %2)
+#modcfunc _search_tree_by_item_id int p1, local i
+	if item_id == p1: return this_id
+	for i,,cn
+		tmp = search_tree_by_item_id(childs(i), p1)
+		if tmp != -1{
+			return tmp
+		}
+	next
+	return -1
+
+//削除処理
+#deffunc del_treenode int p1
+
+	p = get_tree_parent(p1)
+	if p >= 0{
+		del_child_treeview p, p1
+	}
+	_del_treenode treenode@global(p1)
+	return
+#modfunc _del_treenode local i
+	for i,,cn
+		_del_treenode(treenode@global(childs(i)))
+	next
+	delmod thismod
+	return
+//--------------
+	
+#define global ctype get_tree_root_child(%1) _get_tree_root_child(treenode@global(%1))
+#modcfunc _get_tree_root_child local thismod_ID
+	if openflag: if cn : return childs
+	return this_id
+
+#defcfunc get_tree_item_id int p1
+	return _get_tree_item_id(treenode@global(p1))
+#modcfunc _get_tree_item_id
+	return item_id
+
+#define global set_openflag(%1) _set_openflag(treenode@global(%1))
+#modfunc _set_openflag int p1
+	openflag = p1
+	return
+
+#define global toggle_openflag(%1) _toggle_openflag(treenode@global(%1))
+#modfunc _toggle_openflag
+	openflag ^ 1
+	return
+
+
+#define ctype check_area(%1,%2,%3,%4,%5,%6) ((%5)>=(%1) && (%5)<=(%3) && (%6)>=(%2) && (%6)<=(%4)) 
+
+#deffunc tree_view int p1, int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ
+
+	dim takasa, 1024
+	foreach takasa
+		takasa.cnt = -1
+	loop
+	
+	tree_view_mouse = -1
+	
+	_tree_view treenode@global(p1), 予定高さ, 確定ノードの深さ, 確定ノードの高さ, tmp
+
+	return
+#modfunc _tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ, array result, int 現在の深さ, local 現ノードの高さ, local i, local res
+
+	現ノードの高さ = 予定高さ
+	if 現ノードの高さ <= takasa(現在の深さ){ //すでにノードがある
+		現ノードの高さ = takasa(現在の深さ) + 1　//現ノードをそのノードの下にする。
+	}
+	if px + 現在の深さ * node_sizex > ginfo(12): result = 現ノードの高さ,0: return //画面を超えた
+		for i,,cn
+	
+			if i == 0{
+				//最初の子ノードの処理が終わったとき、現ノードを確定させる
+
+				_tree_view treenode@global(childs(i)), 現ノードの高さ, 確定ノードの深さ, 確定ノードの高さ, res, 現在の深さ + 1
+
+				// res.0 === 処理が終わったそのノードの高さが返ってくる
+				// res.1 === 処理が終わったそのノードが(斜めで戻ってきたか)のフラグが入っている、
+				現ノードの高さ = res - res.1
+			}else: if openflag{
+				_tree_view treenode@global(childs(i)), 現ノードの高さ, 現在の深さ, 現ノードの高さ, res, 現在の深さ + 1
+			}
+			
+		next
+
+	sx = node_sizex / 2
+	sy = node_sizey / 2
+
+
+	//現ノードの位置を計算
+	xx = 現在の深さ     * node_sizex * x_reverse
+	yy = 現ノードの高さ * node_sizey * y_reverse
+
+	if xyswap{
+		x = px + yy
+		y = py + xx
+	}else{
+		x = px + xx
+		y = py + yy
+	}
+
+	if check_area(x-sx/2, y-sy/2, x+sx/2, y+sy/2, mousex, mousey){
+		tree_view_mouse = this_id
+	}
+
+	//現在の深度での高さを更新
+	takasa(現在の深さ) = 現ノードの高さ
+	if 現ノードの高さ < res{
+		takasa(現在の深さ) = res - 1
+	}
+
+	//確定ノードまで横棒を使わずに戻れるか？
+	result = 現ノードの高さ, 1
+	height = 現ノードの高さ
+	for i, 現在の深さ - 1, 確定ノードの深さ, -1
+	
+		height--
+		if height <= takasa(i){
+			 //戻れない。つまり横棒が描かれることになる
+			result.1 = 0
+			_break
+		}
+
+	next
+
+	if px + 現在の深さ * node_sizex < 0: return //左端の画面外なので描画スキップ
+
+	//描画
+	//スタートノード以外は親ノードへ向かう線を描画
+	color 250,250,250
+	if 現在の深さ{
+		xyswap_line x, y,  -node_sizex, -node_sizey * result.1
+	}
+	//縦棒描画　resには最後の子ノードの処理結果(高さ）が入っているのでそれを利用
+	xyswap_line x, y, ,  node_sizey * limit((res - 現ノードの高さ - 1),0)
+
+	//ノード描画
+	color 0, 250, 120
+	circle x-sx/2,y-sy/2,x+sx/2,y+sy/2
+
+
+	if openflag = 0 && cn >= 2{
+		color 200,30,30
+		circle x-sx/5,y-sy/5,x+sy/5,y+sy/5
+	}
+	
+	color 0, 0, 0
+	pos x - sx/2 , y - sy/2
+	mes 現在の深さ
+	
+	return
+
+#deffunc local xyswap_line int p1, int p2, int p3, int p4
+	if xyswap{
+		line p1, p2, p1 + p4 * y_reverse, p2 + p3 * x_reverse
+	}else{
+		line p1, p2, p1 + p3 * x_reverse, p2 + p4 * y_reverse
+	}
+	return
+
+
+//クラスメソッド-----------------------------
+#defcfunc treeview_onmouse_id
+	return tree_view_mouse
+
+
+//------------------------------------------------------------------------
+#include "rectmock.hsp"
+
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#global
+#endif
+
+
+
+#module treebox root_tree_node, current_node, onmouse_id, node_sizex, node_sizey, px, py, area, xyswap, x_reverse, y_reverse
+
+#modinit int p1
+	area = p1
+	treebox_clear thismod
+	return
+#modfunc set_treeview_position int p1, int p2
+	px = p1
+	py = p2
+	return
+#modfunc move_treeview_position int p1, int p2
+	px += p1
+	py += p2
+	return
+#modfunc set_tree_direction int p1
+	xyswap = p1 & 1
+	x_reverse = ((p1 & 3) >> 1) * 2 -1
+	y_reverse = ((p1 & 7) >> 2) * 2 -1
+	return
+#modcfunc get_tree_direction
+	return (x_reverse + 1 >> 1) << 1 | (y_reverse + 1 >> 1) << 2 | xyswap
+#modfunc set_treeview int p1, int p2, int p3, int p4
+	node_sizex = p1
+	node_sizey = p2
+	px = p3
+	py = p4
+	return
+#modfunc set_current_node int p1, local i
+	i = p1 != current_node
+	current_node = p1
+	return i
+#modfunc get_treeview_node_size array a
+	a = node_sizex, node_sizey
+	return
+#modfunc get_treeview_position array a
+	a = px, py
+	return
+#modcfunc get_current_node
+	return current_node
+
+#modcfunc get_root_tree_node
+	return root_tree_node
+	
+
+#modfunc treebox_draw
+	if root_tree_node >= 0{
+		tree_view root_tree_node, -1, -1, -1, node_sizex, node_sizey, px, py
+		onmouse_id = treeview_onmouse_id()
+	}
+	return
+
+#modcfunc treebox_onmouseid
+	return onmouse_id
+	
+#modfunc treebox_toggle_openflag int p1
+	toggle_openflag p1
+	return
+
+
+#modfunc treebox_clear
+	current_node = -1
+	root_tree_node = -1
+	onmouse_id = -1
+	return root_tree_node
+
+#modfunc make_tree_topnode
+	tmp = make_new_SGFnode(-1)
+	current_node = make_treenode(-1, tmp)
+	logmes "tree"+current_node
+	return current_node
+	
+#modfunc load_from_SGF_topnode int SGF_topnode
+
+	logmes "AAA" + SGF_topnode
+
+	node_stack = SGF_topnode ; 現在のSGFノード番号	
+	parent_tree_stack = -1   ; 親ノード番号(SGFノードではなく、ツリーノードの番号）
+	sn = 1
+
+	root_tree_node = -1
+	
+	while sn
+		sn--
+		
+		nnode = node_stack(sn)     //SGFノード
+		parent_tree_node = parent_tree_stack(sn)//親ツリーノード
+
+		
+		tnode = make_treenode(parent_tree_node, nnode) //親ツリーに新しくアイテムを作成、そのアイテムにSGFノードIDを納める
+
+		if root_tree_node = -1: root_tree_node = tnode
+		
+		//子ノードを全部積む。
+		repeat get_SGF_childs(nnode, childlist)
+			node_stack(sn) = lpeek(childlist,cnt*4)
+			parent_tree_stack(sn) = tnode
+			sn++
+		loop
+
+	wend
+
+	logmes "rootnode -> " + root_tree_node
+
+	set_current_node thismod, root_tree_node
+	return root_tree_node
+
+
+#global

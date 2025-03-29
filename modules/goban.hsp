@@ -61,8 +61,8 @@
 
 
 
-#modfunc 碁盤表示 int 碁石番号表示, int margin
-
+#modfunc 碁盤表示 int 碁石番号表示, int 最終手表示, int margin
+	zz = 最終手表示
 	thisrect thismod, r, area_number
 
 	masx = limit((r.2 - r   - margin) / length(board),1)
@@ -214,7 +214,7 @@
 
 	return
 *draw_last_move_mark
-	if m == 最後の着手 && cnt == 最後の着手.1{
+	if (zz == 1) && m == 最後の着手 && cnt == 最後の着手.1{
 		color 21,220,21
 		circle posx + masx/5, posy + masy/5, posx + masx*4/5, posy + masy*4/5
 	}
