@@ -1,7 +1,7 @@
 #include "area_grid_system.hsp"
 #include "find_empty_index.hsp"
 #addition "../keyfps.hsp"
-#module grid_radiobox string, area, v,items, colors, bc, fc, w, h
+#module grid_radiobox string, area, v,items, colors, bc, fc, w, h, w_max, h_max
 
 #modinit var a, int area_number, local thismod_ID
 	a = -1
@@ -10,6 +10,8 @@
 	colors = 0,1,2,3
 	w = 1
 	h = 1
+	w_max = -1
+	h_max = -1
 	dim item_indces
 	dim item_indces_num
 	sdim string
@@ -19,19 +21,40 @@
 	return thismod_ID
 
 #modfunc add_item_radiobox str s1
+	logmes "" + w + "  :  " +H
 	if find_empty_index(item_indces,item_indces_num, w, h) >= 0{
 		//’Ç‰Á‚·‚é
 		item_indces(item_indces_num) = stat
 		string(item_indces_num) = s1
 		item_indces_num++
-		
 	}else{
-		//‰¡Šg’£
-		trans_grid item_indces, item_indces_num, w, w + 1
-		w++
-		add_item_radiobox thismod, s1
-		
+		logmes "B"  + w_max
+		if (w_max < 0) || (w < w_max){
+			//‰¡Šg’£
+			trans_grid item_indces, item_indces_num, w, w + 1
+			w++
+			add_item_radiobox thismod, s1
+		}else: if (h_max < 0) || (h < h_max){
+			//cŠg’£
+			h++
+			add_item_radiobox thismod, s1
+		}
 	}
+	return
+#modfunc set_radio_grid_max int _w_max, int _h_max
+	if _w_max > 0{
+		w_max = _w_max
+	}
+	w = limit(_w_max,1)
+	if _h_max > 0{
+		h_max = _h_max
+	}
+	h = limit(limit(_h_max,(item_indces_num  + _w_max - 1) / _w_max),1)
+	repeat item_indces_num
+		x = item_indces(cnt) \ w
+		y = item_indces(cnt) / w
+		item_indces(cnt) = y * _w_max + x
+	loop
 	return
 #modfunc draw_g_radiobox
 

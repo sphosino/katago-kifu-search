@@ -261,7 +261,7 @@ newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
-newmod g_chkbox, grid_checkbox, ui_mode           , "着手" , chkbox_tyakusyu
+newmod g_chkbox, grid_checkbox, ui_mode           , "局面編集" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
@@ -278,10 +278,16 @@ newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
 newmod g_radiobox, grid_radiobox, g_type, radiobox_grouping
+set_radio_grid_max g_radiobox, 4
 add_item_radiobox g_radiobox, "A"
 add_item_radiobox g_radiobox, "B"
 add_item_radiobox g_radiobox, "C"
 add_item_radiobox g_radiobox, "D"
+add_item_radiobox g_radiobox, "●"
+add_item_radiobox g_radiobox, "〇"
+add_item_radiobox g_radiobox, "●〇"
+add_item_radiobox g_radiobox, "範囲"
+
 
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
@@ -321,7 +327,7 @@ pretime = keyfpstime
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
 
-setfps 60
+setfps 160
 *main
 	logmes ""+getrealfpsf()
 	manage_keyfps
@@ -424,14 +430,14 @@ setfps 60
 				if sel == -3{
 					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
 				}
-				if sel >= 0: ui_mode = MODE_KIFU_VIEW
 			loop
 			
 			if inlistbox == 0{
 				dragging_flag = 1
-				get_treeview_position tmp
-				dragstartx = mousex - tmp
-				dragstarty = mousey - tmp.1
+				if (g_type == -1 || g_type == 7) || (ui_mode == MODE_KIFU_VIEW){
+					rect = limit(point,0,18),limit(point.1,0,18)
+					rect(2) = rect, rect.1
+				}
 				if treebox_onmouseid(t) >=0{
 
 					clicked_node = stat
@@ -441,25 +447,43 @@ setfps 60
 					set_current_node t, clicked_node 			
 					sync_treebox_board t, board 
 				}
-				if g_type == -1{
-					if in_board{
+				
+				if in_board{
+					switch g_type
+					case 0
+					case 1
+					case 2
+					case 3
+						
+						add_group_stone point, point.1, g_type
+					swbreak
+					case 4
+						user_board(point,point.1) = 1
+						set_board_data board.1, user_board
+					swbreak
+					case 5
+						user_board(point,point.1) = 2
+						set_board_data board.1, user_board
+					swbreak
+					case 6
+						swapturn^1
+						user_board(point,point.1) = swapturn + 1
+						set_board_data board.1, user_board
+					swbreak
+					default
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
-					}else{
-						rect = -1
-					}
+					swend
 				}else{
-					if in_board{
-						add_group_stone point, point.1, g_type
-					}
+					rect = -1
 				}
 			}
 		}
 	
 		if dragging_flag{
 			
-				rect(2) = limit(point(0),0,18)
-				rect(3) = limit(point(1),0,18)
+			rect(2) = limit(point(0),0,18)
+			rect(3) = limit(point(1),0,18)
 
 			
 			if _getkey(1) == -1{//マウスが離されたとき
@@ -492,7 +516,7 @@ setfps 60
 				if mw > 0: move_scroll_index kifulist.cnt,-1
 			}
 		loop
-		if (in_kifulist == 0) && (ui_mode == 0){
+		if (in_kifulist == 0) && (ui_mode == MODE_KIFU_VIEW){
 			if mw < 0 : gosub*move_next
 			if mw > 0 : gosub*move_back
 		}
@@ -610,6 +634,7 @@ setfps 60
 	
 	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
 		current_kifulist = kifulist_id
+		ui_mode = MODE_KIFU_VIEW
 		if get_root_tree_node(t) >= 0{
 			del_treenode(get_root_tree_node(t))
 		}
@@ -743,7 +768,7 @@ setfps 60
 	title" 黒 " + blackplayer + "   白 " + whiteplayer
 	return
 *group_clear
-	if g_type = -1{
+	if g_type >= 4{
 		repeat 4
 			clear_group cnt
 		loop

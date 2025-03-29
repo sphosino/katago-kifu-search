@@ -8,7 +8,7 @@
         row >= 0 の場合は、その行のみをチェック。
     */
 
-	result = -1
+	result = -1, -1
 
 	dim checklist, w * h
 	
