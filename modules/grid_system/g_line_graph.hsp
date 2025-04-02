@@ -60,7 +60,7 @@
 
 	thisrect thismod, oya, area_number //oya ‚É‹éŒ`î•ñæ“¾
 
-	color 150,50:boxf oya,oya.1,oya.2,oya.3:
+	color 120,50,10: boxfl oya,oya.1,oya.2,oya.3:
 
 	font "",10
 
@@ -82,7 +82,7 @@
 		pos rect.2,my      : mes end_y - (my - rect.1) * end_y / (rect.3-rect.1)
 	}
 	
-	color 30,30,30
+	color 0,0,0
 	line  rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2
 
 	xx = rect + è”  * (rect.2 - rect.0) / (end_x - start_x)
@@ -100,8 +100,9 @@
 		mes end_y - (start_y + (end_y - start_y) * cnt / x_ticks)
 	loop
 
+	color 180,250,160
 	pos rect, (rect.3 + rect.1) / 2
-	repeat dn
+	repeat limit(dn-1,0), 1
 		line rect + cnt * (rect.2 - rect.0) / dn, rect.3 - (rect.3 - rect.1) * data(cnt) / 100
 	loop
 
@@ -120,7 +121,7 @@ mock_flag@global = 1
 
 set_rect_mock 99, 100, 100, 500, 300
 
-	newmod a, line_graph, 99
+newmod a, line_graph, 99
 
 set_end_xy a, 200
 
