@@ -129,7 +129,6 @@ dimtype treenode@global, 5
 
 	tmp2 = px ,py ,ex,ey ,scroll_x,scroll_y
 
-	logmes  " "  +scroll_x + ","+scroll_y
 
 	_tree_view treenode@global(p1), 予定高さ, 確定ノードの深さ, 確定ノードの高さ, tmp, 0, tmp2
 

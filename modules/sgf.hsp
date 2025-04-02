@@ -574,10 +574,13 @@ init_sgf_module
 	if start_point == -1{
 		return -1
 	}
-	
+	dim stack_count
+	nc = 0
+	MN = 0	//手数をカウントする独自プロパティ
+
 	topnode = make_new_SGFnode(node)
 	load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
-	
+	set_property_data topnode, "MN",str(lastnode)
 	return topnode
 
 #deffunc load_sgf_main str ss, int node
@@ -595,6 +598,8 @@ init_sgf_module
 			new_id = make_new_SGFnode(nn)
 			add_SGFchild nn, new_id
 			nn = new_id
+			nc++
+			if MN < nc: MN = nc:lastnode = nn
 			
 		}else:if token >= 'A' && token <= 'Z'{
 			
@@ -610,12 +615,15 @@ init_sgf_module
 		}else:if token = '('{
 			
 			stack(pn) = nn
+			stack_count(pn) = nc
 			pn++
+
 			
 		}else:if token == ')'{
 			
 			pn--
 			nn = stack(pn)
+			nc = stack_count(pn)
 			
 		}else{
 			

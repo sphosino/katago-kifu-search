@@ -18,6 +18,7 @@
 #include "modules/grid_system/g_stepper.hsp"
 #include "modules/grid_system/g_label.hsp"
 #include "modules/grid_system/g_treebox.hsp"
+#include "modules/grid_system/g_line_graph.hsp"
 #include "modules/group.hsp"
 
 #include "go_game_manager.hsp"
@@ -165,7 +166,7 @@ jidou = 0
 着手番号表示 = 0
 ui_mode = MODE_KIFU_VIEW
 
-set_treeview 25,25
+set_treeview 27,27
 set_treeview_position 20,20
 set_tree_direction 6
 
@@ -226,6 +227,7 @@ root = make_area_child(1,1)
 		goban_tool_area = make_area_child(1,3,body_area)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
+				line_graph_area = make_area_child()
 			goban_search_area = make_area_child(2,3,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
 				button_exclude_search = make_area_child()
@@ -256,7 +258,7 @@ set_margin sidebar_kifulist2, 0,5
 
 
 //実体作成
-newmod g_buttons, grid_button, "最新棋譜を取得", *loadfile, button_download_file
+newmod g_buttons, grid_button, "最新棋譜取得", *loadfile, button_download_file
 newmod g_buttons, grid_button, "保存",*save_file,button_save_file
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
@@ -311,6 +313,7 @@ newmod board, goban, 19,19,26,26, goban_body_area
 
 
 newmod t, treebox,treebox_area
+newmod l_graph, line_graph, line_graph_area
 
 
 //矩形範囲指定用
@@ -625,6 +628,19 @@ setfps 160
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
 	loop
+	foreach l_graph
+		新しい手数 = 手数
+		line_graph_manager l_graph.cnt, 新しい手数
+		if 手数 > 新しい手数{
+			repeat 手数 - 新しい手数
+				gosub *move_back
+			loop
+		}else: if 手数 < 新しい手数{
+			repeat 新しい手数 - 手数
+				gosub *move_next
+			loop
+		}
+	loop
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
@@ -676,6 +692,22 @@ setfps 160
 		noteunsel
 		topnode = change_sgf(s, t, board)
 		logmes "kifuclick -> "+ topnode
+
+		clear_graph l_graph
+
+		get_nodelist int(get_property_data(topnode,"MN")), f
+		set_end_xy l_graph, length(f), 100
+
+		logmes "AAAAAAAAA  "  + length(f)
+
+		
+		for i,length(f)-1,-1,-1
+			tmp = get_property_data(f(i),"C")
+			split tmp," ",r
+			add_graph_data l_graph,double(r) * 100
+		next
+
+		手数 = 0
 		
 		if get_listbox_item_data(kifulist.kifulist_id,itemid){ //アイテムデータが設定されていたら、それは検索結果。
 			nstat = stat //検索結果のSGFノード
@@ -908,7 +940,7 @@ setfps 160
 
 	set_current_node t, get_tree_root_child(nownode)
 	moved = stat
-	if stat: treeview移動 1
+	if stat: 手数++: treeview移動 1
 	pretime = keyfpstime
 	gosub*syncboard
 	return moved
@@ -917,6 +949,7 @@ setfps 160
 	if nownode < 0: return
 	if get_tree_parent(nownode) != -1{
 		set_current_node t, get_tree_parent(nownode)
+		手数--
 		pretime = keyfpstime
 		treeview移動 -1
 	}
@@ -966,7 +999,7 @@ setfps 160
 #deffunc treeview移動 int ddd
 	get_treeview_node_size ns 
 	if (get_tree_direction() & 1){
-		move_treeview_position , ns.1 * -(((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
+		move_treeview_position , ns.1 * (((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
 	}else{ 
 		_move_treeview_position   ns  * (((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
 	}

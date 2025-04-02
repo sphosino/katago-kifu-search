@@ -1,7 +1,7 @@
-#define global MODULE_DEBUG
+;#define global MODULE_DEBUG
 #include "area_grid_system.hsp"
 #addition "../keyfps.hsp"
-#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number
+#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number, current_position
 
 #modinit int _area, local thismod_ID
 
@@ -16,8 +16,8 @@
 	start_x = 0    //０手目
 	start_y = 0.0  //0%(白勝ち）
 
-	end_x = 256    //最終手まで
-	end_y = 100.0 //100%(黒勝ち)
+	end_x = -1   //最終手まで
+	end_y = 100  //100%(黒勝ち)
 
 	x_ticks = 10 // 10手ごとに表示
 	y_ticks = 10 // 10%ごとに目盛り
@@ -30,48 +30,79 @@
 	position_y = _y
 	return
 
+#modfunc set_end_xy int _x, int _y
+	end_x = _x
+	end_y = _y
+	return
+
+#modfunc set_current_position int p1
+	current_position = p1
+	return
+#modcfunc get_current_position
+	return current_position
+
 #modfunc set_size_g_line_graph int _sizex, int _sizey, int _sizer
 	size_x = _sizex
 	size_y = _sizey
 	return
 
-#modfunc set_data double a
+#modfunc add_graph_data double a
 	data(dn) = a
 	dn++
 	return
 
-#modfunc line_graph_manager
+#modfunc clear_graph
+	dim data
+	dn = 0
+	return
+
+#modfunc line_graph_manager var 手数
 
 	thisrect thismod, oya, area_number //oya に矩形情報取得
 
-	color 150,50:boxf oya,oya.1,oya.2,oya.3:color 255,255,255
+	color 150,50:boxf oya,oya.1,oya.2,oya.3:
 
-	
+	font "",10
+
 	if position_x = -1: rect.0 = oya.0:else: rect   = oya.0 + position_x
 	if position_y = -1: rect.1 = oya.1:else: rect.1 = oya.1 + position_y
 	if size_x = -1:     rect.2 = oya.2:else: rect.2 = rect   + size_x
 	if size_y = -1:     rect.3 = oya.3:else: rect.3 = rect.1 + size_y
 
+	color 255,255,255
 	mx = limit(mousex, rect.0,rect.2)
 	my = limit(mousey, rect.1,rect.3)
-	line mx,rect.1, mx, rect.3
-	pos ,rect.1 - 20: mes mx - rect.0 * 100 / (rect.3-rect.1)
+	if in_rect(rect){
+		if _getkey(1) == 1{
+			手数 = (mx - rect.0) * end_x / (rect.2-rect.0)
+		}
+		line mx,rect.1, mx, rect.3
+		line rect.0,my, rect.2, my
+		pos mx,rect.1 - 20 : mes (mx - rect.0) * end_x / (rect.2-rect.0)
+		pos rect.2,my      : mes end_y - (my - rect.1) * end_y / (rect.3-rect.1)
+	}
+	
+	color 30,30,30
+	line  rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2
 
-	line rect.0,my, rect.2, my
-	pos rect.2: mes 100 - (my - rect.1) * 100 / (rect.2-rect.0)	
+	xx = rect + 手数  * (rect.2 - rect.0) / (end_x - start_x)
+	line xx, rect.1, xx, rect.3
 
+	color 255,255,255
+
+	
 	repeat x_ticks
 		pos rect.0 + (rect.2-rect.0) * cnt / x_ticks , rect.3
 		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
 	repeat y_ticks
 		pos rect.0 - 20, rect.1 + (rect.3-rect.1) * cnt / y_ticks
-		mes 100 - (start_y + (end_y - start_y) * cnt / x_ticks)
+		mes end_y - (start_y + (end_y - start_y) * cnt / x_ticks)
 	loop
 
 	pos rect, (rect.3 + rect.1) / 2
 	repeat dn
-		line rect + cnt * ((rect.2 - rect.0) / dn), rect.3 - (rect.3 - rect.1) * data(cnt) / 100
+		line rect + cnt * (rect.2 - rect.0) / dn, rect.3 - (rect.3 - rect.1) * data(cnt) / 100
 	loop
 
 	
@@ -91,12 +122,13 @@ set_rect_mock 99, 100, 100, 500, 300
 
 	newmod a, line_graph, 99
 
+set_end_xy a, 200
 
 repeat 200
     angle = cnt * 2   ; カウンタを角度として使う
     noise = rnd(10)   ; ノイズ成分を加える
     value = 50 + sin(angle) * 40 + noise   ; 基本をsin波にしてノイズを足す
-    set_data a, value
+    add_graph_data a, value
 loop
 //メインループ
 repeat
