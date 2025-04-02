@@ -1,6 +1,5 @@
 #include "modules/goban.hsp"
 
-#include "treebox.hsp"
 #include "modules/hash.hsp"
 #include "modules/sgf.hsp"
 

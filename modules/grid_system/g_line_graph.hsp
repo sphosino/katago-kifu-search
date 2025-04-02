@@ -1,0 +1,108 @@
+#define global MODULE_DEBUG
+#include "area_grid_system.hsp"
+#addition "../keyfps.hsp"
+#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number
+
+#modinit int _area, local thismod_ID
+
+    //エリア番号
+    area_number = _area
+
+	position_x = -1  // マイナスの時は、エリアいっぱいに表示
+	position_y = -1
+    size_x = -1
+	size_y = -1
+
+	start_x = 0    //０手目
+	start_y = 0.0  //0%(白勝ち）
+
+	end_x = 256    //最終手まで
+	end_y = 100.0 //100%(黒勝ち)
+
+	x_ticks = 10 // 10手ごとに表示
+	y_ticks = 10 // 10%ごとに目盛り
+
+    mref thismod_ID, 2
+    return thismod_ID
+
+#modfunc set_position_g_line_graph int _x, int _y
+	position_x = _x
+	position_y = _y
+	return
+
+#modfunc set_size_g_line_graph int _sizex, int _sizey, int _sizer
+	size_x = _sizex
+	size_y = _sizey
+	return
+
+#modfunc set_data double a
+	data(dn) = a
+	dn++
+	return
+
+#modfunc line_graph_manager
+
+	thisrect thismod, oya, area_number //oya に矩形情報取得
+
+	color 150,50:boxf oya,oya.1,oya.2,oya.3:color 255,255,255
+
+	
+	if position_x = -1: rect.0 = oya.0:else: rect   = oya.0 + position_x
+	if position_y = -1: rect.1 = oya.1:else: rect.1 = oya.1 + position_y
+	if size_x = -1:     rect.2 = oya.2:else: rect.2 = rect   + size_x
+	if size_y = -1:     rect.3 = oya.3:else: rect.3 = rect.1 + size_y
+
+	mx = limit(mousex, rect.0,rect.2)
+	my = limit(mousey, rect.1,rect.3)
+	line mx,rect.1, mx, rect.3
+	pos ,rect.1 - 20: mes mx - rect.0 * 100 / (rect.3-rect.1)
+
+	line rect.0,my, rect.2, my
+	pos rect.2: mes 100 - (my - rect.1) * 100 / (rect.2-rect.0)	
+
+	repeat x_ticks
+		pos rect.0 + (rect.2-rect.0) * cnt / x_ticks , rect.3
+		mes start_x + (end_x - start_x) * cnt / x_ticks
+	loop
+	repeat y_ticks
+		pos rect.0 - 20, rect.1 + (rect.3-rect.1) * cnt / y_ticks
+		mes 100 - (start_y + (end_y - start_y) * cnt / x_ticks)
+	loop
+
+	pos rect, (rect.3 + rect.1) / 2
+	repeat dn
+		line rect + cnt * ((rect.2 - rect.0) / dn), rect.3 - (rect.3 - rect.1) * data(cnt) / 100
+	loop
+
+	
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#include "rectmock.hsp"
+#global
+
+
+#ifdef MODULE_DEBUG //テストコード
+
+mock_flag@global = 1
+
+set_rect_mock 99, 100, 100, 500, 300
+
+	newmod a, line_graph, 99
+
+
+repeat 200
+    angle = cnt * 2   ; カウンタを角度として使う
+    noise = rnd(10)   ; ノイズ成分を加える
+    value = 50 + sin(angle) * 40 + noise   ; 基本をsin波にしてノイズを足す
+    set_data a, value
+loop
+//メインループ
+repeat
+	redraw:redraw 2
+	manage_keyfps ;FPS調整と、_getkey()サポート
+	color:boxf:color 255,255,255
+	line_graph_manager a
+loop
+#endif

@@ -1,0 +1,94 @@
+#ifndef treebox
+#include "tree.hsp"
+#module treebox root_tree_node, current_node, onmouse_id, area_number, v_x, v_y
+
+#modinit int _area
+	area_number = _area
+	treebox_clear thismod
+	return
+
+#modfunc set_current_node int p1, local i
+	i = p1 != current_node
+	current_node = p1
+	return i
+	
+#modcfunc get_current_node
+	return current_node
+
+#modcfunc get_root_tree_node
+	return root_tree_node
+
+#modfunc set_v_xy int p1, int p2
+	v_x = p1
+	v_y = p2
+	return
+
+#modfunc treebox_draw
+	if root_tree_node >= 0{
+		thisrect thismod, rect, area_number
+		set_treeview_position rect, rect.1
+		set_treeview_endposition rect.2,rect.3
+		tree_view root_tree_node, -1, -1, -1
+		onmouse_id = treeview_onmouse_id()
+	}
+	return
+
+#modcfunc treebox_onmouseid
+	return onmouse_id
+	
+#modfunc treebox_toggle_openflag int p1
+	toggle_openflag p1
+	return
+
+
+#modfunc treebox_clear
+	current_node = -1
+	root_tree_node = -1
+	onmouse_id = -1
+	set_treeview_scroll
+	return root_tree_node
+
+#modfunc make_tree_topnode
+	tmp = make_new_SGFnode(-1)
+	current_node = make_treenode(-1, tmp)
+	logmes "tree"+current_node
+	return current_node
+	
+#modfunc load_from_SGF_topnode int SGF_topnode
+
+	logmes "AAA" + SGF_topnode
+
+	node_stack = SGF_topnode ; 現在のSGFノード番号	
+	parent_tree_stack = -1   ; 親ノード番号(SGFノードではなく、ツリーノードの番号）
+	sn = 1
+
+	root_tree_node = -1
+	
+	while sn
+		sn--
+		
+		nnode = node_stack(sn)     //SGFノード
+		parent_tree_node = parent_tree_stack(sn)//親ツリーノード
+
+		
+		tnode = make_treenode(parent_tree_node, nnode) //親ツリーに新しくアイテムを作成、そのアイテムにSGFノードIDを納める
+
+		if root_tree_node = -1: root_tree_node = tnode
+		
+		//子ノードを全部積む。
+		repeat get_SGF_childs(nnode, childlist)
+			node_stack(sn) = lpeek(childlist,cnt*4)
+			parent_tree_stack(sn) = tnode
+			sn++
+		loop
+
+	wend
+
+	logmes "rootnode -> " + root_tree_node
+
+	set_current_node thismod, root_tree_node
+	return root_tree_node
+#include "rectmock.hsp"
+
+#global
+#endif
