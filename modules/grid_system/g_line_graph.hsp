@@ -96,7 +96,7 @@
 		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
 	repeat y_ticks
-		pos rect.0 - 20, rect.1 + (rect.3-rect.1) * cnt / y_ticks
+		pos rect.0 - 18, rect.1 + (rect.3-rect.1) * cnt / y_ticks
 		mes end_y - (start_y + (end_y - start_y) * cnt / x_ticks)
 	loop
 
