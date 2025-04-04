@@ -62,7 +62,9 @@
 
 	color 120,50,10: boxfl oya,oya.1,oya.2,oya.3:
 
-	font "",10
+	fontsize = 10
+
+	font "", fontsize
 
 	if position_x = -1: rect.0 = oya.0:else: rect   = oya.0 + position_x
 	if position_y = -1: rect.1 = oya.1:else: rect.1 = oya.1 + position_y
@@ -78,8 +80,8 @@
 		}
 		line mx,rect.1, mx, rect.3
 		line rect.0,my, rect.2, my
-		pos mx,rect.1 - 20 : mes (mx - rect.0) * end_x / (rect.2-rect.0)
-		pos rect.2,my      : mes end_y - (my - rect.1) * end_y / (rect.3-rect.1)
+		pos mx,rect.1 - fontsize : mes (mx - rect.0) * end_x / (rect.2-rect.0)
+		pos rect.2,my            : mes end_y - (my - rect.1) * end_y / (rect.3-rect.1)
 	}
 	
 	color 0,0,0
