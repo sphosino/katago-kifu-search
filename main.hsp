@@ -166,7 +166,7 @@ jidou = 0
 ’…è”Ô†•\¦ = 0
 ui_mode = MODE_KIFU_VIEW
 
-set_treeview 27,27
+set_treeview 30,30
 set_treeview_position 20,20
 set_tree_direction 6
 
@@ -251,6 +251,7 @@ set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
 set_grid_area_back_color goban_edit_area,$333333
 set_grid_area_back_color goban_footer,$333333
+set_grid_area_back_color treebox_area ,$333333
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
@@ -647,7 +648,7 @@ setfps 160
 	if getdbl_ms(17,250): debugmode ^ 1
 
 	font "", 9
-	treebox_draw t
+	treebox_draw t, length(f)
 	
 
 	redraw

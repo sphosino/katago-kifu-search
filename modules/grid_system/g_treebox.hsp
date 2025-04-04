@@ -1,10 +1,12 @@
 #ifndef treebox
 #include "tree.hsp"
-#module treebox root_tree_node, current_node, onmouse_id, area_number, v_x, v_y
+#include "modules/scale.hsp"
+#module treebox root_tree_node, current_node, onmouse_id, area_number, s
 
 #modinit int _area
 	area_number = _area
 	treebox_clear thismod
+	newmod s, scroll
 	return
 
 #modfunc set_current_node int p1, local i
@@ -18,19 +20,30 @@
 #modcfunc get_root_tree_node
 	return root_tree_node
 
-#modfunc set_v_xy int p1, int p2
-	v_x = p1
-	v_y = p2
-	return
 
-#modfunc treebox_draw
+#modfunc treebox_draw  int data_num
 	if root_tree_node >= 0{
 		thisrect thismod, rect, area_number
 		set_treeview_position rect, rect.1
 		set_treeview_endposition rect.2,rect.3
+		get_treeview_nodesize t
+		set_treeview_position rect.0  + t/2,  rect.1 + t.1/2
+		
 		tree_view root_tree_node, -1, -1, -1
 		onmouse_id = treeview_onmouse_id()
+
+		
+		set_position_scroll_bar s, rect.0, rect.3
+		set_direction s, 1 | 2 
+		set_size_scroll_bar s, rect.2-rect.0
+		set_tickness_scroll_bar s, 10
+		set_value_minmax s, 0, data_num
+		draw_scroll_bar s
+
+
+		set_treeview_scroll get_v(s)
 	}
+
 	return
 
 #modcfunc treebox_onmouseid

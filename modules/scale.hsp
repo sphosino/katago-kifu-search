@@ -1,6 +1,10 @@
+
+#ifndef scroll
+#include "keyfps.hsp"
+
 #module scroll px, py, size, tickness, value_min, value_max, min_tumami_size, direction
 
-#modinit int x, int y, int 長さ, int 太さ, double 下限, double 上限
+#modinit int x, int y, int 長さ, int 太さ, int 下限, int 上限
 	// 基準点
 	px = x
 	py = y
@@ -13,10 +17,16 @@
 
 	min_tumamisize = 5
 
-	direction = 0
+	direction = 1 | 2
 
 	return
-#modfunc draw
+#modfunc draw_scroll_bar int draw_value_flag
+
+	if _getkey(1) >= 1{
+		set_b thismod
+	}
+
+	//
 
 	horizontal = ((direction & 1)!=0)//縦か横か
 	normal = ((direction & 2)!=0) * 2 - 1 //xy座標進行方向と同じ向きか
@@ -28,7 +38,7 @@
 	}
 
 	//つまみのサイズ算出
-	tumamisize = limit(size / ( value_max - value_min + 1), min_tumamisize, size)
+	tumamisize = limit(size / (value_max - value_min + 1), min_tumamisize, size)
 
 	//基準点からつまみまでの距離
 	if reverse{
@@ -42,33 +52,48 @@
 		boxf px , py, px + size * normal, py + tickness * frip
 		color 250
 		boxf px + bar_position * normal, py, px + (bar_position + tumamisize) * normal, py + tickness * frip
-		pos px, py
-		mes value
 	}else{
 		color 0, 0, 0
 		boxf px , py, px + tickness * frip, py + size * normal
 		color 250
 		boxf px, py + bar_position * normal, px + tickness * frip, py + (bar_position + tumamisize) * normal
-		pos px, py
-		mes value
 	}
 
+
+	if draw_value_flag{
+		//基準点に値を描画	
+		pos px, py
+		mes value
+	}	
+		
 	return
 
+#modfunc set_position_scroll_bar int p1, int p2
+
+	px = p1
+	py = p2
+	return
+#modfunc set_v int p1
+	value = limit(p1,value_min,value_max)
+	return
 #modfunc set_value_minmax int p1, int p2
 	value_min = p1
 	value_max = p2
 	return
+	
 #modfunc set_direction int p1
 	direction = p1
 	return
 #modcfunc get_direction
 	return direction
 	
-#modfunc set_v int p1
-	value = limit(p1,value_min,value_max)
+
+#modfunc set_size_scroll_bar int p1
+	size = p1
 	return
-	
+#modfunc set_tickness_scroll_bar int p1
+	tickness = p1
+	return
 #modcfunc get_v
 	return value
 	
@@ -111,14 +136,18 @@
 	return
 	
 #global
+#endif
+
+#if 0
 
 newmod b,scroll, 200,200, 180,20, 12,1200
 
 set_v b, 300
 
 *main
+		manage_keyfps
 	color 250,250,250:boxf:color
-	draw b
+	draw_scroll_bar b,1
 
 	mw = mousew
 	
@@ -129,16 +158,13 @@ set_v b, 300
 		set_v b, get_v(b) - 1
 	}
 
-	getkey k,1
-	if k{
-		set_b b
-	}
 	stick key
 	if key & 512{
 		//キー入力されたら
 		set_direction b, (get_direction(b) + 1) \ 16
 	}
 	
-	await 16
+
 	redraw: redraw 2
 	goto*main
+#endif

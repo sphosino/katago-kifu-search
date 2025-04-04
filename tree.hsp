@@ -129,7 +129,6 @@ dimtype treenode@global, 5
 
 	tmp2 = px ,py ,ex,ey ,scroll_x,scroll_y
 
-
 	_tree_view treenode@global(p1), 予定高さ, 確定ノードの深さ, 確定ノードの高さ, tmp, 0, tmp2
 
 	return
@@ -236,6 +235,8 @@ dimtype treenode@global, 5
 	return
 
 
+
+
 //クラスメソッド-----------------------------
 #defcfunc treeview_onmouse_id
 	return tree_view_mouse
@@ -251,14 +252,19 @@ dimtype treenode@global, 5
 	px = p1
 	py = p2
 	return
+#deffunc get_treeview_nodesize array a
+	a = node_sizex, node_sizey
+	return
 #deffunc set_treeview_endposition int p1, int p2
 	ex = p1
 	ey = p2
 	return
 #deffunc set_treeview_scroll int p1, int p2
-	scroll_x = p1
-	scroll_y = p2
+	scroll_x = p1 * node_sizex
+	scroll_y = p2 * node_sizey
 	return
+#defcfunc get_treeview_visible_num
+	return (ex-px) / node_sizex
 #deffunc move_treeview_position int p1, int p2
 	px += p1
 	py += p2
