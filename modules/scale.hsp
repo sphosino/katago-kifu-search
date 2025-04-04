@@ -20,10 +20,12 @@
 	direction = 1 | 2
 
 	return
-#modfunc draw_scroll_bar int draw_value_flag
+#modfunc draw_scroll_bar int draw_value_flag, int out_of_area_flag
 
 	if _getkey(1) >= 1{
-		set_b thismod
+		if out_of_area_flag == 0{
+			set_b thismod
+		}
 	}
 
 	//
