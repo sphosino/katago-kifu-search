@@ -467,6 +467,7 @@ setfps 160
 
 					set_current_node t, clicked_node 			
 					sync_treebox_board t, board 
+					è” = treeview_onmouse_id_deep()
 				}
 				
 				if in_board{
