@@ -139,7 +139,7 @@
 				}
 			swbreak
 			case 空点
-				if (コウ禁止点 == m) && (コウ禁止点.1 ==cnt){
+				if (コウ禁止点 == m) : if (コウ禁止点.1 ==cnt): if 最終手表示{
 					
 					color 210,21,21
 					circle posx + masx/4, posy + masy/4, posx + masx*3/4, posy + masy*3/4
