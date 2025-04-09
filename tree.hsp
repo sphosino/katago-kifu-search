@@ -67,11 +67,16 @@ dimtype treenode@global, 5
 	next
 	return -1
 
-#define global ctype search_tree_by_item_id(%1, %2) _search_tree_by_item_id(treenode@global(%1), %2)
-#modcfunc _search_tree_by_item_id int p1, local i
-	if item_id == p1: return this_id
+#defcfunc search_tree_by_item_id int p1, int p2, var vv
+	vv = sublev
+	return _search_tree_by_item_id(treenode@global(p1), p2, vv)
+#modcfunc _search_tree_by_item_id int p1, var vv, local i
+	if item_id == p1{
+		vv = sublev - vv - 1
+		return this_id
+	} 
 	for i,,cn
-		tmp = search_tree_by_item_id(childs(i), p1)
+		tmp = _search_tree_by_item_id(treenode@global(childs(i)), p1, vv)
 		if tmp != -1{
 			return tmp
 		}

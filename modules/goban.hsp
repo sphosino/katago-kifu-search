@@ -49,7 +49,7 @@
 #modfunc 着手 int x, int y
 
 	res = play_move_on_array(board, x, y, 手番, 黒が取った数,白が取った数, コウ禁止点,コウ禁止点.1)
-	if res >= 0: toggle_turn thismod
+	if res >= 0 | x < -1: toggle_turn thismod
 
 	最後の着手 = x, y
 

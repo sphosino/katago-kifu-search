@@ -745,14 +745,16 @@ setfps 60
 			split tmp," ",r
 			add_graph_data l_graph,double(r) * 100
 		next
-
+		
 		手数 = 0
 		
 		if get_listbox_item_data(kifulist.kifulist_id,itemid){ //アイテムデータが設定されていたら、それは検索結果。
 			nstat = stat //検索結果のSGFノード
-			//それが格納されているツリーIDを探してカレントノードに設定
-			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat)
+			
+			//それが格納されているツリーIDを探してカレントノードに設定、手数も合わせる
+			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat, 手数)
 
+			
 			nownode = get_current_node(t)
 			repeat abs(kifu_start_num_result)
 				if kifu_start_num_result > 0{
@@ -770,8 +772,6 @@ setfps 60
 		}
 
 		gosub*syncboard
-		
-		set_treeview_position 20,20
 		
 		return 1
 	}

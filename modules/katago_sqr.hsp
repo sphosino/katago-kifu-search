@@ -5,7 +5,7 @@ netinit
 
 #module
 
-#const LOADTIME 20000
+#const LOADTIME 25000
 
 #deffunc 棋譜取得 str dirname, int max
 
@@ -44,25 +44,19 @@ netinit
 		netrequest_get@ next_link
 		if stat : goto *bad
 		gosub *通信待ち
-
+		
 		netgetv@ buf
 
 	
 		find_tags_bytag buf, "tr", data // テーブルの要素
-	
-		
+		if keyfpstime - starttime >= LOADTIME: break
 		repeat limit(max,,length(data)-1)
 		
 			find_tags_bytag data(cnt + 1), "td", target_infos
 	
 			game_id = int(get_content_tag(target_infos(0)))
-
-			last_str = ""
-			if keyfpstime - starttime >= LOADTIME{
-				last_str = "  後処理中..."
-			}
 	
-			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了" + last_str
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
 				
 			if check_exist_sgf(files, game_id){
 				await 17
