@@ -138,7 +138,7 @@ dimtype treenode@global, 5
 	if Œ»ƒm[ƒh‚Ì‚‚³ <= takasa(Œ»İ‚Ì[‚³){ //‚·‚Å‚Éƒm[ƒh‚ª‚ ‚é
 		Œ»ƒm[ƒh‚Ì‚‚³ = takasa(Œ»İ‚Ì[‚³) + 1@//Œ»ƒm[ƒh‚ğ‚»‚Ìƒm[ƒh‚Ì‰º‚É‚·‚éB
 	}
-	if rect.0 + Œ»İ‚Ì[‚³ * node_sizex - rect.4 > rect.2: result = Œ»ƒm[ƒh‚Ì‚‚³,0: return //‰æ–Ê‚ğ’´‚¦‚½
+	if rect.0 + Œ»İ‚Ì[‚³ * node_sizex + node_sizex/2 - rect.4 > rect.2: result = Œ»ƒm[ƒh‚Ì‚‚³,0: return //‰æ–Ê‚ğ’´‚¦‚½
 		for i,,cn
 	
 			if i == 0{
@@ -221,9 +221,9 @@ dimtype treenode@global, 5
 	}
 	
 	color 0, 0, 0
-	margin = 4
-	pos x - sx/2 + margin / 2 , y - sy/2 + margin / 2
-	font "", limit(sy - margin,,(node_sizex + margin) / strlen(str(Œ»İ‚Ì[‚³)))
+	fs = limitf(sy,,(1.8 * sy ) /  strlen(str(Œ»İ‚Ì[‚³)))
+	pos x - fs * strlen(str(Œ»İ‚Ì[‚³)) / 4.1, y - fs / 2
+	font "", fs
 	mes Œ»İ‚Ì[‚³
 	
 

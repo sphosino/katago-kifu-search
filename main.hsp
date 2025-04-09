@@ -167,7 +167,7 @@ jidou = 0
 ’…è”Ô†•\¦ = 0
 ui_mode = MODE_KIFU_VIEW
 
-set_treeview 35, 35
+set_treeview 36, 36
 set_treeview_position 20,20
 set_tree_direction 6
 
