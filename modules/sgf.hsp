@@ -38,7 +38,8 @@
 
 	SEP = " "
 	poke SEP, 0, $1F
-	
+	    list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
+	    text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 	return
 
 #defcfunc make_new_SGFnode int p1
@@ -353,12 +354,10 @@
     
 #defcfunc is_list_property str key
     // リスト型プロパティの判定
-    list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     return (instr(list_props, 0, "," + key + ",") >= 0)
 
 #defcfunc is_text_property str key
     // テキスト型プロパティの判定
-    text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
     return (instr(text_props, 0, "," + key + ",") >= 0)
     
 //マージ処理

@@ -221,7 +221,9 @@ dimtype treenode@global, 5
 	}
 	
 	color 0, 0, 0
-	pos x - sx/2 , y - sy/2
+	margin = 4
+	pos x - sx/2 + margin / 2 , y - sy/2 + margin / 2
+	font "", limit(sy - margin,,(node_sizex + margin) / strlen(str(åªç›ÇÃê[Ç≥)))
 	mes åªç›ÇÃê[Ç≥
 	
 

@@ -36,6 +36,7 @@ SetWindowLong hwnd, -16, stat | $10000 | $40000
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
+	#define 計測する
 #else
 	dirname = dir_exe
 #endif
@@ -166,7 +167,7 @@ jidou = 0
 着手番号表示 = 0
 ui_mode = MODE_KIFU_VIEW
 
-set_treeview 30,30
+set_treeview 35, 35
 set_treeview_position 20,20
 set_tree_direction 6
 
@@ -245,7 +246,7 @@ chdir kifu_dirname
 if strsize >= 0{
 	save_load_manager_load
 }
-
+sdim titles
 //各エリアの設定
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
@@ -347,10 +348,12 @@ pretime = keyfpstime
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
 
-setfps 160
+setfps 60
 *main
-	;logmes ""+getrealfpsf()
+	logmes ""+getrealfpsf()
+	計測 "manage_keyfps"
 	manage_keyfps
+	計測 "前フレームからの状態変化取得"
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
 		pre_window_size = window_size, window_size.1
@@ -358,6 +361,7 @@ setfps 160
 	}
 	if pre_ui_mode != ui_mode {
 		pre_ui_mode = ui_mode
+
 		if ui_mode = MODE_KIFU_VIEW{
 			
 		}else{
@@ -365,7 +369,7 @@ setfps 160
 			set_board_data board.1, user_board
 		}
 	}
-
+	計測 "kifuload"
 	if kifu_update{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
@@ -401,6 +405,8 @@ setfps 160
 			;/*/
 		}
 	}
+
+	計測 "入力処理"
 	
 	nownode = get_current_node(t)
 	getBoardCoordinates board, point
@@ -561,6 +567,7 @@ setfps 160
 		}
 	
 		//自動再生
+		計測 "自動再生"
 
 		//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
 		if jidou & (ui_mode == MODE_KIFU_VIEW){
@@ -584,7 +591,8 @@ setfps 160
 		}
 	}
 
-	starttime = keyfpstime
+	計測 "描画"
+	
 	color 128,128,128
 	boxf 0, 0, ginfo_winx, ginfo_winy
 	draw_all_rect root, debugmode
@@ -604,8 +612,6 @@ setfps 160
 	group_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
 	//検索範囲表示
 	draw_set_list_on_board board, v
-
-
 	
 	//各アイテム表示
 	foreach kifulist
@@ -630,32 +636,63 @@ setfps 160
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
 	loop
-	foreach l_graph
-		新しい手数 = 手数
-		line_graph_manager l_graph.cnt, 新しい手数
-		if 手数 > 新しい手数{
-			repeat 手数 - 新しい手数
-				gosub *move_back
-			loop
-		}else: if 手数 < 新しい手数{
-			repeat 新しい手数 - 手数
-				gosub *move_next
-			loop
-		}
-	loop
+	
+	新しい手数 = 手数
+	line_graph_manager l_graph, 新しい手数
+	if 手数 > 新しい手数{
+		repeat 手数 - 新しい手数
+			gosub *move_back
+		loop
+	}else: if 手数 < 新しい手数{
+		repeat 新しい手数 - 手数
+			gosub *move_next
+		loop
+	}
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
 	if getdbl_ms(17,250): debugmode ^ 1
 
-	font "", 9
 	treebox_draw t, length(f)
+
+
+
+
+		計測描画
+
 	
 
 	redraw
 	redraw 2
 	
 	goto*main
+
+#deffunc 計測 str time_str
+	#ifdef 計測する
+		if time_num == 0 : pre_time = keyfpstime
+		if time_num >= 1 : times(time_num - 1) = keyfpstime - pre_time : pre_time = keyfpstime
+		titles(time_num) = time_str
+		time_num++
+	#endif
+	return
+
+#deffunc 計測描画
+	#ifdef 計測する
+		計測 "" ; 最後の区間の記録
+	
+		s = ""
+		repeat time_num - 1
+			s += titles(cnt) + " -> " + strf("%03d", times(cnt)) + "ms :: "
+		loop
+		time_num = 0
+	
+		pos 0,0
+		color 0,0,0
+		font "",20
+		mes s
+	#endif
+	return
+
 *save_window_size_main
 		IsZoomed hwnd :最大化 = stat
 		IsIconic hwnd :最小化 = stat
