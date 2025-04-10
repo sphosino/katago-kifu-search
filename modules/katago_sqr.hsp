@@ -5,7 +5,7 @@ netinit
 
 #module
 
-#const LOADTIME 25000
+#const LOADTIME 30000
 
 #deffunc 棋譜取得 str dirname, int max
 
@@ -49,7 +49,7 @@ netinit
 
 	
 		find_tags_bytag buf, "tr", data // テーブルの要素
-		if keyfpstime - starttime >= LOADTIME: break
+		
 		repeat limit(max,,length(data)-1)
 		
 			find_tags_bytag data(cnt + 1), "td", target_infos
@@ -59,6 +59,7 @@ netinit
 			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
 				
 			if check_exist_sgf(files, game_id){
+				if keyfpstime - starttime >= LOADTIME: break
 				await 17
 				continue
 			}

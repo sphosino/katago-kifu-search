@@ -962,7 +962,7 @@ setfps 60
 	
 *loadfile
 	chdir kifu_dirname
-		棋譜取得 kifu_dirname, 40 // katagoホームページから最新棋譜をダウンロード
+		棋譜取得 kifu_dirname, 100 // katagoホームページから最新棋譜をダウンロード
 	chdir dirname
 
 	gosub*load_kifu_folder
