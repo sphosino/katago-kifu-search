@@ -738,7 +738,7 @@ setfps 60
 		for i,length(f)-1,-1,-1
 			tmp = get_property_data(f(i),"C")
 			split tmp," ",r
-			add_graph_data l_graph,double(r) * 100
+			add_graph_data l_graph, (1. - r) * 100
 		next
 		
 		è” = 0

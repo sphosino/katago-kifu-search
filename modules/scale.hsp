@@ -126,7 +126,7 @@
 #global
 #endif
 
-#if 01
+#if 0  ; 1
 
 newmod b, scroll, 200,200, 80,20, 12,1200
 newmod b, scroll, 100,200, 180,20, 10,0: id = stat: set_direction b.id , 8
