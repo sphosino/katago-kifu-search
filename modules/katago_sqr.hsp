@@ -57,12 +57,12 @@ netinit
 			game_id = int(get_content_tag(target_infos(0)))
 	
 			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
-				
+			if keyfpstime - starttime >= LOADTIME: break
 			if check_exist_sgf(files, game_id){
-				if keyfpstime - starttime >= LOADTIME: break
-				await 17
+				await 2
 				continue
 			}
+			await 1000
 	
 			find_tags_bytag data(cnt + 1), "a", result
 			find_attribute_byname result, "href", t
@@ -80,8 +80,7 @@ netinit
 			logmes "取得完了 -> " + game_id + ".sgf"
 			
 			get_count++
-			await 1000
-	
+			
 		loop
 		if keyfpstime - starttime >= LOADTIME: break
 		await 1000
