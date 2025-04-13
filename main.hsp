@@ -42,6 +42,15 @@ SetWindowLong hwnd, -16, stat | $10000 | $40000
 #endif
 kifu_dirname = dirname + "/棋譜"
 
+chdir dirname + "/save"
+dirlist filelist, "*.sgf"
+notesel filelist
+	repeat notemax
+		noteget tmp, cnt
+		delete tmp
+	loop
+noteunsel
+
 chdir dirname
 exist window_file_name
 
@@ -167,8 +176,8 @@ jidou = 0
 着手番号表示 = 0
 ui_mode = MODE_KIFU_VIEW
 
-set_treeview 36, 36
-set_treeview_position 20,20
+set_treeview 37, 37
+set_treeview_position 10,20
 set_tree_direction 6
 
 kifu_upadate = 1
@@ -350,7 +359,7 @@ pre_ui_mode = -1
 
 setfps 60
 *main
-	logmes ""+getrealfpsf()
+	;logmes ""+getrealfpsf()
 	計測 "manage_keyfps"
 	manage_keyfps
 	計測 "前フレームからの状態変化取得"
@@ -734,7 +743,6 @@ setfps 60
 
 		logmes "AAAAAAAAA  "  + length(f)
 
-		
 		for i,length(f)-1,-1,-1
 			tmp = get_property_data(f(i),"C")
 			split tmp," ",r
@@ -925,9 +933,10 @@ setfps 60
 	
 		logmes patterns_to_notepad(p)
 		
-		result_num =  search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
 	}
-	
+
+	logmes "SSSSS" + result_num
 	
 	kifu_update = 0
 
@@ -1016,6 +1025,7 @@ setfps 60
 	chdir kifu_dirname
 	del_item_all kifulist
 	dirlist files,"*.sgf"
+	sdim ss
 	notesel ss 
 		ss = shuffle_notepad(files)
 		sdim filelist
@@ -1030,11 +1040,11 @@ setfps 60
 	kifulist_notepad = filelist
 	return
 	
-#deffunc treeview移動 int ddd
+#deffunc treeview移動 int p1
 	get_treeview_node_size ns 
 	if (get_tree_direction() & 1){
-		move_treeview_position , ns.1 * (((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
+		move_treeview_position , ns.1 * (((get_tree_direction() & 2) != 0) * 2 - 1) * p1
 	}else{ 
-		_move_treeview_position   ns  * (((get_tree_direction() & 2) != 0) * 2 - 1) * ddd
+		_move_treeview_position   ns  * (((get_tree_direction() & 2) != 0) * 2 - 1) * p1
 	}
 	return

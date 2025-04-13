@@ -1,12 +1,17 @@
 #ifndef rboxf
 #module
-#define ctype max( %1, %2 ) ( %1 )*( %1 > %2 ) + ( %2 )*( %1 <= %2 )
-#define ctype min( %1, %2 ) ( %1 )*( %1 < %2 ) + ( %2 )*( %1 >= %2 )
+#deffunc aboxf array a
+	boxf a, a.1, a.2, a.3
+	return
+
+//角丸矩形
+#deffunc arboxf array a, int _r, int flags
+	rboxf a, a.1, a.2, a.3, _r, flags
+    return
+#deffunc rboxf int _x1, int _y1, int _x2, int _y2, int _r, int flags ;どの角をまるにするか
 #const DEFAULT_R 5
-/*
-    rboxf (左上X座標), (左上Y座標), (右下X座標), (右下Y座標), (角の半径)
-*/
-#deffunc rboxf int _x1, int _y1, int _x2, int _y2, int _r, int flags
+#define ctype max( %1, %2 ) limit(%1, %2)
+#define ctype min( %1, %2 ) limit(%1,,%2)
     x1 = min(_x1, _x2) : x2 = max(_x1, _x2)
     y1 = min(_y1, _y2) : y2 = max(_y1, _y2)
     box_width = x2 - x1 : box_height = y2 - y1
@@ -30,17 +35,7 @@
 		}
     loop
     return
-#deffunc arboxf array a, int _r, int flags
-	rboxf a, a.1, a.2, a.3, _r, flags
-    return
-#global
 
-#ifndef boxfa
-#module
-
-#deffunc aboxf array a
-	boxf a, a.1, a.2, a.3
-	return
 //透過boxf
 #deffunc aboxfa array a, int alpha
 	boxfa a,a.1,a.2,a.3, alpha
@@ -53,7 +48,7 @@
 	pdy = ay, ay, by, by
 	gsquare -1, pdx, pdy
 	return
-
+	
 //縁取りboxf
 #deffunc aboxfl array a, int w
 	boxfl a,a.1,a.2,a.3, w
@@ -75,12 +70,11 @@
 	boxfa bx -w, ay, bx, by, alpha
 	boxfa ax, by-w, bx, by, alpha
 	return
+
 #global
 #endif
-#endif
 
-#if 0
+#if 0;1
 	rboxf 20,20,200,200
 	rboxf 300,300, 370,370,10, 4 | 8
-
 #endif

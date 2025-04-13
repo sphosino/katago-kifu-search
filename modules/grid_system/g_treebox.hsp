@@ -20,26 +20,23 @@
 #modcfunc get_root_tree_node
 	return root_tree_node
 
-
 #modfunc treebox_draw  int data_num
 	if root_tree_node >= 0{
 		thisrect thismod, rect, area_number
-		set_treeview_position rect, rect.1
 		set_treeview_endposition rect.2,rect.3
 		get_treeview_nodesize t
-		set_treeview_position rect.0  + t/2,  rect.1 + t.1/2
+		set_treeview_position rect.0 + t/2,  rect.1 + t.1/2
 		
 		tree_view root_tree_node, -1, -1, -1
 		onmouse_id = treeview_onmouse_id()
 
-		
+		//スクロールバー
 		set_position_scroll_bar s, rect.0, rect.3
 		set_direction s, 1 | 2 
 		set_size_scroll_bar s, rect.2-rect.0
 		set_tickness_scroll_bar s, 10
 		set_value_minmax s, 0, data_num
 		draw_scroll_bar s, 0, mousex < rect || mousex > rect.2 || mousey < rect.1 || mousey > rect.3 || onmouse_id >= 0
-
 
 		set_treeview_scroll get_value_scroll_bar(s)
 	}
@@ -52,7 +49,6 @@
 #modfunc treebox_toggle_openflag int p1
 	toggle_openflag p1
 	return
-
 
 #modfunc treebox_clear
 	current_node = -1
@@ -80,10 +76,9 @@
 	while sn
 		sn--
 		
-		nnode = node_stack(sn)     //SGFノード
+		nnode = node_stack(sn) //SGFノード
 		parent_tree_node = parent_tree_stack(sn)//親ツリーノード
 
-		
 		tnode = make_treenode(parent_tree_node, nnode) //親ツリーに新しくアイテムを作成、そのアイテムにSGFノードIDを納める
 
 		if root_tree_node = -1: root_tree_node = tnode
