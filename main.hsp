@@ -215,7 +215,6 @@ root = make_area_child(1,1)
 				chkbox_autoplay = make_area_child()
 				slider = make_area_child()
 
-			
 			chkbox_last_move = make_area_child(,,sidebar_buttons)
 			chkbox_view_hosi = make_area_child()
 			button_getsgf = make_area_child()
@@ -475,12 +474,7 @@ setfps 60
 					
 				}
 				if treebox_onmouseid(t) >=0{
-
-					clicked_node = stat
-
-					logmes "select_TreeID== "+clicked_node + " ( " + get_tree_item_id(clicked_node) +" ) "
-
-					set_current_node t, clicked_node 			
+					set_current_node t, stat		
 					sync_treebox_board t, board 
 					éËêî = treeview_onmouse_id_deep()
 				}
@@ -913,7 +907,6 @@ setfps 60
 		get_board_data board.1, m
 	}
 
-
 	if use_bitboard{
 		
 		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index)
@@ -1002,6 +995,7 @@ setfps 60
 	
 *syncboard
 	nownode = get_current_node(t)
+	if nownode < 0: return
 
 	tmp = get_property_coordinate_cash(get_tree_item_id(nownode), x, y)
 

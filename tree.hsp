@@ -107,6 +107,7 @@ dimtype treenode@global, 5
 
 #defcfunc get_tree_item_id int p1
 	return _get_tree_item_id(treenode@global(p1))
+	
 #modcfunc _get_tree_item_id
 	return item_id
 
@@ -132,11 +133,12 @@ dimtype treenode@global, 5
 	
 	tree_view_mouse = -1
 
-	tmp2 = px ,py ,ex,ey ,scroll_x,scroll_y
+	tmp2 = px , py , ex, ey , scroll_x, scroll_y
 
 	_tree_view treenode@global(p1), 予定高さ, 確定ノードの深さ, 確定ノードの高さ, tmp, 0, tmp2
 
 	return
+	
 #modfunc _tree_view int 予定高さ, int 確定ノードの深さ, int 確定ノードの高さ, array result, int 現在の深さ, array rect, local 現ノードの高さ, local i, local res
 
 	現ノードの高さ = 予定高さ
@@ -145,22 +147,23 @@ dimtype treenode@global, 5
 	}
 	if rect.0 + 現在の深さ * node_sizex + node_sizex/2 - rect.4 > rect.2: result = 現ノードの高さ,0: return //画面を超えた
 	if rect.1 + 現ノードの高さ * node_sizey + node_sizey/2 > rect.3: result = 現ノードの高さ,0: return
-		for i,,cn
 	
-			if i == 0{
-				//最初の子ノードの処理が終わったとき、現ノードを確定させる
+	for i,,cn
 
-				_tree_view treenode@global(childs(i)), 現ノードの高さ, 確定ノードの深さ, 確定ノードの高さ, res, 現在の深さ + 1, rect
+		if i == 0{
+			//最初の子ノードの処理が終わったとき、現ノードを確定させる
 
-				// res.0 === 処理が終わったそのノードの高さが返ってくる
-				// res.1 === 処理が終わったそのノードが(斜めで戻ってきたか)のフラグが入っている、
-				現ノードの高さ = res - res.1
-			}else: if openflag{
-				//分岐を表示する
-				_tree_view treenode@global(childs(i)), 現ノードの高さ, 現在の深さ, 現ノードの高さ, res, 現在の深さ + 1, rect
-			}
-			
-		next
+			_tree_view treenode@global(childs(i)), 現ノードの高さ, 確定ノードの深さ, 確定ノードの高さ, res, 現在の深さ + 1, rect
+
+			// res.0 === 処理が終わったそのノードの高さが返ってくる
+			// res.1 === 処理が終わったそのノードが(斜めで戻ってきたか)のフラグが入っている、
+			現ノードの高さ = res - res.1
+		}else: if openflag{
+			//分岐を表示する
+			_tree_view treenode@global(childs(i)), 現ノードの高さ, 現在の深さ, 現ノードの高さ, res, 現在の深さ + 1, rect
+		}
+		
+	next
 
 	sx = node_sizex / 2
 	sy = node_sizey / 2

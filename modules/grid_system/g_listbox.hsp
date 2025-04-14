@@ -272,8 +272,6 @@ dimtype listbox_items@global, 5
     set_scroll_index thismod, target_index - (sy / item_y) + 1
     return
 
-
-
 #modcfunc get_name_item int p1
 	return listbox_item_get_str(listbox_items(p1))
 
