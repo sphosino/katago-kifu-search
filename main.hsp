@@ -244,11 +244,13 @@ root = make_area_child(1,1)
 				button_narrow_down_search = make_area_child()
 				chkbox_colorflip = make_area_child()
 				chkbox_use_bitboard = make_area_child()
-			goban_edit_area = make_area_child(1,3, goban_tool_area)
-				chkbox_tyakusyu = make_area_child(,,goban_edit_area)
-				radiobox_grouping = make_area_child()
-				button_group_clear = make_area_child()
-						
+			goban_edit_area = make_area_child(1,2, goban_tool_area)
+				goban_edit_tool_buttons = make_area_child(2,,goban_edit_area)
+					chkbox_tyakusyu = make_area_child(,,goban_edit_tool_buttons)
+					button_group_clear = make_area_child()	
+				radiobox_grouping = make_area_child(,,goban_edit_area)
+
+					
 exist "area.var"
 chdir kifu_dirname
 
