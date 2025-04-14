@@ -19,8 +19,9 @@
 	end_x = -1   //最終手まで
 	end_y = 100  //100%(黒勝ち)
 
-	x_ticks = 10 // 10手ごとに表示
-	y_ticks = 10 // 10%ごとに目盛り
+	//目盛りの分割数を設定
+	x_ticks = 15
+	y_ticks = 10
 
     mref thismod_ID, 2
     return thismod_ID
@@ -77,12 +78,12 @@
 	my = limit(mousey, rect.1,rect.3)
 	if in_rect(rect){
 		if _getkey(1) == 1{
-			手数 = (mx - rect.0) * end_x / (rect.2-rect.0)
+			手数 = (mx - rect.0) * (end_x - start_x) / (rect.2 - rect)
 		}
 		line mx,rect.1, mx, rect.3
 		line rect.0,my, rect.2, my
-		pos mx,rect.1 - fontsize : mes (mx - rect.0) * end_x / (rect.2-rect.0)
-		pos rect.2,my            : mes end_y - (my - rect.1) * end_y / (rect.3-rect.1)
+		pos mx,rect.1 - fontsize : mes (mx - rect.0) * end_x / (rect.2 - rect)
+		pos rect.2,my            : mes end_y - (my - rect.1) * end_y / (rect.3 - rect.1)
 	}
 
 	//y中心線表示
@@ -90,18 +91,18 @@
 	line  rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2
 
 	//現在手数の線表示
-	xx = rect + 手数  * (rect.2 - rect.0) / (end_x - start_x)
+	xx = rect + 手数  * (rect.2 - rect) / (end_x - start_x)
 	line xx, rect.1, xx, rect.3
 
 	//目盛り表示
 	color 255,255,255
 	repeat x_ticks
-		pos rect.0 + (rect.2-rect.0) * cnt / x_ticks , rect.3
+		pos rect.0 + (rect.2 - rect) * cnt / x_ticks , rect.3
 		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
 	repeat y_ticks
-		pos rect.0 - 18, rect.1 + (rect.3-rect.1) * cnt / y_ticks
-		mes end_y - (start_y + (end_y - start_y) * cnt / x_ticks)
+		pos rect.0 - 18, rect.1 + (rect.3 - rect.1) * cnt / y_ticks
+		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
 	loop
 
 	//折れ線描画
