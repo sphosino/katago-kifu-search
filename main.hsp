@@ -152,6 +152,7 @@ if 0{
 	noteadd str(Å¬‰»)
 	noteadd str(Å‘å‰»)
 	notesave window_file_name
+	save_load_manager_save
 	end
 }
 randomize
