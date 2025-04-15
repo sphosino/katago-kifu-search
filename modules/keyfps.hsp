@@ -166,8 +166,6 @@ manage_keyfps
 
 	return
 
-
-
 /*
 %index
 setfps
@@ -178,6 +176,9 @@ p1
 %inst
 目標フレームレート(FPS)を設定します。
 少数単位で指定できます。
+%href
+getrealfps
+getrealfpsf
 
 %index
 getrealfps
@@ -188,6 +189,22 @@ getrealfps
 %inst
 
 現在のフレームレート(FPS)
+%href
+getrealfpsf
+setfps
+
+%index
+getrealfpsf
+
+%prm
+()
+
+%inst
+
+現在のフレームレート(FPS)（少数）
+%href
+getrealfps
+setfps
 
 %index
 _getkey
@@ -390,6 +407,17 @@ p2で間隔を指定します。この時間以内に２回目が押されると、１を返します。
 	#define global keyFPStime                     keyFPStimer__@keyFPS() ; Windows が起動してからの経過時間 ( timeGettime )
 
 /*
+%index
+slowdown()
+
+%prm
+
+%inst
+
+フレームが処理落ちしているときは１、
+時間内に処理が完了しているときは０が帰ります
+%href
+
 %index
 addkey_all
 
