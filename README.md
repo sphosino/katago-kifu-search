@@ -5,7 +5,7 @@ Katagoのレーティング自己対戦の棋譜を集めています。数百�
 本プログラムにはAIを動かす機能はありません。あくまで、棋譜鑑賞、検索用です。
 
 
-[開発日誌](https://hosinobu.github.io/katago-kifu-search)
+[開発日誌](https://sphosino.github.io/katago-kifu-search)
 
 ***
 囲碁AI、KataGoのサイト
