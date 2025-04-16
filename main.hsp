@@ -252,11 +252,12 @@ root = make_area_child(1,1)
 
 					
 exist "area.var"
-chdir kifu_dirname
 
 if strsize >= 0{
 	save_load_manager_load
 }
+
+chdir kifu_dirname
 sdim titles
 //ŠeƒGƒŠƒA‚Ìİ’è
 set_grid_area_back_color sidebar_kifulist_area, $333333
@@ -737,8 +738,6 @@ setfps 60
 
 		get_nodelist int(get_property_data(topnode,"MN")), f
 		set_end_xy l_graph, length(f), 100
-
-		logmes "AAAAAAAAA  "  + length(f)
 
 		for i,length(f)-1,-1,-1
 			tmp = get_property_data(f(i),"C")

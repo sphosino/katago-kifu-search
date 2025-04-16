@@ -178,8 +178,6 @@ dimtype areagrid@global, 5
 	
 	_draw_all_rect areagrid@global(p1), 0 , debug_mode
 		if debug_mode {
-		color 255: save_load_manager
-		if stat: return
 		if g_area != -1{
 			if f_area != -1{//すでに一つ目選択済み
 				logmes "スワップ要求が来ています->" + grid_value + "," + first_value 

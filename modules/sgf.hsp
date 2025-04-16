@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 3000000
+#define MAX_NODE 3500000
 
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //親ノード
@@ -338,7 +338,7 @@
         y = sgf_node_y(node_id)
 
         // パス（座標が-1）でない場合のみ着手処理
-        if (x != -1) & (y != -1) {
+        if x != -1{
 	        //囲碁のルールに基づいて着手
             if play_move(bitboard(node_id), x, y, turn) < 0 {
                logmes "着手が無効です。SGFが壊れているかもしれません : " + __FILE__ 
