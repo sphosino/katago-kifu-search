@@ -71,6 +71,16 @@
 	boxfa ax, by-w, bx, by, alpha
 	return
 
+
+
+#deffunc linew int p1, int p2, int p3, int p4, int w
+
+	line
+
+	
+
+
+	return
 #global
 #endif
 
