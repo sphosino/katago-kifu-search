@@ -120,12 +120,11 @@
 	
 	repeat div_line + 1
 		nowpos = rect, (rect.3 + rect.1) / 2
-		m = cnt
 		if div_line{
-			F‚ğİ’è colset(m)
+			F‚ğİ’è colset(cnt)
 		}
-		for i, 1+m, limit(dn-1,0), div_line + 1
-			endpos = rect + i * (rect.2 - rect.0) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
+		for i, 1 + cnt, limit(dn - 1, 0), div_line + 1
+			endpos = rect + i * (rect.2 - rect) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
 			repeat thick
 				offset = cnt - half
 				line nowpos, nowpos.1 + offset, endpos, endpos.1 + offset

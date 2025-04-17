@@ -599,13 +599,15 @@ setfps 60
 	}
 
 	計測 "描画"
-	
+
+	//背景ベースカラー描画
 	color 128,128,128
 	boxf 0, 0, ginfo_winx, ginfo_winy
-	draw_all_rect root, debugmode
+
+	//碁盤エリアの背景に形勢を反映
 	a = double(c_list) * 255: color a,a,a
-	get_rect goban_body_area, goban_back_rect
-	boxf goban_back_rect, goban_back_rect.1,goban_back_rect.2, goban_back_rect.3
+	get_rect goban_area, goban_back_rect
+	aboxf goban_back_rect
 
 	if ui_mode == MODE_KIFU_VIEW{
 		碁盤表示 board  , 着手番号表示,last_move_mark, 20
@@ -613,6 +615,9 @@ setfps 60
 		碁盤表示 board.1,             ,last_move_mark, 20
 	}
 
+	//エリア矩形表示
+	draw_all_rect root, debugmode
+	
 	//グループ表示
 	get_goban_mas_size board,goban_mas_size
 	get_goban_position board,goban_position
