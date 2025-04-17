@@ -84,6 +84,12 @@
 		line rect.0,my, rect.2, my
 		pos mx,rect.1 - fontsize : mes (mx - rect.0) * end_x / (rect.2 - rect)
 		pos rect.2,my            : mes end_y - (my - rect.1) * end_y / (rect.3 - rect.1)
+
+		if _getkey(2) = 1{
+			//評価値グラフを、黒番と白番で分けるかのトグル
+			div_line ^ 1
+		}
+		
 	}
 
 	//y中心線表示
@@ -107,9 +113,13 @@
 
 	//折れ線描画
 	color 180,250,160
-	pos rect, (rect.3 + rect.1) / 2
-	repeat limit(dn-1,0), 1
-		line rect + cnt * (rect.2 - rect.0) / dn, rect.3 - (rect.3 - rect.1) * data(cnt) / 100
+	
+	repeat div_line + 1
+		pos rect, (rect.3 + rect.1) / 2
+		m = cnt
+		for i, 1+m, limit(dn-1,0), div_line + 1
+			line rect + i * (rect.2 - rect.0) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
+		next
 	loop
 
 	
