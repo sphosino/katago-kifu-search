@@ -3,243 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KataGo棋譜検索システム - 使い方ガイド</title>
+    <title>KataGo棋譜検索システム</title>
     <style>
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f9f9f9;
         }
         h1 {
-            color: #1a1a1a;
-            border-bottom: 2px solid #4CAF50;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
-            margin-bottom: 30px;
         }
         h2 {
-            color: #2a662e;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
             margin-top: 30px;
-            border-left: 5px solid #4CAF50;
-            padding-left: 15px;
         }
         .section {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 20px;
+            background-color: #f9f9f9;
             border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .feature {
-            background-color: #f0f7f0;
-            padding: 15px;
-            margin: 10px 0;
-            border-left: 3px solid #4CAF50;
-        }
         .highlight {
-            background-color: #e8f5e9;
-            padding: 3px 6px;
+            background-color: #fffacd;
+            padding: 2px 4px;
             border-radius: 3px;
+        }
+        .key-function {
             font-weight: bold;
-        }
-        .key {
-            background-color: #f1f1f1;
-            color: #333;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-            margin: 0 2px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .warning {
-            background-color: #fff8e1;
-            padding: 10px;
-            border-left: 4px solid #ffc107;
-            margin: 15px 0;
-        }
-        .tips {
-            background-color: #e3f2fd;
-            padding: 10px;
-            border-left: 4px solid #2196F3;
-            margin: 15px 0;
+            color: #2980b9;
         }
         ul {
-            padding-left: 20px;
+            padding-left: 25px;
         }
         li {
             margin-bottom: 8px;
         }
-        .flex-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-        }
-        .flex-item {
-            flex: 1;
-            min-width: 280px;
-            margin: 10px;
+        .note {
+            background-color: #f8f4e5;
+            border-left: 4px solid #f0ad4e;
+            padding: 10px;
+            margin: 15px 0;
         }
         .important {
-            color: #d32f2f;
-            font-weight: bold;
+            background-color: #f2dede;
+            border-left: 4px solid #d9534f;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
         code {
-            background-color: #f5f5f5;
+            background-color: #f0f0f0;
             padding: 2px 4px;
             border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        .color-box {
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            margin-right: 5px;
-            vertical-align: middle;
-        }
-        .color-grey {
-            background-color: #9e9e9e;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <h1>KataGo棋譜検索システム - 使い方ガイド</h1>
-
+    <h1>KataGo棋譜検索システム</h1>
+    
     <div class="section">
-        <h2>基本操作</h2>
-        <p>このシステムは棋譜フォルダに保存されている<span class="highlight">katago-rating-game</span>の中から特定の局面を検索するためのツールです。</p>
+        <p>棋譜フォルダに入っている<code>katago-rating-game</code>の中から検索します！</p>
+        <p>緑色の棋譜リストから棋譜を選択すると閲覧できます。ホイールで前後に手順を進めることができます。</p>
+        <p>KataGoエンジンの形勢判断が背景の色でわかります（グレーは互角）。<br>
+        最後に着手した側の判断です。 → 最終手マークが白石についていたら、白側のエンジンの判断。</p>
+    </div>
+
+    <h2>検索機能</h2>
+    <div class="section">
+        <p>碁盤の上でドラッグすると検索したい範囲を指定できます。（ドラッグ中に右クリックでキャンセル）</p>
+        <p>また、右クリック長押しで直前に指定した範囲を取り除くことができます。</p>
         
-        <div class="feature">
-            <h3>棋譜閲覧の基本</h3>
-            <ul>
-                <li>緑色の棋譜リストから棋譜を選択すると閲覧できます</li>
-                <li>マウスホイールで手順を前後に進めることができます</li>
-                <li>KataGoエンジンの形勢判断が背景色で表示されます（グレーが互角）</li>
-                <li>最終手マークが着いている石の色側のエンジン判断が表示されています</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>検索機能</h2>
-        
-        <div class="feature">
-            <h3>範囲指定</h3>
-            <ul>
-                <li>碁盤の上でドラッグすると検索したい範囲を指定できます</li>
-                <li>ドラッグ中に右クリックで指定をキャンセルできます</li>
-                <li>右クリック長押しで直前に指定した範囲を取り除くことができます</li>
-            </ul>
-        </div>
-
-        <div class="feature">
-            <h3>着手モード</h3>
-            <ul>
-                <li><span class="key">右クリック</span>で石を置くことができます</li>
-                <li>続けて右クリックすることで石の色を変更できます</li>
-                <li><span class="highlight">灰色の石</span>：黒または白の石があればヒットします</li>
-                <li><span class="highlight">？マーク付きの石</span>：例えば黒石に？がついていれば、「黒石があるか、または石が存在しない場合」にヒットします（白石があるときだけマッチしません）</li>
-            </ul>
-        </div>
-
-        <div class="feature">
-            <h3>検索の種類</h3>
-            <ul>
-                <li><span class="highlight">検索</span>：指定した条件で検索を開始します</li>
-                <li><span class="highlight">除外検索</span>：検索結果を除いた全ての棋譜から検索します</li>
-                <li><span class="highlight">絞込検索</span>：検索結果の中からさらに条件を絞って検索します</li>
-                <li><span class="highlight">厳密検索</span>：どんな局面でも検索可能ですが、処理速度が遅いため非推奨です（？石の指定はできません）</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>グルーピング機能</h2>
-        <p>A〜Dまでのボタンを使って石をグループ化し、そのうち1つだけある局面をマッチさせることができます。</p>
-        
-        <div class="feature">
-            <h3>実用例</h3>
-            <p>黒星、白カカリ、黒ハサミのパターンを検索する場合：</p>
-            <ol>
-                <li>様々なハサミの位置に黒石を置きます</li>
-                <li>それらに同じグループ（例：A）を指定します</li>
-                <li>検索すると、Aグループの中から1つだけマッチした（どこかにハサミがある）棋譜が検索されます</li>
-            </ol>
-            <p class="warning">注意：現状では【？石】に対するグルーピングの動作は未定義です</p>
-            <p class="warning">厳密検索ではグルーピングは対応していません（無視されます）</p>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>SGF取得</h2>
-        <div class="feature">
-            <ul>
-                <li>選択中の棋譜をクリップボードにコピーします</li>
-                <li><span class="key">Ctrl + 左クリック</span>で複数の棋譜を選択できます</li>
-                <li><span class="key">Ctrl + A</span>で全ての棋譜を選択します</li>
-                <li>複数選択されている場合、それらを全てマージしたSGFがクリップボードにコピーされます</li>
-                <li><span class="highlight">保存ボタン</span>：次回起動時まで【save】フォルダ内にSGFファイルとして保存します</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>自動再生機能</h2>
-        <div class="feature">
-            <p>自動再生のチェックを入れると選択した棋譜を自動的に再生します。</p>
-            <h3>待ち時間の設定</h3>
-            <ol>
-                <li>1番目のスライダー：基本待ち時間（100ms〜10000ms）</li>
-                <li>2番目のスライダー：エンジンの形勢判断の差が大きいほど待ち時間を延長（0〜10000ms）</li>
-                <li>3番目のスライダー：直前の手との距離が遠いほど待ち時間を延長（0〜10000ms）</li>
-            </ol>
-            <p>一手ごとの待ち時間は全てのスライダーの値を合わせた値になります。</p>
-        </div>
-    </div>
-
-    <div class="section">
-        <h2>レイアウト変更</h2>
-        <div class="feature">
-            <ul>
-                <li><span class="key">Ctrl</span>をダブルクリックするとデバッグモードに入ります（もう一度実行すると元に戻ります）</li>
-                <li>グリッドが表示されるので、つまんで移動できます</li>
-                <li>各エリアのパディング部をつまむとエリアが選択状態になります</li>
-                <li>他のエリアのパディングをクリックすると場所を交換できます</li>
-                <li><span class="highlight">Save/Loadボタン</span>で現在のデザインを保存/読み込みできます</li>
-                <li>Save/Loadボタンは右ドラッグで移動できます</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="section warning">
-        <h2>注意事項</h2>
+        <p class="key-function">着手モード：</p>
         <ul>
-            <li>起動後少しずつ棋譜を読み込むため、起動してすぐの検索は時間がかかることがあります</li>
-            <li>厳密検索はノードに碁盤を作成するため、処理速度が大幅に低下します</li>
+            <li><span class="highlight">右クリック</span>で石を置くことができます。</li>
+            <li>続けて右クリックすることで色を変えることができます。</li>
+            <li>灰色の石はどちらかの石があればヒットします。</li>
+            <li>「？」の付いた石は特殊な検索ができます。例えば黒石に「？」がついていれば、【黒石があるか、もしくはその地点に石が存在しないとき】にヒットします（つまり白石があるときだけマッチしません）。</li>
+        </ul>
+        
+        <p class="key-function">検索ボタン：</p>
+        <ul>
+            <li>「検索」ボタンで検索を開始します。</li>
+            <li>もう一つのリストボックスに検索結果が表示されるので、クリックして閲覧してください。</li>
+            <li>抜かれた部分は石をおいて検索にかければOKです。</li>
+            <li>「除外検索」ボタンは検索結果を除いた全ての棋譜から検索します。</li>
+            <li>「絞込検索」ボタンは検索結果の中からさらに検索します。</li>
+        </ul>
+        
+        <p class="key-function">厳密検索：</p>
+        <ul>
+            <li>抜き跡にさらに着手した局面も検索可能です。</li>
+            <li class="important">遅いです！（非推奨）</li>
+            <li>「？石」は指定しないでください。</li>
         </ul>
     </div>
 
-    <div class="section tips">
-        <h2>Tips</h2>
-        <div class="flex-container">
-            <div class="flex-item">
-                <h3>検索のコツ</h3>
-                <ul>
-                    <li>石を絞りすぎると検索結果が少なくなります</li>
-                    <li>「？」マークを活用して柔軟な検索を行いましょう</li>
-                    <li>抜かれた部分は石を置いて検索すれば見つけられます</li>
-                </ul>
-            </div>
-            <div class="flex-item">
-                <h3>表示の意味</h3>
-                <ul>
-                    <li><div class="color-box color-grey"></div>グレーの背景：互角の局面</li>
-                    <li>最終手マークが付いている側の形勢判断が表示されています</li>
-                </ul>
-            </div>
+    <h2>グルーピング機能</h2>
+    <div class="section">
+        <p>A-Dまでのボタンは石をグループ化して、そのうち１つだけある局面をマッチさせることができます。</p>
+        
+        <p class="key-function">実用例：</p>
+        <p>黒星、白カカリ、黒ハサミのとき、いろんなハサミの位置に黒石を置き、それらを全て同じ記号（例えばA）を指定すると、そのAの中から１つだけマッチした（どこかに黒がハサんだ）棋譜を検索します。</p>
+        
+        <div class="note">
+            <p>現状では「？石」に対する動作は未定義です。</p>
+            <p>現状では、厳密検索ではグルーピングに対応していません（無視されます）。</p>
         </div>
+    </div>
+
+    <h2>SGF取得</h2>
+    <div class="section">
+        <p class="key-function">選択中の棋譜をクリップボードにコピーします：</p>
+        <ul>
+            <li><code>Ctrl + 左クリック</code>で複数選択ができます。</li>
+            <li><code>Ctrl + A</code>で全て選択します。</li>
+            <li>複数選択されている場合、それらを全てマージしたSGFがクリップボードにコピーされます。</li>
+        </ul>
+        <p>保存ボタン → 次回起動時まで【save】フォルダ内に、SGFファイルとして保存します。ファイルとして利用したいときに使ってください。</p>
+    </div>
+
+    <h2>自動再生機能</h2>
+    <div class="section">
+        <p>自動再生のチェックを入れると選んだ棋譜を自動再生します。</p>
+        <p>スライダーで一手ごとの待ち時間を設定します：</p>
+        <ul>
+            <li>１番目のスライダーで、基本待ち時間を設定します（100ms - 10000ms）。</li>
+            <li>２番目のスライダーで、各エンジンの形勢判断の差が大きいほど待ち時間を延ばします（0-10000ms）。</li>
+            <li>３番目のスライダーで、直前の手との距離が遠いほど、待ち時間を延ばします（0-10000ms）。</li>
+        </ul>
+        <p>１手ごとの待ち時間は全てのスライダーの値を合わせた値になります。</p>
+    </div>
+
+    <h2>レイアウト変更</h2>
+    <div class="section">
+        <p>CTRLをダブルクリックするとデバッグモードに入ります。もう一度やれば戻ります。</p>
+        <p>グリッドが表示されるのでつまんで移動できます。</p>
+        <p>また各エリアのパディング部をつまむとエリアが選択状態になり、他のエリアのパディングをクリックすると場所を交換します。</p>
+    </div>
+
+    <h2>注意事項</h2>
+    <div class="important">
+        <ul>
+            <li>起動後少しずつ棋譜を読み込んでいるため、起動してすぐに検索した場合は多少時間がかかります。</li>
+            <li>厳密検索は更にノードに碁盤を作成するのでかなり遅いです。</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>本プログラムについて要望があれば連絡ください。</p>
+        <p>作者メールアドレス: <a href="mailto:sphosino@gmail.com">sphosino@gmail.com</a></p>
+        <p>最新版はこちらから: <a href="https://sphosino.github.io/katago-kifu-search/" target="_blank">https://sphosino.github.io/katago-kifu-search/</a></p>
     </div>
 </body>
 </html>
