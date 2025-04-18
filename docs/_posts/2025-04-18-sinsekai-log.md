@@ -11,4 +11,5 @@ VScode　copilotがすごい進化を遂げていた。
 
 もう、コード書くの馬鹿らしくなったので、copilotがhsp対応するまでは、このツールの開発はバグフィックス＋ぐらいになると思う。
 
-[自分コード書いてないです。？機能の付いたマインスイーパ](https://sphosino.github.io/katago-kifu-search/minesweeper.html)
+自分コード書いてないです。
+[？機能の付いたマインスイーパ](https://sphosino.github.io/katago-kifu-search/minesweeper.html)
