@@ -15,7 +15,7 @@
 			slist(cnt) = slist(r)
 			slist(r) = tmp
 		loop
-	
+
 		ss = ""
 		repeat n
 			noteadd slist(cnt)
