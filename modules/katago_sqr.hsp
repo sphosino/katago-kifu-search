@@ -5,14 +5,23 @@ netinit
 
 #module
 
-#const LOADTIME 30000
+#const DEFAULT_LOADTIME 30000
 
-#deffunc 棋譜取得 str dirname, int max
+#deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
 
 	starttime = keyfpstime
 	get_count = 0
 	dim result
 	now_dir = dir_cur
+	
+	wt = waittime
+	if wt == 0{
+		wt = 1000
+	}
+	lt = loadtime
+	if lt < 1000{
+		lt = DEFAULT_LOADTIME
+	}
 	
 	url = "https://katagotraining.org"
 	url2 = "games"
@@ -56,13 +65,13 @@ netinit
 	
 			game_id = int(get_content_tag(target_infos(0)))
 	
-			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / LOADTIME,,100)+"%完了"
-			if keyfpstime - starttime >= LOADTIME: break
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / lt,,100)+"%完了"
+			if keyfpstime - starttime >= lt: break
 			if check_exist_sgf(files, game_id){
 				await 2
 				continue
 			}
-			await 1000
+			await wt
 	
 			find_tags_bytag data(cnt + 1), "a", result
 			find_attribute_byname result, "href", t
@@ -82,8 +91,8 @@ netinit
 			get_count++
 			
 		loop
-		if keyfpstime - starttime >= LOADTIME: break
-		await 1000
+		if keyfpstime - starttime >= lt: break
+		await wt
 
 		if get_count < max{
 			find_tags_bytag buf, "div",divs
@@ -137,3 +146,13 @@ netinit
 	return hit
 
 #global
+
+
+
+#if 0
+	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
+	chdir a
+
+	棋譜取得 a, 10000, 3000, 600000
+
+#endif 
