@@ -6,6 +6,7 @@ netinit
 #module
 
 #const DEFAULT_LOADTIME 30000
+#const MIN_WAIT_TIME 1000
 
 #deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
 
@@ -15,11 +16,11 @@ netinit
 	now_dir = dir_cur
 	
 	wt = waittime
-	if wt == 0{
-		wt = 1000
+	if wt < MIN_WAIT_TIME{
+		wt = MIN_WAIT_TIME
 	}
 	lt = loadtime
-	if lt < 1000{
+	if lt == 0{
 		lt = DEFAULT_LOADTIME
 	}
 	
@@ -149,10 +150,11 @@ netinit
 
 
 
-#if 0
+#if 1
 	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
 	chdir a
 
-	棋譜取得 a, 10000, 3000, 600000
+	//保存先フォルダ名, 最大取得数, アクセス頻度(ms), 最大実行時間(ms)
+	棋譜取得 a        , 10000     , 3000            , 1000 * 60 * 60
 
 #endif 
