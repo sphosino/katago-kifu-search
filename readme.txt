@@ -90,5 +90,5 @@ CTRLをダブルクリック？するとデバッグモードに入ります。�
 作者メールアドレス -> sphosino@gmail.com
 
 最新版はこちらから。 
-https://sphosino.github.io/katago-kifu-search/
+https://github.com/sphosino/katago-kifu-search
 
