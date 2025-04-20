@@ -21,7 +21,7 @@
 	sdim node_data, DATA_SIZE
 	return
 
-#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse
 
 
 	group_num = get_pattern_all_groups_num(pattern) //パターンのhit判定に必要な石数を取得
@@ -91,9 +91,14 @@
 			}
 			
 			//検索実行
-			if search_main(topnode, rotated_p) >= 0{
+			match_node = search_main(topnode, rotated_p)
+			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
 				result(0, rn) = sgf_filename //一致したSGFを結果に追加
-				result(1, rn) = str(stat)
+				if inverse{
+					result(1, rn) = str(topnode)
+				}else{
+					result(1, rn) = str(stat)
+				}
 				rn++
 			}
 			

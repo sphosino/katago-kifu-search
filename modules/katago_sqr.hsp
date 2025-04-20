@@ -150,7 +150,7 @@ netinit
 
 
 
-#if 1
+#if 0
 	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\Šû•ˆ"
 	chdir a
 

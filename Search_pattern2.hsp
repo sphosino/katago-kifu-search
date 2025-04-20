@@ -3,7 +3,7 @@
 #include "modules/bitboard.hsp"
 #module
 
-#defcfunc search2 var SGF_list, array ’T‚µ‚½‚¢‹Ç–Ê, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index
+#defcfunc search2 var SGF_list, array ’T‚µ‚½‚¢‹Ç–Ê, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index, int inverse
 
 	dim patterns, 23,16
 	dim pattern_masks, 23, 8
@@ -62,10 +62,16 @@
 				
 			}
 	@
-			if search_main2(topnode, patterns, pattern_masks, 1 + colorflip) >= 0{
-				result(0, result_num) = sgf_filename
-				result(1, result_num) = str(stat)
-				result_num++
+			//ŒŸõŽÀs
+			match_node = search_main2(topnode, rotated_p)
+			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
+				result(0, rn) = sgf_filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
+				if inverse{
+					result(1, rn) = str(topnode)
+				}else{
+					result(1, rn) = str(stat)
+				}
+				rn++
 			}
 			
 		loop

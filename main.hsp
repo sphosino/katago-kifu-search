@@ -244,6 +244,7 @@ root = make_area_child(1,1)
 				button_narrow_down_search = make_area_child()
 				chkbox_colorflip = make_area_child()
 				chkbox_use_bitboard = make_area_child()
+				chkbox_inverse = make_area_child()
 			goban_edit_area = make_area_child(1,2, goban_tool_area)
 				goban_edit_tool_buttons = make_area_child(2,,goban_edit_area)
 					chkbox_tyakusyu = make_area_child(,,goban_edit_tool_buttons)
@@ -296,6 +297,7 @@ newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
+newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
 
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
 newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
@@ -916,7 +918,7 @@ setfps 60
 
 	if use_bitboard{
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index)
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse)
 		
 	}else{
 
@@ -933,7 +935,7 @@ setfps 60
 	
 		logmes patterns_to_notepad(p)
 		
-		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index)
+		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse)
 	}
 
 	logmes "SSSSS" + result_num
