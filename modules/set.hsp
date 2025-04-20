@@ -17,7 +17,7 @@
     
 #modinit 
 
-	sdim data,, MAX_KEYS
+	sdim data
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS, 3 //(©“®“I‚ÉŠg’£‚³‚ê‚éj
 	dim data_deleted_list, MAX_KEYS

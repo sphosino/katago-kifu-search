@@ -2,208 +2,189 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KataGo棋譜検索システム操作ガイド</title>
+    <title>KataGo棋譜検索システム</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
             max-width: 900px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f9f9f9;
+            color: #333;
         }
         h1 {
             color: #333;
-            border-bottom: 2px solid #4d8c4a;
+            border-bottom: 2px solid #4CAF50;
             padding-bottom: 10px;
-            margin-top: 30px;
+            margin-bottom: 20px;
         }
         h2 {
-            color: #4d8c4a;
-            border-left: 5px solid #4d8c4a;
-            padding-left: 15px;
-            margin-top: 25px;
+            color: #4CAF50;
+            margin-top: 30px;
+            border-left: 5px solid #4CAF50;
+            padding-left: 10px;
         }
-        h3 {
-            color: #555;
-            margin-top: 20px;
+        p, li {
+            margin-bottom: 10px;
         }
-        .section {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .highlight {
-            background-color: #e8f5e9;
+        .function-box {
+            background-color: #f5f5f5;
+            border-left: 4px solid #4CAF50;
             padding: 15px;
-            border-left: 4px solid #4caf50;
-            margin: 15px 0;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
         }
         .note {
-            background-color: #fff8e1;
+            background-color: #FFF3CD;
+            border-left: 4px solid #FFC107;
             padding: 15px;
-            border-left: 4px solid #ffc107;
-            margin: 15px 0;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .tip {
+            background-color: #D1ECF1;
+            border-left: 4px solid #17A2B8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .important {
+            background-color: #F8D7DA;
+            border-left: 4px solid #DC3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
         }
         code {
-            background-color: #f1f1f1;
+            background-color: #f8f9fa;
             padding: 2px 5px;
             border-radius: 3px;
             font-family: Consolas, Monaco, 'Andale Mono', monospace;
         }
-        ul, ol {
-            padding-left: 25px;
+        ul {
+            padding-left: 20px;
         }
         .footer {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #ddd;
-            color: #777;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
             text-align: center;
+            font-size: 0.9em;
+            color: #777;
         }
     </style>
 </head>
 <body>
-    <h1>KataGo棋譜検索システム 操作ガイド</h1>
+    <h1>KataGo棋譜検索システム</h1>
     
-    <div class="section">
-        <h2>基本機能</h2>
-        <p>棋譜フォルダに入っている<code>katago-rating-game</code>の中から検索するシステムです。</p>
+    <div class="function-box">
+        <p>棋譜フォルダに入っている<strong>katago-rating-game</strong>の中から検索します！</p>
+        <p>緑色の棋譜リストから棋譜を選択すると閲覧できます。ホイールで前後に手順を進めることができます。</p>
+        <p>KataGoエンジンの形勢判断が背景の色でわかります。（グレーは互角）</p>
+        <p>最後に着手した側の判断です。 -&gt; 最終手マークが白石についていたら、白側のエンジンの判断となります。</p>
+    </div>
+
+    <h2>基本操作</h2>
+    <ul>
+        <li>碁盤の上でドラッグすると検索したい範囲を指定できます。（ドラッグ中に右クリックでキャンセル）</li>
+        <li>右クリック長押しで直前に指定した範囲を取り除くことができます。</li>
+        <li>着手モードでは、<strong>右クリック</strong>で石を置くことができます。</li>
+        <li>続けて右クリックすることで色を変えることができます。</li>
+        <li>灰色の石はどちらかの石があればヒットします。</li>
+        <li>「？」の付いた石は、たとえば黒石に「？」がついていれば、【黒石があるか、もしくはその地点に石が存在しないとき】にヒットします。（つまり白石があるときだけ、マッチしない）</li>
+    </ul>
+
+    <h2>検索機能</h2>
+    <div class="function-box">
+        <p><strong>「検索」ボタン</strong>で検索を開始します。</p>
         <ul>
-            <li>緑色の棋譜リストから棋譜を選択すると閲覧できます</li>
-            <li>マウスホイールで前後に手順を進めることができます</li>
-            <li>KataGoエンジンの形勢判断が背景の色でわかります（グレーは互角）</li>
-            <li>最後に着手した側の判断が表示されます → 最終手マークが白石についていたら、白側のエンジンの判断</li>
+            <li>もう一つのリストボックスに検索結果が表示されるので、クリックして閲覧してください。</li>
+            <li>抜かれた部分はそこに石をおいた状態で、検索すればOKです。</li>
+            <li>棋譜リストボックスの下のスピンボックスは、棋譜を選択したときに、何手目から開始するかを設定します。</li>
+            <li>検索結果の下のスピンボックスは、検索結果の棋譜を選択したときに、マッチ局面の前後何手目を表示するかを設定します。</li>
         </ul>
     </div>
 
-    <div class="section">
-        <h2>検索機能</h2>
+    <h2>特殊検索機能</h2>
+    <div class="function-box">
+        <h3>「除外検索」ボタン</h3>
+        <p>検索結果を除いた全ての棋譜から検索します。</p>
+        <p>たとえば、ある局面で、次の一手が打たれなかった局面を検索したい場合：</p>
+        <ol>
+            <li>次の一手を打った局面を検索</li>
+            <li>そのあと一手もどして、「除外検索」</li>
+        </ol>
+        <p>このようにすれば、その手を打たなかった棋譜だけを抽出できます。</p>
+
+        <h3>「絞込検索」ボタン</h3>
+        <p>検索結果の中だけからさらに検索を行います。</p>
+
+        <h3>「厳密検索」</h3>
+        <p>抜き跡にさらに着手した局面も検索可能です。</p>
+        <p class="important">遅いです！（非推奨）</p>
+        <p>※【？石】の使用には対応していません。</p>
+
+        <h3>「反転検索」</h3>
+        <p>マッチしなかった棋譜が結果に追加されるようになります。</p>
+        <p>全ての検索方式に対応しています。</p>
+        <p>※位置ジャンプなどは行えません。フィルター用途向けです。</p>
+    </div>
+
+    <h2>グルーピング機能</h2>
+    <div class="function-box">
+        <p>A-Dまでのボタンは石をグループ化して、そのうち１つだけある局面をマッチさせることができます。</p>
         
-        <h3>範囲指定</h3>
-        <ul>
-            <li>碁盤の上でドラッグすると検索したい範囲を指定できます</li>
-            <li>ドラッグ中に右クリックでキャンセルできます</li>
-            <li>右クリック長押しで直前に指定した範囲を取り除くことができます</li>
-        </ul>
-        
-        <h3>着手モード</h3>
-        <ul>
-            <li><strong>右クリック</strong>で石を置くことができます</li>
-            <li>続けて右クリックすることで石の色を変えることができます</li>
-            <li>灰色の石はどちらかの石があればヒットします</li>
-            <li>「？」の付いた石は特殊条件でヒットします
-                <ul>
-                    <li>例：黒石に「？」がついていれば、【黒石があるか、もしくはその地点に石が存在しないとき】にヒット</li>
-                    <li>つまり白石があるときだけ、マッチしません</li>
-                </ul>
-            </li>
-        </ul>
-        
-        <h3>検索方法</h3>
-        <div class="highlight">
-            <p><strong>「検索」ボタン</strong>で検索を開始します</p>
-            <ul>
-                <li>もう一つのリストボックスに検索結果が表示されるので、クリックして閲覧してください</li>
-                <li>抜かれた部分は石を置いて検索にかければOKです</li>
-                <li>棋譜リストボックスの下のスピンボックスは、棋譜を選択したときに、何手目から開始するかを設定します</li>
-                <li>検索結果の下のスピンボックスは、検索結果の棋譜を選択したときに、マッチ局面の前後何手目を表示するかを設定します</li>
-            </ul>
+        <div class="tip">
+            <p><strong>実用例</strong></p>
+            <p>黒星、白カカリ、黒ハサミのとき、いろんなハサミの位置に黒石を置き、それらを全て同じ記号、例えばA、を指定すると、そのAの中から１つだけマッチした（どこかに黒がハサんだ）棋譜を検索します。</p>
         </div>
         
-        <h3>検索オプション</h3>
-        <ul>
-            <li><strong>「除外検索」ボタン</strong>：検索結果を除いた全ての棋譜から検索します</li>
-            <li><strong>「絞込検索」ボタン</strong>：検索結果の中からさらに検索します</li>
-            <li><strong>「厳密検索」</strong>
-                <ul>
-                    <li>抜き跡にさらに着手した局面も検索可能です</li>
-                    <li>遅いです！（非推奨）</li>
-                    <li>「？石」は指定しないでください</li>
-                </ul>
-            </li>
-            <li><strong>「反転検索」</strong>
-                <ul>
-                    <li>マッチしなかった棋譜が結果に追加されるようになります</li>
-                    <li>全ての検索方式に対応しています</li>
-                    <li>実用例：【ある局面で、次の一手はこう打つのが普通だが、こう打たなかった場合を調べたい】
-                        <ol>
-                            <li>その一手を打つ前の局面で通常検索し、</li>
-                            <li>検索結果に対して、次の一手を打った状態で、反転の絞込検索を行う</li>
-                        </ol>
-                    </li>
-                </ul>
-            </li>
-        </ul>
+        <p>現状では【？石】に対する動作は未定義です。</p>
+        <p>現状では、厳密検索ではグルーピング対応していません（無視されます）。</p>
     </div>
 
-    <div class="section">
-        <h2>グルーピング機能</h2>
+    <h2>SGF取得</h2>
+    <div class="function-box">
+        <p>選択中の棋譜をクリップボードにコピーします。</p>
         <ul>
-            <li>A-Dまでのボタンは石をグループ化して、そのうち１つだけある局面をマッチさせることができます</li>
-            <li><strong>実用例</strong>：
-                <ul>
-                    <li>黒星、白カカリ、黒ハサミのとき、いろんなハサミの位置に黒石を置き、それらを全て同じ記号（例えばA）を指定すると、Aの中から１つだけマッチした（どこかに黒がハサんだ）棋譜を検索します</li>
-                </ul>
-            </li>
-            <li class="note">現状では「？石」に対する動作は未定義です</li>
-            <li class="note">現状では、厳密検索ではグルーピングに対応していません（無視されます）</li>
+            <li><code>Ctrl + 左クリック</code>で複数選択ができます。</li>
+            <li><code>Ctrl + A</code>で全て選択します。</li>
+            <li>複数選択されている場合それらを全てマージしたSGFがクリップボードにコピーされます。</li>
         </ul>
+        <p><strong>保存ボタン</strong> -&gt; 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したいときに使ってください。</p>
     </div>
 
-    <div class="section">
-        <h2>SGF取得</h2>
-        <ul>
-            <li>選択中の棋譜をクリップボードにコピーします</li>
-            <li><code>Ctrl + 左クリック</code>で複数選択ができます</li>
-            <li><code>Ctrl + A</code>で全て選択します</li>
-            <li>複数選択されている場合、それらを全てマージしたSGFがクリップボードにコピーされます</li>
-            <li><strong>保存ボタン</strong> → 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したいときに使ってください</li>
-        </ul>
+    <h2>自動再生</h2>
+    <div class="function-box">
+        <p>自動再生のチェックを入れると選んだ棋譜を自動再生します。</p>
+        <p>スライダーで一手ごとの待ち時間を設定します：</p>
+        <ol>
+            <li>１番目のスライダーで、基本待ち時間を設定します。（100ms - 10000ms）</li>
+            <li>２番目のスライダーで、各エンジンの形勢判断の差が大きいほど待ち時間を延ばします。（0-10000ms）</li>
+            <li>３番目のスライダーで、直前の手との距離が遠いほど、待ち時間を延ばします。(0-10000ms)</li>
+        </ol>
+        <p>１手ごとの待ち時間は全てのスライダーの値を合わせた値になります。</p>
     </div>
 
-    <div class="section">
-        <h2>自動再生</h2>
-        <ul>
-            <li>自動再生のチェックを入れると選んだ棋譜を自動再生します</li>
-            <li>スライダーで一手ごとの待ち時間を設定します：
-                <ol>
-                    <li>１番目のスライダー：基本待ち時間（100ms - 10000ms）</li>
-                    <li>２番目のスライダー：各エンジンの形勢判断の差が大きいほど待ち時間を延ばします（0-10000ms）</li>
-                    <li>３番目のスライダー：直前の手との距離が遠いほど、待ち時間を延ばします（0-10000ms）</li>
-                </ol>
-            </li>
-            <li>１手ごとの待ち時間は全てのスライダーの値を合わせた値になります</li>
-        </ul>
+    <h2>レイアウト変更</h2>
+    <div class="function-box">
+        <p>CTRLをダブルクリックするとデバッグモードに入ります。もう一度やれば戻ります。</p>
+        <p>グリッドが表示されるのでつまんで移動できます。</p>
+        <p>また各エリアのパディング部をつまむとエリアが選択状態になり、他のエリアのパディングをクリックすると場所を交換します。</p>
     </div>
 
-    <div class="section">
-        <h2>レイアウト変更</h2>
+    <h2>注意事項</h2>
+    <div class="important">
         <ul>
-            <li>CTRLをダブルクリックするとデバッグモードに入ります。もう一度行えば戻ります</li>
-            <li>グリッドが表示されるのでつまんで移動できます</li>
-            <li>各エリアのパディング部をつまむとエリアが選択状態になり、他のエリアのパディングをクリックすると場所を交換します</li>
+            <li>起動後少しずつ棋譜を読み込んでいるため、起動して検索した場合は多少時間がかかります。</li>
+            <li>厳密検索は更にノードに碁盤を作成するのでかなり遅いです。</li>
         </ul>
-    </div>
-
-    <div class="section">
-        <h2>注意事項</h2>
-        <div class="note">
-            <ul>
-                <li>起動後少しずつ棋譜を読み込んでいるため、起動してすぐに検索した場合は多少時間がかかります</li>
-                <li>厳密検索は更にノードに碁盤を作成するのでかなり遅いです</li>
-            </ul>
-        </div>
     </div>
 
     <div class="footer">
         <p>本プログラムについて要望があれば連絡ください。</p>
-        <p>作者メールアドレス: <a href="mailto:sphosino@gmail.com">sphosino@gmail.com</a></p>
-        <p>最新版はこちらから: <a href="https://github.com/sphosino/katago-kifu-search/releases">KataGo棋譜検索システム</a></p>
+        <p>作者メールアドレス -&gt; <a href="mailto:sphosino@gmail.com">sphosino@gmail.com</a></p>
+        <p>最新版はこちらから: <a href="https://github.com/sphosino/katago-kifu-search" target="_blank">https://github.com/sphosino/katago-kifu-search</a></p>
     </div>
 </body>
 </html>

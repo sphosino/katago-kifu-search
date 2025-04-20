@@ -3,7 +3,6 @@
 #include "modules/keyfps.hsp"
 #include "modules/sgf.hsp"
 #include "GobanPatternManager.hsp"
-
 #include "modules/katago_sqr.hsp"
 #include "modules/set.hsp"
 #include "Search_pattern.hsp"
@@ -20,7 +19,6 @@
 #include "modules/grid_system/g_treebox.hsp"
 #include "modules/grid_system/g_line_graph.hsp"
 #include "modules/group.hsp"
-
 #include "go_game_manager.hsp"
 #include "hspext.as"
 #include "user32.as"
