@@ -10,7 +10,7 @@
 	init_ringbuffer 64, 128
 	clear_mem
 	sdim node_data
-	result_num = 0
+	rn = 0
 	prexy = -1,-1
 
 	Å‘å‚Ì[‚³ = 50
@@ -63,7 +63,7 @@
 			}
 	@
 			//ŒŸõŽÀs
-			match_node = search_main2(topnode, rotated_p)
+			match_node = search_main2(topnode, patterns, pattern_masks, 1 + colorflip)
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
 				result(0, rn) = sgf_filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
 				if inverse{
@@ -73,11 +73,11 @@
 				}
 				rn++
 			}
-			
+			await
 		loop
 	noteunsel
-	title titlestr + strf("Œµ–§ŒŸõŠ®—¹ %dŒ (%dms)", result_num, keyfpstime - starttime)
-	return result_num
+	title titlestr + strf("Œµ–§ŒŸõŠ®—¹ %dŒ (%dms)", rn, keyfpstime - starttime)
+	return rn
 
 
 #defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip
