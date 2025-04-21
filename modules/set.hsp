@@ -15,14 +15,18 @@
     loop
     return (s & 0x7FFFFFFF) \ MAX_KEYS
     
-#modinit 
+#modinit int num_maxdata //初期確保サイズ
 
-	sdim data
+	n = MAX_KEYS //現状ではMAX確保しちゃってる。
+	if num_maxdata > 0{
+		n = num_maxdata
+	}
+	sdim data,,n
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS, 3 //(自動的に拡張される）
-	dim data_deleted_list, MAX_KEYS
+	dim data_deleted_list, n
 	dim data_deleted_list_num
-	dim valid_buckets, MAX_KEYS
+	dim valid_buckets, n
 	dim valid_buckets_num
 
 	mref thismod_ID, 2
@@ -132,8 +136,8 @@
 #module set_manager
 
 //新たな空のセットを作成
-#defcfunc make_new_set
-	newmod data, set_str
+#defcfunc make_new_set int max ;初期確保容量
+	newmod data, set_str, max
 	return stat ;セットのIDを返す。
 
 //セットに要素追加
@@ -165,7 +169,7 @@
 #defcfunc set_plus_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set()
+    newSetID = make_new_set(get_cardinality(data(setID)) + get_cardinality(data(setID2)))
 
     // 1つ目のセットのデータを取得して追加
     
@@ -184,7 +188,7 @@
 #defcfunc set_minus_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set()
+    newSetID = make_new_set(get_cardinality(data(setID)))
 
     // 1つ目のセットのデータを取得
     // `setB` に存在しない要素だけを新セットに追加
@@ -199,7 +203,7 @@
 #defcfunc set_and_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set()
+    newSetID = make_new_set(limit(get_cardinality(data(setID)),, get_cardinality(data(setID2))))
 
     // `setA` のデータを取得
     // `setB` にも存在するデータのみ追加
@@ -212,7 +216,8 @@
     return newSetID ; 新しいセットIDを返す
 
 #defcfunc set_sym_diff int setID, int setID2
-    newSetID = make_new_set()
+
+    newSetID = make_new_set(get_cardinality(data(setID)) + get_cardinality(data(setID2)))
 
     // `setA - setB`
 
@@ -264,16 +269,16 @@
 //---------------------------
 
 #defcfunc array_to_set array a
-	newSetId = make_new_set()
+	newSetId = make_new_set(length(a))
 	repeat length(a)
 		push_data newSetId, a(cnt)
 	loop
 	return newSetId
 
 #defcfunc notepad_to_set str s1
-	newSetId = make_new_set()
 	s = s1
 	notesel s
+		newSetId = make_new_set(notemax)
 		repeat notemax
 			noteget tmp,cnt
 			push_data newSetId, tmp
@@ -317,7 +322,7 @@
 
 #if 0
 #undef mes
-#define mes(%1) mes@hsp %1:logmes %1:
+#define mes(%1 = "") mes@hsp %1:logmes %1:
 a = make_new_set()
 b = make_new_set()
 c = make_new_set()
