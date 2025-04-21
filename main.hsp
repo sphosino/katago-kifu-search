@@ -330,7 +330,6 @@ newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
 set_margin_line_graph l_graph, 15, 10, 15, 10
 
-
 //‹éŒ`”ÍˆÍŽw’è—p
 rn = 0
 dim rect, 4
