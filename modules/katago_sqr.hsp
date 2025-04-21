@@ -69,7 +69,7 @@ netinit
 			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / lt,,100)+"%完了"
 			if keyfpstime - starttime >= lt: break
 			if check_exist_sgf(files, game_id){
-				await 2
+				await 4
 				continue
 			}
 			await wt
@@ -150,7 +150,7 @@ netinit
 
 
 
-#if 0
+#if 01
 	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
 	chdir a
 
