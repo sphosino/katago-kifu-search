@@ -21,6 +21,7 @@
 	if num_maxdata > 0{
 		n = num_maxdata
 	}
+	logmes "setsize -> " + n
 	sdim data,,n
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS, 3 //(é©ìÆìIÇ…ägí£Ç≥ÇÍÇÈÅj
@@ -253,7 +254,9 @@
 
 
 #defcfunc notepad_minus_notepad var s, str s2
+	if s2 == "": return s
 	newSetID = notepad_to_set(s2)
+	
 	notesel s
 		result = ""
 	    repeat notemax
@@ -275,9 +278,9 @@
 	loop
 	return newSetId
 
-#defcfunc notepad_to_set str s1
-	s = s1
-	notesel s
+#defcfunc notepad_to_set str s1, local tmp_notepad
+	tmp_notepad = s1
+	notesel tmp_notepad
 		newSetId = make_new_set(notemax)
 		repeat notemax
 			noteget tmp,cnt
