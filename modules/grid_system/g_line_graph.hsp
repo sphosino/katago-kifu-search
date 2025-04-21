@@ -8,10 +8,10 @@
     //エリア番号
     area_number = _area
 
-	position_x = -1  // マイナスの時は、エリアいっぱいに表示
-	position_y = -1
-    size_x = -1
-	size_y = -1
+	margin_left = -1  // マイナスの時は、エリアいっぱいに表示
+	margin_top = -1
+	margin_right = margin_left
+	margin_bottom = margin_bottom
 
 	start_x = 0    //０手目
 	start_y = 0.0  //0%(白勝ち）
@@ -26,9 +26,11 @@
     mref thismod_ID, 2
     return thismod_ID
 
-#modfunc set_position_g_line_graph int _x, int _y
-	position_x = _x
-	position_y = _y
+#modfunc set_margin_line_graph int p1, int p2, int p3, int p4
+	margin_left = p1
+	margin_top = p2
+	margin_right = p3
+	margin_bottom = p4
 	return
 
 #modfunc set_end_xy int _x, int _y
@@ -41,11 +43,6 @@
 	return
 #modcfunc get_current_position
 	return current_position
-
-#modfunc set_size_g_line_graph int _sizex, int _sizey, int _sizer
-	size_x = _sizex
-	size_y = _sizey
-	return
 
 #modfunc add_graph_data double a
 	data(dn) = a
@@ -61,14 +58,14 @@
 
 	thisrect thismod, oya, area_number //oya に矩形情報取得
 	
-	if position_x = -1: rect.0 = oya.0:else: rect   = oya.0 + position_x
-	if position_y = -1: rect.1 = oya.1:else: rect.1 = oya.1 + position_y
-	if size_x = -1:     rect.2 = oya.2:else: rect.2 = rect   + size_x
-	if size_y = -1:     rect.3 = oya.3:else: rect.3 = rect.1 + size_y
-
+	rect   = oya.0 + margin_left   * (margin_left   != -1)
+	rect.1 = oya.1 + margin_top    * (margin_top    != -1)
+	rect.2 = oya.2 - margin_right  * (margin_rignt  != -1)
+	rect.3 = oya.3 - margin_bottom * (margin_bottom != -1)
 
 	//グラフ枠描画
-	color 120,50,10: boxfl oya,oya.1,oya.2,oya.3:
+	color 120,50,10
+	aboxfl rect
 
 	//マウス位置表示
 	color 255,255,255
@@ -123,7 +120,7 @@
 		if div_line{
 			色を設定 colset(cnt)
 		}
-		for i, 1 + cnt, limit(dn - 1, 0), div_line + 1
+		for i, 1 + cnt, limit(dn - 1, 0), 1 + div_line
 			endpos = rect + i * (rect.2 - rect) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
 			repeat thick
 				offset = cnt - half

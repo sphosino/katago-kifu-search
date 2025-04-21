@@ -22,7 +22,6 @@ keyfps
 /*
 %index
 manage_keyfps
-メインループ制御
 
 %inst
 メインループのウェイト、キー取得などを行います

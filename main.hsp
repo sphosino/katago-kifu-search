@@ -328,6 +328,7 @@ newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
+set_margin_line_graph l_graph, 15, 10, 15, 10
 
 
 //‹éŒ`”ÍˆÍŽw’è—p
