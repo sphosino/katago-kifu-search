@@ -278,12 +278,12 @@
 	loop
 	return newSetId
 
-#defcfunc notepad_to_set str s1, local tmp_notepad
+#defcfunc notepad_to_set str s1
 	tmp_notepad = s1
 	notesel tmp_notepad
 		newSetId = make_new_set(notemax)
 		repeat notemax
-			noteget tmp,cnt
+			noteget tmp, cnt
 			push_data newSetId, tmp
 		loop
 	noteunsel

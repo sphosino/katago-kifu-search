@@ -170,7 +170,7 @@ addkey 'A'
 
 
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
-
+search_result_sgflist = ""
 jidou = 0
 着手番号表示 = 0
 ui_mode = MODE_KIFU_VIEW
@@ -179,7 +179,7 @@ set_treeview 37, 37
 set_treeview_position 10,20
 set_tree_direction 6
 
-kifu_upadate = 1
+kifu_update = 1
 
 topnode = -1
 
@@ -897,6 +897,7 @@ setfps 60
 *create_pattern2
 	time = keyfpstime
 	kl = notepad_minus_notepad(kifulist_notepad, search_result_sgflist)
+	logmes strmid(kifulist_notepad,0,50)
 	gosub*create_pattern_main
 	return
 *create_pattern3
@@ -920,14 +921,12 @@ setfps 60
 		
 	}else{
 
-
 		initialize_rects v, r, stones
 		
 		repeat load_stones_from_board(m, n)
 			add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
 			logmes n(2,cnt)
 		loop
-	
 	
 		create_pattern_with_rects_and_stones r,stones,p
 	
