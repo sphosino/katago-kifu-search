@@ -26,8 +26,8 @@
 
 	group_num = get_pattern_all_groups_num(pattern) //パターンのhit判定に必要な石数を取得
 	logmes "SNUM = " + group_num
-	if group_num == 0: return 0
-	if group_num > max_depth: return 0
+	if group_num == 0: return -1
+	if group_num > max_depth: return -1
 
 	colorflip_num = 1 + colorflip
 	

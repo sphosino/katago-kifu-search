@@ -964,6 +964,9 @@ setfps 60
 		
 		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse)
 	}
+
+	//早期リターンなら何もせず終わる。
+	if result_num < 0: return
 	
 	kifu_update = 0
 
