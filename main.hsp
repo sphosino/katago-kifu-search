@@ -538,6 +538,9 @@ setfps 60
 				case 7
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
+					repeat 4
+						del_group_stone point, point.1,cnt
+					loop
 				swbreak
 
 				swend
