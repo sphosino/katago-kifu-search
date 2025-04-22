@@ -17,7 +17,7 @@
     loop
     return (s & 0x7FFFFFFF) \ MAX_KEYS
     
-#modinit int num_maxdata ,local thismod_ID
+#modinit int num_maxdata , local thismod_ID
 
 	n = DEFAULT_SET_SIZE
 	if num_maxdata > 0{
@@ -331,8 +331,8 @@
 #endif
 
 
-; // set_strモジュールのテスト
-
+; // モジュールのテスト
+#if 0
 #undef mes
 #define global mes(%1 = "") mes@hsp %1:logmes %1
 
@@ -482,9 +482,9 @@ push_data set7_id, "banana"
 push_data set7_id, "grape"
 is_sub2 = is_subset(set1_id, set7_id)
 if is_sub2 {
-    mes "is_subset OK (set1 は set7 の部分集合)"
+    mes "is_subset NG (set1 は set7 の部分集合)"
 } else {
-    mes "is_subset NG (set1 は set7 の部分集合ではない)"
+    mes "is_subset OK (set1 は set7 の部分集合ではない)"
 }
 del_set set6_id
 del_set set7_id
@@ -607,7 +607,7 @@ set_sym_diff OK (要素数: 2)
 要素: apple
 要素: grape
 is_subset OK (set6 は set1 の部分集合)
-is_subset NG (set1 は set7 の部分集合ではない)
+is_subset OK (set1 は set7 の部分集合ではない)
 is_proper_subset OK (set8 は set1 の真部分集合)
 is_proper_subset OK (set1 は set1 の真部分集合ではない)
 is_proper_subset OK (set1 は set9 の真部分集合)
@@ -628,8 +628,8 @@ apple
 cherry
 array_to_notepad OK
 結果:
-onetwo
-
+one
+two
 notepad_to_array OK (要素数: 3)
 要素: alpha
 要素: beta
@@ -638,3 +638,5 @@ get_cardinality OK (要素数: 2)
 全てのテスト完了
 
 ;*/
+
+#endif

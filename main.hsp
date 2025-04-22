@@ -316,7 +316,7 @@ add_item_radiobox g_radiobox, "D"
 add_item_radiobox g_radiobox, "œ"
 add_item_radiobox g_radiobox, "Z"
 add_item_radiobox g_radiobox, "œZ"
-add_item_radiobox g_radiobox, "”ÍˆÍ"
+add_item_radiobox g_radiobox, "íœ"
 
 
 newmod kifulist, grid_listbox, sidebar_kifulist
@@ -375,7 +375,7 @@ setfps 60
 		pre_ui_mode = ui_mode
 
 		if ui_mode = MODE_KIFU_VIEW{
-			
+			group_init
 		}else{
 			get_board_data board  , user_board
 			set_board_data board.1, user_board
@@ -442,6 +442,11 @@ setfps 60
 						if in_board{
 							user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
 							set_board_data board.1, user_board
+							if user_board(point,point.1) == 0{
+								repeat 4
+									del_group_stone point, point.1,cnt
+								loop
+							}
 						}
 					}
 				}
@@ -472,25 +477,40 @@ setfps 60
 			
 			if inlistbox == 0{
 				dragging_flag = 1
-				if (g_type == -1 || g_type >= 4 + 3 * (ui_mode != MODE_KIFU_VIEW)){
-					rect = limit(point,0,18),limit(point.1,0,18)
-					rect(2) = rect, rect.1
-					
+				if in_board{
+					if (ui_mode == MODE_KIFU_VIEW) || (ui_mode != MODE_KIFU_VIEW && g_type == -1){
+						rect = limit(point,0,18),limit(point.1,0,18)
+						rect(2) = rect, rect.1
+					}
+				}else{
+					rect = -1
 				}
 				if treebox_onmouseid(t) >=0{
 					set_current_node t, stat		
 					sync_treebox_board t, board 
 					Žè” = treeview_onmouse_id_deep()
 				}
-				
-				if in_board{
+
+	
+
+			}
+		}
+	
+		if dragging_flag{
+			
+			rect(2) = limit(point(0),0,18)
+			rect(3) = limit(point(1),0,18)
+
+			
+				if in_board & ui_mode != MODE_KIFU_VIEW{
 					switch g_type
 					case 0
 					case 1
 					case 2
 					case 3
-						
-						add_group_stone point, point.1, g_type
+						if user_board(point,point.1){
+							add_group_stone point, point.1, g_type
+						}
 					swbreak
 					case 4
 						user_board(point,point.1) = 1
@@ -501,26 +521,22 @@ setfps 60
 						set_board_data board.1, user_board
 					swbreak
 					case 6
-						swapturn^1
-						user_board(point,point.1) = swapturn + 1
+						if prex = point.0 & prey = point.1{
+						}else{
+							prex = point.0
+							prey = point.1
+							swapturn^1
+							user_board(point,point.1) = swapturn + 1
+							set_board_data board.1, user_board
+						}
+					swbreak
+					case 7
+						user_board(point,point.1) = 0
 						set_board_data board.1, user_board
 					swbreak
-					default
-						rect = limit(point,0,18),limit(point.1,0,18)
-						rect(2) = rect, rect.1
-					swend
-				}else{
-					rect = -1
-				}
-			}
-		}
-	
-		if dragging_flag{
-			
-			rect(2) = limit(point(0),0,18)
-			rect(3) = limit(point(1),0,18)
 
-			
+					swend
+				}
 			if _getkey(1) == -1{//ƒ}ƒEƒX‚ª—£‚³‚ê‚½‚Æ‚«
 				
 				dragging_flag = 0
@@ -818,7 +834,13 @@ setfps 60
 	return
 	
 *clearboard
-	clear_board board
+	if ui_mode == MODE_KIFU_VIEW{
+		clear_board board
+	}else{
+		dim user_board,19,19
+		set_board_data board.1,user_board
+		group_init
+	}
 	treebox_clear t
 	topnode = stat
 	title ""
@@ -859,7 +881,7 @@ setfps 60
 	title" • " + blackplayer + "   ”’ " + whiteplayer
 	return
 *group_clear
-	if g_type >= 4{
+	if g_type >= 4 || g_type = -1{
 		repeat 4
 			clear_group cnt
 		loop

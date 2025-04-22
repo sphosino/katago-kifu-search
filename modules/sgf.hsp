@@ -519,18 +519,6 @@
 	
 #deffunc local init_node int node_id, int p1, local c
 
-	/*
-	if parent(node_id) != -1{
-		repeat get_sgf_childs(parent(node_id), c)
-			if lpeek(c,cnt*4) == node_id{
-				child_num(parent(node_id))--
-				lpoke sgf_node_childs(parent(node_id)), cnt*4, lpeek(sgf_node_childs(parent(node_id)), child_num(parent(node_id))*4 )
-			}
-		loop
-		;end
-	}
-	//*/
-
 	parent(node_id) = p1
 	
 	sgf_node_turn(node_id) = -1
@@ -598,7 +586,7 @@ init_sgf_module
 			add_SGFchild nn, new_id
 			nn = new_id
 			nc++
-			if MN < nc: MN = nc:lastnode = nn
+			if MN < nc: MN = nc: lastnode = nn
 			
 		}else:if token >= 'A' && token <= 'Z'{
 			
@@ -617,7 +605,6 @@ init_sgf_module
 			stack_count(pn) = nc
 			pn++
 
-			
 		}else:if token == ')'{
 			
 			pn--
