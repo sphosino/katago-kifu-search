@@ -174,7 +174,6 @@ search_result_sgflist = ""
 jidou = 0
 着手番号表示 = 0
 ui_mode = MODE_KIFU_VIEW
-
 set_treeview 37, 37
 set_treeview_position 10,20
 set_tree_direction 6
@@ -356,7 +355,6 @@ dim pre_xy, 2
 
 pretime = keyfpstime
 
-
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
 
@@ -478,7 +476,7 @@ setfps 60
 			if inlistbox == 0{
 				dragging_flag = 1
 				if in_board{
-					if (ui_mode == MODE_KIFU_VIEW) || (ui_mode != MODE_KIFU_VIEW && g_type == -1){
+					if (ui_mode == MODE_KIFU_VIEW && (g_type < 0 || g_type >3))  || (ui_mode != MODE_KIFU_VIEW && g_type == -1){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}
@@ -502,41 +500,48 @@ setfps 60
 			rect(3) = limit(point(1),0,18)
 
 			
-				if in_board & ui_mode != MODE_KIFU_VIEW{
-					switch g_type
-					case 0
-					case 1
-					case 2
-					case 3
-						if user_board(point,point.1){
-							add_group_stone point, point.1, g_type
-						}
-					swbreak
-					case 4
-						user_board(point,point.1) = 1
+			if in_board & (ui_mode != MODE_KIFU_VIEW || (g_type >= 0 && g_type <= 3)){
+				switch g_type
+				case 0
+				case 1
+				case 2
+				case 3
+					
+					if ui_mode == MODE_KIFU_VIEW{
+						get_board_data board  , tmp
+						OK = tmp(point,point.1)
+					}else{
+						OK = user_board(point,point.1)
+					}
+					if OK{
+						add_group_stone point, point.1, g_type
+					}
+				swbreak
+				case 4
+					user_board(point,point.1) = 1
+					set_board_data board.1, user_board
+				swbreak
+				case 5
+					user_board(point,point.1) = 2
+					set_board_data board.1, user_board
+				swbreak
+				case 6
+					if prex = point.0 & prey = point.1{
+					}else{
+						prex = point.0
+						prey = point.1
+						swapturn^1
+						user_board(point,point.1) = swapturn + 1
 						set_board_data board.1, user_board
-					swbreak
-					case 5
-						user_board(point,point.1) = 2
-						set_board_data board.1, user_board
-					swbreak
-					case 6
-						if prex = point.0 & prey = point.1{
-						}else{
-							prex = point.0
-							prey = point.1
-							swapturn^1
-							user_board(point,point.1) = swapturn + 1
-							set_board_data board.1, user_board
-						}
-					swbreak
-					case 7
-						user_board(point,point.1) = 0
-						set_board_data board.1, user_board
-					swbreak
+					}
+				swbreak
+				case 7
+					user_board(point,point.1) = 0
+					set_board_data board.1, user_board
+				swbreak
 
-					swend
-				}
+				swend
+			}
 			if _getkey(1) == -1{//マウスが離されたとき
 				
 				dragging_flag = 0
