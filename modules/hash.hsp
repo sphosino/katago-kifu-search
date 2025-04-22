@@ -10,6 +10,8 @@
 #const MAX_KEYS 666667
 #const FNV_PRIME 73091
 #const SEED 72889
+
+#const DEFAULT_DATA_SIZE 20000
     
 #defcfunc local get_hash str s1
 
@@ -23,7 +25,7 @@
     
 #deffunc init_hash_manager
 
-	sdim data,, MAX_KEYS, ENUM_MAX
+	sdim data,, DEFAULT_DATA_SIZE, ENUM_MAX
 	dim hashcount, MAX_KEYS
 	dim hashtable, MAX_KEYS, 3 //同じハッシュ値は３個までに抑えるよう他を調整（自動拡張されるけど）
 	dim data_deleted_list
@@ -50,6 +52,9 @@
 		newid = data_deleted_list(data_deleted_list_num)
 	}else{
 		newid = データ数
+		if newid >= length(data){
+			data(newid * 2) = ""
+		}
 	}
 	
 	data(newid, KEY) = s1
