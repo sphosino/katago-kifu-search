@@ -1,5 +1,5 @@
 #ifndef set_str
-#module set_str data, hashcount, hashtable, data_deleted_list, data_deleted_list_num, data_num, valid_buckets, valid_buckets_num
+#module set_str data, data_num, hashcount, hashtable, data_deleted_list, data_deleted_list_num, valid_buckets, valid_buckets_num
 
 #const MAX_KEYS 666667
 #const FNV_PRIME 73091
@@ -112,7 +112,6 @@
 		}
 	next
 
-
 #modcfunc set_get_all array result
 
 	sdim result
@@ -127,12 +126,8 @@
 
 	return rn
 
-#modcfunc get_cardinality
-	count = 0
-	repeat valid_buckets_num
-		count += hashcount(valid_buckets(cnt))
-	loop
-	return count
+#modcfunc _get_cardinality
+	return data_num
 #global
 
 
@@ -159,8 +154,8 @@
 	return
 
 //セットの要素数取得
-#defcfunc get_cardinality_set_manager int setID
-	return get_cardinality(data(setID))
+#defcfunc get_cardinality int setID
+	return _get_cardinality(data(setID))
 
 #defcfunc is_inset int setID, str s1
 	return is_in_set(data(setID),s1)
@@ -169,6 +164,7 @@
 	delmod data(setID)
 	return
 
+//util-->
 
 //セットの全データ取得
 #defcfunc set_to_array int setID, array a
@@ -178,7 +174,7 @@
 #defcfunc set_plus_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set(get_cardinality(data(setID)) + get_cardinality(data(setID2)))
+    newSetID = make_new_set(get_cardinality(setID) + get_cardinality(setID2))
 
     // 1つ目のセットのデータを取得して追加
     
@@ -197,7 +193,7 @@
 #defcfunc set_minus_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set(get_cardinality(data(setID)))
+    newSetID = make_new_set(get_cardinality(setID))
 
     // 1つ目のセットのデータを取得
     // `setB` に存在しない要素だけを新セットに追加
@@ -212,7 +208,7 @@
 #defcfunc set_and_set int setID, int setID2
 
     // 新しいセットを作成
-    newSetID = make_new_set(limit(get_cardinality(data(setID)),, get_cardinality(data(setID2))))
+    newSetID = make_new_set(limit(get_cardinality(setID),, get_cardinality(setID2)))
 
     // `setA` のデータを取得
     // `setB` にも存在するデータのみ追加
@@ -226,7 +222,7 @@
 
 #defcfunc set_sym_diff int setID, int setID2
 
-    newSetID = make_new_set(get_cardinality(data(setID)) + get_cardinality(data(setID2)))
+    newSetID = make_new_set(get_cardinality(setID) + get_cardinality(setID2))
 
     // `setA - setB`
 
@@ -257,7 +253,7 @@
 	return 1
 
 #defcfunc is_proper_subset int setID, int setID2
-	if get_cardinality(data(setID)) >= get_cardinality(data(setID2)): return 0
+	if get_cardinality(setID) >= get_cardinality(setID2): return 0
 	return is_subset(setID, setID2)
 
 
@@ -570,7 +566,7 @@ repeat count_from_note
 loop
 
 ; // get_cardinality のテスト
-cardinality = get_cardinality_set_manager(set1_id)
+cardinality = get_cardinality(set1_id)
 mes "get_cardinality OK (要素数: " + cardinality + ")"
 
 ; // 最後にセットを削除
