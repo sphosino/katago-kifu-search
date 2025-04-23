@@ -60,7 +60,7 @@ if strsize == -1{
 	wx = (ginfo(20) - x) / 2
 	wy = (ginfo(21) - y) / 2
 	//íTçıÇÃç≈ëÂê[Ç≥
-	max_depth = 60
+	max_depth = 70
 	
 	//êFîΩì]Çä‹ÇﬂÇÈÇ©
 	enableColorFlip = 1
@@ -242,13 +242,15 @@ root = make_area_child(1,1)
 				chkbox_colorflip = make_area_child()
 				chkbox_use_bitboard = make_area_child()
 				chkbox_inverse = make_area_child()
-			goban_edit_area = make_area_child(1,2, goban_tool_area)
-				goban_edit_tool_buttons = make_area_child(2,,goban_edit_area)
-					chkbox_tyakusyu = make_area_child(,,goban_edit_tool_buttons)
-					button_group_clear = make_area_child()	
-				radiobox_grouping = make_area_child(,,goban_edit_area)
-
+			goban_edit_area = make_area_child(2,1, goban_tool_area)
+				goban_edit_stone = make_area_child(1,2,goban_edit_area)
+					chkbox_tyakusyu = make_area_child(,,goban_edit_stone)
+					radiobox_goban_edit = make_area_child()
+				goban_edit_group = make_area_child(1,2,goban_edit_area)
+					button_group_clear = make_area_child(,,goban_edit_group)
+					radiobox_grouping = make_area_child()
 					
+
 exist "area.var"
 
 if strsize >= 0{
@@ -260,7 +262,8 @@ sdim titles
 //äeÉGÉäÉAÇÃê›íË
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
-set_grid_area_back_color goban_edit_area,$333333
+set_grid_area_back_color goban_edit_stone,$333333
+set_grid_area_back_color goban_edit_group,$333333
 set_grid_area_back_color goban_footer,$333333
 set_grid_area_back_color treebox_area ,$333333
 set_padding sidebar_kifulist1, 0,0,0,0
@@ -306,16 +309,20 @@ newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
-newmod g_radiobox, grid_radiobox, g_type, radiobox_grouping
-set_radio_grid_max g_radiobox, 4
-add_item_radiobox g_radiobox, "A"
-add_item_radiobox g_radiobox, "B"
-add_item_radiobox g_radiobox, "C"
-add_item_radiobox g_radiobox, "D"
+newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "Åú"
 add_item_radiobox g_radiobox, "ÅZ"
 add_item_radiobox g_radiobox, "ÅúÅZ"
-add_item_radiobox g_radiobox, "çÌèú"
+add_item_radiobox g_radiobox, "Å~"
+
+
+
+newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
+add_item_radiobox g_radiobox.tmp, "A"
+add_item_radiobox g_radiobox.tmp, "B"
+add_item_radiobox g_radiobox.tmp, "C"
+add_item_radiobox g_radiobox.tmp, "D"
+
 
 
 newmod kifulist, grid_listbox, sidebar_kifulist
@@ -346,13 +353,15 @@ loop
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
 loop
+
+
 gosub*load_kifu_folder
 	
 gosub*loadsgf
 
 c_list = "0.50"
 dim pre_xy, 2
-
+dim user_board, 19,19
 pretime = keyfpstime
 
 pre_window_size = -9999,-9999
@@ -476,7 +485,7 @@ setfps 60
 			if inlistbox == 0{
 				dragging_flag = 1
 				if in_board{
-					if (ui_mode == MODE_KIFU_VIEW && (g_type < 0 || g_type >3))  || (ui_mode != MODE_KIFU_VIEW && g_type == -1){
+					if (ui_mode == MODE_KIFU_VIEW & g_group = -1) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}
@@ -500,32 +509,19 @@ setfps 60
 			rect(3) = limit(point(1),0,18)
 
 			
-			if in_board & (ui_mode != MODE_KIFU_VIEW || (g_type >= 0 && g_type <= 3)){
-				switch g_type
-				case 0
-				case 1
-				case 2
-				case 3
-					
-					if ui_mode == MODE_KIFU_VIEW{
-						get_board_data board  , tmp
-						OK = tmp(point,point.1)
-					}else{
-						OK = user_board(point,point.1)
-					}
-					if OK{
-						add_group_stone point, point.1, g_type
-					}
+			if in_board {
+				switch g_edit
+
 				swbreak
-				case 4
+				case 0
 					user_board(point,point.1) = 1
 					set_board_data board.1, user_board
 				swbreak
-				case 5
+				case 1
 					user_board(point,point.1) = 2
 					set_board_data board.1, user_board
 				swbreak
-				case 6
+				case 2
 					if prex = point.0 & prey = point.1{
 					}else{
 						prex = point.0
@@ -535,7 +531,7 @@ setfps 60
 						set_board_data board.1, user_board
 					}
 				swbreak
-				case 7
+				case 3
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
 					repeat 4
@@ -544,6 +540,19 @@ setfps 60
 				swbreak
 
 				swend
+
+				if g_group >= 0{
+					
+					if ui_mode == MODE_KIFU_VIEW{
+						get_board_data board  , tmp
+						OK = tmp(point,point.1)
+					}else{
+						OK = user_board(point,point.1)
+					}
+					if OK{
+						add_group_stone point, point.1, g_group
+					}
+				}
 			}
 			if _getkey(1) == -1{//É}ÉEÉXÇ™ó£Ç≥ÇÍÇΩÇ∆Ç´
 				
@@ -889,12 +898,12 @@ setfps 60
 	title" çï " + blackplayer + "   îí " + whiteplayer
 	return
 *group_clear
-	if g_type >= 4 || g_type = -1{
+	if g_group = -1{
 		repeat 4
 			clear_group cnt
 		loop
 	}else{
-		clear_group g_type
+		clear_group g_group
 	}
 	
 	return

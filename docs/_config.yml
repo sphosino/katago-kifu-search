@@ -7,7 +7,7 @@ description: "「KataGo棋譜検索システムー開発記録」のページで
 theme: minima
 
 permalink: "/:year/:month/:day/:title.html"
-
+url: "https://sphosino.github.io"
 collections:
   posts:
     output: true

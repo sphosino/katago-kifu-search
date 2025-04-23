@@ -327,312 +327,144 @@
 #endif
 
 
-; // モジュールのテスト
 #if 0
 #undef mes
-#define global mes(%1 = "") mes@hsp %1:logmes %1
+#define mes(%1 = "") mes@hsp %1: logmes %1
+// set_strモジュールのテスト
+title "set_strモジュールテスト"
 
-title "set_str モジュール テスト"
+// テスト結果表示用の変数
+test_count = 0
+pass_count = 0
 
-; // 初期化のテスト（間接的に set_manager から呼ばれるため、ここでは簡単な確認のみ）
-test_module_id = make_new_set()
-if test_module_id >= 0 {
-    mes "set_str モジュールロード OK (ID: " + test_module_id + ")"
-    del_set test_module_id
-} else {
-    mes "set_str モジュールロード NG"
-}
+goto *@f
+// テスト結果表示用関数
+#deffunc test_result str test_name, int result
+    test_count++
+    if result{
+        pass_count++
+        mes "[PASS] " + test_name
+    } else {
+        mes "[FAIL] " + test_name
+    }
+    return
+*@
 
-; // set_managerモジュールのテスト
+// 基本的なセット操作のテスト
+// -------------------------------
 
-title "set_manager モジュール テスト"
+// 新規セット作成テスト
+s1 = make_new_set(10)
+test_result "セット作成", (s1 >= 0)
 
-; // make_new_set のテスト
-set1_id = make_new_set()
-if stat >= 0 {
-    mes "make_new_set OK (ID: " + stat + ")"
-    set1_id = stat
-} else {
-    mes "make_new_set NG"
-    end
-}
+// 要素追加テスト
+push_data s1, "apple"
+push_data s1, "banana"
+push_data s1, "cherry"
+test_result "要素追加", (get_cardinality(s1) == 3)
 
-; // push_data のテスト
-push_data set1_id, "apple"
-push_data set1_id, "banana"
-push_data set1_id, "cherry"
-mes "push_data OK"
+// 重複要素追加テスト
+push_data s1, "apple"
+test_result "重複要素（追加されないはず）", (get_cardinality(s1) == 3)
 
-; // is_inset のテスト
-if is_inset(set1_id, "banana") {
-    mes "is_inset OK (banana が存在する)"
-} else {
-    mes "is_inset NG (banana が存在しない)"
-}
-if 0 == is_inset(set1_id, "grape") {
-    mes "is_inset OK (grape が存在しない)"
-} else {
-    mes "is_inset NG (grape が存在する)"
-}
+// 存在確認テスト
+test_result "要素存在確認 (存在する)", (is_inset(s1, "banana") == 1)
+test_result "要素存在確認 (存在しない)", (is_inset(s1, "grape") == 0)
 
-; // set_to_array のテスト
-dim array1
-count1 = set_to_array(set1_id, array1)
-mes "set_to_array OK (要素数: " + count1 + ")"
-repeat count1
-    mes "要素: " + array1(cnt)
-loop
+// 要素削除テスト
+del_data s1, "banana"
+test_result "要素削除", (get_cardinality(s1) == 2 && is_inset(s1, "banana") == 0)
 
-; // del_data のテスト
-del_data set1_id, "banana"
-if 0 == is_inset(set1_id, "banana") {
-    mes "del_data OK (banana を削除)"
-} else {
-    mes "del_data NG (banana が削除されていない)"
-}
-dim array2
-count2 = set_to_array(set1_id, array2)
-mes "要素数: " + count2
-repeat count2
-    mes "要素: " + array2(cnt)
-loop
+// 全要素取得テスト
+sdim arr
+n = set_to_array(s1, arr)
+test_result "全要素取得", (n == 2 && (arr(0) == "apple" || arr(1) == "apple") && (arr(0) == "cherry" || arr(1) == "cherry"))
 
-; // make_new_set (初期サイズ指定) のテスト
-set_sized_id = make_new_set(10)
-if stat > 0 {
-    mes "make_new_set (初期サイズ指定) OK (ID: " + stat + ")"
-    del_set stat
-} else {
-    mes "make_new_set (初期サイズ指定) NG"
-}
+// セット演算のテスト
+// -------------------------------
 
-; // set_plus_set のテスト
-set2_id = make_new_set()
-push_data set2_id, "banana"
-push_data set2_id, "grape"
-set_plus_id = set_plus_set(set1_id, set2_id)
-dim array_plus
-count_plus = set_to_array(set_plus_id, array_plus)
-mes "set_plus_set OK (要素数: " + count_plus + ")"
-repeat count_plus
-    mes "要素: " + array_plus(cnt)
-loop
-del_set set_plus_id
-del_set set2_id
+// 2つ目のセット作成
+s2 = make_new_set(10)
+push_data s2, "apple"
+push_data s2, "grape"
+push_data s2, "orange"
 
-; // set_minus_set のテスト
-set3_id = make_new_set()
-push_data set3_id, "apple"
-push_data set3_id, "grape"
-set_minus_id = set_minus_set(set1_id, set3_id)
-dim array_minus
-count_minus = set_to_array(set_minus_id, array_minus)
-mes "set_minus_set OK (要素数: " + count_minus + ")"
-repeat count_minus
-    mes "要素: " + array_minus(cnt)
-loop
-del_set set_minus_id
-del_set set3_id
+// 和集合テスト
+s_union = set_plus_set(s1, s2)
+test_result "和集合サイズ", (get_cardinality(s_union) == 4)
+test_result "和集合要素確認", (is_inset(s_union, "apple") && is_inset(s_union, "cherry") && is_inset(s_union, "grape") && is_inset(s_union, "orange"))
 
-; // set_and_set のテスト
-set4_id = make_new_set()
-push_data set4_id, "apple"
-push_data set4_id, "orange"
-set_and_id = set_and_set(set1_id, set4_id)
-dim array_and
-count_and = set_to_array(set_and_id, array_and)
-mes "set_and_set OK (要素数: " + count_and + ")"
-repeat count_and
-    mes "要素: " + array_and(cnt)
-loop
-del_set set_and_id
-del_set set4_id
+// 差集合テスト
+s_diff = set_minus_set(s1, s2)
+test_result "差集合サイズ", (get_cardinality(s_diff) == 1)
+test_result "差集合要素確認", (is_inset(s_diff, "cherry") && 0=is_inset(s_diff, "apple"))
 
-; // set_sym_diff のテスト
-set5_id = make_new_set()
-push_data set5_id, "cherry"
-push_data set5_id, "grape"
-set_sym_diff_id = set_sym_diff(set1_id, set5_id)
-dim array_sym_diff
-count_sym_diff = set_to_array(set_sym_diff_id, array_sym_diff)
-mes "set_sym_diff OK (要素数: " + count_sym_diff + ")"
-repeat count_sym_diff
-    mes "要素: " + array_sym_diff(cnt)
-loop
-del_set set_sym_diff_id
-del_set set5_id
+// 積集合テスト
+s_inter = set_and_set(s1, s2)
+test_result "積集合サイズ", (get_cardinality(s_inter) == 1)
+test_result "積集合要素確認", (is_inset(s_inter, "apple") && 0=is_inset(s_inter, "cherry"))
 
-; // is_subset のテスト
-set6_id = make_new_set()
-push_data set6_id, "apple"
-is_sub1 = is_subset(set6_id, set1_id)
+// 対称差テスト
+s_symdiff = set_sym_diff(s1, s2)
+test_result "対称差サイズ", (get_cardinality(s_symdiff) == 3)
+test_result "対称差要素確認", (is_inset(s_symdiff, "cherry") && is_inset(s_symdiff, "grape") && is_inset(s_symdiff, "orange") && 0=is_inset(s_symdiff, "apple"))
 
-if is_sub1 {
-    mes "is_subset OK (set6 は set1 の部分集合)"
-} else {
-    mes "is_subset NG (set6 は set1 の部分集合ではない)"
-}
-set7_id = make_new_set()
-push_data set7_id, "apple"
-push_data set7_id, "banana"
-push_data set7_id, "grape"
-is_sub2 = is_subset(set1_id, set7_id)
-if is_sub2 {
-    mes "is_subset NG (set1 は set7 の部分集合)"
-} else {
-    mes "is_subset OK (set1 は set7 の部分集合ではない)"
-}
-del_set set6_id
-del_set set7_id
+// 部分集合テスト
+s3 = make_new_set(5)
+push_data s3, "apple"
+test_result "部分集合判定", (is_subset(s3, s1) == 1)
+test_result "真部分集合判定", (is_proper_subset(s3, s1) == 1)
+push_data s3, "banana" // s1にはbananaがないので部分集合ではなくなる
+test_result "非部分集合判定", (is_subset(s3, s1) == 0)
 
-; // is_proper_subset のテスト
-set8_id = make_new_set()
-push_data set8_id, "apple"
-is_proper1 = is_proper_subset(set8_id, set1_id)
-if is_proper1 {
-    mes "is_proper_subset OK (set8 は set1 の真部分集合)"
-} else {
-    mes "is_proper_subset NG (set8 は set1 の真部分集合ではない)"
-}
-is_proper2 = is_proper_subset(set1_id, set1_id)
-if 0 == is_proper2 {
-    mes "is_proper_subset OK (set1 は set1 の真部分集合ではない)"
-} else {
-    mes "is_proper_subset NG (set1 は set1 の真部分集合である)"
-}
-set9_id = make_new_set()
-push_data set9_id, "apple"
-push_data set9_id, "banana"
-push_data set9_id, "cherry"
-push_data set9_id, "grape"
-is_proper3 = is_proper_subset(set1_id, set9_id)
-if is_proper3 {
-    mes "is_proper_subset OK (set1 は set9 の真部分集合)"
-} else {
-    mes "is_proper_subset NG (set1 は set9 の真部分集合ではない)"
-}
-del_set set8_id
-del_set set9_id
+// ノートパッド関連テスト
+// -------------------------------
 
-; // notepad_minus_notepad のテスト
-notepad1 = "apple\nbanana\ncherry"
-notepad2 = "banana\ngrape"
-result_notepad = notepad_minus_notepad(notepad1, notepad2)
-mes "notepad_minus_notepad OK"
-mes "結果:\n" + result_notepad
+// セットからノートパッドへの変換テスト
+np = set_to_notepad(s1)
+test_result "セット→ノートパッド変換", (instr(np, 0, "apple") >= 0 && instr(np, 0, "cherry") >= 0)
 
-; // array_to_set のテスト
-array_test.0 = "dog"
-array_test.1 = "cat"
-set_from_array_id = array_to_set(array_test)
-dim array_from_set
-tmp = set_to_array(set_from_array_id, array_from_set)
-mes "array_to_set OK (要素数: " + length(array_from_set) + ")"
-repeat length(array_from_set)
-    mes "要素: " + array_from_set(cnt)
-loop
-del_set set_from_array_id
+// ノートパッドからセットへの変換テスト
+s4 = notepad_to_set("line1\nline2\nline3")
+test_result "ノートパッド→セット変換", (get_cardinality(s4) == 3 && is_inset(s4, "line2"))
 
-; // notepad_to_set のテスト
-notepad_test = "red\ngreen\nblue"
-set_from_notepad_id = notepad_to_set(notepad_test)
-dim array_from_notepad
-tmp = set_to_array(set_from_notepad_id, array_from_notepad)
-mes "notepad_to_set OK (要素数: " + length(array_from_notepad) + ")"
-repeat length(array_from_notepad)
-    mes "要素: " + array_from_notepad(cnt)
-loop
-del_set set_from_notepad_id
+// ノートパッド差分テスト
+tmpnotepad = "line1\nline2\nline3"
+np_result = notepad_minus_notepad(tmpnotepad, "line2")
+test_result "ノートパッド差分", (instr(np_result, 0, "line1") >= 0 && instr(np_result, 0, "line2") < 0 && instr(np_result, 0, "line3") >= 0)
 
-; // set_to_notepad のテスト
-notepad_from_set = set_to_notepad(set1_id)
-mes "set_to_notepad OK"
-mes "結果:\n" + notepad_from_set
+// 配列関連テスト
+// -------------------------------
 
-; // array_to_notepad のテスト
-array_to_note_test.0 = "one"
-array_to_note_test.1 = "two"
-notepad_from_array = array_to_notepad(array_to_note_test)
-mes "array_to_notepad OK"
-mes "結果:\n" + notepad_from_array
+// 配列からセットへの変換テスト
+dim test_array, 3
+test_array(0) = "item1"
+test_array(1) = "item2"
+test_array(2) = "item3"
+s5 = array_to_set(test_array)
+test_result "配列→セット変換", (get_cardinality(s5) == 3 && is_inset(s5, "item2"))
 
-; // notepad_to_array のテスト
-notepad_to_array_test = "alpha\nbeta\ngamma"
-dim array_from_note_test
-count_from_note = notepad_to_array(notepad_to_array_test, array_from_note_test)
-mes "notepad_to_array OK (要素数: " + count_from_note + ")"
-repeat count_from_note
-    mes "要素: " + array_from_note_test(cnt)
-loop
+// 配列・ノートパッド間の変換テスト
+test_notepad = array_to_notepad(test_array)
+test_result "配列→ノートパッド変換", (instr(test_notepad, 0, "item1") >= 0 && instr(test_notepad, 0, "item3") >= 0)
 
-; // get_cardinality のテスト
-cardinality = get_cardinality(set1_id)
-mes "get_cardinality OK (要素数: " + cardinality + ")"
+sdim result_array
+n = notepad_to_array(test_notepad, result_array)
+test_result "ノートパッド→配列変換", (n == 3 && result_array(1) == "item2")
 
-; // 最後にセットを削除
-del_set set1_id
+// リソース解放
+del_set s1
+del_set s2
+del_set s3
+del_set s4
+del_set s5
+del_set s_union
+del_set s_diff
+del_set s_inter
+del_set s_symdiff
 
-mes "全てのテスト完了"
-
-/*//以下結果ログです
-
-set_str モジュールロード OK (ID: 0)
-make_new_set OK (ID: 0)
-push_data OK
-is_inset OK (banana が存在する)
-is_inset OK (grape が存在しない)
-set_to_array OK (要素数: 3)
-要素: apple
-要素: banana
-要素: cherry
-del_data OK (banana を削除)
-要素数: 2
-要素: apple
-要素: cherry
-make_new_set (初期サイズ指定) OK (ID: 1)
-set_plus_set OK (要素数: 4)
-要素: apple
-要素: cherry
-要素: banana
-要素: grape
-set_minus_set OK (要素数: 1)
-要素: cherry
-set_and_set OK (要素数: 1)
-要素: apple
-set_sym_diff OK (要素数: 2)
-要素: apple
-要素: grape
-is_subset OK (set6 は set1 の部分集合)
-is_subset OK (set1 は set7 の部分集合ではない)
-is_proper_subset OK (set8 は set1 の真部分集合)
-is_proper_subset OK (set1 は set1 の真部分集合ではない)
-is_proper_subset OK (set1 は set9 の真部分集合)
-notepad_minus_notepad OK
-結果:
-apple
-cherry
-array_to_set OK (要素数: 2)
-要素: dog
-要素: cat
-notepad_to_set OK (要素数: 3)
-要素: red
-要素: green
-要素: blue
-set_to_notepad OK
-結果:
-apple
-cherry
-array_to_notepad OK
-結果:
-one
-two
-notepad_to_array OK (要素数: 3)
-要素: alpha
-要素: beta
-要素: gamma
-get_cardinality OK (要素数: 2)
-全てのテスト完了
-
-;*/
+// テスト結果表示
+mes ""
+mes "テスト完了: " + pass_count + "/" + test_count + " 成功"
 
 #endif
