@@ -7,7 +7,7 @@ description: "「KataGo棋譜検索システムー開発記録」のページで
 theme: minima
 
 permalink: "/:year/:month/:day/:title.html"
-url: "https://sphosino.github.io"
+url: "https://sphosino.github.io/katago-kifu-search"  # GitHub PagesのURLを指定
 collections:
   posts:
     output: true

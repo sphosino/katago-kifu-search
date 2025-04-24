@@ -291,7 +291,7 @@ newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
-newmod g_chkbox, grid_checkbox, ui_mode           , "局面編集" , chkbox_tyakusyu
+newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
@@ -485,9 +485,12 @@ setfps 60
 			if inlistbox == 0{
 				dragging_flag = 1
 				if in_board{
-					if (ui_mode == MODE_KIFU_VIEW & g_group = -1) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1){
+					get_board_data board  , tmp
+					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
+					}else{
+						rect = -1
 					}
 				}else{
 					rect = -1
@@ -542,15 +545,17 @@ setfps 60
 				swend
 
 				if g_group >= 0{
-					
-					if ui_mode == MODE_KIFU_VIEW{
-						get_board_data board  , tmp
-						OK = tmp(point,point.1)
-					}else{
-						OK = user_board(point,point.1)
-					}
-					if OK{
-						add_group_stone point, point.1, g_group
+
+					if rect == -1{
+						if ui_mode == MODE_KIFU_VIEW{
+							get_board_data board  , tmp
+							OK = tmp(point,point.1)
+						}else{
+							OK = user_board(point,point.1)
+						}
+						if OK{
+							add_group_stone point, point.1, g_group
+						}
 					}
 				}
 			}
