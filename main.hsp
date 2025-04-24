@@ -228,7 +228,7 @@ root = make_area_child(1,1)
 					go_end = make_area_child()
 					button_clearboard = make_area_child()
 					
-		goban_tool_area = make_area_child(1,3,body_area)
+		goban_tool_area = make_area_child(1,4,body_area)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
@@ -239,6 +239,9 @@ root = make_area_child(1,1)
 				chkbox_colorflip = make_area_child()
 				chkbox_use_bitboard = make_area_child()
 				chkbox_inverse = make_area_child()
+			goban_filter_area = make_area_child(2,2,goban_tool_area)
+				
+				
 			goban_edit_area = make_area_child(2,1, goban_tool_area)
 				goban_edit_stone = make_area_child(1,2,goban_edit_area)
 					chkbox_tyakusyu = make_area_child(,,goban_edit_stone)
@@ -261,6 +264,9 @@ set_grid_area_back_color goban_edit_stone,$333333
 set_grid_area_back_color goban_edit_group,$333333
 set_grid_area_back_color goban_footer,$333333
 set_grid_area_back_color treebox_area ,$333333
+
+set_grid_area_back_color goban_filter_area , $333333
+
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
