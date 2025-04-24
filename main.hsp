@@ -689,6 +689,8 @@ setfps 60
 	
 	新しい手数 = 手数
 	line_graph_manager l_graph, 新しい手数
+	move_next_int 新しい手数 - 手数
+	/*
 	if 手数 > 新しい手数{
 		repeat 手数 - 新しい手数
 			gosub *move_back
@@ -698,6 +700,7 @@ setfps 60
 			gosub *move_next
 		loop
 	}
+	*/
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
@@ -797,20 +800,11 @@ setfps 60
 			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat, 手数)
 
 			
-			nownode = get_current_node(t)
-			repeat abs(kifu_start_num_result)
-				if kifu_start_num_result > 0{
-					gosub*move_next
-				}else{
-					gosub*move_back
-				}
-			loop
+			move_next_int kifu_start_num_result
 
 		}else{
 			nownode = get_root_tree_node(t)
-			repeat kifu_start_num
-				gosub*move_next
-			loop
+			move_next_int kifu_start_num
 		}
 
 		gosub*syncboard
@@ -828,31 +822,27 @@ setfps 60
 	a = get_selected_items(kifulist(current_kifulist), sel)
 	a = select_kifulist_item(sel - 1, current_kifulist)
 	return
-*go10
-	repeat 10
-		gosub*move_next
-	loop
+*move_next
+	move_next_int 1
 	return
 	
-*back10
-	repeat 10
-		gosub *move_back
-	loop
+*move_back
+	move_next_int -1
 	return
+*go10
+	move_next_int 10
+	return
+
+*back10
+	move_next_int -10
+	return
+	
 *to_sgftop
-	set_current_node t
-	gosub*syncboard
+	move_next_int -1000
 	return
 	
 *to_sgfend
-
-	if topnode < 0: return
-	repeat 1000
-		gosub *move_next
-		if stat == 0: break
-		if cnt == 999: logmes "おそらくエラー"
-	loop
-	gosub*syncboard
+	move_next_int 1000
 	return
 	
 *clearboard
@@ -1022,27 +1012,45 @@ setfps 60
 	
 	return
 
-*move_next
-	if nownode < 0: return
 
-	set_current_node t, get_tree_root_child(nownode)
-	moved = stat
-	if stat: 手数++: treeview移動 1
-	pretime = keyfpstime
-	gosub*syncboard
-	return moved
-	
-*move_back
-	if nownode < 0: return
-	if get_tree_parent(nownode) != -1{
-		set_current_node t, get_tree_parent(nownode)
-		手数--
-		pretime = keyfpstime
-		treeview移動 -1
+
+#deffunc move_next_int int p1
+	if nownode < 0: return 0
+	moved = 0
+	if p1 > 0{
+		repeat p1
+			nownode = get_current_node(t)
+			if get_tree_root_child(nownode) != -1{
+				set_current_node t, get_tree_root_child(nownode)
+				moved += stat
+				if stat{
+					手数++
+					treeview移動 1
+				}
+			}
+		loop
+	}else{
+		repeat abs(p1)
+			nownode = get_current_node(t)
+			if get_tree_parent(nownode) != -1{
+				set_current_node t, get_tree_parent(nownode)
+				moved += stat
+				if stat{
+					手数--
+					treeview移動 -1
+				}
+			}
+		loop
 	}
+
+	
 	pretime = keyfpstime
-	gosub*syncboard
-	return
+
+	if moved{
+		gosub*syncboard
+	}
+
+	return moved
 	
 *syncboard
 	nownode = get_current_node(t)
