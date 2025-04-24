@@ -8,7 +8,7 @@
 	group_str = "A","B","C","D" //４つまで指定できるようにする
 	dim stone_map, BOARD_X_MAX, BOARD_Y_MAX, 4
 	dim stone_map_count, BOARD_X_MAX, BOARD_Y_MAX
-	sdim groups, 500, 4 //グループごとの位置を保存(xxyy, xxyy... )形式
+	sdim groups, 361, 4 //グループごとの位置を保存(xxyy, xxyy... )形式
 	return
 #deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var board　 //碁盤が表示されている位置ｘ、ｙ、碁盤のマスの大きさx,y , 石の色（これによってグループ表示の文字色を変える）
 	for i,,BOARD_X_MAX
@@ -16,13 +16,22 @@
 			repeat 4
 				if stone_map(i,j, cnt){
 					switch get_goban_position_color(board,i,j)
+					case 0 ; 空点
+						color 0,0,0
+					swbreak
 					case 1 ; 黒石
 						color 255,255,255
 					swbreak
 					case 2 ; 白石
 						color 0,0,0
 					swbreak
-					case 0 ; 空点
+					case 3 ; 灰色
+						color 0,0,0
+					swbreak
+					case 4 ; ?つき黒
+						color 255,255,255
+					swbreak
+					case 5 ; ?つき白
 						color 0,0,0
 					swbreak
 					swend

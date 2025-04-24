@@ -69,8 +69,7 @@ dim matchlist                ; 検索結果用リストボックスIDを格納
 //計測時の文字列
 sdim titles
 
-//検索時のメモ化用モジュール初期化
-init_mem max_depth
+
 
 //FPS設定
 setfps 60
@@ -180,6 +179,9 @@ width sx, sy, wx, wy
 save_window_size = ginfo(12), ginfo(13)
 if 最大化: sendmsg hwnd, $112, $F030
 if 最小化: sendmsg hwnd, $112, $F020
+
+//検索時のメモ化用モジュール初期化
+init_mem max_depth
 
 //エリア作成
 root = make_area_child(1,1)
@@ -454,8 +456,9 @@ pretime = keyfpstime
 			if inlistbox == 0{
 				dragging_flag = 1
 				if in_board{
-					get_board_data board  , tmp
-					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && tmp(point, point.1) == 0){
+					get_board_data board , tmp
+					get_board_data board.1, m
+					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}else{
@@ -630,8 +633,8 @@ pretime = keyfpstime
 	draw_all_rect root, debugmode
 	
 	//グループ表示
-	get_goban_mas_size board,goban_mas_size
-	get_goban_position board,goban_position
+	get_goban_mas_size board.ui_mode, goban_mas_size
+	get_goban_position board.ui_mode, goban_position
 	group_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
 	
 	//検索範囲表示
