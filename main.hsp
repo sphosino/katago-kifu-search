@@ -62,8 +62,9 @@ dim rect, 4
 dim rect_stack, 4
 
 //検索結果受け取り用
-sdim search_result,, 2, 10000
-sdim search_result_sgflist
+sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
+sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
+dim matchlist                ; 検索結果用リストボックスIDを格納
 
 //計測時の文字列
 sdim titles
@@ -542,6 +543,7 @@ pretime = keyfpstime
 				dragging_flag = 0
 			}
 		}
+
 	
 		//マウスホイール
 		mw = mousew
@@ -600,7 +602,13 @@ pretime = keyfpstime
 			}
 		}
 	}
-
+	
+	//CTRLダブルクリックでデバッグモード切替
+	if getdbl_ms(17, 250){
+		debugmode ^ 1
+		logmes "switchdebugmode ->" +debugmode
+	}
+	
 	計測 "描画"
 
 	//背景ベースカラー描画
@@ -625,10 +633,31 @@ pretime = keyfpstime
 	get_goban_mas_size board,goban_mas_size
 	get_goban_position board,goban_position
 	group_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
+	
 	//検索範囲表示
 	draw_set_list_on_board board, v
 	
 	//各アイテム表示
+	all_items_draw
+
+	新しい手数 = 手数
+	line_graph_manager l_graph, 新しい手数
+	move_next_int 新しい手数 - 手数
+
+	if dragging_flag && rect >= 0{
+		碁盤に矩形データを表示 board, rect
+	}
+
+	treebox_draw t, length(f)
+
+	計測描画
+
+	redraw
+	redraw 2
+	
+	goto*main
+	
+#deffunc all_items_draw
 	foreach kifulist
 		my_listbox_draw kifulist.cnt
 	loop
@@ -651,23 +680,7 @@ pretime = keyfpstime
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
 	loop
-	
-	新しい手数 = 手数
-	line_graph_manager l_graph, 新しい手数
-	move_next_int 新しい手数 - 手数
-
-	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
-
-	if getdbl_ms(17,250): debugmode ^ 1
-
-	treebox_draw t, length(f)
-
-	計測描画
-
-	redraw
-	redraw 2
-	
-	goto*main
+	return
 
 #deffunc 計測 str time_str
 	#ifdef 計測する
@@ -767,12 +780,10 @@ pretime = keyfpstime
 	}
 	return 0
 *next_kifu
-	logmes "NEXT"
 	a = get_selected_items(kifulist(current_kifulist), sel)
 	a = select_kifulist_item(sel + 1, current_kifulist,1)
 	return
 *back_kifu
-	logmes "BACK"
 	a = get_selected_items(kifulist(current_kifulist), sel)
 	a = select_kifulist_item(sel - 1, current_kifulist)
 	return
@@ -959,7 +970,7 @@ pretime = keyfpstime
 	
 *loadfile
 	chdir kifu_dirname
-		棋譜取得 kifu_dirname, 100 // katagoホームページから最新棋譜をダウンロード
+		棋譜取得 kifu_dirname, 100 // katagoホームページから最新棋譜を追加ダウンロード
 	chdir dirname
 
 	gosub*load_kifu_folder
