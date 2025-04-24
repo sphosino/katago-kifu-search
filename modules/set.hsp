@@ -5,7 +5,7 @@
 #const FNV_PRIME 73091
 #const SEED 72889
 
-#const DEFAULT_SET_SIZE 32
+#const DEFAULT_SET_SIZE 128
     
 #defcfunc local get_hash str s1
 
