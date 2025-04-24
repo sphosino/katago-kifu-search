@@ -163,7 +163,7 @@
 				color
 				circle posx, posy , posx + masx, posy + masy
 				color 210,210,210
-				pos posx, posy: mes "?"
+				pos posx, posy: font"",masy/2: mes "?"
 				gosub*draw_last_move_mark
 				if åÈêŒî‘çÜï\é¶{
 					color
@@ -174,7 +174,7 @@
 				color 210,210,210
 				circle posx, posy , posx + masx, posy + masy
 				color 0,0,0
-				pos posx, posy: mes "?"
+				pos posx, posy: font"",masy/2: mes "?"
 				gosub*draw_last_move_mark
 				if åÈêŒî‘çÜï\é¶{
 					color

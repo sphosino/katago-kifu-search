@@ -486,7 +486,7 @@ setfps 60
 				dragging_flag = 1
 				if in_board{
 					get_board_data board  , tmp
-					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1){
+					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && tmp(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}else{
