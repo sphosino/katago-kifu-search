@@ -1022,11 +1022,10 @@ setfps 60
 			nownode = get_current_node(t)
 			if get_tree_root_child(nownode) != -1{
 				set_current_node t, get_tree_root_child(nownode)
-				moved += stat
 				if stat{
 					è”++
-					treeviewˆÚ“® 1
 				}
+				moved += stat
 			}
 		loop
 	}else{
@@ -1034,16 +1033,14 @@ setfps 60
 			nownode = get_current_node(t)
 			if get_tree_parent(nownode) != -1{
 				set_current_node t, get_tree_parent(nownode)
-				moved += stat
 				if stat{
 					è”--
-					treeviewˆÚ“® -1
 				}
+				moved += stat
 			}
 		loop
 	}
 
-	
 	pretime = keyfpstime
 
 	if moved{
@@ -1091,13 +1088,4 @@ setfps 60
 	add_item kifulist, filelist
 	kifu_update = 1
 	kifulist_notepad = filelist
-	return
-	
-#deffunc treeviewˆÚ“® int p1
-	get_treeview_node_size ns 
-	if (get_tree_direction() & 1){
-		move_treeview_position , ns.1 * (((get_tree_direction() & 2) != 0) * 2 - 1) * p1
-	}else{ 
-		_move_treeview_position   ns  * (((get_tree_direction() & 2) != 0) * 2 - 1) * p1
-	}
 	return
