@@ -690,17 +690,6 @@ setfps 60
 	新しい手数 = 手数
 	line_graph_manager l_graph, 新しい手数
 	move_next_int 新しい手数 - 手数
-	/*
-	if 手数 > 新しい手数{
-		repeat 手数 - 新しい手数
-			gosub *move_back
-		loop
-	}else: if 手数 < 新しい手数{
-		repeat 新しい手数 - 手数
-			gosub *move_next
-		loop
-	}
-	*/
 
 	if dragging_flag && rect >= 0:碁盤に矩形データを表示 board, rect
 
@@ -1045,6 +1034,9 @@ setfps 60
 
 	if moved{
 		gosub*syncboard
+		if MODE_KIFU_VIEW{
+			
+		}
 	}
 
 	return moved
