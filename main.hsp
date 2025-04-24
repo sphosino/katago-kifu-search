@@ -18,7 +18,6 @@
 #include "modules/grid_system/g_label.hsp"
 #include "modules/grid_system/g_treebox.hsp"
 #include "modules/grid_system/g_line_graph.hsp"
-#include "modules/group.hsp"
 #include "go_game_manager.hsp"
 #include "hspext.as"
 #include "user32.as"
@@ -28,18 +27,72 @@
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 
-screen , ginfo(20), ginfo(21)
-GetWindowLong hwnd, -16
-SetWindowLong hwnd, -16, stat | $10000 | $40000
-
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 	#define 計測する
 #else
 	dirname = dir_exe
 #endif
-kifu_dirname = dirname + "/棋譜"
 
+kifu_dirname = dirname + "/棋譜"
+v = "" //検索対象座標セット　xxyy,xxyy... 形式
+search_result_sgflist = ""
+jidou = 0
+着手番号表示 = 0
+ui_mode = MODE_KIFU_VIEW
+set_treeview 37, 37
+set_treeview_position 10,20
+set_tree_direction 6
+
+kifu_update = 1
+
+topnode = -1
+
+//-- ゲーム状態の管理用変数 ---
+c_list = "0.50" ; 形勢（評価値）データ（KataGoコメントから）
+dim pre_xy, 2   ; 前の座標を保持（マンハッタン距離用)
+dim user_board, 19, 19 ;　プレイヤーが操作する仮盤面
+
+pre_window_size = -9999,-9999
+pre_ui_mode = -1
+
+//矩形範囲指定用
+rn = 0
+dim rect, 4
+dim rect_stack, 4
+
+//検索結果受け取り用
+sdim search_result,, 2, 10000
+sdim search_result_sgflist
+
+//計測時の文字列
+sdim titles
+
+//検索時のメモ化用モジュール初期化
+init_mem max_depth
+
+//FPS設定
+setfps 60
+
+//ウィンドウ作成
+screen , ginfo(20), ginfo(21)
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
+onexit *save_info //終了時に*save_infoにジャンプ
+
+//使用キーの宣言
+delkey_all
+addkey 1 //左クリック
+addkey 2 //右クリック
+addkey 17 //ctrl
+addkey 'C'
+addkey 'V'
+addkey 'A'
+
+//乱数を初期化
+randomize
+
+//起動時にsaveフォルダを空にする
 chdir dirname + "/save"
 dirlist filelist, "*.sgf"
 notesel filelist
@@ -49,6 +102,7 @@ notesel filelist
 	loop
 noteunsel
 
+//前回起動時の情報があれば復元
 chdir dirname
 exist window_file_name
 
@@ -120,71 +174,11 @@ if strsize == -1{
 	return
 #global
 
+//ウィンドウ情報設定
 width sx, sy, wx, wy
 save_window_size = ginfo(12), ginfo(13)
 if 最大化: sendmsg hwnd, $112, $F030
 if 最小化: sendmsg hwnd, $112, $F020
-	
-onexit *save_info
-if 0{
-	*save_info
-	chdir dirname
-	sdim s,1024
-	notesel s
-	noteadd str(ginfo(10)) //ウィンドウサイズ
-	noteadd str(ginfo(11))
-	noteadd str(ginfo(4)) //ウィンドウ位置
-	noteadd str(ginfo(5))
-	noteadd str(save_window_size  )　//描画領域サイズ
-	noteadd str(save_window_size(1))
-	noteadd str(max_depth)
-	noteadd str(enableColorFlip)
-	noteadd str(view_hosi@goban)
-	noteadd str(last_move_mark)
-	noteadd str(kifu_start_num)
-	noteadd str(auto_interval)
-	noteadd str(alpha_interval)
-	noteadd str(m_interval)
-	IsIconic hwnd: 最小化 = stat
-	IsZoomed hwnd: 最大化 = stat
-	noteadd str(最小化)
-	noteadd str(最大化)
-	notesave window_file_name
-	save_load_manager_save
-	end
-}
-randomize
-
-header_size = 40
-pos , header_size
-
-
-//使用キーの宣言
-delkey_all
-addkey 1 //左クリック
-addkey 2 //右クリック
-addkey 17 //ctrl
-addkey 'C'
-addkey 'V'
-addkey 'A'
-
-
-v = "" //検索対象座標セット　xxyy,xxyy... 形式
-search_result_sgflist = ""
-jidou = 0
-着手番号表示 = 0
-ui_mode = MODE_KIFU_VIEW
-set_treeview 37, 37
-set_treeview_position 10,20
-set_tree_direction 6
-
-kifu_update = 1
-
-topnode = -1
-
-#ifdef init_mem
-	init_mem max_depth
-#endif
 
 //エリア作成
 root = make_area_child(1,1)
@@ -249,16 +243,14 @@ root = make_area_child(1,1)
 				goban_edit_group = make_area_child(1,2,goban_edit_area)
 					button_group_clear = make_area_child(,,goban_edit_group)
 					radiobox_grouping = make_area_child()
-					
 
-exist "area.var"
-
+//グリッド情報をロード（エリアを作成してからでないと復元できない）
+exist "area.var" 
 if strsize >= 0{
 	save_load_manager_load
 }
 
-chdir kifu_dirname
-sdim titles
+
 //各エリアの設定
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
@@ -270,7 +262,6 @@ set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
-
 
 //実体作成
 newmod g_buttons, grid_button, "最新棋譜取得", *loadfile, button_download_file
@@ -302,7 +293,7 @@ newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
 newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
 
-newmod g_stepper, grid_stepper, kifu_start_num,kifustart: set_stepper_limit g_stepper(stat), 0
+newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
 
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
@@ -315,59 +306,36 @@ add_item_radiobox g_radiobox, "〇"
 add_item_radiobox g_radiobox, "●〇"
 add_item_radiobox g_radiobox, "×"
 
-
-
 newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
 add_item_radiobox g_radiobox.tmp, "A"
 add_item_radiobox g_radiobox.tmp, "B"
 add_item_radiobox g_radiobox.tmp, "C"
 add_item_radiobox g_radiobox.tmp, "D"
 
-
-
 newmod kifulist, grid_listbox, sidebar_kifulist
 newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
-
-newmod board, goban, 19,19,26,26, goban_body_area
-newmod board, goban, 19,19,26,26, goban_body_area
-
-
-newmod t, treebox,treebox_area
-newmod l_graph, line_graph, line_graph_area
-set_margin_line_graph l_graph, 15, 10, 15, 10
-
-//矩形範囲指定用
-rn = 0
-dim rect, 4
-dim rect_stack, 4
-
-//検索結果受け取り用
-sdim search_result,, 2, 10000
-sdim search_result_sgflist
-
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 29
 	set_listbox_scollbar_width kifulist.cnt, 15
 loop
 
+newmod board, goban, 19,19,26,26, goban_body_area
+newmod board, goban, 19,19,26,26, goban_body_area
+
+newmod t, treebox,treebox_area
+
+newmod l_graph, line_graph, line_graph_area
+set_margin_line_graph l_graph, 15, 10, 15, 10
+
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
 loop
 
-
 gosub*load_kifu_folder
-	
 gosub*loadsgf
 
-c_list = "0.50"
-dim pre_xy, 2
-dim user_board, 19,19
+//最初の時刻
 pretime = keyfpstime
-
-pre_window_size = -9999,-9999
-pre_ui_mode = -1
-
-setfps 60
 *main
 	;logmes ""+getrealfpsf()
 	計測 "manage_keyfps"
@@ -500,9 +468,6 @@ setfps 60
 					sync_treebox_board t, board 
 					手数 = treeview_onmouse_id_deep()
 				}
-
-	
-
 			}
 		}
 	
@@ -1034,9 +999,6 @@ setfps 60
 
 	if moved{
 		gosub*syncboard
-		if MODE_KIFU_VIEW{
-			
-		}
 	}
 
 	return moved
@@ -1081,3 +1043,29 @@ setfps 60
 	kifu_update = 1
 	kifulist_notepad = filelist
 	return
+
+*save_info　//終了処理
+	chdir dirname
+	sdim s,1024
+	notesel s
+	noteadd str(ginfo(10)) //ウィンドウサイズ
+	noteadd str(ginfo(11))
+	noteadd str(ginfo(4)) //ウィンドウ位置
+	noteadd str(ginfo(5))
+	noteadd str(save_window_size  )　//描画領域サイズ
+	noteadd str(save_window_size(1))
+	noteadd str(max_depth)
+	noteadd str(enableColorFlip)
+	noteadd str(view_hosi@goban)
+	noteadd str(last_move_mark)
+	noteadd str(kifu_start_num)
+	noteadd str(auto_interval)
+	noteadd str(alpha_interval)
+	noteadd str(m_interval)
+	IsIconic hwnd: 最小化 = stat
+	IsZoomed hwnd: 最大化 = stat
+	noteadd str(最小化)
+	noteadd str(最大化)
+	notesave window_file_name
+	save_load_manager_save //グリッド情報保存
+	end
