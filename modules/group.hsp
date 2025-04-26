@@ -37,7 +37,7 @@
 					swend
 
 					if stone_map_count(i,j) >= 2{
-						centering_x = MAS_Y / (6 + (cnt \ 2) * 2)
+						centering_x = MAS_Y / (6 * (cnt \ 2 + 1))
 						font "",MAS_Y / 2
 						pos posx + i * MAS_X + (cnt \ 2) * (MAS_X / 2) + centering_x, posy + j * MAS_Y + (cnt / 2) * (MAS_Y / 2)
 					}else{
