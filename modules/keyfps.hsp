@@ -375,7 +375,7 @@ p2で間隔を指定します。この時間以内に２回目が押されると、１を返します。
 	#define global       setfps(%1)                      fps@keyFPS = limitf(%1, 3.92157, 360); 目標FPSを設定する
 	#define global ctype getfps                          fps@keyFPS ; 目標FPS
 	#define global ctype getrealfpsf                     current_fps@keyFPS ; 実現FPS
-	#define global ctype getrealfps                      int(current_fps@keyFPS + 0.5)) ; 実現FPS(整数)
+	#define global ctype getrealfps                      int(current_fps@keyFPS + 0.5) ; 実現FPS(整数)
 	
 	#define global       setFPStime(%1 = FPStime@keyFPS) FPStime@keyFPS = limitf(%1, 0.1): dim prefps@keyFPS ; FPS精度を設定
 	#define global ctype getFPStime                      FPStime@keyFPS ; FPS精度

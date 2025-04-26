@@ -704,7 +704,7 @@ pretime = keyfpstime
 	#ifdef Œv‘ª‚·‚é
 		Œv‘ª "" ; ÅŒã‚Ì‹æŠÔ‚Ì‹L˜^
 	
-		s = ""
+		s = "fps = " + getrealfps() + " -> "
 		repeat time_num - 1
 			s += titles(cnt) + " -> " + strf("%03d", times(cnt)) + "ms :: "
 		loop

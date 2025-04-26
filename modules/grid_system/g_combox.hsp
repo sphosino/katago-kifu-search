@@ -1,0 +1,84 @@
+#define global MODULE_DEBUG
+#include "area_grid_system.hsp"
+#include "rboxf.hsp"
+#addition "../keyfps.hsp"
+#module grid_combox s, v, item_ysize, item_num, area, dropdown
+
+#include "rectmock.hsp"
+#modinit var a, str s1, int area_number, local thismod_ID
+
+    dup v, a //　選択アイテムを示す変数
+
+	area = area_number　//エリア番号
+	s = s1 //表示文字列
+
+	item_ysize = 30
+
+    mref thismod_ID, 2
+    return thismod_ID
+
+#modcfunc get_value_g_combox
+	return v
+
+#modfunc combox_manager
+
+	thisrect thismod, oya, area
+
+	if _getkey(1) == 1: dropdown ^ 1　//ドロップダウンメニューのトグル
+
+	notesel s
+
+
+
+	color 128,128,128
+	boxf oya,oya.1,oya.2,oya.3
+
+	color 0,0,0
+	boxf oya.2 - 5, oya.1, oya.2, oya.3
+			pos oya, oya.1
+		noteget t,0
+		mes t
+	if dropdown == 0{
+		
+	}else{
+		
+		repeat notemax
+			noteget t, cnt
+			pos oya, oya.3 + cnt * item_ysize
+			rect = oya,oya.3 + cnt * item_ysize, oya.2,oya.3 + cnt * item_ysize + item_ysize
+			if in_rect(rect){
+				color 200,200,200
+				aboxf rect
+		
+			}
+
+			color 0,0,0
+			mes t
+		loop
+		
+	}
+	noteunsel
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+#global
+
+
+#ifdef MODULE_DEBUG //テストコード
+
+mock_flag@global = 1
+
+set_rect_mock 99, 100, 100, 160, 130 // モック矩形
+newmod a, grid_combox, a, "A\nB\nC\nD", 99
+
+*main
+	manage_keyfps
+
+	color 250,250,250 :boxf:color 
+	combox_manager a
+	redraw : redraw 2
+	goto*main
+
+#endif
