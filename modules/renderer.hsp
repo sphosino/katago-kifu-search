@@ -1,4 +1,5 @@
-#include "grid_system/rboxf.hsp"
+#addition "grid_system/rboxf.hsp"
+#addition "grid_system/color_manager.hsp"
 #module
 #const DRAW_OBJECTS_MAX 3000
 
@@ -9,39 +10,99 @@
 #enum global TYPE_RECT = 0
 #enum global TYPE_CIRCLE
 #enum global TYPE_STR
+#enum global TYPE_SPRITE
 
 #deffunc init_draw_objects
+	// オブジェクト基本情報
 	dim draw_object_type, DRAW_OBJECTS_MAX
 	sdim draw_object_params, DRAW_OBJECTS_MAX
 	dim draw_object_life, DRAW_OBJECTS_MAX
 	dim draw_object_priority, DRAW_OBJECTS_MAX
+
+	// オブジェクト位置・速度情報
+	ddim draw_object_posx, DRAW_OBJECTS_MAX
+	ddim draw_object_posy, DRAW_OBJECTS_MAX
+	ddim draw_object_sizex, DRAW_OBJECTS_MAX
+	ddim draw_object_sizey, DRAW_OBJECTS_MAX
+	ddim draw_object_vx, DRAW_OBJECTS_MAX
+	ddim draw_object_vy, DRAW_OBJECTS_MAX
+	ddim draw_object_scale, DRAW_OBJECTS_MAX
+	ddim draw_object_angle, DRAW_OBJECTS_MAX
+	ddim draw_object_v_angle, DRAW_OBJECTS_MAX
+	ddim draw_object_vs, DRAW_OBJECTS_MAX
+	ddim draw_object_alpha, DRAW_OBJECTS_MAX
+	ddim draw_object_va, DRAW_OBJECTS_MAX
+
+	// 使用中IDリスト
 	dim use_id_list, DRAW_OBJECTS_MAX
-	use_id_list_num = 0	
+	use_id_list_num = 0
+
+	// 空きIDリスト
 	dim open_id_list
 	open_id_list(0) = 0
 	open_id_list_num = 1
 
+	// 総オブジェクト数
 	objects_max = 1
 
 	return
 
-#deffunc make_draw_object int _type, str parameters, int life
-	if open_id_list_num{
+#deffunc make_draw_object int _type, int life, double x, double y, double w, double h, double vx, double vy, str parameters
+	// lifeが0なら登録しない（エラー扱い）
+	if life == 0 : return -1
+
+	// 空きIDがあれば再利用、なければ新規発行
+	if open_id_list_num {
 		open_id_list_num--
 		new_id = open_id_list(open_id_list_num)
-	}else{
+	} else {
 		new_id = objects_max
 		objects_max++
 	}
+
+	// リストに登録
 	use_id_list(use_id_list_num) = new_id
 	use_id_list_num++
-	
-	draw_object_type(new_id) = _type
-	draw_object_params(new_id) = parameters
-	
-	draw_object_life(new_id) = life
+
 	draw_object_priority(new_id) = PRIORITY_NORMAL
-	
+
+	// オブジェクト初期情報セット
+	draw_object_type(new_id) = _type
+	draw_object_life(new_id) = life
+	draw_object_posx(new_id) = x
+	draw_object_posy(new_id) = y
+	draw_object_sizex(new_id) = w
+	draw_object_sizey(new_id) = h
+	draw_object_vx(new_id) = vx
+	draw_object_vy(new_id) = vy
+	draw_object_scale(new_id) = 1.0
+	draw_object_vs(new_id) = 0.0
+	draw_object_angle(new_id) = 0.0
+	draw_object_v_angle(new_id) = 0.0
+	draw_object_alpha(new_id) = 256.
+	draw_object_va(new_id) = 0.0
+	draw_object_params(new_id) = parameters
+
+
+if _type == TYPE_STR {
+    split draw_object_params(new_id), ",", tmp
+    npos = ginfo_cx,ginfo_cy
+    pos -500, 0
+    font tmp.0, int(tmp.1)
+    mes tmp.2
+    draw_object_sizex(new_id) = double(ginfo_mesx)
+    draw_object_sizey(new_id) = double(ginfo_mesy)
+    pos npos, npos.1
+}
+
+	if _type == TYPE_SPRITE{
+		split draw_object_params(new_id), ",", tmp
+		draw_object_vs(new_id) = double(tmp.5)
+		draw_object_va(new_id) = double(tmp.6)
+		draw_object_v_angle(new_id) = double(tmp.7)
+		
+	}
+
 	return new_id
 
 #deffunc set_priority_draw_object int id, int p
@@ -53,25 +114,68 @@
 	sort_list_by_priority_list use_id_list, use_id_list_num, draw_object_priority
 
 	new_list_num = 0
+	
 	repeat use_id_list_num
 		obj_id = use_id_list(cnt)
 		//描画処理
 		switch draw_object_type(obj_id)
 		case TYPE_RECT
-			split draw_object_params(obj_id),",", tmp
-			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
-			boxf int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+			//範囲矩形、色
+			split draw_object_params(obj_id),",",tmp
+			色を設定 int(tmp.0)
+			rect.0 = draw_object_posx(obj_id) - draw_object_sizex(obj_id) / 2
+			rect.1 = draw_object_posy(obj_id) - draw_object_sizey(obj_id) / 2
+			rect.2 = draw_object_posx(obj_id) + draw_object_sizex(obj_id) / 2
+			rect.3 = draw_object_posy(obj_id) + draw_object_sizey(obj_id) / 2
+			aboxf rect
 		swbreak
 		case TYPE_CIRCLE
-			split draw_object_params(obj_id),",", tmp
-			color int(tmp.4) >> 16 & 255, int(tmp.4) >> 8 & 255, int(tmp.4) & 255
-			circle int(tmp),int(tmp.1),int(tmp.2),int(tmp.3)
+			//範囲矩形、色
+			split draw_object_params(obj_id),",",tmp
+			色を設定 int(tmp.0)
+			rect.0 = draw_object_posx(obj_id) - draw_object_sizex(obj_id) / 2
+			rect.1 = draw_object_posy(obj_id) - draw_object_sizey(obj_id) / 2
+			rect.2 = draw_object_posx(obj_id) + draw_object_sizex(obj_id) / 2
+			rect.3 = draw_object_posy(obj_id) + draw_object_sizey(obj_id) / 2
+			acircle rect, int(tmp.1)
 		swbreak
 		case TYPE_STR
-			
+			//フォント名,フォントサイズ, 文字列, 色
+			split draw_object_params(obj_id),",",tmp
+			rect.0 = draw_object_posx(obj_id) - draw_object_sizex(obj_id) / 2
+			rect.1 = draw_object_posy(obj_id) - draw_object_sizey(obj_id) / 2
+			pos rect.0,rect.1
+			font tmp.0, int(tmp.1)
+			色を設定 int(tmp.3)
+			mes tmp.2
 		swbreak
+		
+		case TYPE_SPRITE
+			split draw_object_params(obj_id), ",", tmp
+		
+			imgid = int(tmp.0)
+			sx = int(tmp.1)
+			sy = int(tmp.2)
+			sw = int(tmp.3)
+			sh = int(tmp.4)
+		
+			dx = draw_object_posx(obj_id)
+			dy = draw_object_posy(obj_id)
+				
+			// 描画
+			color 0,0,0
+			gmode 4, sw, sh, draw_object_alpha(obj_id)
+			pos dx, dy
+
+			scaled_sizex = draw_object_sizex(obj_id) * draw_object_scale(obj_id)
+			scaled_sizey = draw_object_sizey(obj_id) * draw_object_scale(obj_id)
+
+			grotate imgid, sx, sy, draw_object_angle(obj_id), scaled_sizex, scaled_sizey
+
+		swbreak
+
 		swend
-		if draw_object_life(obj_id) != 0{
+		if draw_object_life(obj_id) > 1{
 			use_id_list(new_list_num) = obj_id
 			new_list_num++
 			draw_object_life(obj_id)--
@@ -82,10 +186,52 @@
 	loop
 	use_id_list_num = new_list_num
 	return
+
+#deffunc update_draw_objects
+	repeat use_id_list_num
+		obj_id = use_id_list(cnt)
+
+		// 移動
+		draw_object_posx(obj_id) += draw_object_vx(obj_id)
+		draw_object_posy(obj_id) += draw_object_vy(obj_id)
+
+		//角度更新
+		draw_object_angle(obj_id) += draw_object_v_angle(obj_id)
+
+		// スケール更新
+		draw_object_scale(obj_id) = limitf(draw_object_scale(obj_id) + draw_object_vs(obj_id),0.0)
+		
+		// 透明度更新
+		draw_object_alpha(obj_id) = limitf(draw_object_alpha(obj_id) + draw_object_va(obj_id), 0, 255)
+	loop
+return
+
 // 手動削除用関数
 #deffunc destroy_draw_object int id
-    draw_object_life(id) = 0 // 次フレームで削除
+    draw_object_life(id) = 1 // 次描画したら消える
     return
+
+// 即時削除
+#deffunc destroy_draw_object_immediately int id
+
+	repeat use_id_list_num
+		if use_id_list(cnt) == id{
+			use_id_list_num--
+			use_id_list(cnt) = use_id_list(use_id_list_num)
+			open_id_list(open_id_list_num) = id
+			open_id_list_num++
+			break
+		}
+	loop
+
+	return
+
+//レンダリング中に描画オブジェクトを作成する際はこれを使う。
+#deffunc local make_draw_object_in_renderer int _type, str parameters, int life
+	make_draw_object _type, parameters, life
+	use_id_list_num++
+	return
+	
 #global
 init_draw_objects
 

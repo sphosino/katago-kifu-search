@@ -1,0 +1,175 @@
+#include "renderer.hsp"
+#include "keyfps.hsp"
+
+buffer 10, 32, 32
+color 0,0,0:boxf
+color 255,255,255
+boxf 0, 0, 31, 31
+gsel 0, 0
+
+randomize
+; プレイヤー
+player_x = 300
+player_y = 400
+
+delkey_all
+addkey 32
+repeat 4
+addkey 37 + cnt
+loop
+; スコア
+score = 0
+
+; 初期化
+init_draw_objects
+#const MAX_METEORS 100
+dim meteor_x, MAX_METEORS
+dim meteor_y, MAX_METEORS
+dim meteor_vy, MAX_METEORS
+dim meteor_alive, MAX_METEORS
+
+#const MAX_SHOTS 50
+dim shot_x, MAX_SHOTS
+dim shot_y, MAX_SHOTS
+dim shot_vy, MAX_SHOTS
+dim shot_alive, MAX_SHOTS
+
+*main
+
+	manage_keyfps
+	
+	redraw 0
+	color 0,0,0 : boxf
+	score++
+
+	// プレイヤー操作
+	if _getkey(37) >= 1: player_x -= 5 ; ←キー
+	if _getkey(39) >= 1: player_x += 5 ; →キー
+	player_x = limit(player_x, 0, 600)
+
+	make_draw_object TYPE_RECT, 1, player_x, player_y, 30, 30, 0, 0, strf("%d", $00FF00)
+
+	// スペースキー押したら弾発射
+	if _getkey(32) == 1 {
+		repeat MAX_SHOTS
+			if shot_alive(cnt) = 0 {
+				shot_x(cnt) = player_x
+				shot_y(cnt) = player_y - 20
+				shot_vy(cnt) = -8
+				shot_alive(cnt) = 1
+				break
+			}
+		loop
+	}
+	// 弾更新＆描画
+	repeat MAX_SHOTS
+		if shot_alive(cnt) {
+			// 位置更新
+			shot_y(cnt) += shot_vy(cnt)
+	
+			// 描画オブジェクト登録（life=1）
+			make_draw_object TYPE_RECT, 1, shot_x(cnt), shot_y(cnt), 6, 12, 0, 0, strf("%d", $FFFF00)
+	
+			// 画面外に出たら消す
+			if shot_y(cnt) < -10 {
+				shot_alive(cnt) = 0
+			}
+		}
+	loop
+
+	// 隕石生成
+	if rnd(10) = 0 {
+		repeat MAX_METEORS
+			if meteor_alive(cnt) = 0 {
+				meteor_x(cnt) = rnd(600)
+				meteor_y(cnt) = -30
+				meteor_vy(cnt) = 3
+				meteor_alive(cnt) = 1
+				break
+			}
+		loop
+	}
+	// 隕石更新＆描画
+	repeat MAX_METEORS
+		if meteor_alive(cnt) {
+			// 位置更新
+			meteor_y(cnt) += meteor_vy(cnt)
+	
+			// 描画オブジェクト登録（life=1で1フレームだけ表示）
+			make_draw_object TYPE_RECT, 1, meteor_x(cnt), meteor_y(cnt), 30, 30, 0, 0, strf("%d", $FF0000)
+	
+			// 画面外に出たら消す
+			if meteor_y(cnt) > 480 {
+				meteor_alive(cnt) = 0
+			}
+		}
+	loop
+
+	// 当たり判定（弾 vs 隕石）
+	repeat MAX_SHOTS
+		if shot_alive(cnt) {
+			for i,, MAX_METEORS
+				if meteor_alive(cnt2) {
+					// 中心座標の距離で判定
+					dx = abs(shot_x(cnt) - meteor_x(i))
+					dy = abs(shot_y(cnt) - meteor_y(i))
+					if dx < 20 && dy < 20 {
+						// ヒット！！
+						shot_alive(m) = 0
+						meteor_alive(i) = 0
+						score += 100
+						make_explosion meteor_x(i), meteor_y(i)
+
+						_break ; この弾はもう消えたので次へ
+					}
+				}
+			next
+		}
+	loop
+
+	; 描画オブジェクトの移動
+	update_draw_objects
+	; 描画
+	draw_objects
+	color 255,255,255
+	pos 10,10
+	mes "SCORE:" + score
+
+	redraw 1
+	await 16
+	goto *main
+
+*gameover
+	redraw 0
+	color 0,0,0 : boxf
+	color 255,0,0
+	pos 200,200
+	mes "GAME OVER"
+	pos 200,240
+	mes "SCORE:" + score
+	redraw 1
+	stop
+
+
+#deffunc make_explosion double x, double y
+	// 爆発スプライト（小さな円）を30フレーム生かす
+	make_draw_object TYPE_SPRITE, 30, x, y, 12, 12, 0, 0, "10,0,0,32,32,0.1," + -(256 / 30) + ",0.1"
+// 追加！パーティクルばらまき！
+	make_particle_explosion x, y
+return
+#deffunc make_particle_explosion double x, double y
+	repeat 10   ; 10個ばらまく
+		// 角度と速度をランダムに
+		angle = rnd(360)
+		speed = rnd(30) * 0.1 + 4.0 ; 1.0～4.0くらい
+		
+		vx = cos(angle) * speed
+		vy = sin(angle) * speed
+		
+		// 小さい破片 (TYPE_SPRITE)
+		make_draw_object TYPE_SPRITE, 30, x, y, 8,8, vx, vy, "10,0,0,32,32,0.0,-8.5,0"
+
+	loop
+return
+
+//いけた！爆発したら拡大しながら透明になりながら、回転してる！

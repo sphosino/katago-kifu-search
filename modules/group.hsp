@@ -36,12 +36,14 @@
 					swbreak
 					swend
 
-					if stone_map_count(i,j) >= 2{
+					//centering_x = 文字を出来るだけ真ん中にしたくて、適当に ( MAS_Y / 6 )ベースで計算。
+					// ※あとでフォントサイズやズラし量は定数化してもいいかも。
+					if stone_map_count(i, j) >= 2{
 						centering_x = MAS_Y / (6 * (cnt \ 2 + 1))
-						font "",MAS_Y / 2
+						font "", MAS_Y / 2
 						pos posx + i * MAS_X + (cnt \ 2) * (MAS_X / 2) + centering_x, posy + j * MAS_Y + (cnt / 2) * (MAS_Y / 2)
 					}else{
-						font "",MAS_Y
+						font "", MAS_Y
 						centering_x = MAS_Y / 6
 						pos posx + i * MAS_X + centering_x, posy + j * MAS_Y
 					}

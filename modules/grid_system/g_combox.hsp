@@ -1,13 +1,13 @@
-#define global MODULE_DEBUG
+;#define global MODULE_DEBUG
 #include "area_grid_system.hsp"
 #include "rboxf.hsp"
 #addition "../keyfps.hsp"
-#module grid_combox s, v, item_ysize, item_num, area, dropdown
+#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result
 
 #include "rectmock.hsp"
 #modinit var a, str s1, int area_number, local thismod_ID
 
-    dup v, a //　選択アイテムを示す変数
+    dup a, dropdown_result //　選択アイテムを示す変数
 
 	area = area_number　//エリア番号
 	s = s1 //表示文字列
@@ -18,45 +18,68 @@
     return thismod_ID
 
 #modcfunc get_value_g_combox
-	return v
+	return dropdown_result
 
 #modfunc combox_manager
-
 	thisrect thismod, oya, area
-
-	if _getkey(1) == 1: dropdown ^ 1　//ドロップダウンメニューのトグル
 
 	notesel s
 
+	// 本体ボタンの背景（灰色）
+	make_draw_object TYPE_RECT, 1, (oya + oya.2) / 2, (oya.1 + oya.3) / 2, oya.2 - oya, oya.3 - oya.1, 0, 0, strf("%d", $969696) ; #969696=150,150,150
 
+	// ▼マーク用の黒い帯
+	make_draw_object TYPE_RECT, 1, (oya.2 + oya.2 - 5) / 2, (oya.1 + oya.3) / 2, 5, oya.3 - oya.1, 0, 0, strf("%d", $000000)
 
-	color 128,128,128
-	boxf oya,oya.1,oya.2,oya.3
+	// 現在選択されてるテキスト
+	noteget t, dropdown_result
+	make_draw_object TYPE_STR, 1, (oya + (oya.2 - 5)) / 2, (oya.1 + oya.3) / 2, 0, 0, 0, 0, strf("%s,%d,%s,%d", "メイリオ", oya.3-oya.1, t, $000000)
 
-	color 0,0,0
-	boxf oya.2 - 5, oya.1, oya.2, oya.3
-			pos oya, oya.1
-		noteget t,0
-		mes t
-	if dropdown == 0{
-		
-	}else{
-		
+	if dropdown {
 		repeat notemax
 			noteget t, cnt
-			pos oya, oya.3 + cnt * item_ysize
-			rect = oya,oya.3 + cnt * item_ysize, oya.2,oya.3 + cnt * item_ysize + item_ysize
-			if in_rect(rect){
-				color 200,200,200
-				aboxf rect
-		
-			}
+			rect_x1 = oya
+			rect_y1 = oya.3 + cnt * item_ysize
+			rect_x2 = oya.2
+			rect_y2 = oya.3 + (cnt + 1) * item_ysize
 
-			color 0,0,0
-			mes t
+			center_x = (rect_x1 + rect_x2) / 2
+			center_y = (rect_y1 + rect_y2) / 2
+			_width = rect_x2 - rect_x1
+			height = rect_y2 - rect_y1
+
+			// リスト背景
+			color_code = $808080 ; 通常: 128,128,128
+			tmprect = rect_x1,rect_y1,rect_x2,rect_y2
+			if in_rect(tmprect) {
+				color_code = $C8C8C8 ; 選択中: 200,200,200
+
+				if _getkey(1) == 1 {
+					dropdown_result = cnt
+					dropdown = 0
+				}
+			}
+			make_draw_object TYPE_RECT, 1, center_x, center_y, _width, height, 0, 0, strf("%d", color_code)
+			set_priority_draw_object stat, PRIORITY_FRONT 
+
+			title ""+t
+
+			// リスト文字
+			make_draw_object TYPE_STR, 1, center_x, center_y, 0, 0, 0, 0, strf("%s,%d,%s,%d", "メイリオ", item_ysize, t, $000000)
+			set_priority_draw_object stat, PRIORITY_FRONT 
 		loop
-		
 	}
+
+	if _getkey(1) == 1 {
+		if dropdown {
+			dropdown = 0
+		} else {
+			if in_rect(oya) {
+				dropdown = 1
+			}
+		}
+	}
+
 	noteunsel
 	return
 	
@@ -76,8 +99,10 @@ newmod a, grid_combox, a, "A\nB\nC\nD", 99
 *main
 	manage_keyfps
 
-	color 250,250,250 :boxf:color 
+	color 250,250,250 :boxf:color
 	combox_manager a
+
+	
 	redraw : redraw 2
 	goto*main
 

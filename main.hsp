@@ -8,6 +8,7 @@
 #include "Search_pattern.hsp"
 #include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
+#include "modules/renderer.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_radiobox.hsp"
 #include "modules/grid_system/g_button.hsp"
@@ -18,6 +19,10 @@
 #include "modules/grid_system/g_label.hsp"
 #include "modules/grid_system/g_treebox.hsp"
 #include "modules/grid_system/g_line_graph.hsp"
+#include "modules/grid_system/g_combox.hsp"
+
+
+
 #include "go_game_manager.hsp"
 #include "hspext.as"
 #include "user32.as"
@@ -240,6 +245,7 @@ root = make_area_child(1,1)
 				chkbox_use_bitboard = make_area_child()
 				chkbox_inverse = make_area_child()
 			goban_filter_area = make_area_child(2,2,goban_tool_area)
+				combox_modelname = make_area_child(,,goban_filter_area)
 				
 				
 			goban_edit_area = make_area_child(2,1, goban_tool_area)
@@ -309,6 +315,8 @@ newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
+newmod g_combox, grid_combox, modelname, "28b\n18b\n60b\n40b", combox_modelname
+
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "●"
 add_item_radiobox g_radiobox, "〇"
@@ -346,9 +354,9 @@ gosub*loadsgf
 //最初の時刻
 pretime = keyfpstime
 *main
-	;logmes ""+getrealfpsf()
 	計測 "manage_keyfps"
 	manage_keyfps
+	
 	計測 "前フレームからの状態変化取得"
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
@@ -364,6 +372,10 @@ pretime = keyfpstime
 			get_board_data board  , user_board
 			set_board_data board.1, user_board
 		}
+	}
+	if pre_filter != get_value_g_combox(g_combox){
+		pre_filter = stat
+		gosub *filtering_and_make_listbox
 	}
 	計測 "kifuload"
 	if kifu_update{//棋譜がアップデートされたときのみ走る
@@ -617,6 +629,8 @@ pretime = keyfpstime
 		debugmode ^ 1
 		logmes "switchdebugmode ->" +debugmode
 	}
+
+	update_draw_objects
 	
 	計測 "描画"
 
@@ -659,6 +673,10 @@ pretime = keyfpstime
 
 	treebox_draw t, length(f)
 
+	
+
+	draw_objects
+
 	計測描画
 
 	redraw
@@ -688,6 +706,9 @@ pretime = keyfpstime
 	loop
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
+	loop
+	foreach g_combox
+		combox_manager g_combox.cnt
 	loop
 	return
 
@@ -954,19 +975,10 @@ pretime = keyfpstime
 		search_result_sgflist += search_result(0, cnt) + "\n"
 	loop
 
-	if search_result_sgflist != ""{
+	//search_result_sgflistに結果リスト、result_numに結果の数が入っている。
 
-		sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
-		current_kifulist = matchlist
-	}
+	gosub *filtering_and_make_listbox
 
-	del_item_all kifulist.matchlist
-	add_item kifulist.matchlist, search_result_sgflist
-	
-	repeat result_num
-		sortget n, cnt
-		add_item_data kifulist.matchlist, cnt, search_result(1,n)
-	loop
 
 	repeat 4
 		clear_group cnt
@@ -975,6 +987,69 @@ pretime = keyfpstime
 
 	
 	set_g_label g_label.1, "検索結果(" + result_num + ")件"
+	return
+*filtering_and_make_listbox
+	//フィルタリング処理
+
+	dim filtered_result, 2, result_num　//フィルター後の結果を入れる変数
+	dim fn //フィルター後の結果の数
+
+	if filter_on{
+
+	//モデルでのフィルター	
+	model_list = "b28","b18","b60","b40"
+	selected_model = model_list(get_value_g_combox(g_combox))
+	repeat result_num
+		tn = int(get_value(search_result(0,cnt)))
+		blackplayer = get_property_data(tn, "PB")
+		split blackplayer,"-",bp
+		whiteplayer = get_property_data(tn, "PW")
+		split whiteplayer,"-",wp
+
+		modelnames = strmid(bp.1,0,3),strmid(wp.1,0,3) //モデル名取得！
+
+		if modelnames.0 == selected_model || modelnames.1 == selected_model {
+			filtered_result(0,fn) = search_result(0,cnt)
+			filtered_result(1,fn) = search_result(1,cnt)
+			fn++
+		}
+	loop
+	//その他のフィルター
+
+
+	}else{
+		//フィルターなし
+		repeat result_num
+			filtered_result(0,cnt) = search_result(0,cnt)
+			filtered_result(1,cnt) = search_result(1,cnt)
+			fn++
+		loop
+	}
+	
+	//最終結果を文字列化
+	search_result_sgflist = ""
+	repeat fn
+		if cnt{
+			search_result_sgflist += "\n"
+		}
+		search_result_sgflist += filtered_result(0,cnt)
+	loop
+		
+	if search_result_sgflist != ""{
+
+		sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
+		current_kifulist = matchlist
+	}
+	
+	//リストボックスに流し込む
+	del_item_all kifulist.matchlist
+	add_item kifulist.matchlist, search_result_sgflist
+	
+	repeat fn
+		sortget n, cnt
+		add_item_data kifulist.matchlist, cnt, filtered_result(1,n)
+	loop
+
 	return
 	
 *loadfile
