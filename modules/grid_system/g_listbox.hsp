@@ -154,6 +154,8 @@
 		}
 	}
 
+	font "", item_y
+
 	// --- •\Ž¦ ---
 	repeat (rect.3 - rect.1) / item_y
 		id_index = cnt + scroll_value
@@ -298,7 +300,7 @@
 #include "rectmock.hsp"
 #global
 
-#if 1
+#if 0
 mock_flag@global = 1
 set_rect_mock 0, 200,100,400,200
 
