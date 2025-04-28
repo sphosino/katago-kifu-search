@@ -1,0 +1,22 @@
+#addition "../id_manager.hsp"
+#include "area_grid_system.hsp"
+
+#const LISTBOX_DEFAULT_MAX 300
+
+#module g_listbox listbox_id_manager, listbox_item_names, listbox_item_datas
+
+
+	sdim listbox_item_names,, LISTBOX_DEFAULT_MAX
+	sdim listbox_item_datas,, LISTBOX_DEFAULT_MAX
+	dim listbox_item_select_status, LISTBOX_DEFAULT_MAX
+	newmod listbox_id_manager, id_manager
+
+	return
+	
+	
+
+
+
+
+
+#global

@@ -74,7 +74,8 @@ dim matchlist                ; 検索結果用リストボックスIDを格納
 //計測時の文字列
 sdim titles
 
-
+pre_filter_on = -1
+pre_filter = -1
 
 //FPS設定
 setfps 60
@@ -237,15 +238,18 @@ root = make_area_child(1,1)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
-			goban_search_area = make_area_child(2,3,goban_tool_area)
+			goban_search_area = make_area_child(3,2,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
 				button_exclude_search = make_area_child()
 				button_narrow_down_search = make_area_child()
 				chkbox_colorflip = make_area_child()
 				chkbox_use_bitboard = make_area_child()
 				chkbox_inverse = make_area_child()
-			goban_filter_area = make_area_child(2,2,goban_tool_area)
-				combox_modelname = make_area_child(,,goban_filter_area)
+			goban_filter_area = make_area_child(1,2,goban_tool_area)
+				goban_filter_area_header = make_area_child(,,goban_filter_area)
+					chkbox_filter = make_area_child(,,goban_filter_area_header)
+				goban_filter_area_body   = make_area_child(2,2,goban_filter_area)
+					combox_modelname = make_area_child(,,goban_filter_area_body)
 				
 				
 			goban_edit_area = make_area_child(2,1, goban_tool_area)
@@ -298,12 +302,13 @@ newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu
-newmod g_chkbox, grid_checkbox, enableColorFlip,"検索に\n色反転も含む", chkbox_colorflip
+newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
 newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
 newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
+newmod g_chkbox, grid_checkbox, filter_on, "検索結果にフィルターを適用", chkbox_filter
 
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
 newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
@@ -373,8 +378,9 @@ pretime = keyfpstime
 			set_board_data board.1, user_board
 		}
 	}
-	if pre_filter != get_value_g_combox(g_combox){
+	if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
 		pre_filter = stat
+		prefilter_on = filter_on
 		gosub *filtering_and_make_listbox
 	}
 	計測 "kifuload"
@@ -983,10 +989,10 @@ pretime = keyfpstime
 	repeat 4
 		clear_group cnt
 	loop
-	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + result_num + "件の検索結果"
+	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + fn + "件の検索結果"
 
 	
-	set_g_label g_label.1, "検索結果(" + result_num + ")件"
+	
 	return
 *filtering_and_make_listbox
 	//フィルタリング処理
@@ -1043,12 +1049,16 @@ pretime = keyfpstime
 	
 	//リストボックスに流し込む
 	del_item_all kifulist.matchlist
+	logmes "A"
 	add_item kifulist.matchlist, search_result_sgflist
+	logmes "B"
 	
 	repeat fn
 		sortget n, cnt
 		add_item_data kifulist.matchlist, cnt, filtered_result(1,n)
 	loop
+
+	set_g_label g_label.1, "検索結果(" + fn + ")件" //ラベル更新
 
 	return
 	

@@ -9,7 +9,7 @@ dimtype listbox_items@global, 5
 #module listbox_item name, selected, data
 
 #defcfunc make_listbox_item str s1
-	newmod listbox_items@global,listbox_item, s1
+	newmod listbox_items@global,listbox_item, s1 //ここでメモリ確保エラー！！！！！
 	return stat
 #modinit str s1, local thismod_ID
 	data = 0
@@ -307,6 +307,50 @@ add_item a,"A\nB\nC\nD\nE\nF\nG\nH\nI\nJ"
 
 scroll_end a
 set_listbox_scollbar_width a, 5
+
+repeat
+	manage_keyfps
+	mw = mousew
+	if mw > 0: move_scroll_index a, -1
+	if mw < 0: move_scroll_index a, 1
+
+	color 0,0,0
+	boxf
+	my_listbox_draw a
+
+	
+	s = ""
+	repeat get_selected_items(a,result)
+		s += "" + result.cnt + ","
+	loop
+
+	title""+listbox_on_id(a,mousex,mousey) +"--"+ s
+	
+	if _getkey(1) >= 1{
+
+		if _getkey(1) == 1 && listbox_on_id(a,mousex,mousey) >= 0{
+			check_item a,stat
+		}
+		
+
+		if listbox_on_id(a,mousex,mousey) == -3{
+			set_current_scroll_index_by_bar_position a,mousey
+		}
+	}
+
+	redraw : redraw 2
+loop
+
+#endif
+
+#if 0
+	//大量オブジェクトテスト
+	mock_flag@global = 1
+	set_rect_mock 0, 100,100,300,200
+	newmod a, grid_listbox, 0
+	repeat 10000
+	add_item a,"A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK"
+	loop
 
 repeat
 	manage_keyfps

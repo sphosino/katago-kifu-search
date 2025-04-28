@@ -1,0 +1,274 @@
+//renderer-game2.hsp"
+#include "renderer.hsp"
+#include "keyfps.hsp"
+#include "id_manager.hsp"
+// まずバッファに画像読み込み
+buffer 20  // 空いてるバッファ番号
+picload "koma.bmp", 1
+gsel 0
+randomize
+
+// プレイヤー情報
+player_x = 100
+player_y = 300
+player_vy = 0.0
+gravity = 0.5
+jump_power = -10.0
+
+// 地面の高さ（簡単に固定）
+ground_y = 400
+
+init_draw_objects
+randomize
+delkey_all
+addkey 32  // ジャンプキー（スペース）
+repeat 4
+	addkey 37 + cnt
+loop
+
+life = 3
+
+// 足場の管理
+#enum BLOCK_TYPE_NORMAL = 0  // 乗れるだけ
+#enum BLOCK_TYPE_ITEM     // アイテム出す用
+#enum BLOCK_TYPE_EMPTY    // 空になったブロック
+#enum BLOCK_TYPE_BREAKABLE  // 頭で壊せるブロック
+
+#enum BLOCK_TYPE_MAX
+
+#const MAX_BLOCKS 100
+dim block_x, MAX_BLOCKS
+dim block_y, MAX_BLOCKS
+dim block_w, MAX_BLOCKS
+dim block_h, MAX_BLOCKS
+dim block_type, MAX_BLOCKS
+newmod blocks_id_manager, id_manager
+
+// アイテムの管理
+#const MAX_ITEMS 30
+dim item_x, MAX_ITEMS
+dim item_y, MAX_ITEMS
+dim item_w, MAX_ITEMS
+dim item_h, MAX_ITEMS
+dim item_type, MAX_ITEMS
+newmod items_id_manager, id_manager
+
+gosub*init
+
+//
+make_draw_object TYPE_RECT, -1, 320, 240, 640, 480, 0, 0, strf("%d", $000000) //背景　-1で永続オブジェクト
+bg = stat
+set_priority_draw_object bg, PRIORITY_BACK
+;*/
+*main
+    manage_keyfps
+
+
+	// 無敵タイマー管理
+	if invincible_timer > 0 {
+    invincible_timer--
+	
+	    // 無敵中だけプレイヤーも一緒に動かす
+	}
+    on_ground = 0
+
+    // 左右キー追加
+	if _getkey(37) >= 1 { ; ←キー
+	    player_x -= 5
+	}
+	if _getkey(39) >= 1 { ; →キー
+	    player_x += 5
+	}
+	
+	// 画面外に出ないよう制限
+	player_x = limit(player_x, 0, 640)
+
+
+    // プレイヤー重力処理
+    player_vy += gravity
+    player_y += player_vy
+
+	    ////// 足場生成
+	if rnd(15) == 0 { ; 頻度アップ！！
+	    id = get_new_id(blocks_id_manager)
+	    block_x(id) = 640
+	    block_type(id) = rnd(BLOCK_TYPE_MAX)
+	
+	    // 高さランダム広げる！
+	    block_y(id) = 200 + rnd(280) ; 200～480の範囲で
+	
+	    block_w(id) = 80
+	    block_h(id) = 20
+	}
+	
+	////// 足場更新
+	block_colors = $AAAAAA, $FFD700, $FF9999,$B22222
+	foreach_id blocks_id_manager, id
+	
+	    block_x(id) -= 4 ; 左に動かす
+	    make_draw_object TYPE_RECT, 1, block_x(id) + block_w(id)/2, block_y(id) + block_h(id)/2, block_w(id), block_h(id), 0, 0, strf("%d", block_colors(block_type(id)))
+	
+	    if block_x(id) + block_w(id) < 0 {
+	        release_id blocks_id_manager, id
+	    }
+	foreach_end
+	
+	// --- 足場判定 ---
+	foreach_id blocks_id_manager, id
+		// ブロックとの当たり判定
+		if player_y + 15 >= block_y(id) && player_y + 15 <= block_y(id) + block_h(id) {
+			if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
+				if player_vy >= 0 {
+					// 乗った！！
+					player_y = block_y(id) - 15
+					player_vy = 0.0
+	
+					// ★ブロックの横移動をプレイヤーにも伝える！
+					player_x += -4 //（ブロックは左に4px動いてるから）
+					on_ground = 1
+				}
+			}
+		}
+	foreach_end
+
+	//頭ぶつける判定
+	foreach_id blocks_id_manager, id
+	    // プレイヤーの頭がブロックの下に到達
+	    if player_y - 15 <= block_y(id) + block_h(id) && player_y - 15 >= block_y(id) {
+	        if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
+	            if player_vy < 0 { // 上向きにジャンプ中
+	                // --- 頭ゴツン！！ ---
+	                switch block_type(id)
+
+	                case BLOCK_TYPE_NORMAL
+	                case BLOCK_TYPE_EMPTY
+		                player_vy = 0.0
+		                player_y = block_y(id) + block_h(id) + 15 // 頭をブロックの下に合わせる
+					swbreak
+		            case BLOCK_TYPE_ITEM
+	             		player_vy = 0.0
+		                player_y = block_y(id) + block_h(id) + 15 // 頭をブロックの下に合わせる
+
+		                item_id = get_new_id(items_id_manager)
+	                    item_x(item_id) = block_x(id) + block_w(id)/2
+	                    item_y(item_id) = block_y(id)
+	                    item_vy(item_id) = -0.8
+	                    item_w(item_id) = 20
+	                    item_h(item_id) = 20
+	                    item_gravity(item_id) = 0.2
+	                    item_type(item_id) = rnd(3) // アイテムの種類を指定
+	                    // ブロックを空にする
+	                    block_type(id) = BLOCK_TYPE_EMPTY
+		            swbreak
+	                case BLOCK_TYPE_BREAKABLE
+	                	player_vy = 0.0
+	                	release_id blocks_id_manager, id
+						make_break_effect block_x(id) + block_w(id)/2, block_y(id) + block_h(id)/2
+		            swbreak
+		            swend
+	            }
+	        }
+	    }
+	foreach_end
+
+	// --- ジャンプ処理 ---
+	if on_ground {
+	    if _getkey(32) == 1 {
+	        player_vy = jump_power
+	    }
+	}
+
+	
+	// --- プレイヤー落下チェック ---
+	if player_y > 480 && gameover == -1{
+	    life--
+	    if life > 0 {
+	        // 復活処理
+	        id = get_new_id(blocks_id_manager) // 新しい足場作るか、初期足場を参照でもOK！
+	        block_x(id) = 600
+	        block_y(id) = 400
+	        block_w(id) = 80
+	        block_h(id) = 20
+	
+	        player_x = block_x(id) + block_w(id) / 2
+	        player_y = block_y(id) - 15
+	        player_vy = 0
+	    } else {
+	        // ゲームオーバー処理
+	        make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",20, $FF0000) 
+
+	        gameover = stat
+
+	        set_priority_draw_object gameover, PRIORITY_FRONT
+	    }
+	}
+
+	if gameover >= 0{
+		if _getkey(32) = 1{
+			destroy_draw_object_immediately gameover
+			gosub *init			
+		}
+	}
+	
+	//アイテムの動き
+	foreach_id items_id_manager, id
+	    item_vy(id) += item_gravity(id)
+	    item_y(id) += item_vy(id)
+	    make_draw_object TYPE_SPRITE, 1, item_x(id), item_y(id), 75,80, 0,0, strf("20,%d,0,75,80,0,0,0", item_type(id)*75)
+	
+	    ; アイテムが画面外に落ちたら消す
+	    if item_y(id) > 480 {
+	        release_id items_id_manager, id
+	    }
+	foreach_end
+
+	//アイテム取得
+	foreach_id items_id_manager, id
+	    if abs(player_x - item_x(id)) < 20 && abs(player_y - item_y(id)) < 20 {
+	        ; アイテム取得処理！
+	        life++
+	        release_id items_id_manager, id
+	    }
+	foreach_end
+
+    // プレイヤー描画
+    make_draw_object TYPE_RECT, 1, player_x, player_y, 30, 30, 0, 0, strf("%d", $00FF00)
+	// ハートをライフ個ぶんレンダラに渡す
+	repeat life
+		make_draw_object TYPE_SPRITE, 1, 75 * cnt + 33, 80, 75, 80, 0, 0, "20,0,0,75,80,0,0,0"
+	loop
+
+    update_draw_objects
+    draw_objects    
+
+    redraw: redraw 2
+    await 16
+goto *main
+
+#deffunc make_break_effect double x, double y
+	repeat 8  // 破片8個出す
+		vx = rnd(5) - 2  // -2?+2 のランダム速度
+		vy = rnd(5) - 5  // 上向きに飛びやすい
+		size = 5 + rnd(5)  // サイズ5?9ピクセル
+
+		make_draw_object TYPE_RECT, 30, x, y, size, size, vx, vy, strf("%d", $FFCC00) ; 黄色っぽい破片
+	loop
+return
+*init
+    // 1. 復活ブロック作る
+    id = get_new_id(blocks_id_manager)
+    block_x(id) = 600
+    block_y(id) = 400
+    block_w(id) = 80
+    block_h(id) = 20
+    block_type(id) = BLOCK_TYPE_NORMAL
+
+    player_x = block_x(id) + block_w(id) / 2
+    player_y = block_y(id) - 15
+    player_vy = 0
+
+    life = 3
+    gameover = -1
+    invincible_timer = 30 // ←ここ！
+
+	return
