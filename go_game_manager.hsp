@@ -55,8 +55,6 @@
 	return
 
 
-
-
 #defcfunc load_sgf_set_board var _treebox, int node, var _board
 	//SGF‚©‚çƒcƒŠ[ì¬
 	load_from_SGF_topnode _treebox, node
@@ -71,6 +69,7 @@
 
 	if get_value(s1) == NOT_DEFINED_HASH{
 		notesel sgf_data
+		logmes "change_sgf ->" + s1
 		noteload s1
 		noteunsel
 		

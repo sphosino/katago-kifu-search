@@ -1,8 +1,8 @@
 #ifndef id_manager
 #module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max
 
-#modinit
-	dim used_list
+#modinit int p1
+	dim used_list, p1
 	used_list_num = 0
 
 	open_list = 0
@@ -10,7 +10,7 @@
 
 	using_max = 1
 
-	dim id_position_in_used_list
+	dim id_position_in_used_list, p1
 
 	return
 

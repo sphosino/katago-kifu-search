@@ -146,6 +146,9 @@
 	a = b
 	b = tmp
 	return
+#modcfunc get_scroll_bar_width
+	return tickness
+
 #modfunc scroll_to_bottom
 	value = value_max
 	return
@@ -157,6 +160,9 @@
 
 	value = limit(value, value_min, value_max)
 
+	return
+#modfunc add_value_scroll_bar int p1
+	value = limit(value + p1, value_min, value_max)
 	return
 #global
 #endif

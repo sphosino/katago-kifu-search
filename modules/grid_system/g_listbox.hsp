@@ -1,388 +1,370 @@
-#ifndef listbox_item
-
+#addition "../id_manager_for_list.hsp"
+#addition "../scale.hsp"
 #include "area_grid_system.hsp"
 
-#addition "../keyfps.hsp"
-//アイテム構造体（ロジックは入れない）
-dimtype listbox_items@global, 5
+#const global LISTBOX_DEFAULT_MAX 300
 
-#module listbox_item name, selected, data
+#module grid_listbox listbox_id_manager, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status
 
-#defcfunc make_listbox_item str s1
-	newmod listbox_items@global,listbox_item, s1 //ここでメモリ確保エラー！！！！！
-	return stat
-#modinit str s1, local thismod_ID
-	data = 0
-	name = s1
-	mref thismod_ID, 2 //thismodID
-	return thismod_ID
-
-#define global ctype listbox_item_get_str(%1) _listbox_item_get_str(listbox_items@global(%1))
-#modcfunc _listbox_item_get_str
-	return name
-
-#define global toggle_selected_status(%1) _toggle_selected_status listbox_items@global(%1)
-#modfunc _toggle_selected_status
-	selected ^ 1
-	return
-
-#define global ctype get_selected_status(%1) _get_selected_status(listbox_items@global(%1))
-#modcfunc _get_selected_status
-	return selected
-
-#define global set_listbox_data(%1,%2) _set_listbox_data listbox_items@global(%1), %2
-#modfunc _set_listbox_data var v
-	data = v
-	return
-
-#define global ctype get_listbox_data(%1) _get_listbox_data(listbox_items@global(%1))
-#modcfunc _get_listbox_data
-	return data
-
-#define global del_listbox_item(%1) delmod listbox_items@global(%1)
-	
-#global
-
-//-------------------------------------------------------------------------------------------------------
-
-#module grid_listbox listbox_items, item_num, area_number, px,py,sx,sy, item_y, current_scroll_index, bar_posx, bar_posy, bar_height, bar_width, scrollbar_x, colors
-
-#const DEFAULT_ITEM_Y_SIZE 30
-#const DEFAULT_SCROLLBAR_X 10
-
-
-#modinit int p1, local thimod_ID
+#modinit int p1, int p2, local thismod_ID
 
 	area_number = p1
+	item_y = 20
 
-	thisrect thismod, r, area_number
+	size = p2
+	if p2 = 0: size = LISTBOX_DEFAULT_MAX
 
-	item_y = DEFAULT_ITEM_Y_SIZE
-	scrollbar_x = DEFAULT_SCROLLBAR_X
+	sdim item_names,, size
+	sdim item_datas,, size
+	dim listbox_item_select_status, size
+	
+	newmod listbox_id_manager, list_id_manager, size
 
-	current_scroll_index = 0
-	dim listbox_items
-	item_num = 0
+	newmod scrollbar, scroll
 
-	mref thismod_ID, 2
+	set_direction scrollbar, 2
+	set_tickness_scroll_bar scrollbar, 18
+	set_color_scroll_bar scrollbar, $707070, $00FFFF
+
+	mref thismod_ID,2
 	return thismod_ID
 
-#modfunc add_item str s1, local i
-	ss = s1
-	
-	notesel ss
-	
-	repeat notemax
-		noteget i, cnt
-		listbox_items(item_num) = make_listbox_item(i)
-		item_num++
-	loop
-	
-	noteunsel
-	
-	return
 
-#modfunc add_item_data int p1, var d
-	set_listbox_data listbox_items(p1), d
-	return
-
-#modfunc del_item_by_id int p1
-	del_listbox_item listbox_items.p1
-	item_num--
-	//空いた要素を詰める
-	memcpy listbox_items,listbox_items,(item_num - p1)*4, p1*4, p1*4+4
-	return
-	
-#modcfunc get_name_all_items
-	ss = ""
-	repeat item_num
-		ss += listbox_item_get_str(listbox_items(cnt)) + "\n"
-	loop
-	return ss
-	
-#modfunc del_item_by_str str s1
-	repeat item_num
-		if listbox_item_get_str(listbox_items.cnt) == s1{
-			del_item_by_id thismod, cnt
-			break
-		}
-	loop
-	return
-
-#modfunc del_item_all
-	repeat item_num
-		del_item_by_id thismod, cnt
-	loop
-	item_num = 0
-	scroll_top thismod
-	return
-	
-#modfunc set_scroll_index int p1
-	current_scroll_index = limit(p1, 0, limit(item_num - sy/item_y,0))
-	logmes "" + p1 + ": "+current_scroll_index
-	return
-
-#modfunc move_scroll_index int p1
-
-	set_scroll_index thismod, current_scroll_index + p1
-
-	return
-
-#modfunc scroll_top
-	set_scroll_index thismod, 0
-	return
-
-#modfunc scroll_end
-	thisrect thismod, r, area_number
-	sy = r.3-r.1
-	set_scroll_index thismod, item_num
-	
-	return
-
-#modcfunc get_scroll_index
-	return current_scroll_index
-
-#modfunc set_listbox_item_Ysize int p1
+#modfunc set_listbox_item_ysize int p1
 	item_y = p1
 	return
-	
-#modfunc set_listbox_scollbar_width int p1
-	scrollbar_x = p1
+
+//追加、削除、取得関連
+#modfunc del_item_all
+    repeat get_list_ids(listbox_id_manager, ids)
+        remove_item_by_id thismod, ids(cnt)
+    loop
+	return
+#modfunc add_item str s1
+    sdim tmp_str
+    ss = s1
+    notesel ss
+    repeat notemax
+        noteget tmp_str, cnt
+        id = get_new_id_for_list(listbox_id_manager)
+        item_names(id) = tmp_str
+    loop
+    noteunsel
+    return id
+
+//リスト番号ベースで操作
+#modfunc add_item_data int index, str s1
+	if rnd(10) = 0: logmes s1
+	item_datas(get_list_id(listbox_id_manager, index)) = s1
+	return
+#modcfunc get_item_name int index
+    return item_names(get_list_id(listbox_id_manager, index))
+#modcfunc get_item_data int index
+    return item_datas(get_list_id(listbox_id_manager, index))
+#modfunc remove_item int index
+	delete_by_listnum listbox_id_manager, index
+	fix_scroll_after_remove thismod
 	return
 
-#modfunc my_listbox_draw
+//IDベース操作
+#modfunc add_item_data_by_id int _id, str s1
+	item_datas(_id) = s1
+	return
+#modcfunc get_item_name_by_id int _id
+    return item_names(_id)
+#modcfunc get_item_data_by_id int _id
+    return item_datas(_id)
+#modfunc remove_item_by_id int _id
+	delete_by_itemid listbox_id_manager, _id
+	fix_scroll_after_remove thismod
+	return
+	
+#modfunc remove_selected_items
+	// 選択中のやつを全部削除
+	repeat get_selected_item_ids(thismod, selected_ids)
+		remove_item_by_id thismod, selected_ids(cnt)
+	loop
+#modfunc remove_selected_items_with_cursor_follow
 
-	色を設定 $F5F5DC
+	// まず選択中IDたちを拾う
+	num = get_selected_item_ids(thismod, selected_ids)
+	if num == 0 : return ; そもそも何も選ばれてないなら無視
+
+	// 最初に選択されてたIDを仮にベースにする（複数選択の場合）
+	base_id = selected_ids(0)
+	base_pos = get_list_position(listbox_id_manager, base_id)
+
+	// 選択されてるIDを削除
+	repeat num
+		remove_item_by_id thismod, selected_ids(cnt)
+	loop
+
+	// 削除後のリスト数を取得
+	max_num = get_list_ids(listbox_id_manager, idlist)
+
+	// 何もなくなったら何もしない
+	if max_num <= 0 : return
+
+	// 削除前の位置に一番近いところを再選択
+	new_pos = limit(base_pos, 0, max_num-1)
+	new_id = idlist(new_pos)
+
+	// 全選択をリセットして、新しいIDだけ選択する
+	repeat length(listbox_item_select_status)
+		listbox_item_select_status(cnt) = 0
+	loop
+	listbox_item_select_status(new_id) = 1
+
+	return
+
+#modfunc listbox_manager
+	thisrect thismod, rect, area_number
+
+	// 現在のスクロール位置
+	scroll_value = get_value_scroll_bar(scrollbar)
+
+	// 最大個数
+	max_num = get_list_count(listbox_id_manager)
+
+	set_position_scroll_bar scrollbar, rect.2, rect.1
+	set_value_minmax scrollbar, 0, limit(max_num - (rect.3 - rect.1) / item_y, 0)
+	set_size_scroll_bar scrollbar, rect.3 - rect.1
+
+	color 0,0,0
+	aboxf rect
+	color 255,255,255
+
+	// --- クリック検出 ---
+	if _getkey(1) == 1 {
+		if mousex >= rect.0 & mousex < rect.2 & mousey >= rect.1 & mousey < rect.3 {
+			clicked_index = (mousey - rect.1) / item_y + scroll_value
+			if clicked_index < max_num {
+				clicked_id = get_list_id(listbox_id_manager, clicked_index)
+
+				if _getkey(17) >=1 { // Ctrl押しながら
+					listbox_item_select_status(clicked_id) = 1 - listbox_item_select_status(clicked_id)
+				}else{
+					// Ctrl押してないなら単独選択
+					repeat get_list_ids(listbox_id_manager,ids)
+						listbox_item_select_status(ids.cnt) = 0
+					loop
+					listbox_item_select_status(clicked_id) = 1
+				}
+			}
+		}
+	}
+
+	// --- 表示 ---
+	repeat (rect.3 - rect.1) / item_y
+		id_index = cnt + scroll_value
+		if id_index >= max_num : break
+
+		id = get_list_id(listbox_id_manager, id_index)
+
+		pos rect.0, rect.1 + cnt * item_y
+
+	    if listbox_item_select_status(id) {
+	        color 0, 100, 255
+	        boxf rect.0, rect.1 + cnt * item_y, rect.2, rect.1 + (cnt + 1) * item_y
+	        color 255,255,255
+	    }else{
+	        color 255,255,255
+	    }
+
+		mes item_names(id)
+	loop
+
+	if max_num > (rect.3 - rect.1) / item_y {
+		draw_scroll_bar scrollbar
+	}
+
+	return
+
+	
+//スクロールバー関連
+#modfunc set_listbox_scollbar_width int p1
+	set_tickness_scroll_bar scrollbar, p1
+	return
+#modfunc move_scroll_index int p1
+	set_value_scroll_bar scrollbar, p1
+	return
+#modfunc scroll_to_bottom_listbox
+	fix_scroll_after_remove thismod
+	scroll_to_bottom scrollbar
+	return
+#modfunc scroll_to_top_listbox
+	fix_scroll_after_remove thismod
+	scroll_to_top scrollbar
+	return
+#modfunc scroll_up
+	add_value_scroll_bar scrollbar, -1
+	return
+#modfunc scroll_down
+	add_value_scroll_bar scrollbar, 1
+	return
+	
+//スクロール後処理
+#modfunc fix_scroll_after_remove
 
 	thisrect thismod, rect, area_number
-	px = rect
-	py = rect.1
-	sx = rect.2 - px
-	sy = rect.3 - py
-	max_visible_items = sy / item_y
 
-	sy = max_visible_items * item_y
+	max_num = get_list_ids(listbox_id_manager, idlist)
 
-	boxf px, py, px + sx, py + sy
+	visible_lines = (rect.3 - rect.1) / item_y
 
-	//アイテム描画
-	font "",item_y
-	
-	repeat item_num - current_scroll_index
-		if  cnt >= max_visible_items: break
-				
-		//アイテム描画
-		ypos = py + item_y * cnt
-		if get_selected_status(listbox_items(current_scroll_index + cnt)){
-			色を設定 $4A90E2
-		}else{
-			color 0, 100,0
-		}
-		boxf px, ypos, px + sx - bar_width, ypos + item_y
-		pos px + 5, ypos
-		色を設定 $F5F5DC
-		mes listbox_item_get_str(listbox_items(current_scroll_index + cnt))
-	loop
-	
-	//スクロールバー描画
-	if max_visible_items < item_num{
+	max_scroll = limit(max_num - visible_lines, 0)
 
-		bar_width = scrollbar_x
-		bar_height = limit(sy / (item_num - max_visible_items + 1),5)
-		bar_posx = px + sx - bar_width
-		
-		//１スクロール単位の移動量は、(スクロールバーの稼働域) / (オーバーフローしている数)
-		//それを実際のスクロールされている量で掛ける。
-		//誤差を減らすため掛け算が先
-		bar_posy = py + (sy - bar_height) * current_scroll_index / (item_num - max_visible_items)
-		
-		color 255
-		boxf bar_posx, bar_posy, bar_posx + bar_width, bar_posy + bar_height
-	}else{
-		bar_width = -1
-	}
+	refresh_scroll_bar scrollbar, 0, max_scroll
 
 	return
-	
-#modfunc set_current_scroll_index_by_bar_position int y, local scroll_range, local bar_relative_pos, local index
-	// スクロールバーが移動可能な範囲を計算
-	scroll_range = sy - bar_height
-	if scroll_range <= 0 {
-		// スクロール可能な範囲がない場合は、何もせず終了
-		return
-	}
-	
-	// 渡された y をスクロールバー領域内の相対位置に変換
-	bar_relative_pos = limit(y - py, 0, scroll_range)
-	
-	// 相対位置からスクロールインデックスを計算
-	index = bar_relative_pos * (item_num - sy / item_y) / scroll_range
-	
-	// インデックスを設定
-	set_scroll_index thismod, index
-	return
-	
+
+//選択中の要素取得
+#modcfunc get_selected_item_ids array a
+    dim a   // いったん空にする
+    n = 0
+    repeat get_list_ids(listbox_id_manager,ids)
+    	id = ids(cnt)
+        if listbox_item_select_status(id) = 1 {
+            a(n) = id
+            n++
+        }
+    loop
+    return n
+#modcfunc get_selected_item_indices array a
+    dim a
+    n = 0
+    repeat get_list_ids(listbox_id_manager, ids)
+        id = ids(cnt)
+        if listbox_item_select_status(id) == 1 {
+            a(n) = cnt //←ここ！IDではなく番号(cnt)を保存！
+            n++
+        }
+    loop
+    return n
+
+#modcfunc get_list_item_num
+	return get_list_count(listbox_id_manager)
+
+//リストボックスのどこにx,yがあるか？
 #modcfunc listbox_on_id int x, int y, local i
-	
-	if px > x || py > y || px + sx < x || py + sy < y{
-		 //リストボックス外
+	thisrect thismod, rect, area_number
+
+	if rect.0 > x || rect.1 > y || rect.2 < x || rect.3 < y {
+		//リストボックス外
 		return -1
 	}
-	if x >= px + sx - bar_width{
+	
+	scrollbar_x = rect.2 - get_scroll_bar_width(scrollbar) ; ←スクロールバーのエリア幅（デフォルト18固定）
+	if x >= scrollbar_x {
 		//スクロールエリア
-		if y >= bar_posy && y <= bar_posy + bar_height{
-			//スクロールバーのつまみ
+		bar_area = bar_area_x, bar_area_y, bar_area_x2, bar_area_y2
+		get_scroll_bar_area scrollbar, bar_area
+		
+		if y >= bar_area.1 && y <= bar_area.3 {
+			//つまみの上
 			return -2
 		}
 		return -3
 	}
+
 	//アイテムエリア内
-	i = (y - py ) / item_y + current_scroll_index
-	if i >= item_num{
-		//アイテム上ではない
+	current_scroll_index = get_value_scroll_bar(scrollbar)
+	max_num = get_list_ids(listbox_id_manager, idlist)
+	i = (y - rect.1) / item_y + current_scroll_index
+
+	if i >= max_num {
+		//アイテム外
 		return -4
 	}
-	
-	return i //アイテムの番号
 
-#modfunc check_item int p1, int single_select
-	if single_select{
-		repeat item_num
-			//すべて選択解除
-			if get_selected_status(listbox_items(cnt)){
-				toggle_selected_status listbox_items(cnt)
-			}
-		loop
-	}
-	toggle_selected_status listbox_items(p1)
-	return
-    
-#modcfunc is_item_visible int item_id, local start_index, local end_index
-    start_index = current_scroll_index
-    end_index = current_scroll_index + (sy / item_y) - 1
-    return (item_id >= start_index && item_id <= end_index)
-    
-#modfunc scroll_item_to_top int item_id, local target_index
-    target_index = limit(item_id, 0, item_num - 1)
-    set_scroll_index thismod, target_index
-    return
-    
-#modfunc scroll_item_to_bottom int item_id, local target_index
-    target_index = limit(item_id, 0, item_num - 1)
-    set_scroll_index thismod, target_index - (sy / item_y) + 1
-    return
+	return i // アイテム番号（0始まり）
 
-#modcfunc get_name_item int p1
-	return listbox_item_get_str(listbox_items(p1))
 
-#modcfunc get_selected_items array a, local i
-	dim a
-	repeat item_num
-		if get_selected_status(listbox_items(cnt)){
-			a.i = cnt
-			i++
+//---util functions
+
+#modcfunc get_name_all_items //非推奨。重すぎ
+	s = ""
+	repeat get_list_ids(listbox_id_manager, ids)
+		id = ids(cnt)
+		if s!=""{
+			s+= "\n"+ item_names(ids)
+		}else{
+			s+= item_names(ids)
 		}
 	loop
-	return i
-#modcfunc get_selected_status_ int p1
-	return get_selected_status(listbox_items(p1))
-#modcfunc get_item_num
-	return item_num
-#modcfunc get_listbox_item_data int p1
-	return int(get_listbox_data(listbox_items(p1)))
+	return s
+
+	
 #include "rectmock.hsp"
 #global
-#endif
 
-
-#if 0
-
-
+#if 1
 mock_flag@global = 1
-set_rect_mock 0, 100,100,300,200
+set_rect_mock 0, 200,100,400,200
 
-newmod a, grid_listbox, 0
+newmod a, grid_listbox
 
-add_item a,"A\nB\nC\nD\nE\nF\nG\nH\nI\nJ"
+// 初期データ
+add_item a,"A\n改行"
+add_item a,"B"
+add_item a,"C"
+add_item a,"D"
+add_item a,"E"
+add_item a,"F"
+add_item a,"G"
 
-scroll_end a
-set_listbox_scollbar_width a, 5
+add_item_data a,2,"データだよ"
 
-repeat
-	manage_keyfps
-	mw = mousew
-	if mw > 0: move_scroll_index a, -1
-	if mw < 0: move_scroll_index a, 1
+*main
+	// 毎フレーム更新
+	manage_keyfps //_getkey()のサポートとfps管理
 
-	color 0,0,0
-	boxf
-	my_listbox_draw a
+	color 50,50,50:boxf
 
-	
-	s = ""
-	repeat get_selected_items(a,result)
-		s += "" + result.cnt + ","
+	listbox_manager a
+
+	pos 0,0
+	color 255,255,255
+
+	// ★ 全リストを表示して、選択中はマークつける！
+	mes "=== リスト内容 ==="
+	max_num = get_list_item_num(a)
+
+	repeat max_num
+		idx = cnt
+		if idx >= 0 {
+			itemname = get_item_name(a, idx)
+			itemdata = get_item_data(a, idx)
+
+			selected = 0
+			repeat get_selected_item_indices(a, idxs)
+				if idx == idxs(cnt2) : selected = 1
+			loop
+
+			if selected {
+				mes "★[" + idx + "] " + itemname + " : " + itemdata
+			}else{
+				mes " [" + idx + "] " + itemname + " : " + itemdata
+			}
+		}
 	loop
 
-	title""+listbox_on_id(a,mousex,mousey) +"--"+ s
-	
-	if _getkey(1) >= 1{
+	// ★ 選択数カウントも表示
+	num_selected = get_selected_item_indices(a, idxs)
+	mes " "
+	mes "選択数 : " + num_selected
 
-		if _getkey(1) == 1 && listbox_on_id(a,mousex,mousey) >= 0{
-			check_item a,stat
-		}
-		
-
-		if listbox_on_id(a,mousex,mousey) == -3{
-			set_current_scroll_index_by_bar_position a,mousey
-		}
+	// ★ キー操作
+	if _getkey(46) == 1 {    // Deleteキー押したら
+		remove_selected_items_with_cursor_follow a
 	}
 
-	redraw : redraw 2
-loop
-
-#endif
-
-#if 0
-	//大量オブジェクトテスト
-	mock_flag@global = 1
-	set_rect_mock 0, 100,100,300,200
-	newmod a, grid_listbox, 0
-	repeat 10000
-	add_item a,"A\nB\nC\nD\nE\nF\nG\nH\nI\nJ\nK"
-	loop
-
-repeat
-	manage_keyfps
-	mw = mousew
-	if mw > 0: move_scroll_index a, -1
-	if mw < 0: move_scroll_index a, 1
-
-	color 0,0,0
-	boxf
-	my_listbox_draw a
-
-	
-	s = ""
-	repeat get_selected_items(a,result)
-		s += "" + result.cnt + ","
-	loop
-
-	title""+listbox_on_id(a,mousex,mousey) +"--"+ s
-	
-	if _getkey(1) >= 1{
-
-		if _getkey(1) == 1 && listbox_on_id(a,mousex,mousey) >= 0{
-			check_item a,stat
-		}
-		
-
-		if listbox_on_id(a,mousex,mousey) == -3{
-			set_current_scroll_index_by_bar_position a,mousey
-		}
+	if _getkey(2) == 1{ // 右クリック押したら
+		add_item a, "NEW_ITEM"
+		scroll_to_bottom_listbox a
 	}
 
-	redraw : redraw 2
-loop
-
+	redraw
+	redraw 2
+goto *main
 #endif

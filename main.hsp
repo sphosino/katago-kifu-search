@@ -1,14 +1,20 @@
 #packopt name "KataGo棋譜検索"
 #include "modules/group.hsp"
 #include "modules/keyfps.hsp"
+
 #include "modules/sgf.hsp"
+
 #include "GobanPatternManager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/set.hsp"
 #include "Search_pattern.hsp"
 #include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
+
+
 #include "modules/renderer.hsp"
+#include "modules/id_manager_for_list.hsp"
+#include "modules/scale.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/grid_system/g_radiobox.hsp"
 #include "modules/grid_system/g_button.hsp"
@@ -20,9 +26,6 @@
 #include "modules/grid_system/g_treebox.hsp"
 #include "modules/grid_system/g_line_graph.hsp"
 #include "modules/grid_system/g_combox.hsp"
-
-
-
 #include "go_game_manager.hsp"
 #include "hspext.as"
 #include "user32.as"
@@ -334,8 +337,9 @@ add_item_radiobox g_radiobox.tmp, "B"
 add_item_radiobox g_radiobox.tmp, "C"
 add_item_radiobox g_radiobox.tmp, "D"
 
-newmod kifulist, grid_listbox, sidebar_kifulist
-newmod kifulist, grid_listbox, sidebar_kifulist_match: matchlist = stat
+newmod kifulist, grid_listbox, sidebar_kifulist, 18000
+newmod kifulist, grid_listbox, sidebar_kifulist_match, 10000: matchlist = stat
+
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 29
 	set_listbox_scollbar_width kifulist.cnt, 15
@@ -352,7 +356,6 @@ set_margin_line_graph l_graph, 15, 10, 15, 10
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
 loop
-
 gosub*load_kifu_folder
 gosub*loadsgf
 
@@ -378,10 +381,13 @@ pretime = keyfpstime
 			set_board_data board.1, user_board
 		}
 	}
-	if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
-		pre_filter = stat
-		prefilter_on = filter_on
-		gosub *filtering_and_make_listbox
+	if filter_on{
+		if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
+			pre_filter = stat
+			pre_filter_on = filter_on
+			await 10
+			gosub *filtering_and_make_listbox
+		}
 	}
 	計測 "kifuload"
 	if kifu_update{//棋譜がアップデートされたときのみ走る
@@ -469,11 +475,10 @@ pretime = keyfpstime
 			inlistbox = 0
 	
 			foreach kifulist
-				sel = listbox_on_id(kifulist.cnt,mousex, mousey)
-				inlistbox += select_kifulist_item(sel, cnt)
-	
-				if sel == -3{
-					set_current_scroll_index_by_bar_position kifulist.cnt, mousey
+				sel = listbox_on_id(kifulist.cnt, mousex, mousey)
+				if sel != -1: inlistbox = 1 //リストボックスのなかだ。
+				if sel >= 0{
+					if select_kifulist_item(sel, cnt): break
 				}
 			loop
 			
@@ -576,13 +581,15 @@ pretime = keyfpstime
 		mw = mousew
 	
 		in_kifulist == 0
+		
 		foreach kifulist
 			if listbox_on_id(kifulist.cnt,mousex, mousey) >= 0{
 				in_kifulist++
-				if mw < 0: move_scroll_index kifulist.cnt,1
-				if mw > 0: move_scroll_index kifulist.cnt,-1
+				if mw < 0: scroll_down   kifulist.cnt
+				if mw > 0: scroll_up     kifulist.cnt
 			}
 		loop
+		
 		if (in_kifulist == 0) && (ui_mode == MODE_KIFU_VIEW){
 			if mw < 0 : gosub*move_next
 			if mw > 0 : gosub*move_back
@@ -597,11 +604,7 @@ pretime = keyfpstime
 				gosub*loadsgf
 			}
 			if _getkey('A') == 1{ //CTRL + A
-				repeat get_item_num(kifulist.current_kifulist)
-					if get_selected_status_(kifulist.current_kifulist, cnt) == 0{
-						check_item kifulist.current_kifulist, cnt
-					}
-				loop
+
 			}
 		}
 	
@@ -692,7 +695,7 @@ pretime = keyfpstime
 	
 #deffunc all_items_draw
 	foreach kifulist
-		my_listbox_draw kifulist.cnt
+		listbox_manager kifulist.cnt
 	loop
 	foreach g_label
 		draw_g_label g_label.cnt
@@ -753,8 +756,8 @@ pretime = keyfpstime
 	return
 	
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
-	
-	if itemid >= 0 && itemid < get_item_num(kifulist.kifulist_id){
+
+	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
 		current_kifulist = kifulist_id
 		ui_mode = MODE_KIFU_VIEW
 		if get_root_tree_node(t) >= 0{
@@ -765,23 +768,7 @@ pretime = keyfpstime
 		sdim v
 		rn = 0
 
-		//アイテムにチェックを付ける
-		check_item kifulist.kifulist_id, itemid, _getkey(17) < 0
-
-		if is_item_visible(kifulist.kifulist_id,itemid) == 0{
-			if flag_next_or_back = 0{
-				scroll_item_to_top kifulist.kifulist_id, itemid
-			}else{
-				scroll_item_to_bottom kifulist.kifulist_id, itemid
-			}
-		}
-		
-		items = get_name_all_items(kifulist.kifulist_id)
-		notesel items
-		noteget s, itemid
-		noteunsel
-		topnode = change_sgf(s, t, board)
-		logmes "kifuclick -> "+ topnode
+		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board)
 
 		clear_graph l_graph
 
@@ -795,15 +782,16 @@ pretime = keyfpstime
 		next
 		
 		手数 = 0
-		
-		if get_listbox_item_data(kifulist.kifulist_id,itemid){ //アイテムデータが設定されていたら、それは検索結果。
-			nstat = stat //検索結果のSGFノード
+
+		if get_item_data(kifulist.kifulist_id, itemid) != ""{ //アイテムデータが設定されていたら、それは検索結果。
+			nstat = int(refstr) //検索結果のSGFノード
 			
 			//それが格納されているツリーIDを探してカレントノードに設定、手数も合わせる
 			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat, 手数)
 
-			
 			move_next_int kifu_start_num_result
+
+			logmes "検索結果を発見 -> " + nstat
 
 		}else{
 			nownode = get_root_tree_node(t)
@@ -816,11 +804,11 @@ pretime = keyfpstime
 	}
 	return 0
 *next_kifu
-	a = get_selected_items(kifulist(current_kifulist), sel)
+	a = get_selected_item_indices(kifulist(current_kifulist), sel)
 	a = select_kifulist_item(sel + 1, current_kifulist,1)
 	return
 *back_kifu
-	a = get_selected_items(kifulist(current_kifulist), sel)
+	a = get_selected_item_indices(kifulist(current_kifulist), sel)
 	a = select_kifulist_item(sel - 1, current_kifulist)
 	return
 *move_next
@@ -870,7 +858,7 @@ pretime = keyfpstime
 
 	dim nodelist
 	
-	repeat get_selected_items(kifulist.current_kifulist, s)
+	repeat get_selected_item_indices(kifulist.current_kifulist, s)
 		nodelist(cnt) = int(get_value(get_name_item(kifulist.current_kifulist, s(cnt))))
 	loop
 	new_node = merge_node(nodelist)
@@ -908,7 +896,7 @@ pretime = keyfpstime
 	savedir = "save"
 
 	dim nodelist
-	repeat get_selected_items(kifulist.current_kifulist, node_ids)
+	repeat get_selected_item_indices(kifulist.current_kifulist, node_ids)
 		nodelist(cnt) = int(get_value(get_name_item(kifulist.current_kifulist, node_ids(cnt))))
 	loop
 	new_node = merge_node(nodelist)
@@ -994,8 +982,11 @@ pretime = keyfpstime
 	
 	
 	return
+	
 *filtering_and_make_listbox
+	
 	//フィルタリング処理
+	//search_resultに結果を保持しているよ
 
 	dim filtered_result, 2, result_num　//フィルター後の結果を入れる変数
 	dim fn //フィルター後の結果の数
@@ -1049,9 +1040,7 @@ pretime = keyfpstime
 	
 	//リストボックスに流し込む
 	del_item_all kifulist.matchlist
-	logmes "A"
 	add_item kifulist.matchlist, search_result_sgflist
-	logmes "B"
 	
 	repeat fn
 		sortget n, cnt
