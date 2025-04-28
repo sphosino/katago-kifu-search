@@ -152,7 +152,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 		                item_id = get_new_id(items_id_manager)
 	                    item_x(item_id) = block_x(id) + block_w(id)/2
 	                    item_y(item_id) = block_y(id)
-	                    item_vy(item_id) = -0.8
+	                    item_vy(item_id) = -0.9
 	                    item_w(item_id) = 20
 	                    item_h(item_id) = 20
 	                    item_gravity(item_id) = 0.2
@@ -195,7 +195,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 	        player_vy = 0
 	    } else {
 	        // ゲームオーバー処理
-	        make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",20, $FF0000) 
+	        make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",30, $FF0000) 
 
 	        gameover = stat
 

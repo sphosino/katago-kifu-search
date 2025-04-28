@@ -46,11 +46,11 @@
 	return
 
 #modcfunc is_id_alive int id //生存確認！
-	return id_position_in_used_list(id) != 0
+	return id_position_in_used_list(id) > 0
 
 #modcfunc get_used_ids array a
 	dim a, used_list_num
-	memcpy a,used_list, used_list_num << 2
+	memcpy a, used_list, used_list_num << 2
 	return used_list_num
 
 #modcfunc get_using_count //カウントだけほしい時はこれ！
