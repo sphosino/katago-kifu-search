@@ -36,9 +36,10 @@
 
 //追加、削除、取得関連
 #modfunc del_item_all
-    repeat get_list_ids(listbox_id_manager, ids)
-        remove_item_by_id thismod, ids(cnt)
-    loop
+	// list_id_manager側を一気に初期化
+	clear_list_id_manager listbox_id_manager, LISTBOX_DEFAULT_MAX
+	listnum = 0  ; リスト数もリセット
+
 	return
 #modfunc add_item str s1
     sdim tmp_str

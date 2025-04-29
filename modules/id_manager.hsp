@@ -2,15 +2,8 @@
 #module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max
 
 #modinit int p1
-	dim used_list, p1
-	used_list_num = 0
 
-	open_list = 0
-	open_list_num = 1
-
-	using_max = 1
-
-	dim id_position_in_used_list, p1
+	clear_id_manager thismod, p1
 
 	return
 
@@ -43,6 +36,20 @@
 		id_position_in_used_list(move_id) = idx
 		idx = 0
 	}
+	return
+
+#modfunc clear_id_manager int p1
+	
+	dim used_list, p1
+	used_list_num = 0
+
+	open_list = 0
+	open_list_num = 1
+
+	using_max = 1
+
+	dim id_position_in_used_list, p1
+
 	return
 
 #modcfunc is_id_alive int id //¶‘¶Šm”FI
