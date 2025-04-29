@@ -96,7 +96,6 @@
     sort_list_by_priority_list ids, idnum, draw_object_priority
 
     repeat idnum
-    await 
         obj_id = ids(cnt)
 
         switch draw_object_type(obj_id)
@@ -189,44 +188,55 @@ init_draw_objects
 #deffunc sort_list_by_priority_list array a, int a_num, array b
     if a_num <= 1 : return  // 要素数が1以下ならソート不要
 
+	;insertion_sort_range a, 0, a_num-1, b: return
+	
     // 作業用配列を準備
     dim temp, a_num
-
+	
 	block_size = 12  // 初期ブロックサイズ
+
+	;/*/
 	ss = 0
-	while ss < a_num
+	while ss < a_num - 1
 		insertion_sort_range a, ss, limit(ss + block_size - 1,, a_num - 1), b
 		ss += block_size
 	wend
-	
-    
+	;*/
     while block_size < a_num
-        start = 0  // ブロックの開始位置（0ベース）
+        start = 0  // ブロックの開始位置
         while start < a_num
             // マージする左ブロックと右ブロックの範囲を計算
-            mid = start + block_size - 1
+            mid = start + block_size - 1 //左ブロック終端
             e = limit(start + 2 * block_size - 1,, a_num - 1) // 右ブロック終端
-            if e <= mid : _break 
-            j = mid + 1     // 右ブロックのインデックス
+            if e <= mid : _break //右ブロックが存在しない
+            j = mid + 1     // 右ブロックの開始インデックス
+            
             leftsize = j - start
 
             // マージ処理
             k = 0 // temp配列のインデックス
-			memcpy temp, a, (mid - start + 1) << 2, 0 , start << 2 //左半分を作業配列にコピー
+			memcpy temp, a, leftsize << 2,, start << 2 //左半分を作業配列にコピー
 
             // 両ブロックを比較しながらマージ
-			repeat , start
-            if b(temp(k)) <= b(a(j)) {
-                a(cnt) = temp(k)
-                k++
-                if k >= leftsize : break
-            } else {
-                a(cnt) = a(j)
-               	if j >= e: memcpy a, temp, leftsize -  k << 2, cnt + 1 << 2, k << 2: break
-               j++
-            }
-            loop
-            start = e + 1  // 次のブロックへ
+			*loop_label
+	            if b(temp(k)) <= b(a(j)) {
+	                a(start) = temp(k)
+	                k++
+	                if k >= leftsize{
+		                start = e + 1
+		                _continue //マージ完了なので、内側のwhileの条件比較に向かいます
+		            }
+	            } else {
+	                a(start) = a(j)
+	               	if j >= e{
+		               	memcpy a, temp, leftsize -  k << 2, start + 1 << 2, k << 2
+		               	start = e + 1
+		               	_continue
+		           }
+	               j++
+	            }
+	            start++
+            goto *loop_label
         wend
         block_size *= 2  // ブロックサイズを倍増
     wend
@@ -235,22 +245,29 @@ init_draw_objects
 
 #module
 #deffunc insertion_sort_range array a, int s, int e, array b
-	// a配列[start]～[end]を、bの優先度で昇順ソートする
+	// a配列[s]～[e]を、bの優先度で昇順ソートする 
+	if e <= s : return
 	
-	repeat e-s
-		i = start + cnt + 1
-		target = a(i)
-		priority = b(target)
-		j = i - 1
-		*@	
-		if b(a(j)) > priority{
+	repeat e - s, s + 1
+	i = cnt
+	target = a(i)
+	priority = b(target)
+	j = i - 1
+	/*
+		j + 1 に、targetを入れるのか jを入れるのかを考えていく。
+		targetを入れるときはそれで正しい位置に挿入できたことを意味する。
+	*/
+	*loop_label
+	if j >= s{
+		if b(a(j)) > priority { 
 			a(j + 1) = a(j)
-			if j > s{
-				j--
-				goto *@b
-			}
+			j-- 
+			goto *loop_label
 		}
-		a(j + 1) = target
+	} 
+	a(j + 1) = target 
 	loop
 	return
 #global
+
+

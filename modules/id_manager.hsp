@@ -43,13 +43,12 @@
 	return new_id
 
 #modfunc release_id int id
-	if id >= using_max : return
+	if id < 0 || id > using_max: return
 
 	dup idx, id_position_in_used_list(id)
 	if idx {
 		open_list(open_list_num) = id
 		open_list_num++
-
 		used_list_num--
 		move_id = used_list(used_list_num)
 		used_list(idx - 1) = move_id

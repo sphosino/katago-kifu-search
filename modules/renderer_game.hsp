@@ -15,8 +15,7 @@ player_vy = 0.0
 gravity = 0.5
 jump_power = -10.0
 
-// 地面の高さ（簡単に固定）
-ground_y = 400
+
 
 init_draw_objects
 randomize
@@ -74,6 +73,8 @@ set_priority_draw_object bg, PRIORITY_BACK
     manage_keyfps
 
 
+	make_star 640 - rnd(rnd(640) + 1) //新しい星は右寄りに生成
+
 	// 無敵タイマー管理
 	if invincible_timer > 0 {
     invincible_timer--
@@ -81,8 +82,6 @@ set_priority_draw_object bg, PRIORITY_BACK
 	    // 無敵中だけプレイヤーも一緒に動かす
 	}
     on_ground = 0
-
-
 	
 	// 画面外に出ないよう制限
 	player_x = limit(player_x, 0, 640)
@@ -212,27 +211,27 @@ set_priority_draw_object bg, PRIORITY_BACK
 	foreach_id enemies_id_manager, id
 		// 踏みつけ判定
 		if player_vy > 0 {
-			if player_y + 15 >= enemy_y(id) && player_y - 15 <= enemy_y(id) + enemy_h(id) {
-				if player_x >= enemy_x(id) - enemy_w(id)/2 && player_x <= enemy_x(id) + enemy_w(id)/2 {
-					; 踏みつけ成功！
+			if player_y + 15 >= enemy_y(id) && player_y < enemy_y(id) {
+				if abs(player_x - enemy_x(id)) < enemy_w(id)/2 + 15 {
 					release_id enemies_id_manager, id
-					player_vy = jump_power/2 ; 小さく跳ね返る
-					continue
+					player_vy = jump_power * 2 / 3
+					invincible_timer = 5 ; 念のため一瞬だけ無敵
+					continue ; ← 必ず抜ける！！
 				}
 			}
 		}
 	
-		// 横からぶつかるダメージ判定
-		if abs(player_x - enemy_x(id)) < 20 && abs(player_y - enemy_y(id)) < 20 {
-			if invincible_timer <= 0 {
+		// 横からぶつかり判定
+		if invincible_timer <= 0 {
+			if abs(player_x - enemy_x(id)) < 20 && abs(player_y - enemy_y(id)) < 20 {
 				life--
-				if life < 0: life = 0
-				if life = 0: gosub*gameover_routine
-				invincible_timer = 60 ; 無敵時間セット！
+				if life <= 0 {
+					gosub *gameover_routine
+				}
+				invincible_timer = 60
 			}
 		}
 	foreach_end
-
 	
 	// --- プレイヤー落下チェック ---
 	if player_y > 480 && gameover == -1{
@@ -259,7 +258,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 		if _getkey(32) = 1{
 			destroy_draw_object_immediately gameover
 			clear_id_manager enemies_id_manager
-			gosub *init			
+			gosub *init
 		}
 	}else{
 		    // 左右キー追加
@@ -295,10 +294,13 @@ set_priority_draw_object bg, PRIORITY_BACK
     // プレイヤー描画
     make_draw_object TYPE_RECT, 1, player_x, player_y, 30, 30, 0, 0, strf("%d", $00FF00)
 	// ハートをライフ個ぶんレンダラに渡す
-	repeat life
+	
+	repeat limit(life,0)
 		make_draw_object TYPE_SPRITE, 1, 75 * cnt + 33, 80, 75, 80, 0, 0, "20,0,0,75,80,0,0,0"
 	loop
 
+	make_draw_object TYPE_STR, 1, 100, 100, 0, 0, 0, 0, strf("メイリオ,30,%d,%d", getrealfps(), $FFFFFF)
+	
     update_draw_objects
     draw_objects    
 
@@ -337,6 +339,21 @@ return
 
     life = 3
     gameover = -1
-    invincible_timer = 30 // ←ここ！
+    invincible_timer = 30
+    
+	repeat 150 
+		make_star rnd(640) //画面全体に均等配置
+	loop
+
+	return
+
+#deffunc make_star int p1
+    size = 1 + rnd(2)
+    spd = 1 + rnd(2)
+    px = p1
+    py = rnd(480)
+    bright = 100 + rnd(155)
+    col = $010101 * bright
+    make_draw_object TYPE_RECT, (640 - px) / spd, px, py, size, size, -spd, 0, strf("%d", col)
 
 	return
