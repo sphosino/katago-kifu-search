@@ -1,6 +1,6 @@
 #packopt name "KataGo棋譜検索"
 
-;#addition "WrapCall.as" ;コールスタック監査重くなるのでバグ特定用
+;#addition "WrapCall.as" ;コールスタック監査、多少重くなるのでバグ特定用に使う
 
 #include "modules/group.hsp"
 #include "modules/keyfps.hsp"
@@ -580,7 +580,7 @@ pretime = keyfpstime
 		//マウスホイール
 		mw = mousew
 	
-		in_kifulist == 0
+		in_kifulist = 0
 		
 		foreach kifulist
 			if listbox_on_id(kifulist.cnt,mousex, mousey) >= 0{
@@ -1060,8 +1060,6 @@ pretime = keyfpstime
 	
 	return
 
-
-
 #deffunc move_next_int int p1
 	if nownode < 0: return 0
 	moved = 0
@@ -1111,7 +1109,6 @@ pretime = keyfpstime
 	if get_tree_item_id(nownode) == topnode{
 		tmp = "0.50"
 	}else{
-		logmes "hoge"
 		tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
 	}
 	sync_treebox_board t, board
