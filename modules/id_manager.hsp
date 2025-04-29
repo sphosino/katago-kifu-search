@@ -1,10 +1,22 @@
 #ifndef id_manager
-#module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max
+#module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max, len
+
+#const DEFAULT_SIZE 200
 
 #modinit int p1
 
-	clear_id_manager thismod, p1
-
+	if p1 > 0{
+		//指定があればそのサイズで初期化
+		dim id_position_in_used_list, p1
+		dim used_list, p1
+		dim open_list, p1
+	}else{
+		//デフォルトサイズで確保
+		dim id_position_in_used_list, DEFAULT_SIZE
+		dim used_list, DEFAULT_SIZE
+		dim open_list, DEFAULT_SIZE
+	}
+	len = get_id_length(thismod)
 	return
 
 #modcfunc get_new_id
@@ -13,7 +25,15 @@
 		new_id = open_list(open_list_num)
 	} else {
 		new_id = using_max
-		using_max++
+		if new_id >= len{ //確保済みサイズを超えたら
+			//自動拡張を利用して２倍に
+			new_len = len * 2
+			id_position_in_used_list(new_len - 1) = 0 
+			used_list(new_len - 1) = 0
+			open_list(new_len - 1) = 0
+			len = new_len
+		}
+		using_max++ //使用中の最大範囲
 	}
 
 	used_list(used_list_num) = new_id
@@ -38,18 +58,12 @@
 	}
 	return
 
-#modfunc clear_id_manager int p1
-	
-	dim used_list, p1
+#modfunc clear_id_manager
+
 	used_list_num = 0
-
-	open_list = 0
-	open_list_num = 1
-
-	using_max = 1
-
-	dim id_position_in_used_list, p1
-
+	open_list_num = 0
+	using_max = 0
+	
 	return
 
 #modcfunc is_id_alive int id //生存確認！
@@ -62,6 +76,8 @@
 
 #modcfunc get_using_count //カウントだけほしい時はこれ！
 	return used_list_num
+#modcfunc get_id_length
+	return length(id_position_in_used_list)
 	
 #global
 
