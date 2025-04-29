@@ -53,7 +53,7 @@
 	return
 
 #modcfunc is_id_alive int id //¶‘¶Šm”FI
-	return id_position_in_used_list(id) > 0
+	return id_position_in_used_list(id) >= 1
 
 #modcfunc get_used_ids array a
 	dim a, used_list_num

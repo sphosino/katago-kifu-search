@@ -55,7 +55,6 @@
 
 //リスト番号ベースで操作
 #modfunc add_item_data int index, str s1
-	if rnd(10) = 0: logmes s1
 	item_datas(get_list_id(listbox_id_manager, index)) = s1
 	return
 #modcfunc get_item_name int index

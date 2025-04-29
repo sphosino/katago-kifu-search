@@ -1,4 +1,5 @@
 #ifndef sgf_node
+
 #include "bitboard.hsp"
 #module sgf_node
 
@@ -128,6 +129,7 @@
 	return
 
 #defcfunc get_property_data int node_id, str property_name
+
 	dup data, sgf_properties_data(node_id)
 	
 	// プロパティの名前と値を探す
@@ -586,7 +588,7 @@ init_sgf_module
 			add_SGFchild nn, new_id
 			nn = new_id
 			nc++
-			if MN < nc: MN = nc: lastnode = nn
+			if MN < nc: MN = nc: lastnode = nn ; 一番深い位置を記録（これを手数として利用）
 			
 		}else:if token >= 'A' && token <= 'Z'{
 			

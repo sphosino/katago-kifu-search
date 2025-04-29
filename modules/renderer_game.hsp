@@ -53,6 +53,16 @@ dim item_h, MAX_ITEMS
 dim item_type, MAX_ITEMS
 newmod items_id_manager, id_manager
 
+
+// --- 敵の管理 ---
+#const MAX_ENEMIES 30
+dim enemy_x, MAX_ENEMIES
+dim enemy_y, MAX_ENEMIES
+dim enemy_w, MAX_ENEMIES
+dim enemy_h, MAX_ENEMIES
+dim enemy_vx, MAX_ENEMIES
+newmod enemies_id_manager, id_manager
+
 gosub*init
 
 //
@@ -72,13 +82,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 	}
     on_ground = 0
 
-    // 左右キー追加
-	if _getkey(37) >= 1 { ; ←キー
-	    player_x -= 5
-	}
-	if _getkey(39) >= 1 { ; →キー
-	    player_x += 5
-	}
+
 	
 	// 画面外に出ないよう制限
 	player_x = limit(player_x, 0, 640)
@@ -99,6 +103,16 @@ set_priority_draw_object bg, PRIORITY_BACK
 	
 	    block_w(id) = 80
 	    block_h(id) = 20
+	    
+	    // ★ 足場作ったらたまに敵も出す！
+		if rnd(4) == 0 { ; 25%くらいの確率で敵出す
+			eid = get_new_id(enemies_id_manager)
+			enemy_x(eid) = block_x(id) ;+ block_w(id) / 2
+			enemy_y(eid) = block_y(id) - 20 ; ブロックの上にちょこんと置く
+			enemy_w(eid) = 20
+			enemy_h(eid) = 20
+			enemy_vx(eid) = rnd(2)*2-1 ; -1 or 1 (左右ランダムに動く)
+		}
 	}
 	
 	////// 足場更新
@@ -114,22 +128,24 @@ set_priority_draw_object bg, PRIORITY_BACK
 	foreach_end
 	
 	// --- 足場判定 ---
-	foreach_id blocks_id_manager, id
-		// ブロックとの当たり判定
-		if player_y + 15 >= block_y(id) && player_y + 15 <= block_y(id) + block_h(id) {
-			if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
-				if player_vy >= 0 {
-					// 乗った！！
-					player_y = block_y(id) - 15
-					player_vy = 0.0
-	
-					// ★ブロックの横移動をプレイヤーにも伝える！
-					player_x += -4 //（ブロックは左に4px動いてるから）
-					on_ground = 1
+	if gameover == -1{
+		foreach_id blocks_id_manager, id
+			// ブロックとの当たり判定
+			if player_y + 15 >= block_y(id) && player_y + 15 <= block_y(id) + block_h(id) {
+				if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
+					if player_vy >= 0 {
+						// 乗った！！
+						player_y = block_y(id) - 15
+						player_vy = 0.0
+		
+						// ★ブロックの横移動をプレイヤーにも伝える！
+						player_x += -4 //（ブロックは左に4px動いてるから）
+						on_ground = 1
+					}
 				}
 			}
-		}
-	foreach_end
+		foreach_end
+	}
 
 	//頭ぶつける判定
 	foreach_id blocks_id_manager, id
@@ -171,6 +187,20 @@ set_priority_draw_object bg, PRIORITY_BACK
 	    }
 	foreach_end
 
+	// --- 敵の動きと描画 ---
+	foreach_id enemies_id_manager, id
+		// 移動
+		enemy_x(id) += enemy_vx(id)
+	
+		// 端で反転
+		if enemy_x(id) < 0 or enemy_x(id) > 640 {
+			enemy_vx(id) = -enemy_vx(id)
+		}
+	
+		// 敵を描画
+		make_draw_object TYPE_RECT, 1, enemy_x(id), enemy_y(id), enemy_w(id), enemy_h(id), 0, 0, strf("%d", $FF0000) ; 赤い敵
+	foreach_end
+
 	// --- ジャンプ処理 ---
 	if on_ground {
 	    if _getkey(32) == 1 {
@@ -178,10 +208,36 @@ set_priority_draw_object bg, PRIORITY_BACK
 	    }
 	}
 
+	// --- 敵との接触判定 ---
+	foreach_id enemies_id_manager, id
+		// 踏みつけ判定
+		if player_vy > 0 {
+			if player_y + 15 >= enemy_y(id) && player_y - 15 <= enemy_y(id) + enemy_h(id) {
+				if player_x >= enemy_x(id) - enemy_w(id)/2 && player_x <= enemy_x(id) + enemy_w(id)/2 {
+					; 踏みつけ成功！
+					release_id enemies_id_manager, id
+					player_vy = jump_power/2 ; 小さく跳ね返る
+					continue
+				}
+			}
+		}
+	
+		// 横からぶつかるダメージ判定
+		if abs(player_x - enemy_x(id)) < 20 && abs(player_y - enemy_y(id)) < 20 {
+			if invincible_timer <= 0 {
+				life--
+				if life < 0: life = 0
+				if life = 0: gosub*gameover_routine
+				invincible_timer = 60 ; 無敵時間セット！
+			}
+		}
+	foreach_end
+
 	
 	// --- プレイヤー落下チェック ---
 	if player_y > 480 && gameover == -1{
 	    life--
+	    if life < 0: life = 0
 	    if life > 0 {
 	        // 復活処理
 	        id = get_new_id(blocks_id_manager) // 新しい足場作るか、初期足場を参照でもOK！
@@ -195,18 +251,23 @@ set_priority_draw_object bg, PRIORITY_BACK
 	        player_vy = 0
 	    } else {
 	        // ゲームオーバー処理
-	        make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",30, $FF0000) 
-
-	        gameover = stat
-
-	        set_priority_draw_object gameover, PRIORITY_FRONT
+			gosub*gameover_routine
 	    }
 	}
 
 	if gameover >= 0{
 		if _getkey(32) = 1{
 			destroy_draw_object_immediately gameover
+			clear_id_manager enemies_id_manager
 			gosub *init			
+		}
+	}else{
+		    // 左右キー追加
+		if _getkey(37) >= 1 { ; ←キー
+		    player_x -= 5
+		}
+		if _getkey(39) >= 1 { ; →キー
+		    player_x += 5
 		}
 	}
 	
@@ -227,7 +288,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 	    if abs(player_x - item_x(id)) < 20 && abs(player_y - item_y(id)) < 20 {
 	        ; アイテム取得処理！
 	        life++
-	        release_id items_id_manager, id
+	        release_id items_id_manager, id //
 	    }
 	foreach_end
 
@@ -244,6 +305,13 @@ set_priority_draw_object bg, PRIORITY_BACK
     redraw: redraw 2
     await 16
 goto *main
+*gameover_routine
+    make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",30, $FF0000) 
+
+    gameover = stat
+
+    set_priority_draw_object gameover, PRIORITY_FRONT
+	return
 
 #deffunc make_break_effect double x, double y
 	repeat 8  // 破片8個出す

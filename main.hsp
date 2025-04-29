@@ -30,6 +30,8 @@
 #include "hspext.as"
 #include "user32.as"
 
+;#addition "WrapCall.as" ;コールスタック監査
+
 #define window_file_name "window.txt"
 #const INACTIVITY_TIMEOUT 1800
 #const MODE_KIFU_VIEW 0
@@ -959,6 +961,7 @@ pretime = keyfpstime
 	}
 
 	//早期リターンなら何もせず終わる。
+	logmes "検索完了！！！！"
 	if result_num < 0: return
 	
 	kifu_update = 0
@@ -984,7 +987,7 @@ pretime = keyfpstime
 	return
 	
 *filtering_and_make_listbox
-	
+	logmes "filtering_start!!!"
 	//フィルタリング処理
 	//search_resultに結果を保持しているよ
 
@@ -992,7 +995,6 @@ pretime = keyfpstime
 	dim fn //フィルター後の結果の数
 
 	if filter_on{
-
 	//モデルでのフィルター	
 	model_list = "b28","b18","b60","b40"
 	selected_model = model_list(get_value_g_combox(g_combox))
@@ -1098,6 +1100,7 @@ pretime = keyfpstime
 	return moved
 	
 *syncboard
+	logmes "syncboard"
 	nownode = get_current_node(t)
 	if nownode < 0: return
 
@@ -1110,6 +1113,7 @@ pretime = keyfpstime
 	if get_tree_item_id(nownode) == topnode{
 		tmp = "0.50"
 	}else{
+		logmes "hoge"
 		tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
 	}
 	sync_treebox_board t, board

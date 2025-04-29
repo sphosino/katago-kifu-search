@@ -96,6 +96,7 @@
     sort_list_by_priority_list ids, idnum, draw_object_priority
 
     repeat idnum
+    await 
         obj_id = ids(cnt)
 
         switch draw_object_type(obj_id)

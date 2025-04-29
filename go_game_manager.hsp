@@ -82,7 +82,7 @@
 		}
 	}else{
 		new_topnode = int(refstr)
-		logmes "SGF_NODE -> " + new_topnode
+		logmes "new_SGF_NODE -> " + new_topnode
 
 		load_from_SGF_topnode _treebox, new_topnode
 		set_current_node _treebox, stat
