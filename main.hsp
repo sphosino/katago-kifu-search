@@ -98,6 +98,11 @@ addkey 'C'
 addkey 'V'
 addkey 'A'
 
+
+repeat 4
+	addkey 37+cnt //カーソルキー
+loop
+
 //乱数を初期化
 randomize
 
@@ -323,7 +328,8 @@ newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
-newmod g_combox, grid_combox, modelname, "28b\n18b\n60b\n40b", combox_modelname
+model_list = "model\nb28\nb18\nb60\nb40"
+newmod g_combox, grid_combox, modelname, model_list, combox_modelname
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "●"
@@ -695,7 +701,7 @@ pretime = keyfpstime
 	
 #deffunc all_items_draw
 	foreach kifulist
-		listbox_manager kifulist.cnt
+		listbox_manager kifulist.cnt, current_kifulist = cnt
 	loop
 	foreach g_label
 		draw_g_label g_label.cnt
@@ -758,6 +764,7 @@ pretime = keyfpstime
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
+
 		current_kifulist = kifulist_id
 		ui_mode = MODE_KIFU_VIEW
 		if get_root_tree_node(t) >= 0{
@@ -804,12 +811,15 @@ pretime = keyfpstime
 	}
 	return 0
 *next_kifu
+	move_listbox_index kifulist(current_kifulist), 1
 	a = get_selected_item_indices(kifulist(current_kifulist), sel)
-	a = select_kifulist_item(sel + 1, current_kifulist,1)
+	a = select_kifulist_item(sel, current_kifulist,1)
 	return
 *back_kifu
+	move_listbox_index kifulist(current_kifulist),-1
 	a = get_selected_item_indices(kifulist(current_kifulist), sel)
-	a = select_kifulist_item(sel - 1, current_kifulist)
+	a = select_kifulist_item(sel, current_kifulist)
+
 	return
 *move_next
 	move_next_int 1
@@ -993,25 +1003,26 @@ pretime = keyfpstime
 	dim fn //フィルター後の結果の数
 
 	if filter_on{
-	//モデルでのフィルター	
-	model_list = "b28","b18","b60","b40"
-	selected_model = model_list(get_value_g_combox(g_combox))
-	repeat result_num
-		tn = int(get_value(search_result(0,cnt)))
-		blackplayer = get_property_data(tn, "PB")
-		split blackplayer,"-",bp
-		whiteplayer = get_property_data(tn, "PW")
-		split whiteplayer,"-",wp
-
-		modelnames = strmid(bp.1,0,3),strmid(wp.1,0,3) //モデル名取得！
-
-		if modelnames.0 == selected_model || modelnames.1 == selected_model {
-			filtered_result(0,fn) = search_result(0,cnt)
-			filtered_result(1,fn) = search_result(1,cnt)
-			fn++
-		}
-	loop
-	//その他のフィルター
+		//モデルでのフィルター
+		notesel model_list
+		noteget selected_model, get_value_g_combox(g_combox)
+		repeat result_num
+		
+			tn = int(get_value(search_result(0,cnt))) //topnodeからプレイヤー情報取得
+			blackplayer = get_property_data(tn, "PB")
+			split blackplayer,"-",bp
+			whiteplayer = get_property_data(tn, "PW")
+			split whiteplayer,"-",wp
+			modelnames = strmid(bp.1,0,3),strmid(wp.1,0,3) //モデル名取得！
+	
+			if get_value_g_combox(g_combox) == 0 || modelnames.0 == selected_model || modelnames.1 == selected_model {
+				filtered_result(0,fn) = search_result(0,cnt)
+				filtered_result(1,fn) = search_result(1,cnt)
+				fn++
+			}
+		loop
+		
+		//その他のフィルター
 
 
 	}else{

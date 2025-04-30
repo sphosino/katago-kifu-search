@@ -114,9 +114,10 @@
 
 	return
 
-#modfunc listbox_manager
+#modfunc listbox_manager int current_flag
 	thisrect thismod, rect, area_number
 
+	moved = 0
 	// 現在のスクロール位置
 	scroll_value = get_value_scroll_bar(scrollbar)
 
@@ -151,6 +152,14 @@
 		}
 	}
 
+	if current_flag{
+		if _getkey(38) ==  1 || _getkey(40) == 1{
+			offset = ( _getkey(40) == 1 ) * 2 - 1
+			move_listbox_index thismod ,offset
+			
+		}
+	}
+
 	font "", item_y
 
 	// --- 表示 ---
@@ -178,8 +187,30 @@
 	}
 
 	return
-
+#modfunc move_listbox_index int move_value
 	
+	clicked_index = limit(get_single_selected_index(thismod) + move_value, 0, get_list_count(listbox_id_manager)-1)
+	clicked_id = get_list_id(listbox_id_manager, clicked_index)
+	
+	repeat get_list_ids(listbox_id_manager,ids)
+		listbox_item_select_status(ids.cnt) = 0
+	loop
+	listbox_item_select_status(clicked_id) = 1
+
+	ensure_visible_index thismod, clicked_index
+
+	return
+#modfunc ensure_visible_index int index
+	thisrect thismod, rect, area_number
+	visible_lines = (rect.3 - rect.1) / item_y
+	current_scroll = get_value_scroll_bar(scrollbar)
+
+	if index < current_scroll {
+		move_scroll_index thismod, index
+	} else : if index >= current_scroll + visible_lines {
+		move_scroll_index thismod, index - visible_lines + 1
+	}
+	return
 //スクロールバー関連
 #modfunc set_listbox_scollbar_width int p1
 	set_tickness_scroll_bar scrollbar, p1
@@ -277,6 +308,18 @@
 	}
 
 	return i // アイテム番号（0始まり）
+
+#modcfunc get_single_selected_index
+	result = -1
+	repeat get_list_ids(listbox_id_manager, ids)
+		id = ids(cnt)
+		if listbox_item_select_status(id) == 1 {
+			result = cnt
+			break
+		}
+	loop
+	return result
+
 
 
 //---util functions
