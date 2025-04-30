@@ -43,8 +43,9 @@
 	return new_id
 
 #modfunc release_id int id
-	if id < 0 || id > using_max: return
+	if id < 0 || id >= using_max: return
 
+	;/*
 	dup idx, id_position_in_used_list(id)
 	if idx {
 		open_list(open_list_num) = id
@@ -55,21 +56,37 @@
 		id_position_in_used_list(move_id) = idx
 		idx = 0
 	}
+	/*/// dupを信用しないならこっち
+	if id_position_in_used_list(id) {
+		open_list(open_list_num) = id
+		open_list_num++
+		used_list_num--
+		move_id = used_list(used_list_num)
+		used_list(id_position_in_used_list(id) - 1) = move_id
+		id_position_in_used_list(move_id) = id_position_in_used_list(id)
+		id_position_in_used_list(id)= 0
+	}
+	;*/
 	return
 
 #modfunc clear_id_manager
-
+	dim id_position_in_used_list, len ; for function -> is_id_alive
 	used_list_num = 0
 	open_list_num = 0
 	using_max = 0
-	
 	return
 
 #modcfunc is_id_alive int id //生存確認！
 	return id_position_in_used_list(id) >= 1
 
 #modcfunc get_used_ids array a
-	dim a, used_list_num
+	
+	dim a, used_list_num  // 1番
+	;a(using_max) = 0 // 2番 
+	;a(limit(used_list_num - 1,0)) = 0 // 3番
+
+	//上記３つの aの確保方法どれがいいでしょうか？
+	
 	memcpy a, used_list, used_list_num << 2
 	return used_list_num
 

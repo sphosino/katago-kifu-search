@@ -9,13 +9,13 @@ gsel 0
 randomize
 
 // プレイヤー情報
-player_x = 100
-player_y = 300
+player_x = 100.
+player_y = 300.
+player_sizex = 30.
+player_sizey = 30.
 player_vy = 0.0
 gravity = 0.5
 jump_power = -10.0
-
-
 
 init_draw_objects
 randomize
@@ -36,31 +36,37 @@ life = 3
 #enum BLOCK_TYPE_MAX
 
 #const MAX_BLOCKS 100
-dim block_x, MAX_BLOCKS
-dim block_y, MAX_BLOCKS
-dim block_w, MAX_BLOCKS
-dim block_h, MAX_BLOCKS
-dim block_type, MAX_BLOCKS
+ddim block_x, MAX_BLOCKS
+ddim block_y, MAX_BLOCKS
+ddim block_vx, MAX_BLOCKS
+ddim block_vy, MAX_BLOCKS
+ddim block_w, MAX_BLOCKS
+ddim block_h, MAX_BLOCKS
+ddim block_type, MAX_BLOCKS
 newmod blocks_id_manager, id_manager
 
 // アイテムの管理
 #const MAX_ITEMS 30
-dim item_x, MAX_ITEMS
-dim item_y, MAX_ITEMS
-dim item_w, MAX_ITEMS
-dim item_h, MAX_ITEMS
-dim item_type, MAX_ITEMS
+ddim item_x, MAX_ITEMS
+ddim item_y, MAX_ITEMS
+ddim item_w, MAX_ITEMS
+ddim item_h, MAX_ITEMS
+ddim item_type, MAX_ITEMS
 newmod items_id_manager, id_manager
 
 
 // --- 敵の管理 ---
 #const MAX_ENEMIES 30
-dim enemy_x, MAX_ENEMIES
-dim enemy_y, MAX_ENEMIES
-dim enemy_w, MAX_ENEMIES
-dim enemy_h, MAX_ENEMIES
-dim enemy_vx, MAX_ENEMIES
+ddim enemy_x, MAX_ENEMIES
+ddim enemy_y, MAX_ENEMIES
+ddim enemy_w, MAX_ENEMIES
+ddim enemy_h, MAX_ENEMIES
+ddim enemy_vx, MAX_ENEMIES
 newmod enemies_id_manager, id_manager
+
+
+block_colors = $AAAAAA, $FFD700, $FF9999,$B22222
+
 
 gosub*init
 
@@ -69,22 +75,22 @@ make_draw_object TYPE_RECT, -1, 320, 240, 640, 480, 0, 0, strf("%d", $000000) //
 bg = stat
 set_priority_draw_object bg, PRIORITY_BACK
 ;*/
+
+setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 *main
     manage_keyfps
 
 
-	make_star 640 - rnd(rnd(640) + 1) //新しい星は右寄りに生成
+	make_star 640. - rnd(rnd(640) + 1) //新しい星は右寄りに生成
 
 	// 無敵タイマー管理
 	if invincible_timer > 0 {
-    invincible_timer--
-	
-	    // 無敵中だけプレイヤーも一緒に動かす
+    	invincible_timer--
 	}
-    on_ground = 0
+    
 	
 	// 画面外に出ないよう制限
-	player_x = limit(player_x, 0, 640)
+	player_x = limitf(player_x, 0, 640)
 
 
     // プレイヤー重力処理
@@ -92,54 +98,48 @@ set_priority_draw_object bg, PRIORITY_BACK
     player_y += player_vy
 
 	    ////// 足場生成
-	if rnd(15) == 0 { ; 頻度アップ！！
+	if rnd(15) == 0 { 
 	    id = get_new_id(blocks_id_manager)
-	    block_x(id) = 640
-	    block_type(id) = rnd(BLOCK_TYPE_MAX)
-	
-	    // 高さランダム広げる！
-	    block_y(id) = 200 + rnd(280) ; 200～480の範囲で
-	
-	    block_w(id) = 80
-	    block_h(id) = 20
+	    
+	    make_block rnd(4)
 	    
 	    // ★ 足場作ったらたまに敵も出す！
 		if rnd(4) == 0 { ; 25%くらいの確率で敵出す
-			eid = get_new_id(enemies_id_manager)
-			enemy_x(eid) = block_x(id) ;+ block_w(id) / 2
-			enemy_y(eid) = block_y(id) - 20 ; ブロックの上にちょこんと置く
-			enemy_w(eid) = 20
-			enemy_h(eid) = 20
-			enemy_vx(eid) = rnd(2)*2-1 ; -1 or 1 (左右ランダムに動く)
+			make_enemy block_x(id), block_y(id) + block_h(id) / 2 
 		}
 	}
 	
 	////// 足場更新
-	block_colors = $AAAAAA, $FFD700, $FF9999,$B22222
+	
 	foreach_id blocks_id_manager, id
 	
-	    block_x(id) -= 4 ; 左に動かす
-	    make_draw_object TYPE_RECT, 1, block_x(id) + block_w(id)/2, block_y(id) + block_h(id)/2, block_w(id), block_h(id), 0, 0, strf("%d", block_colors(block_type(id)))
+	    block_x(id) += block_vx(id) ; 左に動かす
+	    make_draw_object TYPE_RECT, 1, block_x(id), block_y(id), block_w(id), block_h(id), 0, 0, strf("%d", block_colors(block_type(id)))
 	
-	    if block_x(id) + block_w(id) < 0 {
+	    if block_x(id) + block_w(id)/2 < 0 {
 	        release_id blocks_id_manager, id
 	    }
 	foreach_end
 	
 	// --- 足場判定 ---
+	on_ground = 0
 	if gameover == -1{
 		foreach_id blocks_id_manager, id
 			// ブロックとの当たり判定
-			if player_y + 15 >= block_y(id) && player_y + 15 <= block_y(id) + block_h(id) {
-				if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
+			if block_y(id) - player_y <= (block_h(id)  + player_sizey) / 2 && (block_y(id) > player_y){
+				//ブロックとの距離が接触距離以内かつブロックが下。
+				if abs(player_x - block_x(id)) <= (player_sizex + block_w(id)) / 2 {
+					//x範囲内にプレイヤーが存在！
 					if player_vy >= 0 {
-						// 乗った！！
-						player_y = block_y(id) - 15
+						// 乗った！！プレイヤーを足場の上に止める。
+						player_y = block_y(id) - (block_h(id) + player_sizey) / 2
 						player_vy = 0.0
 		
 						// ★ブロックの横移動をプレイヤーにも伝える！
-						player_x += -4 //（ブロックは左に4px動いてるから）
+						player_x += block_vx(id)
 						on_ground = 1
+						title "blockid -> "+id
+						break
 					}
 				}
 			}
@@ -149,7 +149,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 	//頭ぶつける判定
 	foreach_id blocks_id_manager, id
 	    // プレイヤーの頭がブロックの下に到達
-	    if player_y - 15 <= block_y(id) + block_h(id) && player_y - 15 >= block_y(id) {
+	    if player_y - block_y(id) <= (player_sizey + block_h(id)) / 2 && player_y > block_y(id) {
 	        if player_x >= block_x(id) && player_x <= block_x(id) + block_w(id) {
 	            if player_vy < 0 { // 上向きにジャンプ中
 	                // --- 頭ゴツン！！ ---
@@ -158,20 +158,14 @@ set_priority_draw_object bg, PRIORITY_BACK
 	                case BLOCK_TYPE_NORMAL
 	                case BLOCK_TYPE_EMPTY
 		                player_vy = 0.0
-		                player_y = block_y(id) + block_h(id) + 15 // 頭をブロックの下に合わせる
+		                player_y = block_y(id) + (block_h(id) + player_sizey)/2 // 頭をブロックの下に合わせる
 					swbreak
 		            case BLOCK_TYPE_ITEM
 	             		player_vy = 0.0
-		                player_y = block_y(id) + block_h(id) + 15 // 頭をブロックの下に合わせる
+		                player_y = block_y(id) + (block_h(id) + player_sizey)/2 // 頭をブロックの下に合わせる
 
-		                item_id = get_new_id(items_id_manager)
-	                    item_x(item_id) = block_x(id) + block_w(id)/2
-	                    item_y(item_id) = block_y(id)
-	                    item_vy(item_id) = -0.9
-	                    item_w(item_id) = 20
-	                    item_h(item_id) = 20
-	                    item_gravity(item_id) = 0.2
-	                    item_type(item_id) = rnd(3) // アイテムの種類を指定
+						make_item block_x(id), block_y(id)
+
 	                    // ブロックを空にする
 	                    block_type(id) = BLOCK_TYPE_EMPTY
 		            swbreak
@@ -211,24 +205,27 @@ set_priority_draw_object bg, PRIORITY_BACK
 	foreach_id enemies_id_manager, id
 		// 踏みつけ判定
 		if player_vy > 0 {
-			if player_y + 15 >= enemy_y(id) && player_y < enemy_y(id) {
-				if abs(player_x - enemy_x(id)) < enemy_w(id)/2 + 15 {
+			if abs(player_y - enemy_y(id)) <= (player_sizey + enemy_h(id)) / 2  && player_y < enemy_y(id) {
+				if abs(player_x - enemy_x(id)) < (enemy_w(id) + player_sizex) / 2 {
 					release_id enemies_id_manager, id
+					player_y = enemy_y(id) - enemy_h(id) / 2 - 1
 					player_vy = jump_power * 2 / 3
-					invincible_timer = 5 ; 念のため一瞬だけ無敵
-					continue ; ← 必ず抜ける！！
+					invincible_timer = 20 ; 念のため一瞬だけ無敵
+					continue
 				}
 			}
 		}
 	
 		// 横からぶつかり判定
 		if invincible_timer <= 0 {
-			if abs(player_x - enemy_x(id)) < 20 && abs(player_y - enemy_y(id)) < 20 {
-				life--
-				if life <= 0 {
-					gosub *gameover_routine
+			if abs(player_x - enemy_x(id)) < (player_sizex + enemy_w(id))/2 {
+				if abs(player_y - enemy_y(id)) < (player_sizey + enemy_h(id)) / 2 {
+					life--
+					if life <= 0 {
+						gosub *gameover_routine
+					}
+					invincible_timer = 60
 				}
-				invincible_timer = 60
 			}
 		}
 	foreach_end
@@ -239,14 +236,10 @@ set_priority_draw_object bg, PRIORITY_BACK
 	    if life < 0: life = 0
 	    if life > 0 {
 	        // 復活処理
-	        id = get_new_id(blocks_id_manager) // 新しい足場作るか、初期足場を参照でもOK！
-	        block_x(id) = 600
-	        block_y(id) = 400
-	        block_w(id) = 80
-	        block_h(id) = 20
+	      	make_block BLOCK_TYPE_NORMAL
 	
-	        player_x = block_x(id) + block_w(id) / 2
-	        player_y = block_y(id) - 15
+	        player_x = block_x(id)
+	        player_y = block_y(id) - (block_h(id) + player_sizey) / 2
 	        player_vy = 0
 	    } else {
 	        // ゲームオーバー処理
@@ -256,7 +249,7 @@ set_priority_draw_object bg, PRIORITY_BACK
 
 	if gameover >= 0{
 		if _getkey(32) = 1{
-			destroy_draw_object_immediately gameover
+			destroy_draw_object gameover
 			clear_id_manager enemies_id_manager
 			gosub *init
 		}
@@ -292,27 +285,96 @@ set_priority_draw_object bg, PRIORITY_BACK
 	foreach_end
 
     // プレイヤー描画
-    make_draw_object TYPE_RECT, 1, player_x, player_y, 30, 30, 0, 0, strf("%d", $00FF00)
+    make_draw_object TYPE_RECT, 1, player_x, player_y, player_sizex, player_sizey, 0, 0, strf("%d", $00FF00)
+
 	// ハートをライフ個ぶんレンダラに渡す
-	
 	repeat limit(life,0)
 		make_draw_object TYPE_SPRITE, 1, 75 * cnt + 33, 80, 75, 80, 0, 0, "20,0,0,75,80,0,0,0"
 	loop
 
-	make_draw_object TYPE_STR, 1, 100, 100, 0, 0, 0, 0, strf("メイリオ,30,%d,%d", getrealfps(), $FFFFFF)
+	make_draw_object TYPE_STR, 1, 400, 50, 0, 0, 0, 0, strf("メイリオ,20,fps = %d,%d", getrealfpsf(), $FFFFFF)
 	
     update_draw_objects
-    draw_objects    
+    draw_objects
 
     redraw: redraw 2
     await 16
-goto *main
+	goto *main
+	
 *gameover_routine
-    make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ,%d,gameover,%d",30, $FF0000) 
-
+	if gameover >= 0: return
+	
+	make_draw_object TYPE_STR, -1, 320, 240, 640, 480, 0, 0, strf("メイリオ, %d, gameover, %d",30, $FF0000) 
     gameover = stat
-
     set_priority_draw_object gameover, PRIORITY_FRONT
+    
+	return
+
+
+*init
+
+	make_block BLOCK_TYPE_NORMAL
+
+    player_x = block_x(id) + block_w(id) / 2
+    player_y = block_y(id) - block_h(id) / 2
+    player_vy = 0.
+
+    life = 3
+    gameover = -1
+    invincible_timer = 30
+    
+	repeat 100 
+		make_star rnd(640) //画面全体に均等配置
+	loop
+
+	return
+
+#deffunc make_star int p1
+    size = 1 + rnd(2)
+    spd = 1 + rnd(2)
+    posx = p1
+    posy = rnd(480)
+    bright = 100 + rnd(155)
+    col = $010101 * bright
+    make_draw_object TYPE_RECT, (640 - posx) / spd, posx, posy, size, size, -spd, 0, strf("%d", col)
+
+	return
+
+#deffunc make_block int type
+
+    // 1. 復活ブロック作る
+    id = get_new_id(blocks_id_manager)
+    block_x(id) = 600.
+    block_y(id) = 200. + rnd(280) ; 200～480の範囲で
+    block_vx(id) = -4.
+    block_vy(id) = 0.
+    block_w(id) = 80.
+    block_h(id) = 20.
+    block_type(id) = type
+    
+	return id
+
+#deffunc make_enemy double px, double py
+
+	eid = get_new_id(enemies_id_manager)
+	enemy_x(eid) = px
+	enemy_y(eid) = py ; ブロックの上にちょこんと置く
+	enemy_vx(eid) = -4.
+	enemy_vy(eid) = 0.
+	enemy_w(eid) = 20.
+	enemy_h(eid) = 20.
+	enemy_vx(eid) = -1. + rnd(2)*2 ; -1 or 1 (左右ランダムに動く)
+	return
+
+#deffunc make_item double px, double py
+	item_id = get_new_id(items_id_manager)
+    item_x(item_id) = px
+    item_y(item_id) = py
+    item_vy(item_id) = -0.9
+    item_w(item_id) = 20.
+    item_h(item_id) = 20.
+    item_gravity(item_id) = 0.2
+    item_type(item_id) = rnd(3) // アイテムの種類を指定
 	return
 
 #deffunc make_break_effect double x, double y
@@ -324,36 +386,3 @@ goto *main
 		make_draw_object TYPE_RECT, 30, x, y, size, size, vx, vy, strf("%d", $FFCC00) ; 黄色っぽい破片
 	loop
 return
-*init
-    // 1. 復活ブロック作る
-    id = get_new_id(blocks_id_manager)
-    block_x(id) = 600
-    block_y(id) = 400
-    block_w(id) = 80
-    block_h(id) = 20
-    block_type(id) = BLOCK_TYPE_NORMAL
-
-    player_x = block_x(id) + block_w(id) / 2
-    player_y = block_y(id) - 15
-    player_vy = 0
-
-    life = 3
-    gameover = -1
-    invincible_timer = 30
-    
-	repeat 150 
-		make_star rnd(640) //画面全体に均等配置
-	loop
-
-	return
-
-#deffunc make_star int p1
-    size = 1 + rnd(2)
-    spd = 1 + rnd(2)
-    px = p1
-    py = rnd(480)
-    bright = 100 + rnd(155)
-    col = $010101 * bright
-    make_draw_object TYPE_RECT, (640 - px) / spd, px, py, size, size, -spd, 0, strf("%d", col)
-
-	return

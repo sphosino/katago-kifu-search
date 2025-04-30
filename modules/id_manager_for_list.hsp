@@ -38,14 +38,14 @@
 	return id
 	
 #modfunc delete_by_listnum int p1
-	if is_id_alive(id_list_manager, listnum_to_id(p1)){
-		release_id id_list_manager, listnum_to_id(p1)
-		foreach_id id_list_manager, id //全ての有効なアイテムに対してループ
-			if id_to_listnum(id) > p1{ //位置がp1以上のアイテムに対して
-				id_to_listnum(id)--　//位置を前に詰める
-				listnum_to_id(id_to_listnum(id)) = id //詰めた位置のidを更新
-			}
-		foreach_end
+	if p1 < 0 || p1 >= listnum : return
+	id = listnum_to_id(p1)
+	if is_id_alive(id_list_manager, id) {
+		release_id id_list_manager, id
+		repeat listnum - p1 - 1, p1
+			listnum_to_id(cnt) = listnum_to_id(cnt + 1)
+			id_to_listnum(listnum_to_id(cnt)) = cnt
+		loop
 		listnum--
 	}
 	return
@@ -60,32 +60,28 @@
 	return
 
 #modcfunc get_list_ids array a
-	repeat listnum
-		a(cnt) = listnum_to_id(cnt)
-	loop
+	dim a, listnum
+	memcpy a, listnum_to_id, listnum << 2
     return listnum
 #modcfunc get_list_count
 	return listnum
 
     
 #modcfunc get_list_ids_range var a, int start_index, int end_index, int max_list_num
-    // 引数の検証
-    if start_index > end_index : return 0
-    start_idx = limit(start_index, 0, max_list_num - 1)
-    end_idx = limit(end_index, 0, max_list_num - 1)
-    
-    n = 0
-    repeat end_idx - start_idx + 1, start_idx
-        a(n) = listnum_to_id(cnt)
-        n++
-    loop
-    return n
+	if start_index > end_index : return 0
+	start_idx = limit(start_index, 0, max_list_num - 1)
+	end_idx = limit(end_index, 0, max_list_num - 1)
+	n = end_idx - start_idx + 1
+	dim a, n
+	memcpy a, listnum_to_id + start_idx, n << 2
+	return n
     
 #modcfunc get_list_id int p1
+	if p1 < 0 || p1 >= listnum : return -1
 	return listnum_to_id(p1)
 	
 #modcfunc get_list_position int p1
-	return id_to_listnum(p1)
-
+	if is_id_alive(id_list_manager, p1) : return id_to_listnum(p1)
+	return -1
 #global
 #endif

@@ -247,12 +247,10 @@ init_draw_objects
 #deffunc insertion_sort_range array a, int s, int e, array b
 	// a配列[s]～[e]を、bの優先度で昇順ソートする 
 	if e <= s : return
-	
-	repeat e - s, s + 1
-	i = cnt
-	target = a(i)
+	repeat e - s, s
+	target = a(cnt + 1)
 	priority = b(target)
-	j = i - 1
+	j = cnt
 	/*
 		j + 1 に、targetを入れるのか jを入れるのかを考えていく。
 		targetを入れるときはそれで正しい位置に挿入できたことを意味する。
@@ -269,5 +267,3 @@ init_draw_objects
 	loop
 	return
 #global
-
-
