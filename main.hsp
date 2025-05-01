@@ -2,9 +2,9 @@
 
 ;#addition "WrapCall.as" ;コールスタック監査、多少重くなるのでバグ特定用に使う
 
+#include "modules/sgf2.hsp"
 #include "modules/group.hsp"
 #include "modules/keyfps.hsp"
-#include "modules/sgf.hsp"
 #include "GobanPatternManager.hsp"
 #include "modules/katago_sqr.hsp"
 #include "modules/set.hsp"

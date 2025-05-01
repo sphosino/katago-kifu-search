@@ -1,7 +1,7 @@
 #ifndef id_manager
 #module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max, len
 
-#const DEFAULT_SIZE 200
+#const DEFAULT_SIZE 50
 
 #modinit int p1
 
@@ -43,16 +43,16 @@
 	return new_id
 
 #modfunc release_id int id
-	if id < 0 || id >= using_max: return
-
-	dup idx, id_position_in_used_list(id)
-	if idx {
-		open_list(open_list_num) = id
-		open_list_num++
-		used_list_num--
-		used_list(idx - 1) = used_list(used_list_num)
-		id_position_in_used_list(used_list(used_list_num)) = idx
-		idx = 0
+	if is_id_alive(thismod, id){
+		dup idx, id_position_in_used_list(id)
+		if idx {
+			open_list(open_list_num) = id
+			open_list_num++
+			used_list_num--
+			used_list(idx - 1) = used_list(used_list_num)
+			id_position_in_used_list(used_list(used_list_num)) = idx
+			idx = 0
+		}
 	}
 	return
 
@@ -64,6 +64,7 @@
 	return
 
 #modcfunc is_id_alive int id
+	if id < 0 || id >= using_max: return 0
 	return id_position_in_used_list(id)
 
 #modcfunc get_used_ids array a
@@ -78,7 +79,6 @@
 	return length(id_position_in_used_list)
 	
 #global
-
 
 #define global foreach_id(%1, %2)%tforeach_id repeat get_used_ids(%1,%i): %2 = %o(cnt)
 #define global foreach_end %tforeach_id loop
