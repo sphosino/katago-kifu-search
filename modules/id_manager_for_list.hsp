@@ -60,7 +60,7 @@
 	return
 
 #modcfunc get_list_ids array a
-	dim a, listnum
+	a(listnum - (listnum != 0)) = 0
 	memcpy a, listnum_to_id, listnum << 2
     return listnum
     
