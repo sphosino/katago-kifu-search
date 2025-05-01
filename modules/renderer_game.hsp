@@ -13,7 +13,9 @@ player_x = 100.
 player_y = 300.
 player_sizex = 30.
 player_sizey = 30.
+player_vx = 0.0
 player_vy = 0.0
+player_ax = 0.0
 gravity = 0.5
 jump_power = -10.0
 
@@ -67,6 +69,7 @@ newmod enemies_id_manager, id_manager
 
 block_colors = $AAAAAA, $FFD700, $FF9999,$B22222
 
+#define ctype sgn(%1) ((%1 > 0) - (%1 < 0))
 
 gosub*init
 
@@ -87,16 +90,70 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 	if invincible_timer > 0 {
     	invincible_timer--
 	}
-    
+    	
+	//プレイヤーvelocity更新
 	
-	// 画面外に出ないよう制限
-	player_x = limitf(player_x, 0, 640)
+	player_vx += player_ax
+	player_vx = limitf(player_vx, -5, 5)
 
-
-    // プレイヤー重力処理
-    player_vy += gravity
+	if on_ground == 0 && _getkey(38) >= 0{
+		gliding = 1
+	}else{
+		gliding = 0
+	}
+	if gliding{
+		gravity_now = 0.2 ;
+	}else{
+		gravity_now = 0.6
+	}
+	// プレイヤー重力処理
+    player_vy = limitf(player_vy + gravity_now,, 20)
+	
+	// プレイヤー位置更新
+    player_x += player_vx + block_move: block_move = 0
     player_y += player_vy
 
+    // 画面外に出ないよう制限
+	player_x = limitf(player_x, 0, 640)
+	if gameover >= 0{
+		if _getkey(32) = 1{
+			destroy_draw_object gameover
+			clear_id_manager enemies_id_manager
+			gosub *init
+		}
+	}else{
+		    // 左右キー追加
+		if on_ground {
+		    if _getkey(37) >= 1 {
+		        player_ax = -0.8
+		    } else : if _getkey(39) >= 1 {
+		        player_ax = 0.8
+		    } else {
+		        // 地面にいるときは強く止める！
+		        if abs(player_vx) < 0.5 {
+		            player_vx = 0.0
+		            player_ax = 0.0
+		        } else {
+		            player_ax = -1.0 * sgn(player_vx) ; 強めのブレーキ！
+		        }
+		    }
+		} else {
+		    // 空中操作（スライド感を残す）
+		    if _getkey(37) >= 1 {
+		        player_ax = -0.3
+		    } else : if _getkey(39) >= 1 {
+		        player_ax = 0.3
+		    } else {
+		        player_ax = -0.1 * sgn(player_vx) ; 空中ブレーキは弱め
+		    }
+		}
+	}
+	if gliding {
+	    player_vy = limitf(player_vy,, 2.5)
+	}
+	if gliding {
+	    make_draw_object TYPE_STR, 1, player_x, player_y - 30, 0, 0, 0, 0, "メイリオ,20,滑空中～♪"
+	}
 	    ////// 足場生成
 	if rnd(15) == 0 { 
 	    id = get_new_id(blocks_id_manager)
@@ -110,12 +167,14 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 	}
 	
 	////// 足場更新
-	
+
+	cc = 0
 	foreach_id blocks_id_manager, id
 	
 	    block_x(id) += block_vx(id) ; 左に動かす
 	    make_draw_object TYPE_RECT, 1, block_x(id), block_y(id), block_w(id), block_h(id), 0, 0, strf("%d", block_colors(block_type(id)))
-	
+		set_priority_draw_object stat, PRIORITY_NORMAL + (frame_counter() - c) * 1000 + cc // c = init時に取得したカウンタ
+		cc++
 	    if block_x(id) + block_w(id)/2 < 0 {
 	        release_id blocks_id_manager, id
 	    }
@@ -136,7 +195,7 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 						player_vy = 0.0
 		
 						// ★ブロックの横移動をプレイヤーにも伝える！
-						player_x += block_vx(id)
+						block_move = block_vx(id)
 						on_ground = 1
 						title "blockid -> "+id
 						break
@@ -209,6 +268,7 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 				if abs(player_x - enemy_x(id)) < (enemy_w(id) + player_sizex) / 2 {
 					release_id enemies_id_manager, id
 					player_y = enemy_y(id) - enemy_h(id) / 2 - 1
+					;player_vx += enemy_vx(id)
 					player_vy = jump_power * 2 / 3
 					invincible_timer = 20 ; 念のため一瞬だけ無敵
 					continue
@@ -247,21 +307,7 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 	    }
 	}
 
-	if gameover >= 0{
-		if _getkey(32) = 1{
-			destroy_draw_object gameover
-			clear_id_manager enemies_id_manager
-			gosub *init
-		}
-	}else{
-		    // 左右キー追加
-		if _getkey(37) >= 1 { ; ←キー
-		    player_x -= 5
-		}
-		if _getkey(39) >= 1 { ; →キー
-		    player_x += 5
-		}
-	}
+
 	
 	//アイテムの動き
 	foreach_id items_id_manager, id
@@ -313,11 +359,15 @@ setfps 300 //パフォーマンスチェック 実際にどのくらいのFPSが出せるか。
 
 *init
 
+	start_frame = frame_counter()
+	
 	make_block BLOCK_TYPE_NORMAL
 
     player_x = block_x(id) + block_w(id) / 2
     player_y = block_y(id) - block_h(id) / 2
     player_vy = 0.
+    player_ax = 0.
+    player_vx = 0.
 
     life = 3
     gameover = -1

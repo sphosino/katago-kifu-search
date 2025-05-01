@@ -63,9 +63,9 @@
 	dim a, listnum
 	memcpy a, listnum_to_id, listnum << 2
     return listnum
+    
 #modcfunc get_list_count
 	return listnum
-
     
 #modcfunc get_list_ids_range var a, int start_index, int end_index, int max_list_num
 	if start_index > end_index : return 0

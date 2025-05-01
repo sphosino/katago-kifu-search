@@ -5,9 +5,9 @@
 
 #const DRAW_OBJECTS_MAX 3000
 
-#const global PRIORITY_BACK 0
-#const global PRIORITY_NORMAL 1000
-#const global PRIORITY_FRONT 2000
+#const global PRIORITY_BACK 50000
+#const global PRIORITY_NORMAL 100000
+#const global PRIORITY_FRONT 150000
 
 #enum global TYPE_RECT = 0
 #enum global TYPE_CIRCLE
@@ -38,7 +38,7 @@
     ddim draw_object_va, DRAW_OBJECTS_MAX
 
 	// --- ÉÇÉWÉÖÅ[Éãïœêî
-	newmod draw_object_id_manager, id_manager
+	newmod draw_object_id_manager, id_manager, DRAW_OBJECTS_MAX
     return
 
 #deffunc make_draw_object int _type, int life, double x, double y, double w, double h, double vx, double vy, str parameters

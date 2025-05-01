@@ -405,6 +405,8 @@ p2で間隔を指定します。この時間以内に２回目が押されると、１を返します。
 		
 	#define global keyFPStime                     keyFPStimer__@keyFPS() ; Windows が起動してからの経過時間 ( timeGettime )
 
+	#define global ctype frame_counter frame_counter@keyfps
+
 /*
 %index
 slowdown

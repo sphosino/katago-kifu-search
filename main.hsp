@@ -328,7 +328,7 @@ newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
 
-model_list = "model\nb28\nb18\nb60\nb40"
+model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
@@ -812,13 +812,11 @@ pretime = keyfpstime
 	return 0
 *next_kifu
 	move_listbox_index kifulist(current_kifulist), 1
-	a = get_selected_item_indices(kifulist(current_kifulist), sel)
-	a = select_kifulist_item(sel, current_kifulist,1)
+	a = select_kifulist_item(stat, current_kifulist,1)
 	return
 *back_kifu
 	move_listbox_index kifulist(current_kifulist),-1
-	a = get_selected_item_indices(kifulist(current_kifulist), sel)
-	a = select_kifulist_item(sel, current_kifulist)
+	a = select_kifulist_item(stat, current_kifulist)
 
 	return
 *move_next

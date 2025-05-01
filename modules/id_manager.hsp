@@ -33,7 +33,7 @@
 			open_list(new_len - 1) = 0
 			len = new_len
 		}
-		using_max++ //使用中の最大範囲
+		using_max++ //使用中の最後の要素位置
 	}
 
 	used_list(used_list_num) = new_id
@@ -80,13 +80,7 @@
 	return id_position_in_used_list(id) >= 1
 
 #modcfunc get_used_ids array a
-	
-	dim a, used_list_num  // 1番
-	;a(using_max) = 0 // 2番 
-	;a(limit(used_list_num - 1,0)) = 0 // 3番
-
-	//上記３つの aの確保方法どれがいいでしょうか？
-	
+	a(using_max - open_list_num) = 0
 	memcpy a, used_list, used_list_num << 2
 	return used_list_num
 

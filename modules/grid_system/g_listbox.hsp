@@ -199,7 +199,7 @@
 
 	ensure_visible_index thismod, clicked_index
 
-	return
+	return clicked_index
 #modfunc ensure_visible_index int index
 	thisrect thismod, rect, area_number
 	visible_lines = (rect.3 - rect.1) / item_y
