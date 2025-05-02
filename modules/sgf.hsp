@@ -1,6 +1,6 @@
 #ifndef sgf_node
 
-#include "bitboard2.hsp"
+#include "bitboard.hsp"
 #include "keyfps.hsp"
 #include "id_manager.hsp"
 #module sgf_node
