@@ -865,7 +865,7 @@ pretime = keyfpstime
 	dim nodelist
 	
 	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = int(get_value(get_name_item(kifulist.current_kifulist, s(cnt))))
+		nodelist(cnt) = int(get_value(get_item_name(kifulist.current_kifulist, s(cnt))))
 	loop
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
@@ -903,13 +903,13 @@ pretime = keyfpstime
 
 	dim nodelist
 	repeat get_selected_item_indices(kifulist.current_kifulist, node_ids)
-		nodelist(cnt) = int(get_value(get_name_item(kifulist.current_kifulist, node_ids(cnt))))
+		nodelist(cnt) = int(get_value(get_item_name(kifulist.current_kifulist, node_ids(cnt))))
 	loop
 	new_node = merge_node(nodelist)
 	s = get_node_sgf(new_node)
 	notesel s
-		logmes dirname + "/" + savedir + "/" + get_name_item(kifulist.current_kifulist, node_ids(0))
-		notesave dirname + "/" + savedir + "/" + get_name_item(kifulist.current_kifulist, node_ids(0))
+		logmes dirname + "/" + savedir + "/" + get_item_name(kifulist.current_kifulist, node_ids(0))
+		notesave dirname + "/" + savedir + "/" + get_item_name(kifulist.current_kifulist, node_ids(0))
 	noteunsel
 
 	del_sgf_node new_node, 1 //íœ‚µ‚ÄŠ®—¹

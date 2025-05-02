@@ -64,12 +64,6 @@
 	return
 
 #deffunc del_bitboard int _id
-	sizex(id) = 0
-	sizey(id) = 0
-	capture_black(id) = 0
-	capture_white(id) = 0
-	コウ禁止点(0, id) = -1
-	コウ禁止点(1, id) = -1
 	release_id bitboard_id_manager, _id
 	return
 	
@@ -267,7 +261,7 @@ init_bitboard
     loop
     return
 #deffunc log_bitboard array a
-	repeat 19:m = cnt
+	repeat 19: m = cnt
 		s = ""
 		repeat 19
 			index = (m * 19 + cnt) * 2  // ビット位置を計算
