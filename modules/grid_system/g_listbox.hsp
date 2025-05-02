@@ -37,7 +37,10 @@
 //’Ç‰ÁAíœAæ“¾ŠÖ˜A
 #modfunc del_item_all
 	clear_list_id_manager listbox_id_manager
+	dim listbox_item_select_status, get_list_id_length(listbox_id_manager)
+	fix_scroll_after_remove thismod
 	return
+	
 #modfunc add_item str s1
     sdim tmp_str
     ss = s1

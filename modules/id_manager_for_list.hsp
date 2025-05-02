@@ -70,6 +70,9 @@
     
 #modcfunc get_list_count
 	return listnum
+
+#modcfunc get_list_id_length
+	return len
     
 #modcfunc get_list_ids_range array a, int start_index, int end_index
 	if start_index > end_index : return 0
