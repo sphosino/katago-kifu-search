@@ -1,6 +1,6 @@
 #ifndef sgf_node
 
-#include "bitboard.hsp"
+#include "bitboard2.hsp"
 #module sgf_node
 
 #define KEY_VALUE_SEP "|||"

@@ -13,10 +13,8 @@
 	dim capture_white, NODE_MAX
 	dim コウ禁止点,2,NODE_MAX
 
-	dim open_board_list, NODE_MAX
-	board_num = 1 //配列の最大、空き要素含む
-	open_board_list(0) = 0
-	open_board_list_num = 1
+	dimtype bitboard_id_manager, 5
+	newmod bitboard_id_manager, id_manager, NODE_MAX
 
 	//上下左右の定義
 	sx = 1,0,-1,0
@@ -27,12 +25,7 @@
 	return
 
 #defcfunc make_new_bitboard int x, int y
-	if open_board_list_num{
-		open_board_list_num--
-		new_id = open_board_list(open_board_list_num)
-	}else{
-		new_id = データ数
-	}
+	new_id = get_new_id(bitboard_id_manager)
 
 	memset bitboard(0, new_id), 0, 23 * 4
 	sizex(new_id) = x
@@ -40,8 +33,6 @@
 	capture_black(new_id) = 0
 	capture_white(new_id) = 0
 	コウ禁止点(0, new_id) = -1, -1
-
-	データ数++
 
 	return new_id
 
@@ -72,20 +63,14 @@
 	memcpy a, bitboard(0, src_node), 23 * 4
 	return
 
-#deffunc del_bitboard int node
-	//未使用チェック
-	opened = 0
-	repeat open_board_list_num
-		if open_board_list(cnt) == node{
-			opened = 1
-			break
-		}
-	loop
-	if opened: return
-	//-------
-	open_board_list(open_board_list_num) = node
-	open_board_list_num++
-	データ数--
+#deffunc del_bitboard int _id
+	sizex(id) = 0
+	sizey(id) = 0
+	capture_black(id) = 0
+	capture_white(id) = 0
+	コウ禁止点(0, id) = -1
+	コウ禁止点(1, id) = -1
+	release_id bitboard_id_manager, _id
 	return
 	
 #defcfunc get_bitboard_status_xy int node, int x, int y
