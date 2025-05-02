@@ -1,6 +1,6 @@
 #packopt name "KataGo棋譜検索"
 
-;#addition "WrapCall.as" ;コールスタック監査、多少重くなるのでバグ特定用に使う
+;#addition "WrapCall.as" ;コールスタック監査、多少重くなるのでバグ特定用
 
 #include "modules/sgf2.hsp"
 #include "modules/group.hsp"

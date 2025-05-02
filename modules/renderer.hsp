@@ -248,22 +248,14 @@ init_draw_objects
 	// a配列[s]～[e]を、bの優先度で昇順ソートする 
 	if e <= s : return
 	repeat e - s, s
-	target = a(cnt + 1)
-	priority = b(target)
-	j = cnt
-	/*
-		j + 1 に、targetを入れるのか jを入れるのかを考えていく。
-		targetを入れるときはそれで正しい位置に挿入できたことを意味する。
-	*/
-	*loop_label
-	if j >= s{
-		if b(a(j)) > priority { 
+		target = a(cnt + 1)
+		priority = b(target)
+		j = cnt
+		while b(a(j)) > priority
 			a(j + 1) = a(j)
-			j-- 
-			goto *loop_label
-		}
-	} 
-	a(j + 1) = target 
+			j--
+			if j >= s: wend
+		a(j + 1) = target
 	loop
 	return
 #global

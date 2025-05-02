@@ -1,7 +1,9 @@
 #ifndef id_manager
 #module id_manager used_list, used_list_num, open_list, open_list_num, id_position_in_used_list, using_max, len
 
-#const DEFAULT_SIZE 50
+#const DEFAULT_SIZE 32
+#const EXP_RATE 2.0
+#define ctype ceil(%1) ((%1 != int(%1)) + %1)
 
 #modinit int p1
 
@@ -27,7 +29,7 @@
 		new_id = using_max
 		if new_id >= len{ //確保済みサイズを超えたら
 			//自動拡張を利用して２倍に
-			new_len = len * 2
+			new_len = ceil(EXP_RATE * len)
 			id_position_in_used_list(new_len - 1) = 0 
 			used_list(new_len - 1) = 0
 			open_list(new_len - 1) = 0
@@ -84,4 +86,3 @@
 #define global foreach_end %tforeach_id loop
 
 #endif
-

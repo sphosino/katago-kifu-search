@@ -3,6 +3,8 @@
 #module list_id_manager id_to_listnum, listnum_to_id, listnum, id_list_manager, len
 
 #const DEFAULT_SIZE 200
+#const EXP_RATE 2.0
+#define ctype ceil(%1) ((%1 != int(%1)) + %1)
 
 #modinit int p1
 	if p1 == 0{
@@ -26,12 +28,14 @@
 	
 #modcfunc get_new_id_for_list
 	id = get_new_id(id_list_manager)
-	if id >= len{
-		new_len = len * 2
+	
+	if id >= len || listnum >= len{
+		new_len = ceil(EXP_RATE * len)
 		id_to_listnum(new_len - 1) = 0
 		listnum_to_id(new_len - 1) = 0
 		len = new_len
 	}
+    
 	id_to_listnum(id) = listnum
 	listnum_to_id(listnum) = id
 	listnum++
@@ -67,12 +71,12 @@
 #modcfunc get_list_count
 	return listnum
     
-#modcfunc get_list_ids_range var a, int start_index, int end_index, int max_list_num
+#modcfunc get_list_ids_range array a, int start_index, int end_index
 	if start_index > end_index : return 0
-	start_idx = limit(start_index, 0, max_list_num - 1)
-	end_idx = limit(end_index, 0, max_list_num - 1)
+	start_idx = limit(start_index, 0, list_num - 1)
+	end_idx = limit(end_index, 0, list_num - 1)
 	n = end_idx - start_idx + 1
-	dim a, n
+	a(listnum - (listnum != 0)) = 0
 	memcpy a, listnum_to_id + start_idx, n << 2
 	return n
     
