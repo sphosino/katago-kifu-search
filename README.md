@@ -1,6 +1,6 @@
 # 🎮 katago-kifu-search - KataGo棋譜分析ツール
 
-HSP3で開発されたKataGo棋譜解析ツール。大量の棋譜から特定の局面を高速検索します。
+HSP3で開発されたKataGo棋譜解析ツール。KataGoの自己対戦棋譜から特定の局面を高速検索します。
 
 [![GitHub license](https://img.shields.io/github/license/sphosino/katago-kifu-search)](LICENSE)
 [![HSP3](https://img.shields.io/badge/HSP-3.6+-brightgreen)](https://hsp.tv/)
