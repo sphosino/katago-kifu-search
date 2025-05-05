@@ -54,18 +54,3 @@ hsp_commonが必須：本プロジェクト単体では動作しません
 
 
 [開発日誌](https://sphosino.github.io/katago-kifu-search)
-
-***
-囲碁AI、KataGoのサイト
-https://katagotraining.org/
-
-KataGoを動かす検討ソフトを導入する場合、BadukMegapackがおすすめ。僕も利用させてもらってます！  
-https://github.com/wonsiks/BadukMegapack
-
-
-***
-囲碁AI、KataGoのサイト
-https://katagotraining.org/
-
-KataGoを動かす検討ソフトを導入する場合、BadukMegapackがおすすめ。僕も利用させてもらってます！  
-https://github.com/wonsiks/BadukMegapack
