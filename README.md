@@ -1,6 +1,6 @@
 # 🎮 KataGo棋譜検索システム
 
-HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜の棋譜を検索、閲覧できます。
+HSP3で開発されたKataGo-rating-gamesの棋譜閲覧ツール。KataGoの自己対戦棋譜の棋譜を検索、閲覧できます。
 
 ダウンロードはこちらから→[https://github.com/sphosino/katago-kifu-search/releases]
 
