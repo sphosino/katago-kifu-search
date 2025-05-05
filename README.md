@@ -25,7 +25,7 @@ root/
 │   ├── basic_module1.hsp
 │   ├── basic_module2.hsp
 │   └── basic_module3.hsp
-└── katago-kifu-search/
+└── katago-kifu-search/　←このリポジトリ
     ├── main.hsp
     └── modules/
         ├── p1_module1.hsp
