@@ -7,7 +7,7 @@ HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜�
 [![HSP3](https://img.shields.io/badge/HSP-3.6+-brightgreen)](https://hsp.tv/)
 
 <img src="docs/screenshot.png" width="600" alt="スクリーンショット">
-（注）開発中の画面です
+<sub>（注）開発中の画面です</sub>
 
 ## 🚀 クイックスタート
 
