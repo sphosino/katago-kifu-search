@@ -1,4 +1,4 @@
-# 🎮 katago-kifu-search - KataGo棋譜分析ツール
+# 🎮 katago-kifu-search - KataGo棋譜閲覧ツール
 
 HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜の棋譜を検索、閲覧できます。
 
