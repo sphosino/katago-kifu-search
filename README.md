@@ -6,6 +6,7 @@ HSP3で開発されたKataGo棋譜解析ツール。大量の棋譜から特定�
 [![HSP3](https://img.shields.io/badge/HSP-3.6+-brightgreen)](https://hsp.tv/)
 
 <img src="docs/screenshot.png" width="600" alt="スクリーンショット">
+（注）開発中の画面です
 
 ## 🚀 クイックスタート
 
