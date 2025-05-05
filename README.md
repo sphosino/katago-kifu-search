@@ -20,7 +20,6 @@ HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜�
 
 1. リポジトリをクローンします：
 
-```bash
 git clone https://github.com/sphosino/katago-kifu-search.git
 git clone https://github.com/sphosino/hsp_common.git
 
