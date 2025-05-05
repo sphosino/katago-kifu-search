@@ -34,7 +34,7 @@ root/
 ## 📂 開発時のおすすめディレクトリ構成(例）
 ```plaintext
 root/
-├── hsp_common/     ← 共通ライブラリ(どのプロジェクトからでも依存なしで使えるモジュール集）（別リポジトリ、下にリンクあります）
+├── hsp_common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
 │   ├── basic_module1.hsp
 │   ├── basic_module2.hsp
 │   └── basic_module3.hsp
