@@ -51,7 +51,7 @@ root/
 │       ├── p1_module1.hsp
 │       └── p1_module2.hsp
 │
-└──その他リポジトリ
+└──その他プロジェクトのリポジトリ
 ```
 hsp_commonのリポジトリは[こちら](https://github.com/sphosino/hsp_common)
 
