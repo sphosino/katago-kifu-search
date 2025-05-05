@@ -31,7 +31,7 @@ root/
 これでkatago-kifu-searchの各ファイルがhsp_commonを参照できます。
 ```
 
-## 📂 開発時のおすすめディレクトリ構造(例）
+## 📂 開発時のおすすめディレクトリ構成(例）
 ```plaintext
 root/
 ├── hsp_common/     ← 共通ライブラリ（別リポジトリ）（下にリンクあります）
@@ -51,4 +51,4 @@ hsp_commonのリポジトリは[こちら](https://github.com/sphosino/hsp_commo
 
 
 ---
-[開発日誌](https://sphosino.github.io/katago-kifu-search)
+開発の進捗や技術メモは[開発日誌](https://sphosino.github.io/katago-kifu-search)にまとめています。
