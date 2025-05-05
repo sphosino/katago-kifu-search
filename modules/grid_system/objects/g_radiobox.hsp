@@ -1,6 +1,4 @@
-#include "area_grid_system.hsp"
 #include "find_empty_index.hsp"
-#addition "../keyfps.hsp"
 #module grid_radiobox string, area, v,items, colors, bc, fc, w, h, w_max, h_max
 
 #modinit var a, int area_number, local thismod_ID

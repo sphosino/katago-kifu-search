@@ -1,31 +1,21 @@
 #packopt name "KataGo棋譜検索"
 
-;#addition "WrapCall.as" ;コールスタック監査、多少重くなるのでバグ特定用
+;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、多少重くなるのでバグ特定用
 
+#include "basic.hsp"
+
+#include "modules/renderer.hsp"
+#include "modules/scale.hsp"
+#include "modules/grid_system/area_grid_system.hsp"
 #include "modules/sgf.hsp"
 #include "modules/group.hsp"
-#include "modules/keyfps.hsp"
-#include "GobanPatternManager.hsp"
 #include "modules/katago_sqr.hsp"
-#include "modules/set.hsp"
+
+#include "GobanPatternManager.hsp"
+#include "go_game_manager.hsp"
 #include "Search_pattern.hsp"
 #include "Search_pattern2.hsp"
 #include "shuffle_notepad.hsp"
-#include "modules/renderer.hsp"
-#include "modules/id_manager_for_list.hsp"
-#include "modules/scale.hsp"
-#include "modules/grid_system/area_grid_system.hsp"
-#include "modules/grid_system/g_radiobox.hsp"
-#include "modules/grid_system/g_button.hsp"
-#include "modules/grid_system/g_chkbox.hsp"
-#include "modules/grid_system/g_listbox.hsp"
-#include "modules/grid_system/g_slider.hsp"
-#include "modules/grid_system/g_stepper.hsp"
-#include "modules/grid_system/g_label.hsp"
-#include "modules/grid_system/g_treebox.hsp"
-#include "modules/grid_system/g_line_graph.hsp"
-#include "modules/grid_system/g_combox.hsp"
-#include "go_game_manager.hsp"
 #include "hspext.as"
 #include "user32.as"
 
@@ -965,7 +955,7 @@ pretime = keyfpstime
 	}
 
 	//早期リターンなら何もせず終わる。
-	logmes "検索完了！！！！"
+	logmes "検索早期リターン！当然０件だよ"
 	if result_num < 0: return
 	
 	kifu_update = 0

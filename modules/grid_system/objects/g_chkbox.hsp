@@ -1,5 +1,4 @@
-#include "area_grid_system.hsp"
-#addition "../keyfps.hsp"
+
 #module grid_checkbox flag, string, area_number, check_size, margin
 #modinit var v, str s, int _area
 	string = s

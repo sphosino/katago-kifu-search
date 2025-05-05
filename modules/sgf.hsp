@@ -1,8 +1,6 @@
 #ifndef sgf_node
-
+#include "basic.hsp"
 #include "bitboard.hsp"
-#include "keyfps.hsp"
-#include "id_manager.hsp"
 #module sgf_node
 
 #define KEY_VALUE_SEP "|||"
@@ -530,6 +528,7 @@ init_sgf_module
 	return index + i
 #global
 
+;/*/
 #module
 #define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1, %2)
 #defcfunc _load_sgf str ss, int node
@@ -606,4 +605,65 @@ init_sgf_module
 	wend
 	return
 #global
+
+/*/
+#module
+#define global ctype load_sgf(%1, %2 = -1) _load_sgf2(%1, %2)
+
+// 分岐なしSGF読み込み
+#defcfunc _load_sgf2 str ss, int parent_node
+
+	sss = ss
+	sgflen = strlen(sss)
+	if sgflen < 3 : return -1
+	if (peek(sss) != '(') || (peek(sss, sgflen - 1) != ')') : return -1
+	
+	start_point = instr(sss, 0, ";")
+	if start_point == -1 : return -1
+
+	nc = 0
+	MN = 0
+
+	topnode = make_new_SGFnode(parent_node)
+	set_property_data topnode, "MN", "0"
+
+	nn = topnode
+	point = start_point + 1
+	sgflen--
+
+	sdim P, 32
+	sdim D, 512
+
+	while point < sgflen
+		token = peek(sss, point)
+
+		if token == ';' {
+			new_id = make_new_SGFnode(nn)
+			add_SGFchild nn, new_id
+			nn = new_id
+			nc++
+			if MN < nc : MN = nc : lastnode = nn
+			point++
+			_continue
+		}
+
+		if token >= 'A' && token <= 'Z' {
+			point = 対応する文字まで取得(sss, point, "[", P)
+			point = 対応する文字まで取得(sss, point + 1, "]", D)
+			set_property_data nn, P, D
+		} else : if token == '[' {
+			point = 対応する文字まで取得(sss, point + 1, "]", D)
+			set_property_data nn, P, get_property_data(nn, P) + D
+		} else {
+			logmes "不正なトークンが含まれています"
+		}
+		point++
+	wend
+
+	set_property_data topnode, "MN", str(lastnode)
+	return topnode
+
+#global
+;*/
+
 #endif

@@ -1,16 +1,14 @@
-#ifndef save_load_manager
+#ifndef save_load_manager_save
 #module
 #include "hspda.as"
 #define varfile "area.var"
 
 #deffunc save_load_manager_save
-	logmes "called save_label"
 	vsave_start
 	vsave_put areagrid@global
 	vsave_end varfile
 	return
 #deffunc save_load_manager_load
-	logmes "called load_label"
 	vload_start varfile
 	vload_get areagrid@global
 	vload_end

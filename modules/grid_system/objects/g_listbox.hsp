@@ -1,6 +1,4 @@
-#addition "../id_manager_for_list.hsp"
-#addition "../scale.hsp"
-#include "area_grid_system.hsp"
+#include "../common/id_manager_for_list.hsp"
 
 #const global LISTBOX_DEFAULT_MAX 300
 

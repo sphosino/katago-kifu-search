@@ -1,7 +1,6 @@
 //renderer-game2.hsp"
 #include "renderer.hsp"
-#include "keyfps.hsp"
-#include "id_manager.hsp"
+#include "../common/keyfps.hsp"
 // まずバッファに画像読み込み
 buffer 20  // 空いてるバッファ番号
 picload "koma.bmp", 1
@@ -83,7 +82,7 @@ setfps 60
     manage_keyfps
 
     dt = frametime()
-    title""+dt
+    
 
 
 	make_star 640. - rnd(rnd(640) + 1) //新しい星は右寄りに生成
@@ -101,8 +100,7 @@ setfps 60
 			gosub *init
 		}
 
-		if _getkey(37) >= 1{ player_ax = -accel }
-		if _getkey(39) >= 1{ player_ax = accel }
+
 		
 		//--- ジャンプ処理 ---
 		if on_ground && _getkey(32) >= 1{
@@ -120,20 +118,39 @@ setfps 60
 		}
 
 		//ブレーキ処理
+
+
+
+		player_ax = limitf(player_ax, -100,100)
+		
 		if on_ground{
-			player_ax += -0.5 * sgn(player_vx)
+			if _getkey(37) >= 1{ 
+				player_ax += -accel 
+			}else:if _getkey(39) >= 1{ player_ax += accel 
+			}
+			player_ax += -0.08 * sgn(player_vx)
+			
 		}else{
-			player_ax += -0.8 * sgn(player_vx)
+			if _getkey(37) >= 1{ 
+				player_ax += -accel 
+			}else:if _getkey(39) >= 1{ player_ax += accel 
+			}
+			player_ax += -0.03 * sgn(player_vx)
+			
 		}
+
+		;title ""+player_ax
 		
 		//--- 加速度から速度に反映 ---
-		player_vx += player_ax * dt + block_move
+		player_vx += player_ax * dt
 		player_vx = limitf(player_vx, -500, 500)
 		player_vy += gravity_now * dt
 		
 		//--- 速度から位置を更新 ---
 		player_x += player_vx * dt - block_move ; block_move はフレーム単位のまま
 		player_y += player_vy * dt
+
+		title""+dt + " : " + player_ax + " : " + player_vx + "  : " + player_x
 
 		player_x = limitf(player_x, 0, 640)
 
@@ -351,7 +368,7 @@ setfps 60
     player_ax = 0.
     player_ay = 0.
 
-    accel = 700.
+    accel = 2.
 
     life = 3
     if gameover >= 0:destroy_draw_object gameover

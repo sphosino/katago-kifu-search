@@ -1,6 +1,4 @@
 ;#define global MODULE_DEBUG
-#include "area_grid_system.hsp"
-#addition "../keyfps.hsp"
 #module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number, current_position
 
 #modinit int _area, local thismod_ID

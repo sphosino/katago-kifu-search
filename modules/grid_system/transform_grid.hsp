@@ -1,3 +1,4 @@
+#ifndef transform
 #module
 #deffunc transform array a, int x, int y
 
@@ -76,6 +77,7 @@
 	poke s,3,rnd(128 << (p1 != 0))
 	return lpeek(s)
 #global
+#endif
 
 #if 0
 	randomize

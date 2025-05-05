@@ -1,0 +1,81 @@
+#include "basic/color_manager.hsp"
+#module draw_parser
+
+#deffunc draw_from_string str _command
+	command = _command
+    split command, ":", type, param
+    split param,",",pm
+    set_defaults  pm, stat, p
+
+	pos draw_posx, draw_posy
+    色を設定 current_color
+    
+    switch type
+
+    //基本描画（hspの記法に忠実に)
+    case "boxf"
+        gmode 0
+        circle int(p(0)), int(p(1)), int(p(2)), int(p(3))
+    swbreak
+    case "circle"
+        gmode 0
+        circle int(p(0)), int(p(1)), int(p(2)), int(p(3))
+    swbreak
+    case "mes"
+    	if stat == 1{
+	    	p(1) = "0"
+	    	logmes p(0)
+	    }
+	    tmp = int(p(1))
+		mes p(0), tmp
+	swbreak
+	//////////拡張描画
+
+	//中心座標、サイズで描画
+    case "boxf_center"
+		sizex = int(p(0))/2
+		sizey = int(p(1))/2
+		boxf draw_posx - sizex, draw_posy - sizey, draw_posx + sizex, draw_posy + sizey
+    swbreak
+    
+    swend
+    return
+#deffunc set_defaults array a, int a_num, array b
+	//aに含まれる環境設定を処理してbに残りをパラメータとして格納
+
+	b_num = 0
+	repeat a_num
+		markpos = instr(a(cnt),0,"@")
+		if markpos >= 0{
+			param_str = strmid(a(cnt),markpos + 1, 65535)
+			split param_str,"^", p //設定内のパラは^で区切る
+			logmes strmid(a(cnt),0, markpos)
+			switch strmid(a(cnt),0, markpos)
+			case "pos"
+				draw_posx = int(p)
+				draw_posy = int(p.1)
+				
+			swbreak
+			case "color"
+				current_color = int(p)
+			swend	
+		}else{
+			b(b_num) = a(cnt)
+			b_num++
+		}
+	loop
+	
+	return b_num
+
+#deffunc init_draw_from_string
+	draw_posx = 0
+	draw_posy = 0
+	current_color = $000000
+
+	return
+
+#global
+init_draw_from_string
+
+draw_from_string "boxf_center:pos@200^200,200,200"
+draw_from_string "mes:pos@400^200,color@$FF0000, ほげほげよん"

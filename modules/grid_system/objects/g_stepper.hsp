@@ -1,6 +1,4 @@
 #ifndef grid_stepper
-#include "area_grid_system.hsp"
-#include "color_manager.hsp"
 #addition "../keyfps.hsp"
 #module grid_stepper area_number, v, under_limit, top_limit, gap, backcolor
 

@@ -1,6 +1,5 @@
 #ifndef treebox
-#include "tree.hsp"
-#include "modules/scale.hsp"
+#addition "tree.hsp"
 #module treebox root_tree_node, current_node, onmouse_id, area_number, s
 
 #modinit int _area

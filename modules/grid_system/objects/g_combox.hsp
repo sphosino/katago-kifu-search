@@ -1,7 +1,4 @@
 ;#define global MODULE_DEBUG
-#include "area_grid_system.hsp"
-#include "rboxf.hsp"
-#addition "../keyfps.hsp"
 #module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result
 
 #include "rectmock.hsp"
@@ -11,6 +8,7 @@
 
 	area = area_number　//エリア番号
 	s = s1 //表示文字列
+	
 
 	item_ysize = 30
 
@@ -25,6 +23,7 @@
 
 	notesel s
 
+
 	// 本体ボタンの背景（灰色）
 	make_draw_object TYPE_RECT, 1, (oya + oya.2) / 2, (oya.1 + oya.3) / 2, oya.2 - oya, oya.3 - oya.1, 0, 0, strf("%d", $969696) ; #969696=150,150,150
 
@@ -38,6 +37,7 @@
 	if dropdown {
 		repeat notemax
 			noteget t, cnt
+			
 			rect_x1 = oya
 			rect_y1 = oya.3 + cnt * item_ysize
 			rect_x2 = oya.2
@@ -62,7 +62,6 @@
 			make_draw_object TYPE_RECT, 1, center_x, center_y, _width, height, 0, 0, strf("%d", color_code)
 			set_priority_draw_object stat, PRIORITY_FRONT 
 
-			title ""+t
 
 			// リスト文字
 			make_draw_object TYPE_STR, 1, center_x, center_y, 0, 0, 0, 0, strf("%s,%d,%s,%d", "メイリオ", item_ysize, t, $000000)

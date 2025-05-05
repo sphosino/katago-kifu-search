@@ -1,5 +1,3 @@
-#include "area_grid_system.hsp"
-#addition "../keyfps.hsp"
 
 #module grid_button string, area, label, colors, bc, fc
 
