@@ -15,8 +15,23 @@ HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜�
 
 ### インストール
 ```bash
+## セットアップ手順
 
-## 📂 ディレクトリ構造
+1. リポジトリをクローンします：
+
+```bash
+git clone https://github.com/sphosino/katago-kifu-search.git
+git clone https://github.com/sphosino/hsp_common.git
+
+2. 以下のように同じ階層に配置してください。　
+root/
+   ├── katago-kifu-search/
+   └── hsp_common/
+
+これでkatago-kifu-searchの各ファイルがhsp_commonを参照できます。
+```
+
+## 📂 開発時のおすすめディレクトリ構造(例）
 ```plaintext
 root/
 ├── hsp_common/     ← 共通ライブラリ（別リポジトリ）（下にリンクあります）
@@ -24,14 +39,14 @@ root/
 │   ├── basic_module2.hsp
 │   └── basic_module3.hsp
 └── katago-kifu-search/　←このリポジトリ
-    ├── main.hsp
-    └── modules/
-        ├── p1_module1.hsp
-        └── p1_module2.hsp
-
+│    ├── main.hsp
+│     └── modules/
+│        ├── p1_module1.hsp
+│        └── p1_module2.hsp
+│
+└──その他リポジトリ
 ```
-
-開発には[hsp_common](https://github.com/sphosino/hsp_common)が必要です。
+hsp_commonのリポジトリは[こちら](https://github.com/sphosino/hsp_common)
 
 
 
