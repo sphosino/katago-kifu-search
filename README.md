@@ -15,8 +15,6 @@ HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜�
 
 ### インストール
 ```bash
-# 1. 基本モジュール
-git clone --recurse-submodules https://github.com/sphosino/hsp_commmon.git
 
 ## 📂 ディレクトリ構造
 ```plaintext
@@ -30,7 +28,6 @@ root/
     └── modules/
         ├── p1_module1.hsp
         └── p1_module2.hsp
-
 
 ```
 
