@@ -18,7 +18,7 @@ HSP3で開発されたKataGo棋譜閲覧ツール。KataGoの自己対戦棋譜�
 ```bash
 ## セットアップ手順
 
-1. リポジトリをクローンします：
+1. リポジトリをクローンします：（別フォルダに分ける）
 
 git clone https://github.com/sphosino/katago-kifu-search.git
 git clone https://github.com/sphosino/hsp_common.git
