@@ -51,6 +51,6 @@ hsp_commonが必須：本プロジェクト単体では動作しません
 # 全依存関係の状態確認
   git status
   git submodule status
-
+```
 
 [開発日誌](https://sphosino.github.io/katago-kifu-search)
