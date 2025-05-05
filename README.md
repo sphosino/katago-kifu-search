@@ -40,9 +40,9 @@ root/
 │   └── basic_module3.hsp
 └── katago-kifu-search/　←このリポジトリ
 │    ├── main.hsp
-│     └── modules/
-│        ├── p1_module1.hsp
-│        └── p1_module2.hsp
+│    └── modules/
+│       ├── p1_module1.hsp
+│       └── p1_module2.hsp
 │
 └──その他リポジトリ
 ```
