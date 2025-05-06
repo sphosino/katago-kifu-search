@@ -1,5 +1,5 @@
 #include "hspinet.as"
-#include "keyfps.hsp"
+#include "../../common/keyfps.hsp"
 netinit
 #include "beautifulsoup.hsp"
 

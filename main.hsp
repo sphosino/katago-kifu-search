@@ -609,13 +609,19 @@ pretime = keyfpstime
 
 		//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
 		if jidou & (ui_mode == MODE_KIFU_VIEW){
+			
 			if pre_jidou == 0{
 				前の形勢 = double(c_list)
 				pre_jidou = 1
 			}
-			if pretime + auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36)  <= keyfpstime{
-				
+
+			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36),keyfpstime -pretime)
+			if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
+				pretime = keyfpstime
+				logmes "moved"
 				gosub *move_next
+				
+				
 				今の形勢 = double(c_list)
 				形勢の変化率 = absf(今の形勢 - 前の形勢)
 				前の形勢 = 今の形勢
@@ -670,7 +676,7 @@ pretime = keyfpstime
 
 	新しい手数 = 手数
 	line_graph_manager l_graph, 新しい手数
-	move_next_int 新しい手数 - 手数
+	if 新しい手数 - 手数: move_next_int 新しい手数 - 手数
 
 	if dragging_flag && rect >= 0{
 		碁盤に矩形データを表示 board, rect
