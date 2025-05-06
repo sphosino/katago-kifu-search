@@ -990,7 +990,8 @@ pretime = keyfpstime
 	if filter_on{
 		//モデルでのフィルター
 		notesel model_list
-		noteget selected_model, get_value_g_combox(g_combox)
+			noteget selected_model, get_value_g_combox(g_combox)
+		noteunsel
 		repeat result_num
 		
 			tn = int(get_value(search_result(0,cnt))) //topnodeからプレイヤー情報取得
@@ -998,7 +999,7 @@ pretime = keyfpstime
 			split blackplayer,"-",bp
 			whiteplayer = get_property_data(tn, "PW")
 			split whiteplayer,"-",wp
-			modelnames = strmid(bp.1,0,3),strmid(wp.1,0,3) //モデル名取得！
+			modelnames = strmid(bp.1, 0, 3), strmid(wp.1, 0, 3) //モデル名取得！
 	
 			if get_value_g_combox(g_combox) == 0 || modelnames.0 == selected_model || modelnames.1 == selected_model {
 				filtered_result(0,fn) = search_result(0,cnt)
