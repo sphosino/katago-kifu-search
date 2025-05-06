@@ -15,7 +15,6 @@
 #include "go_game_manager.hsp"
 #include "Search_pattern.hsp"
 #include "Search_pattern2.hsp"
-#include "shuffle_notepad.hsp"
 #include "hspext.as"
 #include "user32.as"
 

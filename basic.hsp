@@ -4,3 +4,4 @@
 #include "../common/set.hsp"
 #include "../common/rboxf.hsp"
 #include "../common/ringbuffer.hsp"
+#include "../common/shuffle_notepad.hsp"
