@@ -6,6 +6,7 @@
 #include "modules/grid_system/objects/g_slider.hsp"
 #include "modules/grid_system/objects/g_stepper.hsp"
 #include "modules/grid_system/objects/g_label.hsp"
+#include "modules/grid_system/objects/tree.hsp"
 #include "modules/grid_system/objects/g_treebox.hsp"
 #include "modules/grid_system/objects/g_line_graph.hsp"
 #include "modules/grid_system/objects/g_combox.hsp"
