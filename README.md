@@ -33,7 +33,7 @@ git clone https://github.com/sphosino/hsp_common.git
 2. 以下のように同じ階層に配置してください。　
 root/
    ├── katago-kifu-search/
-   └── common/
+   └── hsp_common/
 
 これでkatago-kifu-searchの各ファイルがhsp_commonを参照できます。
 ```
@@ -41,7 +41,7 @@ root/
 ## 📂 開発時のおすすめディレクトリ構成(例）
 ```plaintext
 root/
-├── common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
+├── hsp_common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
 │   ├── basic_module1.hsp
 │   ├── basic_module2.hsp
 │   └── basic_module3.hsp
