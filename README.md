@@ -41,7 +41,7 @@ root/
 ## 📂 開発時のおすすめディレクトリ構成(例）
 ```plaintext
 root/
-├── hsp_common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
+├── common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
 │   ├── basic_module1.hsp
 │   ├── basic_module2.hsp
 │   └── basic_module3.hsp
