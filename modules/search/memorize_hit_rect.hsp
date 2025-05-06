@@ -111,3 +111,4 @@ return memdef
 	return memory(0,rotate_pattern, x, y)
 #global
 init_mem 360
+#endif
