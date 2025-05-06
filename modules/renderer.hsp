@@ -1,6 +1,6 @@
-#include "../common/id_manager.hsp"
-#include "../common/color_manager.hsp"
-#include "../common/rboxf.hsp"
+#include "../hsp_common/id_manager.hsp"
+#include "../hsp_common/color_manager.hsp"
+#include "../hsp_common/rboxf.hsp"
 #module
 
 #const DRAW_OBJECTS_MAX 3000
