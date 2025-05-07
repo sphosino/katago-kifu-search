@@ -599,9 +599,6 @@ pretime = keyfpstime
 			if _getkey('V') == 1 { //CTRL + V
 				gosub*loadsgf
 			}
-			if _getkey('A') == 1{ //CTRL + A
-
-			}
 		}
 	
 		//©“®Ä¶

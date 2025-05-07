@@ -159,6 +159,11 @@
 			move_listbox_index thismod ,offset
 			
 		}
+		if _getkey(17) >= 1 && _getkey('A') == 1{
+			repeat get_list_ids(listbox_id_manager,ids)
+				listbox_item_select_status(ids.cnt) = 1
+			loop	
+		}
 	}
 
 	font "", item_y
