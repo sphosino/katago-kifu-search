@@ -16,5 +16,3 @@ packfile
 *.log
 window.txt
 test/
-katago-kifu-search/
-/_site/
