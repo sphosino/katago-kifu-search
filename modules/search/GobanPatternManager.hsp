@@ -69,11 +69,11 @@
 				an++
 			swbreak
 			case 4
-				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_BLACK; 3
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_WHITE; 5　黒石＋（×）
 				an++
 			swbreak
 			case 5
-				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_WHITE; 5
+				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_BLACK; 3 白石＋（×）
 				an++
 			swbreak
 			swend
@@ -158,31 +158,47 @@
 #defcfunc get_pattern_all_groups_num array a
 	count = 0
 	mask = 0
+	dim group_has_real_stone, 4  ; A?Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
+
 	repeat length(a)
 		dim stone_info
-		split a(cnt,1),"-", stone_info //石情報を分離
-		if a(cnt,1) = "":continue
+		split a(cnt,1), "-", stone_info
+		if a(cnt,1) = "": continue
+
 		repeat length(stone_info)
 			split stone_info(cnt), ":", xy
 			x = int(xy(0))
 			y = int(xy(1))
+			c = int(xy(2)) ;石の色情報
+
 			group_mask = get_group_by_position(x, y)
-			if group_mask == 0{ //グループ化されてなければそのままカウント
-				count++
-			}else{
+			if group_mask == 0 {
+				; グループ外の石 → ?でなければカウント
+				count += ((c & PATTERN_NONE) == 0)
+			} else {
 				mask |= group_mask
+				if ((c & PATTERN_NONE) == 0) {
+					; 実石がある → グループ内フラグON
+					repeat 4
+						if group_mask & (1 << cnt) {
+							//今回のヒットグループに対して
+							group_has_real_stone(cnt) = 1
+						}
+					loop
+				}
 			}
 		loop
 	loop
-	//フラグが立っているグループをカウント
+
+	; ×以外の石を含むグループをカウント
 	groups = 0
 	repeat 4
-		if (mask & (1 << cnt)){
+		if  group_has_real_stone(cnt) {
 			groups++
 		}
 	loop
-	
-	return count + groups //マッチと判定するために必要な数
+
+	return count + groups
 
 #defcfunc patterns_to_notepad array a
 	notesel s

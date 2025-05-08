@@ -959,9 +959,12 @@ pretime = keyfpstime
 		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse)
 	}
 
-	//早期リターンなら何もせず終わる。
-	logmes "検索早期リターン！当然０件だよ"
-	if result_num < 0: return
+
+	if result_num < 0{
+		//早期リターンなら何もせず終わる。
+		logmes "検索早期リターン！当然０件だよ"
+		return
+	}
 	
 	kifu_update = 0
 

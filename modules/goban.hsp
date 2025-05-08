@@ -130,7 +130,7 @@
 				}
 			swbreak
 			case 白番
-				color 210,210,210
+				color 220,220,220
 				circle posx, posy , posx + masx, posy + masy
 				gosub*draw_last_move_mark
 				if 碁石番号表示{
@@ -151,7 +151,7 @@
 				}
 			swbreak
 			case 3
-				color 210/2,210/2,210/2
+				color 220/2,220/2,220/2
 				circle posx, posy , posx + masx, posy + masy
 				gosub*draw_last_move_mark
 				if 碁石番号表示{
@@ -162,19 +162,32 @@
 			case 4
 				color
 				circle posx, posy , posx + masx, posy + masy
-				color 210,210,210
-				pos posx, posy: font"",masy/2: mes "?"
+
 				gosub*draw_last_move_mark
+
+				color 255
+				offset = cos(deg2rad(45)) * masx / 2
+				circle_centerx = posx + masx / 2
+				circle_centery = posy + masx / 2
+				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
+				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
+				
 				if 碁石番号表示{
 					color
 					mes stepboard(m,cnt)
 				}
 			swbreak
 			case 5
-				color 210,210,210
+				color 220,220,220
 				circle posx, posy , posx + masx, posy + masy
-				color 0,0,0
-				pos posx, posy: font"",masy/2: mes "?"
+
+				色を設定 $000080
+				offset = cos(deg2rad(45)) * masx / 2
+				circle_centerx = posx + masx / 2
+				circle_centery = posy + masx / 2
+				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
+				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
+				
 				gosub*draw_last_move_mark
 				if 碁石番号表示{
 					color

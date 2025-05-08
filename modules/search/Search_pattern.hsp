@@ -24,7 +24,6 @@
 
 
 	group_num = get_pattern_all_groups_num(pattern) //パターンのhit判定に必要な石数を取得
-	logmes "SNUM = " + group_num
 	if group_num == 0: return -1
 	if group_num > max_depth: return -1
 
@@ -37,7 +36,7 @@
 	rn = 0
 	prexy = -1, -1
 	
-	//logmes "探索を開始します-> 石数 = " + stone_num
+	logmes "探索を開始します-> 必要なヒット数 = " + group_num
 	
 	notesel ss
 		ss = SGF_list
@@ -168,14 +167,34 @@
 
         if hit_stone >= 0{
             if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
+	            
+	            ;memorize_hit_colorの結果 & 1 で//×指定でマッチしたかどうかが取り出せるが、未使用
+	            
 	            rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
-	            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{
-		            vlist(NOT_YET_MATCHED_FLAGS, i) &= rg ^ $FFFFFFFF
-		           	vlist(MATCH_GROUP_COUNT, i) += stat & 1 // ?指定以外で加算
+	            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
+		            
+					if rg{
+			            hit_group_count = 0
+						repeat 4 ; // グループA?D（最大4つ）を順にチェックする
+						    bit = 1 << cnt ; // 今回チェックするグループのビット（1, 2, 4, 8）
+						
+						    if (rg & bit){
+						        vlist(NOT_YET_MATCHED_FLAGS, i) -= bit ; // そのグループはもうヒット済みにする（ビットOFF）
+						        hit_group_count++ ; // ヒットカウントを+1
+						    }
+						loop
+						vlist(MATCH_GROUP_COUNT, i) += hit_group_count ; // ヒットしたグループの数だけ加算
+					}else{
+						vlist(MATCH_GROUP_COUNT, i) ++ ; // 通常石
+					}
+
 		            if vlist(MATCH_GROUP_COUNT, i) == group_num{
 		              return node //検索成功
+		            }else:if vlist(MATCH_GROUP_COUNT,i) > group_num{
+			            //オーバーカウントなのでアウト
+				    }else{
+		            	_continue
 		            }
-		            _continue
 	        	}else{
 		        	//グループに二回目のヒットなのでこのパターンはアウト
 		        }
