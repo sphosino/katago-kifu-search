@@ -3,7 +3,7 @@
 
 ;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、多少重くなるのでバグ特定用
 
-#include "basic.hsp"
+#include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
 #include "modules/renderer.hsp"
 #include "modules/scale.hsp"

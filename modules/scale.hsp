@@ -1,6 +1,6 @@
 
 #ifndef scroll
-#include "keyfps.hsp"
+#addition "../../hsp_common/keyfps.hsp"
 
 #module scroll px, py, size, tickness, value, value_min, value_max, min_handle_size, direction, col, bar_area
 
