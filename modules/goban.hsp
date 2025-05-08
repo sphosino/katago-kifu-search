@@ -194,6 +194,24 @@
 					mes stepboard(m,cnt)
 				}
 				
+			swbreak
+			case 6
+				color 220/2,220/2,220/2
+				circle posx, posy , posx + masx, posy + masy
+
+				F‚ğİ’è $000080
+				offset = cos(deg2rad(45)) * masx / 2
+				circle_centerx = posx + masx / 2
+				circle_centery = posy + masx / 2
+				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
+				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
+				
+				gosub*draw_last_move_mark
+				if ŒéÎ”Ô†•\¦{
+					color
+					mes stepboard(m,cnt)
+				}
+			swbreak
 			swend
 		loop
 	loop

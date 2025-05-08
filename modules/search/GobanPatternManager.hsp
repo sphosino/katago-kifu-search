@@ -76,6 +76,9 @@
 				a(0, an) = m, cnt, PATTERN_NONE | PATTERN_BLACK; 3 白石＋（×）
 				an++
 			swbreak
+			case 6
+				a(0, an) = m, cnt, PATTERN_NONE ; 1 灰色＋（×）
+			swbreak
 			swend
 		loop
 	loop

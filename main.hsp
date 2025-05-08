@@ -444,7 +444,7 @@ pretime = keyfpstime
 				if in_board{
 					if treebox_onmouseid(t) < 0{
 						if in_board{
-							user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
+							user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 7
 							set_board_data board.1, user_board
 							if user_board(point,point.1) == 0{
 								repeat 4
