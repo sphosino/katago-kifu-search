@@ -1,6 +1,6 @@
 //renderer-game2.hsp"
 #include "renderer.hsp"
-#include "../common/keyfps.hsp"
+#include "../../common/keyfps.hsp"
 // まずバッファに画像読み込み
 buffer 20  // 空いてるバッファ番号
 picload "koma.bmp", 1
@@ -26,6 +26,10 @@ repeat 4
 loop
 
 life = 3
+
+DIRECTION_CHANGE_DAMPENING = 0.9//逆方向選択時の速度の瞬間変動率
+REVERSE_MULTIPLIER = 2.0 //逆方向への加速倍率
+FRICTON = 0.95 //入力なし時の減速率
 
 // 足場の管理
 #enum BLOCK_TYPE_NORMAL = 0  // 乗れるだけ
@@ -100,8 +104,6 @@ setfps 60
 			gosub *init
 		}
 
-
-		
 		//--- ジャンプ処理 ---
 		if on_ground && _getkey(32) >= 1{
 		    player_vy = jump_power 
@@ -114,43 +116,38 @@ setfps 60
 		    make_draw_object TYPE_STR, 1, player_x, player_y - 30, 0, 0, 0, 0, "メイリオ,20,滑空中～♪"
 		} else {
 		    gliding = 0
-		    gravity_now = 340.
+		    gravity_now = 440.
 		}
 
-		//ブレーキ処理
+		moving_right = player_vx > 0
+		moving_left = player_vx < 0
+		wants_to_go_right = _getkey(39) >= 1
+		wants_to_go_left = _getkey(37) >= 1
 
+		changing_direction = (moving_right && wants_to_go_left) || (moving_left && wants_to_go_right)
 
+		ax = accel
 
-		player_ax = limitf(player_ax, -100,100)
+		if (changing_direction){
+			ax *= REVERSE_MULTIPLIER
+			player_vx *= DIRECTION_CHANGE_DAMPENING
+		}
 		
-		if on_ground{
-			if _getkey(37) >= 1{ 
-				player_ax += -accel 
-			}else:if _getkey(39) >= 1{ player_ax += accel 
-			}
-			player_ax += -0.08 * sgn(player_vx)
-			
+		if wants_to_go_right{
+			player_vx += ax * dt
+		}else: if wants_to_go_left{
+			player_vx -= ax * dt
 		}else{
-			if _getkey(37) >= 1{ 
-				player_ax += -accel 
-			}else:if _getkey(39) >= 1{ player_ax += accel 
-			}
-			player_ax += -0.03 * sgn(player_vx)
+			player_vx *= FRICTION
+		}		
 			
-		}
-
-		;title ""+player_ax
-		
-		//--- 加速度から速度に反映 ---
-		player_vx += player_ax * dt
-		player_vx = limitf(player_vx, -500, 500)
 		player_vy += gravity_now * dt
 		
 		//--- 速度から位置を更新 ---
-		player_x += player_vx * dt - block_move ; block_move はフレーム単位のまま
+		player_x += player_vx * dt + (block_move * on_ground); block_move はフレーム単位のまま
 		player_y += player_vy * dt
 
-		title""+dt + " : " + player_ax + " : " + player_vx + "  : " + player_x
+		title strf("%f,%d,%d,%d,%d", dt, wants_to_go_right,wants_to_go_left, moving_right, moving_left)
 
 		player_x = limitf(player_x, 0, 640)
 
@@ -266,7 +263,6 @@ setfps 60
 				if abs(player_x - enemy_x(id)) < (enemy_w(id) + player_sizex) / 2 {
 					release_id enemies_id_manager, id
 					player_y = enemy_y(id) - enemy_h(id) / 2 - 1
-					;player_vx += enemy_vx(id)
 					player_vy = jump_power * 2 / 3
 					invincible_timer = 20 ; 念のため一瞬だけ無敵
 					continue
@@ -342,7 +338,6 @@ setfps 60
     draw_objects
 
     redraw: redraw 2
-    await 16
 	goto *main
 	
 *gameover_routine
@@ -365,10 +360,8 @@ setfps 60
     player_y = block_y(id) - block_h(id) / 2
     player_vx = 0.
     player_vy = 0.
-    player_ax = 0.
-    player_ay = 0.
 
-    accel = 2.
+    accel = 200.
 
     life = 3
     if gameover >= 0:destroy_draw_object gameover
@@ -399,7 +392,7 @@ setfps 60
     id = get_new_id(blocks_id_manager)
     block_x(id) = 600.
     block_y(id) = 200. + rnd(280) ; 200～480の範囲で
-    block_vx(id) = -4.
+    block_vx(id) = -4. * 60 * dt 
     block_vy(id) = 0.
     block_w(id) = 80.
     block_h(id) = 20.

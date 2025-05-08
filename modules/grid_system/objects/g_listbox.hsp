@@ -176,8 +176,8 @@
 		id = get_list_id(listbox_id_manager, id_index)
 
 		pos rect.0, rect.1 + cnt * item_y
-
-	    if listbox_item_select_status(id) {
+		
+	    if listbox_item_select_status(id){
 	        color 0, 100, 255
 	        boxf rect.0, rect.1 + cnt * item_y, rect.2, rect.1 + (cnt + 1) * item_y
 	        color 255,255,255

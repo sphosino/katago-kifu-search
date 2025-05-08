@@ -333,8 +333,8 @@ add_item_radiobox g_radiobox.tmp, "B"
 add_item_radiobox g_radiobox.tmp, "C"
 add_item_radiobox g_radiobox.tmp, "D"
 
-newmod kifulist, grid_listbox, sidebar_kifulist, 18000
-newmod kifulist, grid_listbox, sidebar_kifulist_match, 10000: matchlist = stat
+newmod kifulist, grid_listbox, sidebar_kifulist, 20000
+newmod kifulist, grid_listbox, sidebar_kifulist_match, 20000: matchlist = stat
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 29
