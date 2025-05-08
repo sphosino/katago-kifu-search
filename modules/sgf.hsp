@@ -5,7 +5,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 4000000
+#define MAX_NODE 4200000
 
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //êeÉmÅ[Éh
