@@ -1,4 +1,4 @@
-#include "basic/color_manager.hsp"
+#include "../../hsp_common/color_manager.hsp"
 #module draw_parser
 
 #deffunc draw_from_string str _command
@@ -36,6 +36,12 @@
 		sizex = int(p(0))/2
 		sizey = int(p(1))/2
 		boxf draw_posx - sizex, draw_posy - sizey, draw_posx + sizex, draw_posy + sizey
+    swbreak
+
+    case "img"
+
+    swbreak
+
     swbreak
     
     swend

@@ -1,4 +1,5 @@
 #packopt name "KataGo棋譜検索"
+#bootopt notimer 1 //ツールなので、高精度タイマーを使用しない
 
 ;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、多少重くなるのでバグ特定用
 
@@ -19,6 +20,7 @@
 
 #include "go_game_manager.hsp"
 
+
 #include "hspext.as"
 #include "user32.as"
 
@@ -29,7 +31,6 @@
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
-	#define 計測する
 #else
 	dirname = dir_exe
 #endif
@@ -66,8 +67,7 @@ sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
 sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
 dim matchlist                ; 検索結果用リストボックスIDを格納
 
-//計測時の文字列
-sdim titles
+
 
 pre_filter_on = -1
 pre_filter = -1
@@ -720,31 +720,7 @@ pretime = keyfpstime
 	loop
 	return
 
-#deffunc 計測 str time_str
-	#ifdef 計測する
-		if time_num == 0 : pre_time = keyfpstime
-		if time_num >= 1 : times(time_num - 1) = keyfpstime - pre_time : pre_time = keyfpstime
-		titles(time_num) = time_str
-		time_num++
-	#endif
-	return
 
-#deffunc 計測描画
-	#ifdef 計測する
-		計測 "" ; 最後の区間の記録
-	
-		s = "fps = " + getrealfps() + " -> "
-		repeat time_num - 1
-			s += titles(cnt) + " -> " + strf("%03d", times(cnt)) + "ms :: "
-		loop
-		time_num = 0
-	
-		pos 0,0
-		color 0,0,0
-		font "",20
-		mes s
-	#endif
-	return
 
 *save_window_size_main
 		IsZoomed hwnd :最大化 = stat
