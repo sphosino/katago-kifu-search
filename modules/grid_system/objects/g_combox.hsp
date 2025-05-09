@@ -1,7 +1,13 @@
 ;#define global MODULE_DEBUG
+
+#addition "renderer.hsp"
+#addition "color_manager.hsp"
+#addition "area_grid_system.hsp"
+
 #module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result
 
 #include "rectmock.hsp"
+
 #modinit var a, str s1, int area_number, local thismod_ID
 
     dup a, dropdown_result //　選択アイテムを示す変数

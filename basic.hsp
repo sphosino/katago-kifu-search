@@ -6,3 +6,4 @@
 #include "../hsp_common/ringbuffer.hsp"
 #include "../hsp_common/shuffle_notepad.hsp"
 #include "../hsp_common/frame_profiler.hsp"
+#include "../hsp_common/renderer.hsp"

@@ -5,21 +5,17 @@
 
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
-#include "modules/renderer.hsp"
 #include "modules/scale.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/sgf.hsp"
 #include "modules/group.hsp"
-
 #include "modules/katago_sqr.hsp"
-
 #include "modules/search/GobanPatternManager.hsp"
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
 #include "modules/search/memorize_hit_rect.hsp"
 
 #include "go_game_manager.hsp"
-
 
 #include "hspext.as"
 #include "user32.as"
