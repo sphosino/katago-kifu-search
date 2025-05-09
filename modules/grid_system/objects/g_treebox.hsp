@@ -1,5 +1,6 @@
 #ifndef treebox
 #addition "tree.hsp"
+#addition "scrollbar.hsp"
 #module treebox root_tree_node, current_node, onmouse_id, area_number, s
 
 #modinit int _area

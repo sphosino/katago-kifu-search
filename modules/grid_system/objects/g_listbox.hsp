@@ -1,4 +1,4 @@
-#include "../hsp_common/id_manager_for_list.hsp"
+#addition "id_manager_for_list.hsp"
 
 #const global LISTBOX_DEFAULT_MAX 300
 

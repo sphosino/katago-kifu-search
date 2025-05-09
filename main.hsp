@@ -5,7 +5,6 @@
 
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
-#include "modules/scale.hsp"
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/sgf.hsp"
 #include "modules/group.hsp"

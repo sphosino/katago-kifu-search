@@ -1,5 +1,7 @@
 #include "../hsp_common/color_manager.hsp"
 #include "../hsp_common/id_manager.hsp"
+#include "../hsp_common/id_manager_for_list.hsp"
+#include "../hsp_common/scrollbar.hsp"
 #include "../hsp_common/keyfps.hsp"
 #include "../hsp_common/set.hsp"
 #include "../hsp_common/rboxf.hsp"
