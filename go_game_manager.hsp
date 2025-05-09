@@ -1,6 +1,4 @@
 #include "modules/goban.hsp"
-
-#include "modules/hash.hsp"
 #include "modules/sgf.hsp"
 
 #module
@@ -65,9 +63,9 @@
 	return sgf_topnode
 
 
-#defcfunc change_sgf str s1, var _treebox, var _board
+#defcfunc change_sgf str s1, var _treebox, var _board, var h
 
-	if get_value(s1) == NOT_DEFINED_HASH{
+	if get_value(h, s1) == NOT_DEFINED_HASH{
 		notesel sgf_data
 		logmes "change_sgf ->" + s1
 		noteload s1
@@ -75,7 +73,7 @@
 		
 		if load_sgf(sgf_data) >= 0{
 			new_topnode = load_sgf_set_board(_treebox, stat, _board)
-			new_value s1, str(new_topnode)
+			new_value h, s1, str(new_topnode)
 		}else{
 			dialog "SGF_FILE‰ğÍƒGƒ‰[",,__FILE__
 			end

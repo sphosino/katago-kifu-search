@@ -9,3 +9,4 @@
 #include "../hsp_common/shuffle_notepad.hsp"
 #include "../hsp_common/frame_profiler.hsp"
 #include "../hsp_common/renderer.hsp"
+#include "../hsp_common/hash.hsp"

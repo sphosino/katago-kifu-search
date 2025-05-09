@@ -1,8 +1,7 @@
 #ifndef search
-#include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift )
+#include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift ) //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
 #include "modules/search/GobanPatternManager.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE ) 
-#include "modules/hash.hsp " //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/search/memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
 #module
@@ -20,7 +19,7 @@
 	sdim node_data, DATA_SIZE
 	return
 
-#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse
+#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse, var h
 
 
 	group_num = get_pattern_all_groups_num(pattern) //パターンのhit判定に必要な石数を取得
@@ -50,12 +49,12 @@
 				noteget sgf_filename, cnt
 				next_kifuload_index++
 				if sgf_filename == "": break
-				if get_value(sgf_filename) == NOT_DEFINED_HASH{
+				if get_value(h, sgf_filename) == NOT_DEFINED_HASH{
 					notesel sgf
 						noteload sgf_filename
 					noteunsel
 					topnode = load_sgf(sgf)
-					new_value sgf_filename, str(topnode)
+					new_value h, sgf_filename, str(topnode)
 					await
 					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
 					title titlestr
@@ -70,7 +69,7 @@
 		repeat notemax
 			noteget sgf_filename, cnt
 			
-			topnode = int(get_value(sgf_filename))
+			topnode = int(get_value(h, sgf_filename))
 			if topnode == -1:logmes "sgf読み込みに失敗 -> " + sgf_filename:continue
 			
 			get_board_size_from_SGF topnode, xy

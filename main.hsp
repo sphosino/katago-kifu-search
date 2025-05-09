@@ -344,6 +344,8 @@ newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
 set_margin_line_graph l_graph, 15, 10, 15, 10
 
+newmod h, hash_manager
+
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
 loop
@@ -403,11 +405,11 @@ pretime = keyfpstime
 						kifu_update = 0
 						break
 					}
-					if get_value(sgf_file_name) == NOT_DEFINED_HASH{
+					if get_value(h, sgf_file_name) == NOT_DEFINED_HASH{
 						notesel sgf
 							chdir kifu_dirname
 							noteload sgf_file_name
-							new_value sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
+							new_value h, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
 						noteunsel
 						break
 					}
@@ -739,7 +741,7 @@ pretime = keyfpstime
 		sdim v
 		rn = 0
 
-		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board)
+		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, h)
 
 		clear_graph l_graph
 
@@ -912,7 +914,7 @@ pretime = keyfpstime
 
 	if use_bitboard{
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse)
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, h)
 		
 	}else{
 
@@ -927,7 +929,7 @@ pretime = keyfpstime
 	
 		logmes patterns_to_notepad(p)
 		
-		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse)
+		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, h)
 	}
 
 

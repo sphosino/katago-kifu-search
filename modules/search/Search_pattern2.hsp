@@ -3,7 +3,7 @@
 #include "modules/bitboard.hsp"
 #module
 
-#defcfunc search2 var SGF_list, array ’T‚µ‚½‚¢‹Ç–Ê, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index, int inverse
+#defcfunc search2 var SGF_list, array ’T‚µ‚½‚¢‹Ç–Ê, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index, int inverse, var h
 
 	dim patterns, 23,16
 	dim pattern_masks, 23, 8
@@ -28,12 +28,12 @@
 				noteget sgf_filename, cnt
 				next_kifuload_index++
 				if sgf_filename == "": break
-				if get_value(sgf_filename) == NOT_DEFINED_HASH{
+				if get_value(h, sgf_filename) == NOT_DEFINED_HASH{
 					notesel sgf
 						noteload sgf_filename
 					noteunsel
 					topnode = load_sgf(sgf)
-					new_value sgf_filename, str(topnode)
+					new_value h, sgf_filename, str(topnode)
 					await
 					titlestr = "Šû•ˆ“Ç‚Ýž‚Ý’† -> "+ (cnt+1) * 100 / notemax + "%"
 					title titlestr
