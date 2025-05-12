@@ -358,7 +358,7 @@ pretime = keyfpstime
 	計測 "manage_keyfps"
 	manage_keyfps
 	dt = frametime()
-	notify_dt_draw_object dt
+	notify_dt_draw_object dt //ドローオブジェクトに経過時間を伝えるよ
 	
 	計測 "前フレームからの状態変化取得"
 	window_size = ginfo(12), ginfo(13)
