@@ -357,6 +357,8 @@ pretime = keyfpstime
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
+	dt = frametime()
+	notify_dt_draw_object dt
 	
 	計測 "前フレームからの状態変化取得"
 	window_size = ginfo(12), ginfo(13)
@@ -635,7 +637,6 @@ pretime = keyfpstime
 		logmes "switchdebugmode ->" +debugmode
 	}
 
-	update_draw_objects
 	
 	計測 "描画"
 

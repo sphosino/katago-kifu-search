@@ -31,14 +31,14 @@
 
 
 	// 本体ボタンの背景（灰色）
-	make_draw_object TYPE_RECT, 1, (oya + oya.2) / 2, (oya.1 + oya.3) / 2, oya.2 - oya, oya.3 - oya.1, 0, 0, strf("%d", $969696) ; #969696=150,150,150
+	_make_draw_object MOVE_TYPE_STATIC, TYPE_RECT, LIFE_INSTANCE, (oya + oya.2) / 2, (oya.1 + oya.3) / 2, oya.2 - oya, oya.3 - oya.1,  strf("%d", $969696) ; #969696=150,150,150
 
 	// ▼マーク用の黒い帯
-	make_draw_object TYPE_RECT, 1, (oya.2 + oya.2 - 5) / 2, (oya.1 + oya.3) / 2, 5, oya.3 - oya.1, 0, 0, strf("%d", $000000)
+	_make_draw_object MOVE_TYPE_STATIC, TYPE_RECT, LIFE_INSTANCE, (oya.2 + oya.2 - 5) / 2, (oya.1 + oya.3) / 2, 5, oya.3 - oya.1, strf("%d", $000000)
 
 	// 現在選択されてるテキスト
 	noteget t, dropdown_result
-	make_draw_object TYPE_STR, 1, (oya + (oya.2 - 5)) / 2, (oya.1 + oya.3) / 2, 0, 0, 0, 0, strf("%s,%d,%s,%d", "メイリオ", oya.3-oya.1, t, $000000)
+	_make_draw_object MOVE_TYPE_STATIC, TYPE_STR, LIFE_INSTANCE, (oya + (oya.2 - 5)) / 2, (oya.1 + oya.3) / 2, -0, -0, strf("%s,%d,%s,%d", "メイリオ", oya.3-oya.1, t, $000000)
 
 	if dropdown {
 		repeat notemax
@@ -65,13 +65,13 @@
 					dropdown = 0
 				}
 			}
-			make_draw_object TYPE_RECT, 1, center_x, center_y, _width, height, 0, 0, strf("%d", color_code)
-			set_priority_draw_object stat, PRIORITY_FRONT 
+			_make_draw_object MOVE_TYPE_STATIC, TYPE_RECT, LIFE_INSTANCE, center_x, center_y, _width, height, strf("%d", color_code)
+			update_priority_draw_object stat, PRIORITY_FRONT 
 
 
 			// リスト文字
-			make_draw_object TYPE_STR, 1, center_x, center_y, 0, 0, 0, 0, strf("%s,%d,%s,%d", "メイリオ", item_ysize, t, $000000)
-			set_priority_draw_object stat, PRIORITY_FRONT 
+			_make_draw_object MOVE_TYPE_STATIC, TYPE_STR, LIFE_INSTANCE, center_x, center_y, -0, -0, strf("%s,%d,%s,%d", "メイリオ", item_ysize, t, $000000)
+			update_priority_draw_object stat, PRIORITY_FRONT 
 		loop
 	}
 
