@@ -1,0 +1,41 @@
+#include "../../hsp_common/keyfps.hsp"
+#include "renderer.hsp"
+
+//右下移動OK
+id = make_draw_object(MOVE_TYPE_PHYSIS, TYPE_RECT, 3, 640/2, 480/2, 100,100,"$00FF00")
+set_physis_pos_velocity id, 100.0,50.0
+
+//往復OK
+id = make_draw_object(MOVE_TYPE_EASE, TYPE_RECT, 3, 100, 480/2, 100,100,"$0000FF")
+set_easetime_all get_entity_id(id), 1
+set_ease_posx get_entity_id(id), 100, 500, ease_quad_inout | ease_loop
+
+//フェードOK
+id = make_draw_object(MOVE_TYPE_PHYSIS, TYPE_RECT, 3.0, 320, 240, 100, 100, "$FF0000")
+set_physis_alpha get_entity_id(id), 255
+set_physis_alpha_velocity get_entity_id(id), -84.2 ; 3秒で完全に消える
+
+//点滅OK
+id = make_draw_object( MOVE_TYPE_EASE, TYPE_RECT, LIFE_FOREVER, 320, 140, 64, 64, "$00FFFF")
+set_ease_alpha get_entity_id(id), 1, 256, ease_quad_inout | ease_loop
+set_easetime_all get_entity_id(id), 2
+
+//背景設定
+id = make_draw_object (MOVE_TYPE_STATIC, TYPE_RECT, LIFE_FOREVER, 640/2,480/2,640,480,"$000000")
+update_priority_draw_object id, PRIORITY_BACK
+
+//fps表示してみるー
+info_id = make_draw_object (MOVE_TYPE_STATIC, TYPE_STR, LIFE_FOREVER, 50, 20, -0,-0, "")
+
+
+*main
+	manage_keyfps
+	dt = frametime()
+	notify_dt_draw_object dt
+
+	update_params_draw_object info_id, strf("メイリオ,20,%f,$FFFFFF",getrealfpsf()) 
+	
+	draw_objects
+
+	redraw: redraw 2
+	goto*main
