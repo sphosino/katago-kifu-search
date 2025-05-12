@@ -14,5 +14,7 @@ packfile
 *.link
 *.lnk
 *.log
+*.bat
+*.sh
 window.txt
 test/
