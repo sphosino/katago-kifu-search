@@ -1032,8 +1032,9 @@ pretime = keyfpstime
 	return
 	
 *loadfile
-	chdir kifu_dirname
-		棋譜取得 kifu_dirname, 100 // katagoホームページから最新棋譜を追加ダウンロード
+	
+	棋譜取得 kifu_dirname, 100, 3000, 1000 * 60 * 3 // katagoホームページから最新棋譜を追加ダウンロード
+		
 	chdir dirname
 
 	gosub*load_kifu_folder
