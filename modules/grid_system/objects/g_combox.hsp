@@ -5,7 +5,7 @@
 #addition "area_grid_system.hsp"
 #addition "id_manager.hsp"
 
-#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing
+#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id
 
 #include "rectmock.hsp"
 
@@ -124,7 +124,6 @@
 					update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
 				loop
 				dropdown = 1
-				
 			}
 		}
 	}
