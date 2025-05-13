@@ -1,3 +1,8 @@
+
+
+#include "../hsp_common/draw_obj/physis.hsp"
+#include "../hsp_common/draw_obj/ease.hsp"
+#include "../hsp_common/draw_obj/static.hsp"
 #include "../hsp_common/color_manager.hsp"
 #include "../hsp_common/id_manager.hsp"
 #include "../hsp_common/id_manager_for_list.hsp"
@@ -9,7 +14,7 @@
 #include "../hsp_common/shuffle_notepad.hsp"
 #include "../hsp_common/frame_profiler.hsp"
 #include "../hsp_common/hash.hsp"
-#include "../hsp_common/draw_obj/physis.hsp"
-#include "../hsp_common/draw_obj/ease.hsp"
-#include "../hsp_common/draw_obj/static.hsp"
+
+
 #include "../hsp_common/renderer.hsp"
+#include "../hsp_common/renderer_util.hsp"
