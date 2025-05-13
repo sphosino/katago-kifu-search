@@ -102,14 +102,14 @@
 				centery = oya.3 + item_ysize/ 2 + cnt * item_ysize
 				sizex = (oya.2 - oya.0)
 				sizey = item_ysize
-				_make_draw_object MOVE_TYPE_EASE, TYPE_STR, close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t)
-				set_ease_posy get_entity_id(drop_id(cnt)), centery, oya.3, ease_quartic_inout
-				set_ease_sizey get_entity_id(drop_id(cnt)), sizey, 0, ease_quartic_inout
-				update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
+				id = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+				set_ease_posy get_entity_id(id), centery, oya.3, ease_quartic_inout
+				set_ease_sizey get_entity_id(id), sizey, 0, ease_quartic_inout
+				update_priority_draw_object id, PRIORITY_FRONT
 			loop
 			
 		} else {
-			if in_rect(oya) {
+			if in_rect(oya) && closing == 0{
 
 				repeat notemax //各アイテムを生成
 					noteget t, cnt
