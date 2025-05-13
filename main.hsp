@@ -977,7 +977,7 @@ pretime = keyfpstime
 		noteunsel
 		repeat result_num
 		
-			tn = int(get_value(search_result(0,cnt))) //topnodeからプレイヤー情報取得
+			tn = int(get_value(h,search_result(0,cnt))) //topnodeからプレイヤー情報取得
 			blackplayer = get_property_data(tn, "PB")
 			split blackplayer,"-",bp
 			whiteplayer = get_property_data(tn, "PW")
