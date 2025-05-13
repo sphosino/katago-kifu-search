@@ -46,7 +46,7 @@
 		title titlestr
 		repeat notemax
 			noteget sgf_filename, cnt
-			topnode = int(get_value(sgf_filename))
+			topnode = int(get_value(h,sgf_filename))
 
 			get_board_size_from_SGF topnode, xy
 	
