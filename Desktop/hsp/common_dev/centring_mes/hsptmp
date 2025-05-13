@@ -1,0 +1,108 @@
+#module font_aspect_ratio_manager_auto
+
+#const FONT_CACHE_MAX 128
+#const FONT_KEY_LEN 128
+
+#deffunc init_font_aspect_ratio_manager
+sdim font_keys, FONT_KEY_LEN, FONT_CACHE_MAX
+ddim font_ratios, FONT_CACHE_MAX
+dim font_cached, FONT_CACHE_MAX
+return
+// 蜈ｨ隗呈枚蟄励′螟壹＞縺九←縺・°蛻､螳夲ｼ医＊縺｣縺上ｊ・・ｼ・
+#defcfunc is_fullwidth_str str s1
+	full = 0 : half = 0
+	s= s1
+	repeat strlen(s)
+		c = peek(s, cnt)
+		if c >= 33 && c <= 126 {
+			half++
+		} else {
+			full++
+		}
+	loop
+	return full > half
+
+// 繝輔か繝ｳ繝亥錐・狗ｨｮ蛻･縺ｮ繧ｭ繝ｼ菴懈・・井ｾ・ "繝｡繧､繝ｪ繧ｪ_full"・・
+#defcfunc make_font_key str name, int fullmode
+	if fullmode : return name + "_" + "full"
+	return name + "_" + "half"
+
+#defcfunc get_auto_font_ratio str name, str sample_text
+	fullmode = is_fullwidth_str(sample_text)
+	key = make_font_key(name, fullmode)
+
+	repeat FONT_CACHE_MAX
+		if font_cached(cnt) && font_keys(cnt) == key : return font_ratios(cnt)
+	loop
+
+	samplechar = "A"
+	if fullmode: samplechar = "あ"
+
+	font name, 40
+	pos 3000, 3000
+	mes samplechar
+	w = ginfo(14)
+	h = ginfo(15)
+	if w == 0 : return 0.0
+	r = double(h) / double(w)
+
+	repeat FONT_CACHE_MAX
+		if font_cached(cnt) == 0 {
+			font_keys(cnt) = key
+			font_ratios(cnt) = r
+			font_cached(cnt) = 1
+			break
+		}
+	loop
+
+	return r * 0.85 
+#global
+init_font_aspect_ratio_manager
+
+#module
+
+#deffunc centering_mes str s1, array rect, str fontname
+	s= s1
+
+	notesel s
+	行サイズ = (rect.3-rect.1) / notemax
+	logmes ""+行サイズ
+		
+		repeat notemax
+			noteget b,cnt
+			
+			文字数 = strlen(b)
+
+			pos 3000, 3000
+			ratio = get_auto_font_ratio(fontname, b)
+			
+			font fontname, limit(行サイズ,,double(rect.2 - rect.0) * ratio / 文字数)
+			mes b
+
+			pos (rect.2 + rect.0) / 2 - ginfo(14) / 2, rect.1 + (行サイズ * cnt) + 行サイズ / 2 - ginfo(15) / 2
+			mes b
+			
+		loop
+	noteunsel
+	
+	return
+
+#deffunc draw_rect array a
+	boxf a,a.1,a.2,a.3
+	return
+	
+#global
+
+
+color
+rect = 20,20,150,350
+draw_rect rect
+color 255
+centering_mes "23",rect,""
+
+color
+rect = 200,50,600,400
+draw_rect rect
+color 255
+centering_mes "jijij",rect,"メイリオ"
+
