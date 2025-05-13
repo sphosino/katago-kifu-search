@@ -3,8 +3,9 @@
 #addition "renderer.hsp"
 #addition "color_manager.hsp"
 #addition "area_grid_system.hsp"
+#addition "id_manager.hsp"
 
-#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result
+#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing
 
 #include "rectmock.hsp"
 
@@ -14,9 +15,23 @@
 
 	area = area_number　//エリア番号
 	s = s1 //表示文字列
-	
 
 	item_ysize = 30
+
+	dim drop_id, 100
+
+	notesel s
+	noteget t, 0
+	noteunsel
+
+	thisrect thismod, oya, area
+	centerx = (oya.2 + oya.0) / 2
+	centery = (oya.3 + oya.1) / 2
+	sizex = (oya.2 - oya.0)
+	sizey = (oya.3 - oya.1)
+	
+	combox_id = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, LIFE_FOREVER, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+	update_priority_draw_object combox_id, PRIORITY_FRONT
 
     mref thismod_ID, 2
     return thismod_ID
@@ -26,19 +41,7 @@
 
 #modfunc combox_manager
 	thisrect thismod, oya, area
-
 	notesel s
-
-
-	// 本体ボタンの背景（灰色）
-	_spawn_static_instance TYPE_RECT, (oya + oya.2) / 2, (oya.1 + oya.3) / 2, oya.2 - oya, oya.3 - oya.1,  strf("%d", $969696) ; #969696=150,150,150
-
-	// ▼マーク用の黒い帯
-	_spawn_static_instance TYPE_RECT, (oya.2 + oya.2 - 5) / 2, (oya.1 + oya.3) / 2, 5, oya.3 - oya.1, strf("%d", $000000)
-
-	// 現在選択されてるテキスト
-	noteget t, dropdown_result
-	_spawn_static_instance TYPE_STR, (oya + (oya.2 - 5)) / 2, (oya.1 + oya.3) / 2, -0, -0, strf("%s,%d,%s,%d", "メイリオ", oya.3-oya.1, t, $000000)
 
 	if dropdown {
 		repeat notemax
@@ -60,27 +63,68 @@
 			if in_rect(tmprect) {
 				color_code = $C8C8C8 ; 選択中: 200,200,200
 
+				update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
+
 				if _getkey(1) == 1 {
 					dropdown_result = cnt
-					dropdown = 0
+					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
+					closing = 1 //閉じ処理中フラグ
 				}
+			}else{
+				update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
 			}
-			_spawn_static_instance TYPE_RECT, center_x, center_y, _width, height, strf("%d", color_code)
-			update_priority_draw_object stat, PRIORITY_FRONT 
 
-
-			// リスト文字
-			_spawn_static_instance TYPE_STR, center_x, center_y, -0, -0, strf("%s,%d,%s,%d", "メイリオ", item_ysize, t, $000000)
-			update_priority_draw_object stat, PRIORITY_FRONT 
 		loop
 	}
+	
+	if closing {
+	    alive = 0
+	    repeat notemax
+	        if is_entity_id_alive(drop_id(cnt)) : alive = 1 : break
+	    loop
+	    if alive == 0 {
+	        dropdown = 0
+	        closing = 0
+	    }
+	}
 
+	open_time = 0.3
+	close_time = 0.3
+	
 	if _getkey(1) == 1 {
 		if dropdown {
 			dropdown = 0
+			repeat notemax //削除して再生成
+				destroy_draw_object_immediately drop_id(cnt)
+
+				noteget t, cnt
+				centerx = (oya.2 + oya.0)  / 2
+				centery = oya.3 + item_ysize/ 2 + cnt * item_ysize
+				sizex = (oya.2 - oya.0)
+				sizey = item_ysize
+				_make_draw_object MOVE_TYPE_EASE, TYPE_STR, close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t)
+				set_ease_posy get_entity_id(drop_id(cnt)), centery, oya.3, ease_quartic_inout
+				set_ease_sizey get_entity_id(drop_id(cnt)), sizey, 0, ease_quartic_inout
+				update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
+			loop
+			
 		} else {
 			if in_rect(oya) {
+
+				repeat notemax //各アイテムを生成
+					noteget t, cnt
+					centerx = (oya.2 + oya.0)  / 2
+					centery = oya.3 + item_ysize / 2 + cnt * item_ysize
+					sizex = (oya.2 - oya.0)
+					sizey = item_ysize
+					drop_id(cnt) = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, LIFE_FOREVER, centerx,centery,sizex,sizey,strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+					set_ease_posy get_entity_id(drop_id(cnt)), oya.3,  centery, ease_quartic_inout
+					set_ease_sizey get_entity_id(drop_id(cnt)), 0, sizey,ease_quartic_inout
+					set_easetime_all get_entity_id(drop_id(cnt)), open_time
+					update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
+				loop
 				dropdown = 1
+				
 			}
 		}
 	}
@@ -92,6 +136,8 @@
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
 #global
+
+
 
 
 #ifdef MODULE_DEBUG //テストコード
