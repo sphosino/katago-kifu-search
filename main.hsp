@@ -466,6 +466,7 @@ pretime = keyfpstime
 		}
 		
 		if _getkey(1) == 1{ //左クリック
+			if in_board == 0: spawn_ripple_effect mousex, mousey //碁盤以外の部分で採用！
 	
 			inlistbox = 0
 	
