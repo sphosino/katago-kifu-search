@@ -56,5 +56,7 @@ root/
 ```
 hsp_commonのリポジトリは[こちら](https://github.com/sphosino/hsp_common)
 
+## License
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
 ---
 開発の進捗や技術メモは[開発日誌](https://sphosino.github.io/katago-kifu-search)にまとめています。
