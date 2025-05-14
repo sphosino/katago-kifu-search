@@ -24,6 +24,8 @@
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 
+#const BG_COLOR $808080 // 128,128,128
+
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
@@ -352,6 +354,9 @@ loop
 gosub*load_kifu_folder
 gosub*loadsgf
 
+
+;bg_id = make_draw_object(MOVE_TYPE_STATIC, TYPE_RECT, LIFE_FOREVER, ginfo_winx / 2, ginfo_winy / 2, ginfo_winx, ginfo_winy, strf("%d",BG_COLOR))
+;update_priority_draw_object bg_id, PRIORITY_BACK
 //最初の時刻
 pretime = keyfpstime
 *main
@@ -466,7 +471,10 @@ pretime = keyfpstime
 		}
 		
 		if _getkey(1) == 1{ //左クリック
-			if in_board == 0: spawn_ripple_effect mousex, mousey //碁盤以外の部分で採用！
+			if in_board == 0{
+				//chatGPTさん作のエフェクト
+				spawn_ripple_effect mousex, mousey //碁盤以外の部分で採用！
+			}
 	
 			inlistbox = 0
 	
@@ -645,7 +653,7 @@ pretime = keyfpstime
 	color 128,128,128
 	boxf 0, 0, ginfo_winx, ginfo_winy
 
-	//碁盤エリアの背景に形勢を反映
+	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
 	a = double(c_list) * 255: color a,a,a
 	get_rect goban_area, goban_back_rect
 	aboxf goban_back_rect
@@ -682,9 +690,9 @@ pretime = keyfpstime
 
 	
 
-	draw_objects
+	draw_objects //レンダラ経由描画
 
-	計測描画
+	計測描画　//レンダラ外描画
 
 	redraw
 	redraw 2
@@ -964,10 +972,11 @@ pretime = keyfpstime
 	return
 	
 *filtering_and_make_listbox
-	logmes "filtering_start!!!"
+
 	//フィルタリング処理
 	//search_resultに結果を保持しているよ
-
+	if result_num = -1: return
+	logmes "filtering_start!!!"
 	dim filtered_result, 2, result_num　//フィルター後の結果を入れる変数
 	dim fn //フィルター後の結果の数
 

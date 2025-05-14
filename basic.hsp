@@ -18,3 +18,7 @@
 
 #include "../hsp_common/renderer.hsp"
 #include "../hsp_common/renderer_util.hsp"
+
+#include "../hsp_common/draw_type/boxf.hsp"
+#include "../hsp_common/draw_type/circle.hsp"
+#include "../hsp_common/draw_type/str.hsp"

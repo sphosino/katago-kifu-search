@@ -1,4 +1,4 @@
-;#define global MODULE_DEBUG
+#ifndef grid_combox
 
 #addition "renderer.hsp"
 #addition "color_manager.hsp"
@@ -30,7 +30,7 @@
 	sizex = (oya.2 - oya.0)
 	sizey = (oya.3 - oya.1)
 	
-	combox_id = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, LIFE_FOREVER, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+	combox_id = make_draw_object(MOVE_TYPE_EASE, "STR", LIFE_FOREVER, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
 	update_priority_draw_object combox_id, PRIORITY_FRONT
 
     mref thismod_ID, 2
@@ -102,7 +102,7 @@
 				centery = oya.3 + item_ysize/ 2 + cnt * item_ysize
 				sizex = (oya.2 - oya.0)
 				sizey = item_ysize
-				id = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+				id = make_draw_object(MOVE_TYPE_EASE, "STR", close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
 				set_ease_posy get_entity_id(id), centery, oya.3, ease_quartic_inout
 				set_ease_sizey get_entity_id(id), sizey, 0, ease_quartic_inout
 				update_priority_draw_object id, PRIORITY_FRONT
@@ -117,7 +117,7 @@
 					centery = oya.3 + item_ysize / 2 + cnt * item_ysize
 					sizex = (oya.2 - oya.0)
 					sizey = item_ysize
-					drop_id(cnt) = make_draw_object(MOVE_TYPE_EASE, TYPE_STR, LIFE_FOREVER, centerx,centery,sizex,sizey,strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+					drop_id(cnt) = make_draw_object(MOVE_TYPE_EASE, "STR", LIFE_FOREVER, centerx,centery,sizex,sizey,strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
 					set_ease_posy get_entity_id(drop_id(cnt)), oya.3,  centery, ease_quartic_inout
 					set_ease_sizey get_entity_id(drop_id(cnt)), 0, sizey,ease_quartic_inout
 					set_easetime_all get_entity_id(drop_id(cnt)), open_time
@@ -135,25 +135,4 @@
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
 #global
-
-
-
-
-#ifdef MODULE_DEBUG //テストコード
-
-mock_flag@global = 1
-
-set_rect_mock 99, 100, 100, 160, 130 // モック矩形
-newmod a, grid_combox, a, "A\nB\nC\nD", 99
-
-*main
-	manage_keyfps
-
-	color 250,250,250 :boxf:color
-	combox_manager a
-
-	
-	redraw : redraw 2
-	goto*main
-
 #endif
