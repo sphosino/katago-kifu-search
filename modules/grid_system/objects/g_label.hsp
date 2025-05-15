@@ -1,6 +1,6 @@
 #addition "../keyfps.hsp"
 
-#module grid_label string, area, bc, fc, r, flags
+#module grid_label string, area, bc, fc, r, flags, bg_id, str_id
 
 #modinit str s1, int area_number,int back_color, int font_color
 	string = s1
@@ -11,43 +11,35 @@
 	r = 5
 	flags = 0
 
+	thisrect thismod, rect, area
+
+	bg_id  = make_forever_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", rect, strf("%d,%d,%d", bc, r, flags))
+	str_id = make_forever_draw_object(MOVE_TYPE_STATIC, "STR"       , rect, strf("%s,%d",string, fc      ))
+
 	mref thismod_ID, 2
 	return thismod_ID
 
 #modfunc set_g_label str s1
 	string = s1
+	set_extra_param str_id, 0, string
 	return
 
 #modfunc set_g_label_r int p1, int p2
 	r = p1
 	flags = p2
+	set_extra_param bg_id, 1, str(r)
+	set_extra_param bg_id, 2, str(flags)
 	return
 	
 #modfunc draw_g_label
 
 	thisrect thismod, rect, area
 
-	now_cx = ginfo_cx, ginfo_cy
-	
-		set_color bc
-		arboxf rect,r,flags
-
-		set_color fc
-		
-		pos rect,rect.1
-
-		font "", limit(  (rect.2-rect.0)*2 / strlen(string) ,,rect.3-rect.1)
-		
-		mes string
-
-	pos now_cx,now_cx.1
+	update_static_rect get_entity_id(bg_id), rect
+	update_static_rect get_entity_id(str_id), rect
 	
 	return
 
-
-#deffunc local set_color int p1
-	color p1>>16&255,p1>>8&255,p1&255
-	return
 #include "rectmock.hsp"
 #global
 

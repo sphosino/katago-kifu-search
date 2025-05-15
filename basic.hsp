@@ -22,3 +22,4 @@
 #include "../hsp_common/draw_type/boxf.hsp"
 #include "../hsp_common/draw_type/circle.hsp"
 #include "../hsp_common/draw_type/str.hsp"
+#include "../hsp_common/draw_type/rboxf.hsp"

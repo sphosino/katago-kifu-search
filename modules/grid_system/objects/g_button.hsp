@@ -1,12 +1,14 @@
 
-#module grid_button string, area, label, colors, bc, fc
+#module grid_button string, area, label, colors, bg_id,bg_eid, label_id,label_eid
 
 #modinit str s1, label l, int area_number, local thismod_ID
 	string = s1
 	label = l
 	area = area_number
 	colors = 14,1,2,3
-
+	thisrect thismod, rect, area
+	bg_id = make_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", LIFE_FOREVER, 0,0,0,0, ",5")
+	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0, string)
 	mref thismod_ID, 2
 	return thismod_ID
 	
@@ -14,6 +16,9 @@
 #modfunc draw_g_button
 
 	thisrect thismod, rect, area
+
+	update_static_rect get_entity_id(bg_id), rect
+	update_static_rect get_entity_id(label_id), rect
 
 	if in_rect(rect){ //ƒCƒxƒ“ƒg‚P
 		bc = backcolors(colors(1))
@@ -31,17 +36,10 @@
 		bc = backcolors(colors(0))
 		fc = fontcolors(colors(0))
 	}
-	now_cx = ginfo_cx, ginfo_cy
-	
-	setcolor bc: arboxf rect
-	setcolor fc
-	pos rect, rect.1
-	m = 5, 5, 5, 5
-	get_rect_margin rect, m, nrec
-	pos nrec,nrec.1
-	mes string
-	pos now_cx,now_cx.1
-	
+
+	set_extra_param bg_id, 0, strf("$%06X", bc) 
+	set_extra_param label_id, 1, strf("$%06X", fc)
+
 	return
 
 #defcfunc local in_rect array a

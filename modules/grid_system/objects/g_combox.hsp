@@ -5,7 +5,7 @@
 #addition "area_grid_system.hsp"
 #addition "id_manager.hsp"
 
-#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id
+#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id, combox_id
 
 #include "rectmock.hsp"
 
@@ -30,8 +30,11 @@
 	sizex = (oya.2 - oya.0)
 	sizey = (oya.3 - oya.1)
 	
-	combox_id = make_draw_object(MOVE_TYPE_EASE, "STR", LIFE_FOREVER, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
-	update_priority_draw_object combox_id, PRIORITY_FRONT
+	combox_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+
+	tmpcol = $C8C8C8,$808080
+	open_time = 0.3
+	close_time = 0.3
 
     mref thismod_ID, 2
     return thismod_ID
@@ -41,12 +44,16 @@
 
 #modfunc combox_manager
 	thisrect thismod, oya, area
+
+	update_static_rect get_entity_id(combox_id), oya
+	
 	notesel s
 
 	if dropdown {
+		cursor_item = -1
 		repeat notemax
 			noteget t, cnt
-			
+
 			rect_x1 = oya
 			rect_y1 = oya.3 + cnt * item_ysize
 			rect_x2 = oya.2
@@ -57,47 +64,27 @@
 			_width = rect_x2 - rect_x1
 			height = rect_y2 - rect_y1
 
-			// リスト背景
-			color_code = $808080 ; 通常: 128,128,128
 			tmprect = rect_x1,rect_y1,rect_x2,rect_y2
-			if in_rect(tmprect) {
-				color_code = $C8C8C8 ; 選択中: 200,200,200
-
-				update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
-
-				if _getkey(1) == 1 {
-					dropdown_result = cnt
-					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
-					closing = 1 //閉じ処理中フラグ
-				}
-			}else{
-				update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,color_code)
+			
+			if in_rect(tmprect){
+				cursor_item = cnt
 			}
-
+			update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,tmpcol(stat))
 		loop
-	}
-	
-	if closing {
-	    alive = 0
-	    repeat notemax
-	        if is_entity_id_alive(drop_id(cnt)) : alive = 1 : break
-	    loop
-	    if alive == 0 {
-	        dropdown = 0
-	        closing = 0
-	    }
-	}
 
-	open_time = 0.3
-	close_time = 0.3
-	
-	if _getkey(1) == 1 {
-		if dropdown {
+		if _getkey(1) == 1{
 			dropdown = 0
-			repeat notemax //削除して再生成
-				destroy_draw_object_immediately drop_id(cnt)
-
+			closing = 1 //閉じ処理中フラグ
+			
+			repeat notemax
 				noteget t, cnt
+				
+				if cnt == cursor_item{ //選択中のアイテムがあれば本体に結果をセット
+					dropdown_result = cnt
+					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,$C8C8C8)	
+				}
+
+				destroy_draw_object_immediately drop_id(cnt)
 				centerx = (oya.2 + oya.0)  / 2
 				centery = oya.3 + item_ysize/ 2 + cnt * item_ysize
 				sizex = (oya.2 - oya.0)
@@ -107,8 +94,10 @@
 				set_ease_sizey get_entity_id(id), sizey, 0, ease_quartic_inout
 				update_priority_draw_object id, PRIORITY_FRONT
 			loop
-			
-		} else {
+
+		}
+	}else{
+		if _getkey(1) == 1{
 			if in_rect(oya) && closing == 0{
 
 				repeat notemax //各アイテムを生成
@@ -126,6 +115,17 @@
 				dropdown = 1
 			}
 		}
+	}
+	
+	if closing {
+	    alive = 0
+	    repeat notemax
+	        if is_entity_id_alive(drop_id(cnt)) : alive = 1 : break
+	    loop
+	    if alive == 0 {
+	        dropdown = 0
+	        closing = 0
+	    }
 	}
 
 	noteunsel

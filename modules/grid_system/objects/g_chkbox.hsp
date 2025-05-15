@@ -1,5 +1,5 @@
 
-#module grid_checkbox flag, string, area_number, check_size, margin
+#module grid_checkbox flag, string, area_number, check_size, margin, bg_id, bg_eid, label_id, label_eid, check_id, check_eid,rect
 #modinit var v, str s, int _area
 	string = s
 	flag = v
@@ -7,18 +7,48 @@
 	area_number = _area
 	check_size = 20
 	margin = 3
+	thisrect thismod, rect, area_number
+	bg_id = make_forever_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", rect,",5")
+	bg_eid = get_entity_id(bg_id)
+	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0,string)
+	label_eid = get_entity_id(label_id)
+	check_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF", LIFE_FOREVER, 0,0,0,0,"")
+	logmes "check_id_check ->  " + check_id
+	check_eid = get_entity_id(check_id)
+	gosub*ìØä˙
 	return
 
 #modfunc toggle_g_checkbox
 	flag ^ 1
+	gosub*ìØä˙
+
+	return
+*ìØä˙
+	if flag{
+		set_extra_param check_id, 0, "$5E8B7E"
+	}else{
+		set_extra_param check_id, 0, "$333333"
+	}
+	logmes "toggle on id: " + check_id + " Å® flag: " + flag
 	return
 
 #modfunc draw_g_chkbox
 
 	thisrect thismod, rect, area_number
-	rx = rect.2 + rect.0 - check_size >> 1
-	ry = rect.3 + rect.1 - check_size >> 1
-	checkrect = rect.2 - check_size - margin,ry,rect.2 - margin, ry + check_size
+
+	update_static_rect bg_eid, rect
+	update_static_rect label_eid, rect
+
+	cx1 = rect.2 - margin - check_size
+	cy1 = (rect.1 + rect.3) / 2 - check_size / 2
+	cx2 = rect.2 - margin
+	cy2 = cy1 + check_size
+	crect = cx1, cy1, cx2, cy2
+	update_static_rect check_eid, crect
+
+	labelrect = rect.0, rect.1, rect.2 - check_size - margin * 2, rect.3
+	update_static_rect label_eid, labelrect
+		
 	backcolor = $F5F5DC
 	if in_rect(rect){
 		if _getkey(1) == 1{
@@ -26,16 +56,10 @@
 		}
 		backcolor = $222222
 	}
-	color backcolor >> 16 & 255, backcolor >> 8 & 255, backcolor & 255
-	rboxf rect,rect.1,rect.2,rect.3
-	color 255,255,255
-	m = 5, 5, 5, 5
-	get_rect_margin rect, m, nrec
-	color $4A,$37,$28
-	pos nrec, nrec.1: mes string
+
+	// îwåiêFçXêV
+	set_extra_param bg_id, 0, strf("$%06X", backcolor)
 	
-	if flag: color $5E,$8B,$7E
-	boxf checkrect,checkrect.1,checkrect.2,checkrect.3
 	return
 
 #include "rectmock.hsp"

@@ -354,6 +354,7 @@ loop
 gosub*load_kifu_folder
 gosub*loadsgf
 
+set_max_centering_mes 33
 
 ;bg_id = make_draw_object(MOVE_TYPE_STATIC, TYPE_RECT, LIFE_FOREVER, ginfo_winx / 2, ginfo_winy / 2, ginfo_winx, ginfo_winy, strf("%d",BG_COLOR))
 ;update_priority_draw_object bg_id, PRIORITY_BACK
@@ -843,7 +844,7 @@ pretime = keyfpstime
 	dim nodelist
 	
 	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = int(get_value(get_item_name(kifulist.current_kifulist, s(cnt))))
+		nodelist(cnt) = int(get_value(h,get_item_name(kifulist.current_kifulist, s(cnt))))
 	loop
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
