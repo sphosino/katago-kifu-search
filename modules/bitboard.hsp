@@ -271,7 +271,6 @@ init_bitboard
 		logmes s
 		
 	loop
-	logmes
 	return
 #global
 

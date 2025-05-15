@@ -9,7 +9,7 @@
 #addition "../../../hsp_common/rboxf.hsp" 
 #addition "../../../hsp_common/color_manager.hsp"
 
-dimtype areagrid@global, 5
+dimtype areagrid@global, 5, 500
 
 #module area grid, —ñ”, s”, grid_x, grid_y, padding_left, padding_right, padding_top,padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
 
@@ -119,7 +119,6 @@ dimtype areagrid@global, 5
 #modfunc local _set_grid_parent int p1
 	parentid = p1
 	return
-	
 #deffunc set_grid_area_back_color int p1, int p2
 	_set_grid_area_back_color areagrid@global(p1), p2
 	return 
@@ -373,7 +372,6 @@ init_area_grid_system_mock
 		//e‚ªÈ—ª‚³‚ê‚Ä‚¢‚é
 		parent = default_parent
 	}
-	logmes a
 	a = make_area(x,y)
 	if parent != -1: push_grid_child parent, a
 	return a

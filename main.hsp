@@ -1,7 +1,7 @@
 #packopt name "KataGo棋譜検索"
 #bootopt notimer 1 //ツールなので、高精度タイマーを使用しない
 
-;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、多少重くなるのでバグ特定用
+;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重くなるので謎バグ特定専用
 
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
@@ -264,6 +264,7 @@ if strsize >= 0{
 
 
 //各エリアの設定
+logmes length(areagrid@global)
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
 set_grid_area_back_color goban_edit_stone,$333333

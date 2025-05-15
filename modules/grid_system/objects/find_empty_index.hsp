@@ -43,7 +43,6 @@
 			break
 		}
 	loop
-	logmes "find -> " + result
 	return result
 
 #define global ctype find_empty_index_vertical(%1,%2,%3,%4,%5=-1) _find_empty_index_vertical(%1,%2,%3,%4,%5) 
