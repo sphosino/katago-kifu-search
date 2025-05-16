@@ -5,42 +5,41 @@
 #const BOARD_Y_MAX 100
 
 #deffunc group_init
-	group_str = "A","B","C","D" //‚S‚Â‚Ü‚Åw’è‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	group_str = "A","B","C","D" //ï¼”ã¤ã¾ã§æŒ‡å®šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	dim stone_map, BOARD_X_MAX, BOARD_Y_MAX, 4
 	dim stone_map_count, BOARD_X_MAX, BOARD_Y_MAX
-	sdim groups, 361, 4 //ƒOƒ‹[ƒv‚²‚Æ‚ÌˆÊ’u‚ğ•Û‘¶(xxyy, xxyy... )Œ`®
+	sdim groups, 361, 4 //ã‚°ãƒ«ãƒ¼ãƒ—ã”ã¨ã®ä½ç½®ã‚’ä¿å­˜(xxyy, xxyy... )å½¢å¼
 	return
-#deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var board@ //Œé”Õ‚ª•\¦‚³‚ê‚Ä‚¢‚éˆÊ’u‚˜A‚™AŒé”Õ‚Ìƒ}ƒX‚Ì‘å‚«‚³x,y , Î‚ÌFi‚±‚ê‚É‚æ‚Á‚ÄƒOƒ‹[ƒv•\¦‚Ì•¶šF‚ğ•Ï‚¦‚éj
+#deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var boardã€€ //ç¢ç›¤ãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ä½ç½®ï½˜ã€ï½™ã€ç¢ç›¤ã®ãƒã‚¹ã®å¤§ãã•x,y , çŸ³ã®è‰²ï¼ˆã“ã‚Œã«ã‚ˆã£ã¦ã‚°ãƒ«ãƒ¼ãƒ—è¡¨ç¤ºã®æ–‡å­—è‰²ã‚’å¤‰ãˆã‚‹ï¼‰
 	for i,,BOARD_X_MAX
 		for j,,BOARD_Y_MAX
 			repeat 4
 				if stone_map(i,j, cnt){
 					switch get_goban_position_color(board,i,j)
-					case 0 ; ‹ó“_
+					case 0 ; ç©ºç‚¹
 						color 0,0,0
 					swbreak
-					case 1 ; •Î
+					case 1 ; é»’çŸ³
 						color 255,255,255
 					swbreak
-					case 2 ; ”’Î
+					case 2 ; ç™½çŸ³
 						color 0,0,0
 					swbreak
-					case 3 ; ŠDF
+					case 3 ; ç°è‰²
 						color 0,0,0
 					swbreak
-					case 4 ; ~‚Â‚«•
+					case 4 ; Ã—ã¤ãé»’
 						color 255,255,255
 					swbreak
-					case 5 ; ~‚Â‚«”’
+					case 5 ; Ã—ã¤ãç™½
 						color 0,0,0
 					swbreak
-					case 6 ; ~‚Â‚«ŠD
+					case 6 ; Ã—ã¤ãç°
 						color 0,0,0
 					swbreak
 					swend
 
-					//centering_x = •¶š‚ğo—ˆ‚é‚¾‚¯^‚ñ’†‚É‚µ‚½‚­‚ÄA“K“–‚É ( MAS_Y / 6 )ƒx[ƒX‚ÅŒvZB
-					// ¦‚ ‚Æ‚ÅƒtƒHƒ“ƒgƒTƒCƒY‚âƒYƒ‰‚µ—Ê‚Í’è”‰»‚µ‚Ä‚à‚¢‚¢‚©‚àB
+					//centering_x = æ–‡å­—ã‚’å‡ºæ¥ã‚‹ã ã‘çœŸã‚“ä¸­ã«ã—ãŸãã¦ã€é©å½“ã« ( MAS_Y / 6 )ãƒ™ãƒ¼ã‚¹ã§è¨ˆç®—ã€‚
 					if stone_map_count(i, j) >= 2{
 						centering_x = MAS_Y / (6 * (cnt \ 2 + 1))
 						font "", MAS_Y / 2
@@ -90,10 +89,10 @@
 #defcfunc get_group_by_position int x, int y
 	return stone_map(x, y, 3) << 3 | stone_map(x, y, 2) << 2 | stone_map(x, y, 1) << 1| stone_map(x, y, 0)
 
-//‰ñ“]‚É‘Î‰BŒŸõ‘O‚Éì¬‚µ‚Ä—˜—p
+//å›è»¢ã«å¯¾å¿œã€‚æ¤œç´¢å‰ã«ä½œæˆã—ã¦åˆ©ç”¨
 #deffunc make_rotated_group array rotation_table, int board_size_x, int board_size_y
 	is_square = (board_size_x == board_size_y)
-	num_rotations = 4 << is_square //Šî–{‚Sƒpƒ^[ƒ“A³•ûŒ`‚Í‚Wí—Ş
+	num_rotations = 4 << is_square //åŸºæœ¬ï¼”ãƒ‘ã‚¿ãƒ¼ãƒ³ã€æ­£æ–¹å½¢ã¯ï¼˜ç¨®é¡
 	dim rotation_table, board_size_x, board_size_y, num_rotations 
 	repeat length(groups)
 		group_flag = 1 << cnt
@@ -118,7 +117,7 @@
         return
     }
     
-    // ƒOƒ‹[ƒv‚É“o˜^‚³‚ê‚½À•W‚ğæ“¾
+    // ã‚°ãƒ«ãƒ¼ãƒ—ã«ç™»éŒ²ã•ã‚ŒãŸåº§æ¨™ã‚’å–å¾—
     split groups(group_num), ",", tmp
     repeat stat
         xy = tmp(cnt)
@@ -132,14 +131,14 @@
         }
     loop
 
-    // ƒOƒ‹[ƒvƒf[ƒ^‚ğƒŠƒZƒbƒg
+    // ã‚°ãƒ«ãƒ¼ãƒ—ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆ
     groups(group_num) = ""
     
     return
 #defcfunc group_num_validation int group_num
 	invalid = group_num < 0 || group_num > 3
 	if invalid{
-		logmes "•s³‚ÈƒOƒ‹[ƒv’l‚Å‚·" + group_num
+		logmes "ä¸æ­£ãªã‚°ãƒ«ãƒ¼ãƒ—å€¤ã§ã™" + group_num
 	}
 	return invalid
 #global
