@@ -62,7 +62,7 @@
     if col <= -1 {
         // 全体をチェックする場合
         repeat w * h
-            checklist(cnt) = cnt * w + cnt \ h
+            checklist(cnt) = cnt \ w * h + cnt / w
         loop
     } else {
         // 範囲チェック
@@ -72,7 +72,7 @@
         }
         // 指定列だけチェックリストに追加
         repeat h
-            checklist(cnt) = cnt * w + col
+            checklist(cnt) = cnt \ w * h + col
         loop
     }
 
@@ -96,11 +96,38 @@
 
     return result
 
+
+#deffunc trans_grid_smart array item_indices, int item_indices_num, int w1, int w_max, int h_max, array res
+	// item_indices (w1基準) を、可能な限り幅を狭くしつつ h_max に収まるようにする
+	// 返り値 result[0] = new_w, result[1] = new_h
+
+	new_w = -1
+
+	repeat w_max
+		test_w = cnt + 1
+		test_h = (item_indices_num + test_w - 1) / test_w
+		if test_h <= h_max {
+			new_w = test_w
+			break
+		}
+	loop
+
+	if new_w = -1 {
+		res = -1, -1
+		return
+	}
+
+	new_h = (item_indices_num + new_w - 1) / new_w
+	res = new_w, new_h
+	return
+
 #deffunc trans_grid array item_indices, int item_indices_num, int w1, int w2
+	if item_indices / w2 >= h_max: return
 	repeat item_indices_num
 		x = item_indices(cnt) \ w1
 		y = item_indices(cnt) / w1
 		item_indices(cnt) = y * w2 + x
 	loop
+	h = item_indices / w2
 	return
 #global

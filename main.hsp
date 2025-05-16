@@ -64,8 +64,6 @@ sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
 sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
 dim matchlist                ; 検索結果用リストボックスIDを格納
 
-
-
 pre_filter_on = -1
 pre_filter = -1
 
@@ -264,7 +262,6 @@ if strsize >= 0{
 
 
 //各エリアの設定
-logmes length(areagrid@global)
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
 set_grid_area_back_color goban_edit_stone,$333333

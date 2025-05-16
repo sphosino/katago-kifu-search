@@ -5,56 +5,53 @@
 #const BOARD_Y_MAX 100
 
 #deffunc group_init
-	group_str = "A","B","C","D" //ï¼”ã¤ã¾ã§æŒ‡å®šã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
+	group_str = "A","B","C","D" //‚S‚Â‚Ü‚Åw’è‚Å‚«‚é‚æ‚¤‚É‚·‚é
 	dim stone_map, BOARD_X_MAX, BOARD_Y_MAX, 4
 	dim stone_map_count, BOARD_X_MAX, BOARD_Y_MAX
-	sdim groups, 361, 4 //ã‚°ãƒ«ãƒ¼ãƒ—ã”ã¨ã®ä½ç½®ã‚’ä¿å­˜(xxyy, xxyy... )å½¢å¼
+	sdim groups, 361, 4 //ƒOƒ‹[ƒv‚²‚Æ‚ÌˆÊ’u‚ğ•Û‘¶(xxyy, xxyy... )Œ`®
 	return
-#deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var boardã€€ //ç¢ç›¤ãŒè¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ä½ç½®ï½˜ã€ï½™ã€ç¢ç›¤ã®ãƒã‚¹ã®å¤§ãã•x,y , çŸ³ã®è‰²ï¼ˆã“ã‚Œã«ã‚ˆã£ã¦ã‚°ãƒ«ãƒ¼ãƒ—è¡¨ç¤ºã®æ–‡å­—è‰²ã‚’å¤‰ãˆã‚‹ï¼‰
+#deffunc group_draw int posx, int posy, int MAS_X, int MAS_Y, var board@ //Œé”Õ‚ª•\¦‚³‚ê‚Ä‚¢‚éˆÊ’u‚˜A‚™AŒé”Õ‚Ìƒ}ƒX‚Ì‘å‚«‚³x,y , Îî•ñi‚±‚ê‚É‚æ‚Á‚ÄƒOƒ‹[ƒv•\¦‚Ì•¶šF‚ğ•Ï‚¦‚éj
 	for i,,BOARD_X_MAX
 		for j,,BOARD_Y_MAX
 			repeat 4
 				if stone_map(i,j, cnt){
-					switch get_goban_position_color(board,i,j)
-					case 0 ; ç©ºç‚¹
-						color 0,0,0
-					swbreak
-					case 1 ; é»’çŸ³
-						color 255,255,255
-					swbreak
-					case 2 ; ç™½çŸ³
-						color 0,0,0
-					swbreak
-					case 3 ; ç°è‰²
-						color 0,0,0
-					swbreak
-					case 4 ; Ã—ã¤ãé»’
-						color 255,255,255
-					swbreak
-					case 5 ; Ã—ã¤ãç™½
-						color 0,0,0
-					swbreak
-					case 6 ; Ã—ã¤ãç°
-						color 0,0,0
-					swbreak
-					swend
+					color_type = get_goban_position_color(board,i,j)
+					text_color = select_group_color(color_type)
+					s = group_str(cnt)
+					sx = MAS_X
+					sy = MAS_Y
 
-					//centering_x = æ–‡å­—ã‚’å‡ºæ¥ã‚‹ã ã‘çœŸã‚“ä¸­ã«ã—ãŸãã¦ã€é©å½“ã« ( MAS_Y / 6 )ãƒ™ãƒ¼ã‚¹ã§è¨ˆç®—ã€‚
-					if stone_map_count(i, j) >= 2{
-						centering_x = MAS_Y / (6 * (cnt \ 2 + 1))
-						font "", MAS_Y / 2
-						pos posx + i * MAS_X + (cnt \ 2) * (MAS_X / 2) + centering_x, posy + j * MAS_Y + (cnt / 2) * (MAS_Y / 2)
+					cx = posx + i * MAS_X
+					cy = posy + j * MAS_Y
+					
+					if stone_map_count(i, j) >= 2 {
+						sx /= 2
+						sy /= 2
+						cx += (cnt \ 2) * sx + sx / 2
+						cy += (cnt / 2) * sy + sy / 2
 					}else{
-						font "", MAS_Y
-						centering_x = MAS_Y / 6
-						pos posx + i * MAS_X + centering_x, posy + j * MAS_Y
+						cx += sx / 2
+						cy += sy / 2
 					}
-					mes group_str(cnt)
+
+					_make_draw_object MOVE_TYPE_STATIC, "STR", LIFE_INSTANT, cx, cy, sx, sy, strf("%s,%d", group_str(cnt), text_color)
 				}
 			loop
 		next
 	next
 	return
+#defcfunc select_group_color int c
+	switch c
+	case 0
+	case 2
+	case 3
+	case 5
+	case 6 : return "$000000" ; ••¶š
+	case 1
+	case 4 : return "$FFFFFF" ; ”’•¶š
+	default : dialog "‘z’èŠO‚ÌÎ‚Ìí—Ş‚Å‚·",,__FILE__: end
+	swend
+	
 #deffunc add_group_stone int x, int y, int group_num
 	if group_num_validation(group_num){
 		return
@@ -89,10 +86,10 @@
 #defcfunc get_group_by_position int x, int y
 	return stone_map(x, y, 3) << 3 | stone_map(x, y, 2) << 2 | stone_map(x, y, 1) << 1| stone_map(x, y, 0)
 
-//å›è»¢ã«å¯¾å¿œã€‚æ¤œç´¢å‰ã«ä½œæˆã—ã¦åˆ©ç”¨
+//‰ñ“]‚É‘Î‰BŒŸõ‘O‚Éì¬‚µ‚Ä—˜—p
 #deffunc make_rotated_group array rotation_table, int board_size_x, int board_size_y
 	is_square = (board_size_x == board_size_y)
-	num_rotations = 4 << is_square //åŸºæœ¬ï¼”ãƒ‘ã‚¿ãƒ¼ãƒ³ã€æ­£æ–¹å½¢ã¯ï¼˜ç¨®é¡
+	num_rotations = 4 << is_square //Šî–{‚Sƒpƒ^[ƒ“A³•ûŒ`‚Í‚Wí—Ş
 	dim rotation_table, board_size_x, board_size_y, num_rotations 
 	repeat length(groups)
 		group_flag = 1 << cnt
@@ -117,7 +114,7 @@
         return
     }
     
-    // ã‚°ãƒ«ãƒ¼ãƒ—ã«ç™»éŒ²ã•ã‚ŒãŸåº§æ¨™ã‚’å–å¾—
+    // ƒOƒ‹[ƒv‚É“o˜^‚³‚ê‚½À•W‚ğæ“¾
     split groups(group_num), ",", tmp
     repeat stat
         xy = tmp(cnt)
@@ -131,28 +128,16 @@
         }
     loop
 
-    // ã‚°ãƒ«ãƒ¼ãƒ—ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªã‚»ãƒƒãƒˆ
+    // ƒOƒ‹[ƒvƒf[ƒ^‚ğƒŠƒZƒbƒg
     groups(group_num) = ""
     
     return
 #defcfunc group_num_validation int group_num
 	invalid = group_num < 0 || group_num > 3
 	if invalid{
-		logmes "ä¸æ­£ãªã‚°ãƒ«ãƒ¼ãƒ—å€¤ã§ã™" + group_num
+		logmes "•s³‚ÈƒOƒ‹[ƒv’l‚Å‚·" + group_num
 	}
 	return invalid
 #global
 group_init
-#endif
-
-#if 0
-add_group_stone 5,5, 0
-add_group_stone 5,5, 1
-add_group_stone 5,5, 2
-add_group_stone 5,5, 3
-add_group_stone 5,4, 0
-add_group_stone 18,18,3
-
-group_draw 0, 0,20,20
-
 #endif

@@ -1,5 +1,8 @@
 #include "find_empty_index.hsp"
-#module grid_radiobox string, area, v,items, colors, bc, fc, w, h, w_max, h_max
+#module grid_radiobox string, area, v,items, colors, bc, fc, w, h, w_max, h_max, dir, item_indices, item_indices_num
+
+#const DIR_HORIZONTAL 1
+#const DIR_VERTICAL 2
 
 #modinit var a, int area_number, local thismod_ID
 	a = -1
@@ -10,32 +13,48 @@
 	h = 1
 	w_max = -1
 	h_max = -1
-	dim item_indces
-	dim item_indces_num
+	dim item_indices
+	dim item_indices_num
 	sdim string
 	colors = 5,6,7,8
-
+	dir = DIR_HORIZONTAL
 	mref thismod_ID, 2
 	return thismod_ID
 
 #modfunc add_item_radiobox str s1
-	if find_empty_index(item_indces,item_indces_num, w, h) >= 0{
-		//’Ç‰Á‚·‚é
-		item_indces(item_indces_num) = stat
-		string(item_indces_num) = s1
-		item_indces_num++
+
+	if dir == DIR_HORIZONTAL{
+		index =  find_empty_index(item_indices,item_indices_num, w, h)
 	}else{
+		index = find_empty_index_vertical(item_indices,item_indices_num, w, h)
+	}
+	if index >= 0{
+		item_indices(item_indices_num) = index
+		string(item_indices_num) = s1
+		item_indices_num++
+		return
+	}
+	// ‹ó‚«‚ª‚È‚¢ê‡‚ÌŠg’£
+	if dir == DIR_HORIZONTAL {
 		if (w_max < 0) || (w < w_max){
-			//‰¡Šg’£
-			trans_grid item_indces, item_indces_num, w, w + 1
+			trans_grid item_indices, item_indices_num, w, w + 1
 			w++
 			add_item_radiobox thismod, s1
 		}else: if (h_max < 0) || (h < h_max){
-			//cŠg’£
 			h++
 			add_item_radiobox thismod, s1
 		}
+	} else {
+		if (h_max < 0) || (h < h_max){
+			h++
+			add_item_radiobox thismod, s1
+		}else: if (w_max < 0) || (w < w_max){
+			trans_grid item_indices, item_indices_num, w, w + 1
+			w++
+			add_item_radiobox thismod, s1
+		}
 	}
+	
 	return
 #modfunc set_radio_grid_max int _w_max, int _h_max
 	if _w_max > 0{
@@ -45,11 +64,11 @@
 	if _h_max > 0{
 		h_max = _h_max
 	}
-	h = limit(limit(_h_max,(item_indces_num  + _w_max - 1) / _w_max),1)
-	repeat item_indces_num
-		x = item_indces(cnt) \ w
-		y = item_indces(cnt) / w
-		item_indces(cnt) = y * _w_max + x
+	h = limit(limit(_h_max,(item_indices_num  + _w_max - 1) / _w_max),1)
+	repeat item_indices_num
+		x = item_indices(cnt) \ w
+		y = item_indices(cnt) / w
+		item_indices(cnt) = y * _w_max + x
 	loop
 	return
 #modfunc draw_g_radiobox
@@ -60,9 +79,9 @@
 	item_size_y = (rect.3-rect.1) / h
 	now_cx = ginfo_cx, ginfo_cy
 	
-	repeat item_indces_num
-		x = item_indces(cnt) \ w
-		y = item_indces(cnt) / w
+	repeat item_indices_num
+		x = item_indices(cnt) \ w
+		y = item_indices(cnt) / w
 
 		this_rect_x = rect.0 + x * item_size_x
 		this_rect_y = rect.1 + y * item_size_y
