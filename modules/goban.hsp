@@ -79,14 +79,14 @@
 	
 	//線描画
 
-	color $cd,$85,$3f
-	boxf px, py, px + length(board) * masx, py + length2(board) * masy
-	color
+	sizex = length(board) * masx
+	sizey = length2(board) * masy
+	make_instant_draw_object "BOXF", px + sizex /2, py + sizex/2, sizex, sizey,"$cd853f"
 	repeat length(board)
-		line px + masx * cnt + masx / 2, py + masy/2, px + masx * cnt + masx/2, py + masy * length2(board) - masy/2 - 1
+		make_line_object_by_points px + masx * cnt + masx / 2, py + masy/2             , px + masx * cnt + masx/2             , py + masy * length2(board) - masy/2 - 1, "$000000"
 	loop
 	repeat length2(board)
-		line px + masx/2, py + masy * cnt + masy/2, px + masx * length(board) - masx/2 - 1, py + masy * cnt + masy/2
+		make_line_object_by_points px + masx/2               , py + masy * cnt + masy/2, px + masx * length(board) - masx/2 - 1, py + masy * cnt + masy/2              , "$000000"
 	loop
 
 
@@ -104,8 +104,7 @@
 			y1 = centery - hosisizer
 			x2 = centerx + hosisizer
 			y2 = centery + hosisizer
-			
-			circle x1, y1, x2, y2
+			make_instant_draw_object "CIRCLE_FAST", (x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1,"$000000"
 			
 		loop
 	}
@@ -116,101 +115,54 @@
 		repeat length2(board)
 			posx = px + m   * masx
 			posy = py + cnt * masy
-			pos posx + 4, posy + 2
 
 			//ボード描画
 			switch board(m,cnt)
 			case 空点
 				if (コウ禁止点 == m) : if (コウ禁止点.1 ==cnt): if 最終手表示{
-					
-					color 210,21,21
-					circle posx + masx/4, posy + masy/4, posx + masx*3/4, posy + masy*3/4
-					
-				}
-				if 碁石番号表示: if stepboard(m,cnt) > 0{
-					color, 240
-					mes stepboard(m,cnt)
+					make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx/3, masy/3,"$D41515"					
 				}
 			swbreak
 			case 黒番
-				color
-				circle posx, posy , posx + masx, posy + masy
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$000000"
 				gosub*draw_last_move_mark
-				if 碁石番号表示{
-					color 210,210,210
-					mes stepboard(m,cnt)
-				}
+
 			swbreak
 			case 白番
-				color 220,220,220
-				circle posx, posy , posx + masx, posy + masy
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$DCDCDC"
 				gosub*draw_last_move_mark
-				if 碁石番号表示{
-					color
-					mes stepboard(m,cnt)
-				}
+
 			swbreak
 			case 3
-				color 220/2,220/2,220/2
-				circle posx, posy , posx + masx, posy + masy
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$6E6E6E"
 				gosub*draw_last_move_mark
-				if 碁石番号表示{
-					color
-					mes stepboard(m,cnt)
-				}
+
 			swbreak
 			case 4
-				color
-				circle posx, posy , posx + masx, posy + masy
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$000000"
+				make_instant_draw_object "LINE"  , posx + masx/2, posy + masy/2, masx, masy,"$FF0000"
+				set_static_angle get_entity_id(stat), deg2rad(45)
+				make_instant_draw_object "LINE"  , posx + masx/2, posy + masy/2, masx, masy,"$FF0000"
+				set_static_angle get_entity_id(stat), deg2rad(-45)
 
 				gosub*draw_last_move_mark
 
-				color 255
-				offset = cos(deg2rad(45)) * masx / 2
-				circle_centerx = posx + masx / 2
-				circle_centery = posy + masx / 2
-				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
-				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
-				
-				if 碁石番号表示{
-					color
-					mes stepboard(m,cnt)
-				}
 			swbreak
 			case 5
-				color 220,220,220
-				circle posx, posy , posx + masx, posy + masy
-
-				色を設定 $000080
-				offset = cos(deg2rad(45)) * masx / 2
-				circle_centerx = posx + masx / 2
-				circle_centery = posy + masx / 2
-				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
-				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
-				
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$DCDCDC"
+				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
+				set_static_angle get_entity_id(stat), deg2rad(45)
+				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
+				set_static_angle get_entity_id(stat), deg2rad(-45)
 				gosub*draw_last_move_mark
-				if 碁石番号表示{
-					color
-					mes stepboard(m,cnt)
-				}
-				
 			swbreak
 			case 6
-				color 220/2,220/2,220/2
-				circle posx, posy , posx + masx, posy + masy
-
-				色を設定 $000080
-				offset = cos(deg2rad(45)) * masx / 2
-				circle_centerx = posx + masx / 2
-				circle_centery = posy + masx / 2
-				line circle_centerx - offset, circle_centery - offset, circle_centerx + offset, circle_centery + offset
-				line circle_centerx + offset, circle_centery - offset, circle_centerx - offset, circle_centery + offset
-				
+				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$6E6E6E"
+				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
+				set_static_angle get_entity_id(stat), deg2rad(45)
+				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
+				set_static_angle get_entity_id(stat), deg2rad(-45)
 				gosub*draw_last_move_mark
-				if 碁石番号表示{
-					color
-					mes stepboard(m,cnt)
-				}
 			swbreak
 			swend
 		loop
@@ -223,14 +175,14 @@
 	repeat get_coordinates_set(set_list, sets)
 		x = px + masx * strmid(sets(cnt), 0, 2)
 		y = py + masy * strmid(sets(cnt), 2, 2)
-		boxfa x , y, x + masx, y + masy
+		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx, masy, "$c8c8c8"
+		set_static_alpha get_entity_id(stat), 128
 	loop
 	
 	return
 	
 #modfunc 碁盤に矩形データを表示 array rects
 
-	
 		x1 = px + rects(0) * masx
 		y1 = py + rects(1) * masy
 		x2 = px + rects(2) * masx
@@ -239,15 +191,19 @@
 		if x1 > x2: tmp = x1:x1 = x2: x2 = tmp
 		if y1 > y2: tmp = y1:y1 = y2: y2 = tmp
 		
-		color 200,200,200
-		boxfa x1, y1, x2 + masx, y2 + masy
-	
+		make_instant_draw_object "BOXF", (x1 + x2 + masx) / 2, (y1 + y2 + masy) / 2, x2-x1 + masx+2,y2-y1+masy+2, "$c8c8c8"
+		set_static_alpha get_entity_id(stat), 128
 
 	return
 *draw_last_move_mark
 	if (zz == 1) && m == 最後の着手 && cnt == 最後の着手.1{
 		color 21,220,21
-		circle posx + masx/4, posy + masy/4, posx + masx*3/4, posy + masy*3/4
+		
+		cx = posx + masx / 2
+		cy = posy + masy / 2
+		sx = masx / 3
+		sy = masy / 3
+		make_instant_draw_object "CIRCLE_FAST",cx,cy,sx,sy,"$15DC15"
 	}
 	return
 #modfunc getBoardCoordinates array result
@@ -330,7 +286,6 @@
 		a(0,n) = 15,15 : n++
 
 	}
-
 
 	return n
 

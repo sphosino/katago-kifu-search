@@ -34,7 +34,7 @@
 						cy += sy / 2
 					}
 
-					_make_draw_object MOVE_TYPE_STATIC, "STR", LIFE_INSTANT, cx, cy, sx, sy, strf("%s,%d", group_str(cnt), text_color)
+					make_instant_draw_object "STR", cx, cy, sx, sy, strf("%s,%d", group_str(cnt), text_color)
 				}
 			loop
 		next

@@ -1,4 +1,3 @@
-;#define global MODULE_DEBUG
 #module grid_slider v, min, max, horizontal, x, y, tickness,長さ, dragging, area, r
 
 #include "rectmock.hsp"
@@ -109,34 +108,3 @@
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
 #global
-
-
-#ifdef MODULE_DEBUG //テストコード
-
-mock_flag@global = 1
-
-set_rect_mock 99, 100, 100, 200, 300 // モック矩形設定（垂直スライダー用）
-set_rect_mock 66, 300, 100, 500, 150 // モック矩形設定（水平スライダー用）
-vertical = 0     : newmod a, grid_slider, vertical  , 0, 99, 0   , 300 , 10, 15, 20, 60:
-horizontal = 0   : newmod a, grid_slider, horizontal, 1, 66, -100, 300 , 10, 15, 0 , 20 :
-
-//メインループ
-repeat
-	redraw:redraw 2
-	manage_keyfps ;FPS調整と、_getkey()サポート
-	
-	color 255,255,255:boxf:color
-	pos 200,300
-	foreach a
-		slider_manager a.cnt
-		mes get_value_g_slider( a.cnt )
-	loop
-	
-	//連動チェック
-	
-	if _getkey(2) == 1{ //右クリック
-		vertical = rnd(300)//値を直接書き換えてつまみが移動するか？
-	}
-loop
-
-#endif

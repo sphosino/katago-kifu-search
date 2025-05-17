@@ -1,4 +1,4 @@
-#include "../hsp_common/logmes2.hsp"
+;#include "../hsp_common/logmes2.hsp"
 
 #include "../hsp_common/color_manager.hsp"
 #include "../hsp_common/id_manager.hsp"
@@ -24,3 +24,4 @@
 #include "../hsp_common/draw_type/circle.hsp"
 #include "../hsp_common/draw_type/str.hsp"
 #include "../hsp_common/draw_type/rboxf.hsp"
+#include "../hsp_common/draw_type/line.hsp"
