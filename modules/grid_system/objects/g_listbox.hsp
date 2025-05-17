@@ -352,7 +352,7 @@
 #include "rectmock.hsp"
 #global
 
-#if 0b1
+#if 0;b1
 
 mock_flag@global = 1
 set_rect_mock 0, 200,100,400,200

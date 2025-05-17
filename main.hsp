@@ -14,6 +14,7 @@
 #include "modules/search/Search_pattern2.hsp"
 #include "modules/search/memorize_hit_rect.hsp"
 
+
 #include "go_game_manager.hsp"
 
 #include "hspext.as"

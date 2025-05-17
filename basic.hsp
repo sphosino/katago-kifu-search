@@ -1,27 +1,6 @@
 ;#include "../hsp_common/logmes2.hsp"
 
-#include "../hsp_common/color_manager.hsp"
-#include "../hsp_common/id_manager.hsp"
-#include "../hsp_common/id_manager_for_list.hsp"
-#include "../hsp_common/scrollbar.hsp"
-#include "../hsp_common/keyfps.hsp"
-#include "../hsp_common/set.hsp"
-#include "../hsp_common/rboxf.hsp"
-#include "../hsp_common/ringbuffer.hsp"
-#include "../hsp_common/shuffle_notepad.hsp"
-#include "../hsp_common/frame_profiler.hsp"
-#include "../hsp_common/hash.hsp"
+#include "../hsp_common/draw_obj/all_include" //easingÉ}ÉNÉçÇ™Ç†ÇÈÇ©ÇÁêÊ
+#include "../hsp_common/all_include
+#include "../hsp_common/draw_type/all_include"
 
-
-#include "../hsp_common/draw_obj/physis.hsp"
-#include "../hsp_common/draw_obj/ease.hsp"
-#include "../hsp_common/draw_obj/static.hsp"
-
-#include "../hsp_common/renderer.hsp"
-#include "../hsp_common/renderer_util.hsp"
-
-#include "../hsp_common/draw_type/boxf.hsp"
-#include "../hsp_common/draw_type/circle.hsp"
-#include "../hsp_common/draw_type/str.hsp"
-#include "../hsp_common/draw_type/rboxf.hsp"
-#include "../hsp_common/draw_type/line.hsp"
