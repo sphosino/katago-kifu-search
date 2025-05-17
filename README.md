@@ -36,7 +36,7 @@ root/
    ├── katago-kifu-search/
    └── hsp_common/
 
-3.hsp_commonの中にあるgenerate_all_include.hsp を一度実行してください。
+3.hsp_commonの中にあるgenerate_headers.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
 katago-kifu-searchフォルダのmain.hspが実行できるようになっていればインストール完了！
