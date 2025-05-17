@@ -36,7 +36,10 @@ root/
    ├── katago-kifu-search/
    └── hsp_common/
 
-これでkatago-kifu-searchの各ファイルがhsp_commonを参照できます。
+3.hsp_commonの中にあるgenerate_all_include.hsp を一度実行してください。
+    これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
+
+この状態になったらkatago-kifu-searchからmain.hspが実行できるようになっているはずです！
 ```
 
 ## 📂 開発時のおすすめディレクトリ構成(例）
