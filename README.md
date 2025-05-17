@@ -17,7 +17,7 @@ HSP3で開発されたKataGo-rating-gamesの棋譜閲覧ツール。KataGoの自
 - Katago公式サイトから最新棋譜取得
   
 ---
-## 🚀 クイックスタート
+## 🚀 開発者向けクイックスタート
 
 ### 🛠 必要条件
 - HSP3.6以上
@@ -39,7 +39,7 @@ root/
 3.hsp_commonの中にあるgenerate_all_include.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
-この状態になったらkatago-kifu-searchからmain.hspが実行できるようになっているはずです！
+katago-kifu-searchフォルダのmain.hspが実行できるようになっていればインストール完了！
 ```
 
 ## 📂 開発時のおすすめディレクトリ構成(例）
