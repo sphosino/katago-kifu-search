@@ -1,4 +1,19 @@
-#addition "id_manager_for_list.hsp"
+#addition "../../../../hsp_common/keyfps.hsp"
+#addition "../../../../hsp_common/rboxf.hsp"
+#addition "../../../../hsp_common/color_manager.hsp"
+#addition "../../../../hsp_common/scrollbar.hsp"
+#addition "../../../../hsp_common/id_manager.hsp"
+#addition "../../../../hsp_common/id_manager_for_list.hsp"
+#addition "../../../../hsp_common/label_set.hsp"
+#addition "../../../../hsp_common/rboxf.hsp"
+#addition "../../../../hsp_common/renderer.hsp"
+#addition "../../../../hsp_common/draw_obj/physis.hsp"
+#addition "../../../../hsp_common/draw_obj/ease.hsp"
+#addition "../../../../hsp_common/draw_obj/static.hsp"
+#addition "../../../../hsp_common/draw_type/centering_mes.hsp"
+#addition "../../../../hsp_common/draw_type/str.hsp"
+#addition "../../../../hsp_common/draw_type/boxf.hsp"
+#addition "../area_grid_system.hsp"
 
 #const global LISTBOX_DEFAULT_MAX 300
 
@@ -129,10 +144,7 @@
 	set_value_minmax scrollbar, 0, limit(max_num - (rect.3 - rect.1) / item_y, 0)
 	set_size_scroll_bar scrollbar, rect.3 - rect.1
 
-	color 0,0,0
-	aboxf rect
-	color 255,255,255
-
+	
 	// --- クリック検出 ---
 	if _getkey(1) == 1 {
 		if mousex >= rect.0 & mousex < rect.2 & mousey >= rect.1 & mousey < rect.3 {
@@ -166,31 +178,25 @@
 		}
 	}
 
-	font "", item_y
-
 	// --- 表示 ---
+	swidth = 0
+	if max_num > (rect.3 - rect.1) / item_y {
+		draw_scroll_bar scrollbar
+		swidth = get_scroll_bar_width( scrollbar )
+	}
+
+	make_instant_draw_object "BOXF", (rect.0 + rect.2 -swidth) / 2, (rect.1 + rect.3) / 2, rect.2-rect.0-swidth,rect.3-rect.1,"$000000"
 	repeat (rect.3 - rect.1) / item_y
 		id_index = cnt + scroll_value
 		if id_index >= max_num : break
 
 		id = get_list_id(listbox_id_manager, id_index)
 
-		pos rect.0, rect.1 + cnt * item_y
-		
-	    if listbox_item_select_status(id){
-	        color 0, 100, 255
-	        boxf rect.0, rect.1 + cnt * item_y, rect.2, rect.1 + (cnt + 1) * item_y
-	        color 255,255,255
-	    }else{
-	        color 255,255,255
-	    }
+		strbackcolor = $000000
+	    if listbox_item_select_status(id):  strbackcolor = $0064ff
 
-		mes item_names(id)
+		make_instant_draw_object "STR",(rect.0 + rect. 2- swidth ) / 2,rect.1 + cnt * item_y + item_y/2,rect.2-rect.0-swidth,item_y, strf("%s,%d,,0,0,%d", item_names(id),$FFFFFF,strbackcolor)
 	loop
-
-	if max_num > (rect.3 - rect.1) / item_y {
-		draw_scroll_bar scrollbar
-	}
 
 	return
 #modfunc move_listbox_index int move_value
@@ -346,7 +352,8 @@
 #include "rectmock.hsp"
 #global
 
-#if 0
+#if 0b1
+
 mock_flag@global = 1
 set_rect_mock 0, 200,100,400,200
 
@@ -363,9 +370,12 @@ add_item a,"G"
 
 add_item_data a,2,"データだよ"
 
+
+
 *main
 	// 毎フレーム更新
 	manage_keyfps //_getkey()のサポートとfps管理
+	notify_dt_draw_object frametime()
 
 	color 50,50,50:boxf
 
@@ -411,6 +421,8 @@ add_item_data a,2,"データだよ"
 		add_item a, "NEW_ITEM"
 		scroll_to_bottom_listbox a
 	}
+
+	draw_objects
 
 	redraw
 	redraw 2
