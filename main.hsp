@@ -355,8 +355,8 @@ gosub*loadsgf
 
 set_max_centering_mes 33
 
-;bg_id = make_draw_object(MOVE_TYPE_STATIC, TYPE_RECT, LIFE_FOREVER, ginfo_winx / 2, ginfo_winy / 2, ginfo_winx, ginfo_winy, strf("%d",BG_COLOR))
-;update_priority_draw_object bg_id, PRIORITY_BACK
+bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF", LIFE_FOREVER, ginfo_winx / 2, ginfo_winy / 2, ginfo_winx, ginfo_winy, strf("%d",BG_COLOR))
+update_priority_draw_object bg_id, PRIORITY_BACK
 //最初の時刻
 pretime = keyfpstime
 *main
@@ -646,15 +646,11 @@ pretime = keyfpstime
 		logmes "switchdebugmode ->" +debugmode
 	}
 
-	
 	計測 "描画"
 
-	//背景ベースカラー描画(お、あとはここだけになったか？ここは今はできないけど！！チェックして！
-	color 128,128,128
-	boxf 0, 0, ginfo_winx, ginfo_winy
-
 	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
-	a = double(c_list) * 255: color a,a,a
+	a = double(c_list) * 255
+	
 	get_rect goban_area, goban_back_rect
 	make_instant_draw_object "BOXF", (goban_back_rect + goban_back_rect.2) / 2, (goban_back_rect.1 + goban_back_rect.3) / 2, goban_back_rect.2-goban_back_rect,goban_back_rect.3-goban_back_rect.1, strf("$%02X%02X%02X",a,a,a)
 	update_priority_draw_object stat, PRIORITY_BACK
@@ -689,7 +685,7 @@ pretime = keyfpstime
 	treebox_draw t, length(f)
 
 	
-
+	計測 "レンダラ"
 	draw_objects //レンダラ経由描画
 
 	計測描画　//レンダラ外描画

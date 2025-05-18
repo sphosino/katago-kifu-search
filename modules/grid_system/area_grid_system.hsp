@@ -261,8 +261,10 @@ dimtype areagrid@global, 5, 500
 		aid = thismod_ID
 	}
 	if back_color >= 0{
-		F‚ğİ’è back_color
-		arboxf result
+		;F‚ğİ’è back_color
+		;arboxf result
+		make_instant_draw_object "RBOXF_FAST",(result+result.2)/2,(result.1 + result.3) / 2, result.2-result,result.3-result.1,strf("%d",back_color)
+		update_priority_draw_object stat, PRIORITY_BACK
 	}
 	if debug_mode{ 
 		margin = margin_x, margin_y
