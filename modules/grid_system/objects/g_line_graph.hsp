@@ -62,23 +62,20 @@
 	rect.3 = oya.3 - margin_bottom * (margin_bottom != -1)
 
 	//グラフ枠描画
-	color 120,50,10
-	aboxfl rect
+
+	make_instant_draw_object "LINE",(rect+rect.2) / 2,(rect.1+rect.3) /2, rect.2-rect,rect.3-rect.1, "$76310,1"
 
 	//マウス位置表示
-	color 255,255,255
-	fontsize = 10
-	font "", fontsize
 	mx = limit(mousex, rect.0,rect.2)
 	my = limit(mousey, rect.1,rect.3)
 	if in_rect(rect){
 		if _getkey(1) == 1{
 			手数 = (mx - rect.0) * (end_x - start_x) / (rect.2 - rect)
 		}
-		line mx,rect.1, mx, rect.3
-		line rect.0,my, rect.2, my
-		pos mx,rect.1 - fontsize : mes (mx - rect.0) * end_x / (rect.2 - rect)
-		pos rect.2,my            : mes end_y - (my - rect.1) * end_y / (rect.3 - rect.1)
+		make_instant_draw_object "LINE_FAST", mx,rect.1,mx, rect.3,"$FFFFFF"
+		make_instant_draw_object "LINE_FAST", rect.0,my, rect.2, my,"$FFFFFF"
+		make_instant_draw_object "STR",mx, rect.1 - 9,18,18, strf("%d,%d", (mx - rect.0) * end_x / (rect.2 - rect),$FFFFFF)
+		make_instant_draw_object "STR",rect.2, my    ,18,18, strf("%d,%d", end_y - (my - rect.1) * end_y / (rect.3 - rect.1), $FFFFFF)
 
 		if _getkey(2) = 1{
 			//評価値グラフを、黒番と白番で分けるかの01トグル
@@ -88,41 +85,41 @@
 	}
 
 	//y中心線表示
-	color 0,0,0
-	line  rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2
+	make_instant_draw_object "LINE_FAST",rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2,""
 
 	//現在手数の線表示
 	xx = rect + 手数  * (rect.2 - rect) / (end_x - start_x)
-	line xx, rect.1, xx, rect.3
+	make_instant_draw_object "LINE_FAST",xx,rect.1,xx,rect.3,""
 
 	//目盛り表示
-	color 255,255,255
 	repeat x_ticks
-		pos rect.0 + (rect.2 - rect) * cnt / x_ticks , rect.3
-		mes start_x + (end_x - start_x) * cnt / x_ticks
+		make_instant_draw_object "STR", rect.0 + (rect.2 - rect) * cnt / x_ticks + 9,rect.3 + 9,18,18,strf("%d,%d",start_x + (end_x - start_x) * cnt / x_ticks,$FFFFFF)
+
 	loop
 	repeat y_ticks
-		pos rect.0 - 18, rect.1 + (rect.3 - rect.1) * cnt / y_ticks
-		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
+		make_instant_draw_object "STR", rect.0 - 9,rect.1 + (rect.3 - rect.1) * cnt / y_ticks +9  ,18,18, strf("%d,%d", end_y - (start_y + (end_y - start_y) * cnt / y_ticks),$FFFFF)
+
 	loop
 
 ;/*/
 	//折れ線描画
-	color 180,250,160
+	line_col = $B4FAA0
 	colset = $CCCCCC,$FFFFFF
 	thick = 2
 	half = thick / 2
 	
 	repeat div_line + 1
 		nowpos = rect, (rect.3 + rect.1) / 2
+
+		
 		if div_line{
-			色を設定 colset(cnt)
+			line_col = colset(cnt)
 		}
 		for i, 1 + cnt, limit(dn - 1, 0), 1 + div_line
 			endpos = rect + i * (rect.2 - rect) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
-			repeat thick
+			repeat 1;thick
 				offset = cnt - half
-				line nowpos, nowpos.1 + offset, endpos, endpos.1 + offset
+				make_instant_draw_object "LINE_FAST", nowpos, nowpos.1 + offset, endpos, endpos.1 + offset,strf("%d",line_col)
 			loop
 			nowpos = endpos, endpos.1 //次の開始点を設定
 		next

@@ -1,6 +1,6 @@
 ;#include "../hsp_common/logmes2.hsp"
 
-#include "../hsp_common/draw_obj/all_include" //easingマクロがあるから先
+#include "../hsp_common/draw_obj/all_include" //マクロ使ってるからから先
 #include "../hsp_common/all_include
-#include "../hsp_common/draw_type/all_include"
+#include "../hsp_common/draw_type/all_include" //rendererありきのモジュールなので最後
 
