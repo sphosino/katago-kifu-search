@@ -69,7 +69,7 @@ pre_filter_on = -1
 pre_filter = -1
 
 //FPS設定
-setfps 40
+setfps 30
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21)
@@ -366,6 +366,7 @@ pretime = keyfpstime
 	notify_dt_draw_object frametime() 
 
 	計測 "kifuload"
+
 	if kifu_update & waitedtime() >= 2{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
@@ -403,6 +404,14 @@ pretime = keyfpstime
 	}
 	
 	計測 "前フレームからの状態変化取得"
+	if pre_kifu_update != kifu_update{
+		pre_kifu_update = kifu_update
+		if kifu_update{
+			setfps 30
+		}else{
+			setfps 40
+		}
+	}
 
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
@@ -620,11 +629,7 @@ pretime = keyfpstime
 				gosub*loadsgf
 			}
 		}
-		//CTRLダブルクリックでデバッグモード切替
-		if getdbl_ms(17, 250) == 1{
-			debugmode ^ 1
-			logmes "switched debugmode ->" +debugmode
-		}
+
 		
 		//自動再生
 		計測 "自動再生"
@@ -657,7 +662,11 @@ pretime = keyfpstime
 		}
 	}
 	
-
+	//CTRLダブルクリックでデバッグモード切替
+	if getdbl_ms(17, 250) == 1{
+		debugmode ^ 1
+		logmes "switched debugmode ->" +debugmode
+	}
 
 	計測 "object_managers"
 
