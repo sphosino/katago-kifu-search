@@ -231,8 +231,11 @@ dimtype areagrid@global, 5, 500
 			}else{
 				get_rect first_value, selected_rect
 			}
-			color
-			boxfl selected_rect, selected_rect.1, selected_rect.2, selected_rect(3), 3
+
+			make_instant_draw_object "BOXF", (selected_rect + selected_rect.2) / 2, (selected_rect.1 + selected_rect.3 ) / 2, selected_rect.2 - selected_rect, selected_rect.3-selected_rect.1, "$FFFFFF"
+			id = stat
+			update_priority_draw_object id, PRIORITY_FRONT
+			set_static_alpha get_entity_id(id), 128
 		}
 	}
 	return
