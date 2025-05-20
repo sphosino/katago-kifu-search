@@ -409,7 +409,7 @@ pretime = keyfpstime
 		if kifu_update{
 			setfps 30
 		}else{
-			setfps 40
+			setfps 35
 		}
 	}
 

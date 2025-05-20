@@ -105,8 +105,8 @@
 					sizex = (oya.2 - oya.0)
 					sizey = item_ysize
 					drop_id(cnt) = make_draw_object(MOVE_TYPE_EASE, "STR", LIFE_FOREVER, centerx,centery,sizex,sizey,strf("%s,$000000,ÉÅÉCÉäÉI,0,0,$AAAAAA",t))
-					set_ease_posy get_entity_id(drop_id(cnt)), oya.3,  centery, ease_quartic_inout
-					set_ease_sizey get_entity_id(drop_id(cnt)), 0, sizey,ease_quartic_inout
+					set_ease_posy get_entity_id(drop_id(cnt)), oya.3,  centery, ease_quartic_out
+					set_ease_sizey get_entity_id(drop_id(cnt)), 0, sizey,ease_quartic_out
 					set_easetime_all get_entity_id(drop_id(cnt)), open_time
 					update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
 				loop
