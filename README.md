@@ -42,21 +42,7 @@ root/
 katago-kifu-searchフォルダのmain.hspが実行できるようになっていればインストール完了！
 ```
 
-## 📂 開発時のおすすめディレクトリ構成(例）
-```plaintext
-root/
-├── hsp_common/     ← 共通ライブラリ（別リポジトリ、下にリンクあります）
-│   ├── basic_module1.hsp
-│   ├── basic_module2.hsp
-│   └── basic_module3.hsp
-├── katago-kifu-search/　←このリポジトリ
-│    ├── main.hsp
-│    └── modules/
-│       ├── p1_module1.hsp
-│       └── p1_module2.hsp
-│
-└──その他プロジェクトのリポジトリ
-```
+
 hsp_commonのリポジトリは[こちら](https://github.com/sphosino/hsp_common)
 
 ## License
