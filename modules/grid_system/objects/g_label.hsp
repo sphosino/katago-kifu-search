@@ -11,7 +11,7 @@
 	r = 5
 	flags = 0
 
-	thisrect thismod, rect, area
+	get_rect area,rect
 
 	bg_id  = make_forever_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", rect, strf("%d,%d,%d", bc, r, flags))
 	str_id = make_forever_draw_object(MOVE_TYPE_STATIC, "STR"       , rect, strf("%s,%d",string, fc      ))
@@ -33,26 +33,11 @@
 	
 #modfunc draw_g_label
 
-	thisrect thismod, rect, area
+	get_rect area,rect
 
 	update_static_rect get_entity_id(bg_id), rect
 	update_static_rect get_entity_id(str_id), rect
 	
 	return
 
-#include "rectmock.hsp"
 #global
-
-#if 0
-	mock_flag@global = 1
-
-	set_rect_mock 30, 60,60, 160,100
-	set_rect_mock 31, 60,160,160,200
-	newmod a, grid_label, "ABC",30, $000000,$FFFFFF
-	newmod a, grid_label, "DEF",31, $000000,$FFFFFF
-
-	foreach a
-		draw_g_label a.cnt
-	loop
-
-#endif

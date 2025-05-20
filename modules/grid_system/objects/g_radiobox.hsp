@@ -73,7 +73,7 @@
 	return
 #modfunc draw_g_radiobox
 
-	thisrect thismod, rect, area
+	get_rect area, rect
 
 	item_size_x = (rect.2-rect.0) / w
 	item_size_y = (rect.3-rect.1) / h
@@ -104,14 +104,9 @@
 		if v == cnt{
 			backcolor = colors(2)
 		}
-		;color backcolors(backcolor) >> 16 & 255, backcolors(backcolor) >> 8 & 255, backcolors(backcolor) & 255
-		;arboxf this_rect
 		make_instant_draw_object "RBOXF_FAST",(this_rect+this_rect.2) / 2,(this_rect.1+this_rect.3) / 2, this_rect.2-this_rect,this_rect.3 - this_rect.1, strf("%d",backcolors(backcolor))
-		;color 255,255,255
 		m = 5, 5, 5, 5
 		get_rect_margin this_rect, m, nrec
-		;pos nrec, nrec.1
-		;mes string(cnt)
 		make_instant_draw_object "STR",(nrec + nrec.2) / 2, (nrec.1 + nrec.3 ) / 2, nrec.2-nrec,nrec.3-nrec.1,strf("%s,%d",string(cnt),$FFFFFF)
 		
 	loop
@@ -130,7 +125,6 @@
 #deffunc local setcolor int p1
 	color p1>>16&255,p1>>8&255,p1&255
 	return
-#include "rectmock.hsp"
 #global
 init_g_radio_button_colorlist
 

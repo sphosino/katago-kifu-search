@@ -22,7 +22,7 @@
 
 #modfunc treebox_draw  int data_num
 	if root_tree_node >= 0{
-		thisrect thismod, rect, area_number
+		get_rect area_number,rect
 		set_treeview_endposition rect.2,rect.3
 		get_treeview_nodesize t
 		set_treeview_position rect.0 + t/2,  rect.1 + t.1/2
@@ -96,7 +96,6 @@
 
 	set_current_node thismod, root_tree_node
 	return root_tree_node
-#include "rectmock.hsp"
 
 #global
 #endif

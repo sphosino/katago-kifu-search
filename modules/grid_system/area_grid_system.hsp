@@ -261,8 +261,6 @@ dimtype areagrid@global, 5, 500
 		aid = thismod_ID
 	}
 	if back_color >= 0{
-		;色を設定 back_color
-		;arboxf result
 		make_instant_draw_object "RBOXF_FAST",(result+result.2)/2,(result.1 + result.3) / 2, result.2-result,result.3-result.1,strf("%d",back_color)
 		update_priority_draw_object stat, PRIORITY_BACK
 	}
@@ -306,19 +304,19 @@ dimtype areagrid@global, 5, 500
 	}
 	if debug_mode{
 		//グリッド描画
-		color 0,235,0
 		ex = 0
 		xsize =  get_gridSize(grid_x,margin_x)
 		ysize =  get_gridSize(grid_y,margin_y)
 		repeat length(grid_x) - 1
 			ex += grid_x(cnt)
-			boxf result + ex ,result.1     , result + ex + margin_x, result.1  + ysize
+			make_instant_draw_object "BOXF_FAST",result + ex ,result.1     , result + ex + margin_x, result.1  + ysize,"$00EB00"
+			
 			ex += margin_x
 		loop
 		ey = 0
 		repeat length(grid_y) - 1
 			ey += grid_y(cnt)
-			boxf result      ,result.1 + ey, result + xsize , result.1 + ey + margin_y
+			make_instant_draw_object "BOXF_FAST",result      ,result.1 + ey, result + xsize , result.1 + ey + margin_y,"$00EB00"
 			ey += margin_y
 		loop
 	}
@@ -340,24 +338,6 @@ dimtype areagrid@global, 5, 500
 
 #global
 init_grid_system
-
-//////矩形モック
-#module area_grid_system_mock
-//矩形モックを設定する関数
-#deffunc set_rect_mock int _area, int p1, int p2, int p3, int p4
-	logmes "mocklist_len = " + length(mocklist)
-	mocklist(0, _area) = p1, p2, p3, p4
-	return
-#deffunc get_rect_mock var a
-	dim a,length(mocklist),length2(mocklist)
-	memcpy a,mocklist, varsize(mocklist)
-	return
-#deffunc init_area_grid_system_mock
-	dim mocklist, 4, 1000
-	return
-#global
-init_area_grid_system_mock
-
 
 
 #module
@@ -383,27 +363,4 @@ init_area_grid_system_mock
 #global
 init_grid_system_manager
 
-#endif
-
-#if 0
-	root = make_area_child(2,2)
-		a = make_area_child(3,3,root)
-			b = make_area_child(2,2,a): set_grid_area_back_color b,$ff0000
-			c = make_area_child(2,3)
-			d = make_area_child(3,2)
-		aa = make_area_child(2,2,root)
-	
-	
-	screen 0,700,700
-	debugmode = 1
-	*main
-	
-		manage_keyfps
-		color 200,200,200: boxf 0,0, ginfo_winx, ginfo_winy
-		draw_all_rect root, debugmode
-		if getdbl_ms(17,200): debugmode^1
-		redraw: redraw 2
-		
-	
-		goto*main
 #endif

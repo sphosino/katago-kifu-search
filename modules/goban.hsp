@@ -7,15 +7,25 @@
 #const global 黒番 1
 #const global 白番 2
 
-#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number, masx, masy, px, py
-#modinit int x, int y, int p1, int p2, int _area
+#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
+
+#modinit int x, int y, int p1, int p2, int _area, local thismod_ID
 	dim board, x, y
 	clear_board thismod
 	masx = p1
 	masy = p2
 	stone_circle = 1 //石を楕円にしない
 	area_number = _area
-	return
+	tmp = ginfo_sel
+	goban_buffer = ginfo_newid
+	buffer goban_buffer,1000,1000
+	stones_buffer = ginfo_newid
+	buffer stones_buffer,1000,1000
+	dim prerect,4
+	dim r,4
+	gsel tmp
+	mref thismod_ID,2
+	return thismod_ID
 #modfunc clear_board int x, int y
 	if x == 0{
 		dim board, length(board), length2(board)
@@ -34,18 +44,27 @@
 	手番 = 黒番
 	手数 = 0
 	return
+	
 #modcfunc get_turn
 	return 手番
+	
 #defcfunc get_turn_SGFstr int p1
 	if p1 == 黒番: return "B"
 	if p1 == 白番: return "W"
 	return ;error
+	
 #modfunc toggle_turn
 	if 手番 == 黒番: 手番 = 白番: return
 	if 手番 == 白番: 手番 = 黒番
 	return
+	
 #modcfunc get_手数
 	return 手数
+	
+#modfunc set_goban_margin int p1; エリアに対してのマージン
+	margin = p1
+	return
+	
 #modfunc 着手 int x, int y
 
 	res = play_move_on_array(board, x, y, 手番, 黒が取った数,白が取った数, コウ禁止点,コウ禁止点.1)
@@ -59,155 +78,216 @@
 	a = 黒が取った数,白が取った数
 	return
 
-
-
-#modfunc 碁盤表示 int 碁石番号表示, int 最終手表示, int margin
-	zz = 最終手表示
-	thisrect thismod, r, area_number
-
-	masx = limit((r.2 - r   - margin) / length(board),1)
-	masy = limit((r.3 - r.1 - margin) / length2(board),1)
-
-	if stone_circle == 1{
-		if masx > masy: masx = masy
-		if masy > masx: masy = masx
-	}
-
-	//エリアの中心に表示する
-	px = r.0 + ( (r.2 - r.0 ) - masx *  length(board))  / 2
-	py = r.1 + ( (r.3 - r.1 ) - masy * length2(board))  / 2
+#modfunc redraw_goban
+	nowsel = ginfo_sel
+	gsel goban_buffer
 	
-	//線描画
+	//背景描画
+	色を設定　$cd853f
+	boxf 0,0,sizex , sizey
 
-	sizex = length(board) * masx
-	sizey = length2(board) * masy
-	make_instant_draw_object "BOXF", px + sizex /2, py + sizex/2, sizex, sizey,"$cd853f"
+	//線描画
+	color 0,0,0
 	repeat length(board)
-		make_line_object_by_points px + masx * cnt + masx / 2, py + masy/2             , px + masx * cnt + masx/2             , py + masy * length2(board) - masy/2 - 1, "$000000"
+		line masx/2 + masx * cnt , masy/2              , masx * cnt + masx/2, sizey - masy/2
 	loop
 	repeat length2(board)
-		make_line_object_by_points px + masx/2               , py + masy * cnt + masy/2, px + masx * length(board) - masx/2 - 1, py + masy * cnt + masy/2              , "$000000"
+		line masx/2              , masy/2 + masy * cnt , sizex - masx/2, masy * cnt + masy/2
 	loop
 
-
 	//星描画
-	if view_hosi{
+	if 星表示{
 		
 		get_hosi length(board), length2(board), hosilist
 
 		hosisizer = limit(masx / 8,3)
+		color
 		repeat stat
 	
-			centerx = px + masx / 2 + masx * hosilist(0, cnt)
-			centery = py + masy / 2 + masy * hosilist(1, cnt)
+			centerx = masx / 2 + masx * hosilist(0, cnt)
+			centery = masy / 2 + masy * hosilist(1, cnt)
 			x1 = centerx - hosisizer
 			y1 = centery - hosisizer
 			x2 = centerx + hosisizer
 			y2 = centery + hosisizer
-			make_instant_draw_object "CIRCLE_FAST", (x1 + x2) / 2, (y1 + y2) / 2, x2 - x1, y2 - y1,"$000000"
+			circle x1,y1,x2,y2
 			
 		loop
 	}
 
+	gsel nowsel
+	return
+	
+
+
+#modfunc 碁盤表示
+	get_rect area_number, r
+	
+	if (prerect != r.0) || (prerect.1!=r.1) || (prerect.2!=r.2) || (prerect.3!=r.3){
+		prerect = r.0,r.1,r.2,r.3
+		gosub*get_goban_info
+		redraw_goban thismod
+		redraw_stones thismod
+		logmes "redraw"
+	}else{
+		if pre最終手表示 != 最終手表示 {
+			gosub*get_goban_info
+			pre最終手表示 = 最終手表示
+			redraw_stones thismod
+		}
+		if pre星表示 != 星表示{
+			gosub*get_goban_info
+			pre星表示 = 星表示
+			redraw_goban thismod
+		}
+	}
+
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d", goban_buffer )
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,256,0,,,$00FF00", stones_buffer)
+	
+	return
+*get_goban_info
+	
+	//現在のエリア状態でのマスを計算(margin=最小限取りたい量)
+	masx = limit((r.2 - r.0 - margin*2) / length(board),1)
+	masy = limit((r.3 - r.1 - margin*2) / length2(board),1)
+	
+	if stone_circle == 1{
+		if masy > masx: masy = masx
+		if masx > masy:	masx = masy
+	}
+	sizex = length(board)  * masx
+	sizey = length2(board) * masy
+	marginx = (r.2-r.0 - sizex) / 2 //計算後のｘマージン
+	marginy = (r.3-r.1 - sizey) / 2 //計算後のｙマージン
+
+	//エリアの中心
+	px = (r.0 + r.2) / 2
+	py = (r.1 + r.3) / 2
+
+	return
+	
+#modfunc redraw_stones
+	nowsel = ginfo_sel
+	gsel stones_buffer
+
+	//透過色＝（完全緑）
+	color 0,255,0
+	boxf 0,0,sizex,sizey
 	//石描画
 
 	repeat length(board): m= cnt
 		repeat length2(board)
-			posx = px + m   * masx
-			posy = py + cnt * masy
+			posx = m   * masx
+			posy = cnt * masy
 
 			//ボード描画
 			switch board(m,cnt)
 			case 空点
 				if (コウ禁止点 == m) : if (コウ禁止点.1 ==cnt): if 最終手表示{
-					make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx/3, masy/3,"$D41515"					
+					color $D4, $15, $15
+					circle posx + masx / 3, posy + masy / 3, posx + masx - masx / 3, posy + masy - masy / 3
 				}
 			swbreak
 			case 黒番
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$000000"
+				color 
+				circle posx , posy, posx + masx, posy + masy
 				gosub*draw_last_move_mark
 
 			swbreak
 			case 白番
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$DCDCDC"
+				color $DC,$DC,$DC
+				circle posx , posy, posx + masx, posy + masy
 				gosub*draw_last_move_mark
 
 			swbreak
 			case 3
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$6E6E6E"
+				color $6E,$6E,$6E
+				circle posx , posy, posx + masx, posy + masy
 				gosub*draw_last_move_mark
 
 			swbreak
 			case 4
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$000000"
-				make_instant_draw_object "LINE"  , posx + masx/2, posy + masy/2, masx, masy,"$FF0000"
-				set_static_angle get_entity_id(stat), deg2rad(45)
-				make_instant_draw_object "LINE"  , posx + masx/2, posy + masy/2, masx, masy,"$FF0000"
-				set_static_angle get_entity_id(stat), deg2rad(-45)
-
+				color
+				circle posx , posy, posx + masx, posy + masx
+				color 255
+				gosub*draw_batu
 				gosub*draw_last_move_mark
 
 			swbreak
 			case 5
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$DCDCDC"
-				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
-				set_static_angle get_entity_id(stat), deg2rad(45)
-				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
-				set_static_angle get_entity_id(stat), deg2rad(-45)
+				color $DC,$DC,$DC
+				circle posx , posy, posx + masx, posy + masx
+				color $00,$00,$80
+				gosub*draw_batu
 				gosub*draw_last_move_mark
 			swbreak
 			case 6
-				make_instant_draw_object "CIRCLE_FAST", posx + masx/2, posy + masy/2, masx, masy,"$6E6E6E"
-				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
-				set_static_angle get_entity_id(stat), deg2rad(45)
-				make_instant_draw_object "LINE",posx + masx/2, posy + masy/2, masx, masy,"$000080"
-				set_static_angle get_entity_id(stat), deg2rad(-45)
+				color $6E,$6E,$6E
+				circle posx , posy, posx + masx, posy + masx
+				color $00,$00,$80
+				gosub*draw_batu
 				gosub*draw_last_move_mark
 			swbreak
 			swend
 		loop
 	loop
-
+	
+	gsel nowsel
 	return
-
+*draw_batu
+	centerx = posx + masx/2
+	centery = posy + masx/2
+	mv = double(masx)/2/sqrt(2)
+	x1 = centerx - mv
+	y1 = centery - mv
+	x2 = centerx + mv
+	y2 = centery + mv
+	line x1,y1,x2,y2
+	y1 = centery + mv 
+	y2 = centery - mv
+	line x1,y1,x2,y2
+	return
+*draw_last_move_mark
+	if (最終手表示 == 1) && m == 最後の着手 && cnt == 最後の着手.1{
+		color 0,254,0
+		circle posx + masx / 3, posy + masy / 3, posx + masx - masx / 3, posy + masy - masy / 3
+	}
+	return
+	
 #modfunc Draw_set_list_on_board var set_list
 
 	repeat get_coordinates_set(set_list, sets)
-		x = px + masx * strmid(sets(cnt), 0, 2)
-		y = py + masy * strmid(sets(cnt), 2, 2)
+		x = r.0 + marginx + masx * strmid(sets(cnt), 0, 2)
+		y = r.1 + marginy + masy * strmid(sets(cnt), 2, 2)
 		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx, masy, "$c8c8c8"
+		update_priority_draw_object stat,PRIORITY_FRONT
 		set_static_alpha get_entity_id(stat), 128
+		
 	loop
 	
 	return
 	
 #modfunc 碁盤に矩形データを表示 array rects
-
-		x1 = px + rects(0) * masx
-		y1 = py + rects(1) * masy
-		x2 = px + rects(2) * masx
-		y2 = py + rects(3) * masy
-
+		x1 = rects(0)
+		y1 = rects(1)
+		x2 = rects(2)
+		y2 = rects(3)
 		if x1 > x2: tmp = x1:x1 = x2: x2 = tmp
 		if y1 > y2: tmp = y1:y1 = y2: y2 = tmp
 		
-		make_instant_draw_object "BOXF", (x1 + x2 + masx) / 2, (y1 + y2 + masy) / 2, x2-x1 + masx+2,y2-y1+masy+2, "$c8c8c8"
+		x1 = r.0 + marginx + x1 * masx
+		y1 = r.1 + marginy + y1 * masy
+		x2 = r.0 + marginx + x2 * masx
+		y2 = r.1 + marginy + y2 * masy
+
+		make_instant_draw_object "BOXF",(x2+x1)/2 + masx/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$c8c8c8"
 		set_static_alpha get_entity_id(stat), 128
 
 	return
-*draw_last_move_mark
-	if (zz == 1) && m == 最後の着手 && cnt == 最後の着手.1{
-		color 21,220,21
-		
-		cx = posx + masx / 2
-		cy = posy + masy / 2
-		sx = masx / 3
-		sy = masy / 3
-		make_instant_draw_object "CIRCLE_FAST",cx,cy,sx,sy,"$15DC15"
-	}
-	return
+
 #modfunc getBoardCoordinates array result
-	result = (mousex - px) / masx - (mousex < px), (mousey - py) / masy - (mousey < py)
+	result = (mousex - (r.0 + marginx)) / masx, (mousey - (r.1 + marginy)) / masy
 	return
 
 #modfunc get_board_data array a
@@ -218,29 +298,23 @@
 		loop
 	loop
 	return
+	
 #modfunc set_board_data array a
 	repeat length(a)
 		m = cnt
 		repeat length2(a)
 			board(m,cnt) = a(m,cnt)
 		loop
+		get_rect area_number, r
+		gosub*get_goban_info
+		redraw_stones thismod
 	loop
+	
 	return
+	
 #modcfunc get_goban_position_color int _x, int _y
 	return board(_x,_y)
 	
-//各モジュールで追加に必要なコードはこれだけ。コピペ推奨
-#modfunc local thisrect array mocklist, int area_number_mock
-	if mock_flag@global{
-		get_rect_mock mockrect //モックから矩形取得
-		mocklist(0) = mockrect(0,area_number_mock)
-		mocklist(1) = mockrect(1,area_number_mock)
-		mocklist(2) = mockrect(2,area_number_mock)
-		mocklist(3) = mockrect(3,area_number_mock) 
-	}else{
-		get_rect area_number_mock, mocklist //グリッドシステムからエリア番号で矩形取得
-	}
-	return
 #deffunc board_module_init int p1
 	sx = 1,0,-1,0
 	sy = 0,-1,0,1
@@ -292,8 +366,9 @@
 #modfunc get_goban_mas_size array a
 	a = masx,masy
 	return 
+	
 #modfunc get_goban_position array a
-	a = px, py
+	a = r + marginx, r.1+marginy
 	return
 
 #modfunc 置き石 int _x, int _y, int col
@@ -305,6 +380,13 @@
 	}
 	board(_x, _y) = col
 	return 1 // 成功
+
+#modfunc set_最終手表示  int p1
+	最終手表示 = p1
+	return
+#modfunc set_星表示 int p1
+	星表示 = p1
+	return
 #global
 board_module_init
 #endif

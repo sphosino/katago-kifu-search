@@ -69,10 +69,11 @@ pre_filter_on = -1
 pre_filter = -1
 
 //FPS設定
-setfps 60
+setfps 40
 
 //ウィンドウ作成
-screen , ginfo(20), ginfo(21)
+screen 0, ginfo(20), ginfo(21)
+screen 0, ginfo(12),ginfo(13)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 onexit *save_info //終了時に*save_infoにジャンプ
@@ -122,7 +123,7 @@ if strsize == -1{
 	enableColorFlip = 1
 	
 	//星を表示するか
-	view_hosi@goban = 0
+	view_hosi = 0
 
 	//最終手表示
 	last_move_mark = 1
@@ -148,7 +149,7 @@ if strsize == -1{
 	noteget_ sy
 	noteget_ max_depth
 	noteget_ enableColorFlip
-	noteget_ view_hosi@goban
+	noteget_ view_hosi
 	noteget_ last_move_mark
 	noteget_ kifu_start_num
 	noteget_ auto_interval
@@ -298,7 +299,7 @@ newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
-newmod g_chkbox, grid_checkbox, view_hosi@goban,"星表示", chkbox_view_hosi
+newmod g_chkbox, grid_checkbox, view_hosi,"星表示", chkbox_view_hosi
 newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
 newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
@@ -337,8 +338,8 @@ foreach kifulist
 	set_listbox_scollbar_width kifulist.cnt, 15
 loop
 
-newmod board, goban, 19,19,26,26, goban_body_area
-newmod board, goban, 19,19,26,26, goban_body_area
+newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
+newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
 
 newmod t, treebox,treebox_area
 
@@ -355,42 +356,17 @@ gosub*loadsgf
 
 set_max_centering_mes 33
 
-bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF", LIFE_FOREVER, ginfo_winx / 2, ginfo_winy / 2, ginfo_winx, ginfo_winy, strf("%d",BG_COLOR))
+bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF_FAST", LIFE_FOREVER, 0,0, ginfo(12), ginfo(13), strf("%d",BG_COLOR))
 update_priority_draw_object bg_id, PRIORITY_BACK
 //最初の時刻
 pretime = keyfpstime
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
-	dt = frametime()
-	notify_dt_draw_object dt //ドローオブジェクトに経過時間を伝えるよ
-	
-	計測 "前フレームからの状態変化取得"
-	window_size = ginfo(12), ginfo(13)
-	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
-		pre_window_size = window_size, window_size.1
-		gosub *save_window_size_main
-	}
-	if pre_ui_mode != ui_mode {
-		pre_ui_mode = ui_mode
+	notify_dt_draw_object frametime() 
 
-		if ui_mode = MODE_KIFU_VIEW{
-			group_init
-		}else{
-			get_board_data board  , user_board
-			set_board_data board.1, user_board
-		}
-	}
-	if filter_on{
-		if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
-			pre_filter = stat
-			pre_filter_on = filter_on
-			await 10
-			gosub *filtering_and_make_listbox
-		}
-	}
 	計測 "kifuload"
-	if kifu_update{//棋譜がアップデートされたときのみ走る
+	if kifu_update & waitedtime() >= 2{//棋譜がアップデートされたときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
 		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
@@ -425,7 +401,43 @@ pretime = keyfpstime
 			;/*/
 		}
 	}
+	
+	計測 "前フレームからの状態変化取得"
 
+	window_size = ginfo(12), ginfo(13)
+	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
+		pre_window_size = window_size, window_size.1
+		gosub *save_window_size_main
+		if 最小化 == 0{
+			set_static_sizex get_entity_id(bg_id), ginfo(12)
+			set_static_sizey get_entity_id(bg_id), ginfo(13)
+		}
+	}
+	if 最小化:goto*main
+
+	repeat 2
+		set_最終手表示 board.cnt, last_move_mark
+		set_星表示 board.cnt,view_hosi
+	loop
+	
+	if pre_ui_mode != ui_mode {
+		pre_ui_mode = ui_mode
+
+		if ui_mode = MODE_KIFU_VIEW{
+			group_init
+		}else{
+			get_board_data board  , user_board
+			set_board_data board.1, user_board
+		}
+	}
+	if filter_on{
+		if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
+			pre_filter = stat
+			pre_filter_on = filter_on
+			gosub *filtering_and_make_listbox
+		}
+	}
+	
 	計測 "入力処理"
 	
 	nownode = get_current_node(t)
@@ -608,7 +620,12 @@ pretime = keyfpstime
 				gosub*loadsgf
 			}
 		}
-	
+		//CTRLダブルクリックでデバッグモード切替
+		if getdbl_ms(17, 250) == 1{
+			debugmode ^ 1
+			logmes "switched debugmode ->" +debugmode
+		}
+		
 		//自動再生
 		計測 "自動再生"
 
@@ -640,13 +657,9 @@ pretime = keyfpstime
 		}
 	}
 	
-	//CTRLダブルクリックでデバッグモード切替
-	if getdbl_ms(17, 250){
-		debugmode ^ 1
-		logmes "switchdebugmode ->" +debugmode
-	}
 
-	計測 "描画"
+
+	計測 "object_managers"
 
 	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
 	a = double(c_list) * 255
@@ -654,11 +667,8 @@ pretime = keyfpstime
 	get_rect goban_area, goban_back_rect
 	make_instant_draw_object "BOXF", (goban_back_rect + goban_back_rect.2) / 2, (goban_back_rect.1 + goban_back_rect.3) / 2, goban_back_rect.2-goban_back_rect,goban_back_rect.3-goban_back_rect.1, strf("$%02X%02X%02X",a,a,a)
 	update_priority_draw_object stat, PRIORITY_BACK
-	if ui_mode == MODE_KIFU_VIEW{
-		碁盤表示 board  , 着手番号表示,last_move_mark, 20
-	}else{
-		碁盤表示 board.1,             ,last_move_mark, 20
-	}
+	碁盤表示 board.ui_mode
+	
 
 	//エリア矩形表示
 	draw_all_rect root, debugmode
@@ -669,9 +679,10 @@ pretime = keyfpstime
 	group_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
 	
 	//検索範囲表示
-	draw_set_list_on_board board, v
+
+	draw_set_list_on_board board.ui_mode, v
 	
-	//各アイテム表示
+	//各アイテム登録
 	all_items_draw
 
 	新しい手数 = 手数
@@ -679,7 +690,7 @@ pretime = keyfpstime
 	if 新しい手数 - 手数: move_next_int 新しい手数 - 手数
 
 	if dragging_flag && rect >= 0{
-		碁盤に矩形データを表示 board, rect
+		碁盤に矩形データを表示 board.ui_mode, rect
 	}
 
 	treebox_draw t, length(f)
@@ -688,11 +699,10 @@ pretime = keyfpstime
 	計測 "レンダラ"
 	draw_objects //レンダラ経由描画
 
-	計測描画　//レンダラ外描画
+	計測描画　//計測結果描画
 
 	redraw
 	redraw 2
-	
 	goto*main
 	
 #deffunc all_items_draw
@@ -726,11 +736,12 @@ pretime = keyfpstime
 
 
 *save_window_size_main
-		IsZoomed hwnd :最大化 = stat
-		IsIconic hwnd :最小化 = stat
-		if (最大化 | 最小化) == 0{
-			save_window_size = window_size, window_size.1
-		}
+	await
+	IsZoomed hwnd :最大化 = stat
+	IsIconic hwnd :最小化 = stat
+	if (最大化 | 最小化) == 0{
+		save_window_size = window_size, window_size.1
+	}
 	return
 	
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
@@ -746,6 +757,7 @@ pretime = keyfpstime
 		//範囲指定を初期化
 		sdim v
 		rn = 0
+
 
 		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, h)
 
@@ -778,6 +790,9 @@ pretime = keyfpstime
 		}
 
 		gosub*syncboard
+		redraw_stones board
+		redraw_buffer l_graph
+		logmes "AFAF"
 		
 		return 1
 	}
@@ -1073,7 +1088,10 @@ pretime = keyfpstime
 
 	if moved{
 		gosub*syncboard
+		redraw_stones board
+		redraw_buffer l_graph
 	}
+
 
 	return moved
 	

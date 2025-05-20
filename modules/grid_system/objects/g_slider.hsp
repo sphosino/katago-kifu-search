@@ -1,6 +1,5 @@
 #module grid_slider v, min, max, horizontal, x, y, tickness,長さ, dragging, area, r
 
-#include "rectmock.hsp"
 #modinit var a, int _horizontal, int area_number, int _min, int _max, int 太さ, int つまみサイズ, int _x, int _y, local thismod_ID
 
     dup v, a
@@ -20,7 +19,7 @@
 	set_position_g_slider thismod, _x, _y
 
 	//エリア番号から親レクト取得
-	thisrect thismod, oya, area
+	get_rect area,oya
 
 	長さ = -1
     mref thismod_ID, 2
@@ -43,7 +42,7 @@
 
 #modfunc slider_manager
 
-	thisrect thismod, oya, area
+	get_rect area, oya
 
 	len = 長さ
 	if 長さ < 0{

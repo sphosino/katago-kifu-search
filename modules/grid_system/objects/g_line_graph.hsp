@@ -1,5 +1,5 @@
 ;#define global MODULE_DEBUG
-#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number, current_position
+#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number, current_position,prerect
 
 #modinit int _area, local thismod_ID
 
@@ -21,6 +21,14 @@
 	x_ticks = 15
 	y_ticks = 10
 
+	dim prerect , 4
+	colset = $CCCCCC,$FFFFFF
+
+	now_sel = ginfo_sel
+	line_graph_buf = ginfo_newid
+	buffer line_graph_buf
+	gsel nowsel
+	
     mref thismod_ID, 2
     return thismod_ID
 
@@ -47,114 +55,115 @@
 	dn++
 	return
 
+
+
 #modfunc clear_graph
 	dim data
 	dn = 0
 	return
 
-#modfunc line_graph_manager var 手数
+#modfunc redraw_buffer
+	now_sel = ginfo_sel
 
-	thisrect thismod, oya, area_number //oya に矩形情報取得
+	gsel line_graph_buf
+	color 128,128,128
+	boxf 0,0,rect.2-rect,rect.3-rect.1
+
 	
-	rect   = oya.0 + margin_left   * (margin_left   != -1)
-	rect.1 = oya.1 + margin_top    * (margin_top    != -1)
-	rect.2 = oya.2 - margin_right  * (margin_rignt  != -1)
-	rect.3 = oya.3 - margin_bottom * (margin_bottom != -1)
-
-	//グラフ枠描画
-
-	make_instant_draw_object "LINE",(rect+rect.2) / 2,(rect.1+rect.3) /2, rect.2-rect,rect.3-rect.1, "$76310,1"
-
-	//マウス位置表示
-	mx = limit(mousex, rect.0,rect.2)
-	my = limit(mousey, rect.1,rect.3)
-	if in_rect(rect){
-		if _getkey(1) == 1{
-			手数 = (mx - rect.0) * (end_x - start_x) / (rect.2 - rect)
-		}
-		make_instant_draw_object "LINE_FAST", mx,rect.1,mx, rect.3,"$FFFFFF"
-		make_instant_draw_object "LINE_FAST", rect.0,my, rect.2, my,"$FFFFFF"
-		make_instant_draw_object "STR",mx, rect.1 - 9,18,18, strf("%d,%d", (mx - rect.0) * end_x / (rect.2 - rect),$FFFFFF)
-		make_instant_draw_object "STR",rect.2, my    ,18,18, strf("%d,%d", end_y - (my - rect.1) * end_y / (rect.3 - rect.1), $FFFFFF)
-
-		if _getkey(2) = 1{
-			//評価値グラフを、黒番と白番で分けるかの01トグル
-			div_line ^ 1
-		}
-		
-	}
-
+	色を設定 $76310
+	boxfl msize,0,rect.2,rect.3 -rect.1- msize
 	//y中心線表示
-	make_instant_draw_object "LINE_FAST",rect, (rect.3 + rect.1)  / 2, rect.2, (rect.3 + rect.1) / 2,""
-
-	//現在手数の線表示
-	xx = rect + 手数  * (rect.2 - rect) / (end_x - start_x)
-	make_instant_draw_object "LINE_FAST",xx,rect.1,xx,rect.3,""
+	color 0,0,0
+	line msize, (rect.3-rect.1-msize)/2, rect.2 - rect, (rect.3 - rect.1-msize) / 2
 
 	//目盛り表示
+	color 255,255,255
 	repeat x_ticks
-		make_instant_draw_object "STR", rect.0 + (rect.2 - rect) * cnt / x_ticks + 9,rect.3 + 9,18,18,strf("%d,%d",start_x + (end_x - start_x) * cnt / x_ticks,$FFFFFF)
-
+		pos (rect.2 - rect) * cnt / x_ticks , rect.3 - rect.1 - msize
+		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
 	repeat y_ticks
-		make_instant_draw_object "STR", rect.0 - 9,rect.1 + (rect.3 - rect.1) * cnt / y_ticks +9  ,18,18, strf("%d,%d", end_y - (start_y + (end_y - start_y) * cnt / y_ticks),$FFFFF)
-
+		pos 0, (rect.3 - rect.1) * cnt / y_ticks
+		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
 	loop
 
 ;/*/
 	//折れ線描画
 	line_col = $B4FAA0
-	colset = $CCCCCC,$FFFFFF
+	
 	thick = 2
 	half = thick / 2
 	
 	repeat div_line + 1
-		nowpos = rect, (rect.3 + rect.1) / 2
+		nowpos = msize, (rect.3 - rect.1 - msize) / 2
 
 		
 		if div_line{
 			line_col = colset(cnt)
 		}
 		for i, 1 + cnt, limit(dn - 1, 0), 1 + div_line
-			endpos = rect + i * (rect.2 - rect) / dn, rect.3 - (rect.3 - rect.1) * data(i) / 100
-			repeat 1;thick
+			endpos = msize + i * (rect.2 - rect - msize) / dn, (rect.3 - rect.1 - msize) * data(i) / 100
+			repeat thick
 				offset = cnt - half
-				make_instant_draw_object "LINE_FAST", nowpos, nowpos.1 + offset, endpos, endpos.1 + offset,strf("%d",line_col)
+				色を設定 line_col
+				line  nowpos, nowpos.1 + offset, endpos, endpos.1 + offset
 			loop
 			nowpos = endpos, endpos.1 //次の開始点を設定
 		next
 	loop
 ;*/
+	gsel now_sel
+	return
+#modfunc line_graph_manager var 手数
+
+	get_rect area_number, oya //oya に矩形情報取得
+	
+	rect   = oya.0 + margin_left   * (margin_left   != -1)
+	rect.1 = oya.1 + margin_top    * (margin_top    != -1)
+	rect.2 = oya.2 - margin_right  * (margin_right  != -1)
+	rect.3 = oya.3 - margin_bottom * (margin_bottom != -1)
+
+	msize = 18
+
+	centerx = (rect+rect.2)/2
+	centery = (rect.3+rect.1)/2
+	sizex = rect.2-rect
+	sizey = rect.3-rect.1
+	make_instant_draw_object "SPRITE",centerx,centery,sizex,sizey,strf("%d,%d,%d",line_graph_buf,0,0)
+;*/
+
+
+	//マウス位置表示
+	mx = limit(mousex, rect.0,rect.2)
+	my = limit(mousey, rect.1,rect.3)
+	if in_rect(rect){
+		if _getkey(1) == 1{
+			手数 = (mx - rect.0 - msize) * (end_x - start_x) / (rect.2 - rect-msize)
+		}
+		make_instant_draw_object "LINE_FAST", mx,rect.1,mx, rect.3 - msize,"$FFFFFF"
+		make_instant_draw_object "LINE_FAST", rect.0 + msize,my, rect.2, my,"$FFFFFF"
+		make_instant_draw_object "STR",mx, rect.1 - msize/2,msize,msize, strf("%d,%d", (mx - rect.0-msize) * end_x / (rect.2 - rect-msize),$FFFFFF)
+		make_instant_draw_object "STR",rect.2, my    ,msize,msize, strf("%d,%d", end_y - (my - rect.1) * end_y / (rect.3 - rect.1-msize), $FFFFFF)
+
+		if _getkey(2) = 1{
+			//評価値グラフを、黒番と白番で分けるかの01トグル
+			div_line ^ 1
+			redraw_buffer thismod
+		}
+		
+	}
+
+	if oya != prerect || oya.1 != prerect.1 || oya.2 != prerect.2 || oya.3 != prerect.3{
+		redraw_buffer thismod
+	}
+
+		//現在手数の線表示
+	xx = rect + msize + 手数  * (rect.2 - rect - msize) / (end_x - start_x)
+	make_instant_draw_object "LINE_FAST",xx,rect.1,xx,rect.3-msize,""
 	
 	return
 	
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
-#include "rectmock.hsp"
+
 #global
-
-
-#ifdef MODULE_DEBUG //テストコード
-
-mock_flag@global = 1
-
-set_rect_mock 99, 100, 100, 500, 300
-
-newmod a, line_graph, 99
-
-set_end_xy a, 200
-
-repeat 200
-    angle = cnt * 2   ; カウンタを角度として使う
-    noise = rnd(10)   ; ノイズ成分を加える
-    value = 50 + sin(angle) * 40 + noise   ; 基本をsin波にしてノイズを足す
-    add_graph_data a, value
-loop
-//メインループ
-repeat
-	redraw:redraw 2
-	manage_keyfps ;FPS調整と、_getkey()サポート
-	color:boxf:color 255,255,255
-	line_graph_manager a,t
-loop
-#endif

@@ -7,8 +7,6 @@
 
 #module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id, combox_id
 
-#include "rectmock.hsp"
-
 #modinit var a, str s1, int area_number, local thismod_ID
 
     dup a, dropdown_result //　選択アイテムを示す変数
@@ -24,7 +22,7 @@
 	noteget t, 0
 	noteunsel
 
-	thisrect thismod, oya, area
+	get_rect area,oya
 	centerx = (oya.2 + oya.0) / 2
 	centery = (oya.3 + oya.1) / 2
 	sizex = (oya.2 - oya.0)
@@ -43,7 +41,7 @@
 	return dropdown_result
 
 #modfunc combox_manager
-	thisrect thismod, oya, area
+	get_rect area,oya
 
 	update_static_rect get_entity_id(combox_id), oya
 	

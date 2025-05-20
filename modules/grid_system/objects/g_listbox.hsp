@@ -119,7 +119,7 @@
 	return
 
 #modfunc listbox_manager int current_flag
-	thisrect thismod, rect, area_number
+	get_rect area_number, rect
 
 	moved = 0
 	// 現在のスクロール位置
@@ -201,7 +201,7 @@
 
 	return clicked_index
 #modfunc ensure_visible_index int index
-	thisrect thismod, rect, area_number
+	get_rect area_number,rect
 	visible_lines = (rect.3 - rect.1) / item_y
 	current_scroll = get_value_scroll_bar(scrollbar)
 
@@ -236,7 +236,7 @@
 //スクロール後処理
 #modfunc fix_scroll_after_remove
 
-	thisrect thismod, rect, area_number
+	get_rect area_number,rect
 
 	max_num = get_list_ids(listbox_id_manager, idlist)
 
@@ -277,7 +277,7 @@
 
 //リストボックスのどこにx,yがあるか？
 #modcfunc listbox_on_id int x, int y, local i
-	thisrect thismod, rect, area_number
+	get_rect area_number,rect
 
 	if rect.0 > x || rect.1 > y || rect.2 < x || rect.3 < y {
 		//リストボックス外
@@ -337,7 +337,6 @@
 	return s
 
 	
-#include "rectmock.hsp"
 #global
 
 #if 0;b1

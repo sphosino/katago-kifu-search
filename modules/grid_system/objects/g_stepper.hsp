@@ -27,7 +27,7 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 
 #modfunc draw_g_stepper
 
-	thisrect thismod, rect, area_number
+	get_rect area_number, rect
 	sx = rect.2-rect.0
 	sy = rect.3-rect.1
 	cx = rect.0 + sx / 2
@@ -72,8 +72,6 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	make_instant_draw_object "BOXF",rect.2 - half_y/2, rect.3 - half_y/2, half_y-msize*2,half_y - msize*2,strf("%d",tmpcolor)
 
 	return
-
-#include "rectmock.hsp"
 
 
 #defcfunc local in_rect array a

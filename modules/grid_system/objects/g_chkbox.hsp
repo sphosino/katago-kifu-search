@@ -7,7 +7,7 @@
 	area_number = _area
 	check_size = 20
 	margin = 3
-	thisrect thismod, rect, area_number
+	get_rect area_number, rect
 	bg_id = make_forever_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", rect,",5")
 	bg_eid = get_entity_id(bg_id)
 	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0,string)
@@ -34,7 +34,7 @@
 
 #modfunc draw_g_chkbox
 
-	thisrect thismod, rect, area_number
+	get_rect area_number,rect
 
 	update_static_rect bg_eid, rect
 	update_static_rect label_eid, rect
@@ -61,8 +61,6 @@
 	set_extra_param bg_id, 0, strf("$%06X", backcolor)
 	
 	return
-
-#include "rectmock.hsp"
 
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
