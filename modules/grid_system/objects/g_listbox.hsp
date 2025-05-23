@@ -5,7 +5,7 @@
 
 #const global LISTBOX_DEFAULT_MAX 300
 
-#module grid_listbox listbox_id_manager, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status
+#module grid_listbox id_man, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status
 
 #modinit int p1, int p2, local thismod_ID
 
@@ -19,7 +19,7 @@
 	sdim item_datas,, size
 	dim listbox_item_select_status, size
 	
-	newmod listbox_id_manager, list_id_manager, size
+	newmod id_man, listbox_id_manager, size
 
 	newmod scrollbar, scroll
 
@@ -37,8 +37,8 @@
 
 //追加、削除、取得関連
 #modfunc del_item_all
-	clear_list_id_manager listbox_id_manager
-	dim listbox_item_select_status, get_list_id_length(listbox_id_manager)
+	clear_listbox_id_manager id_man
+	dim listbox_item_select_status, get_listbox_length(id_man)
 	fix_scroll_after_remove thismod
 	return
 	
@@ -48,7 +48,7 @@
     notesel ss
     repeat notemax
         noteget tmp_str, cnt
-        id = get_new_id_for_list(listbox_id_manager)
+        id = get_new_listbox_id(id_man)
         item_names(id) = tmp_str
     loop
     noteunsel
@@ -56,14 +56,14 @@
 
 //リスト番号ベースで操作
 #modfunc add_item_data int index, str s1
-	item_datas(get_list_id(listbox_id_manager, index)) = s1
+	item_datas(get_listbox_id(id_man, index)) = s1
 	return
 #modcfunc get_item_name int index
-    return item_names(get_list_id(listbox_id_manager, index))
+    return item_names(get_listbox_id(id_man, index))
 #modcfunc get_item_data int index
-    return item_datas(get_list_id(listbox_id_manager, index))
+    return item_datas(get_listbox_id(id_man, index))
 #modfunc remove_item int index
-	delete_by_listnum listbox_id_manager, index
+	delete_listbox_num id_man, index
 	fix_scroll_after_remove thismod
 	return
 
@@ -76,7 +76,7 @@
 #modcfunc get_item_data_by_id int _id
     return item_datas(_id)
 #modfunc remove_item_by_id int _id
-	delete_by_itemid listbox_id_manager, _id
+	delete_listbox_id id_man, _id
 	fix_scroll_after_remove thismod
 	return
 	
@@ -93,7 +93,7 @@
 
 	// 最初に選択されてたIDを仮にベースにする（複数選択の場合）
 	base_id = selected_ids(0)
-	base_pos = get_list_position(listbox_id_manager, base_id)
+	base_pos = get_listbox_num(id_man, base_id)
 
 	// 選択されてるIDを削除
 	repeat num
@@ -101,7 +101,7 @@
 	loop
 
 	// 削除後のリスト数を取得
-	max_num = get_list_ids(listbox_id_manager, idlist)
+	max_num = get_listbox_ids(id_man, idlist)
 
 	// 何もなくなったら何もしない
 	if max_num <= 0 : return
@@ -126,7 +126,7 @@
 	scroll_value = get_value_scroll_bar(scrollbar)
 
 	// 最大個数
-	max_num = get_list_count(listbox_id_manager)
+	max_num = get_listbox_count(id_man)
 
 	set_position_scroll_bar scrollbar, rect.2, rect.1
 	set_value_minmax scrollbar, 0, limit(max_num - (rect.3 - rect.1) / item_y, 0)
@@ -138,13 +138,13 @@
 		if mousex >= rect.0 & mousex < rect.2 & mousey >= rect.1 & mousey < rect.3 {
 			clicked_index = (mousey - rect.1) / item_y + scroll_value
 			if clicked_index < max_num {
-				clicked_id = get_list_id(listbox_id_manager, clicked_index)
+				clicked_id = get_listbox_id(id_man, clicked_index)
 
 				if _getkey(17) >=1 { // Ctrl押しながら
 					listbox_item_select_status(clicked_id) = 1 - listbox_item_select_status(clicked_id)
 				}else{
 					// Ctrl押してないなら単独選択
-					repeat get_list_ids(listbox_id_manager,ids)
+					repeat get_listbox_ids(id_man,ids)
 						listbox_item_select_status(ids.cnt) = 0
 					loop
 					listbox_item_select_status(clicked_id) = 1
@@ -160,7 +160,7 @@
 			
 		}
 		if _getkey(17) >= 1 && _getkey('A') == 1{
-			repeat get_list_ids(listbox_id_manager,ids)
+			repeat get_listbox_ids(id_man,ids)
 				listbox_item_select_status(ids.cnt) = 1
 			loop	
 		}
@@ -178,7 +178,7 @@
 		id_index = cnt + scroll_value
 		if id_index >= max_num : break
 
-		id = get_list_id(listbox_id_manager, id_index)
+		id = get_listbox_id(id_man, id_index)
 
 		strbackcolor = $000000
 	    if listbox_item_select_status(id):  strbackcolor = $0064ff
@@ -189,10 +189,10 @@
 	return
 #modfunc move_listbox_index int move_value
 	
-	clicked_index = limit(get_single_selected_index(thismod) + move_value, 0, get_list_count(listbox_id_manager)-1)
-	clicked_id = get_list_id(listbox_id_manager, clicked_index)
+	clicked_index = limit(get_single_selected_index(thismod) + move_value, 0, get_listbox_count(id_man)-1)
+	clicked_id = get_listbox_id(id_man, clicked_index)
 	
-	repeat get_list_ids(listbox_id_manager,ids)
+	repeat get_listbox_ids(id_man,ids)
 		listbox_item_select_status(ids.cnt) = 0
 	loop
 	listbox_item_select_status(clicked_id) = 1
@@ -238,7 +238,7 @@
 
 	get_rect area_number,rect
 
-	max_num = get_list_ids(listbox_id_manager, idlist)
+	max_num = get_listbox_ids(id_man, idlist)
 
 	visible_lines = (rect.3 - rect.1) / item_y
 
@@ -252,7 +252,7 @@
 #modcfunc get_selected_item_ids array a
     dim a   // いったん空にする
     n = 0
-    repeat get_list_ids(listbox_id_manager,ids)
+    repeat get_listbox_ids(id_man,ids)
     	id = ids(cnt)
         if listbox_item_select_status(id) = 1 {
             a(n) = id
@@ -263,7 +263,7 @@
 #modcfunc get_selected_item_indices array a
     dim a
     n = 0
-    repeat get_list_ids(listbox_id_manager, ids)
+    repeat get_listbox_ids(id_man, ids)
         id = ids(cnt)
         if listbox_item_select_status(id) == 1 {
             a(n) = cnt //←ここ！IDではなく番号(cnt)を保存！
@@ -273,7 +273,7 @@
     return n
 
 #modcfunc get_list_item_num
-	return get_list_count(listbox_id_manager)
+	return get_listbox_count(id_man)
 
 //リストボックスのどこにx,yがあるか？
 #modcfunc listbox_on_id int x, int y, local i
@@ -299,7 +299,7 @@
 
 	//アイテムエリア内
 	current_scroll_index = get_value_scroll_bar(scrollbar)
-	max_num = get_list_ids(listbox_id_manager, idlist)
+	max_num = get_listbox_ids(id_man, idlist)
 	i = (y - rect.1) / item_y + current_scroll_index
 
 	if i >= max_num {
@@ -311,7 +311,7 @@
 
 #modcfunc get_single_selected_index
 	result = -1
-	repeat get_list_ids(listbox_id_manager, ids)
+	repeat get_listbox_ids(id_man, ids)
 		id = ids(cnt)
 		if listbox_item_select_status(id) == 1 {
 			result = cnt
@@ -326,7 +326,7 @@
 
 #modcfunc get_name_all_items //非推奨。重すぎ
 	s = ""
-	repeat get_list_ids(listbox_id_manager, ids)
+	repeat get_listbox_ids(id_man, ids)
 		id = ids(cnt)
 		if s!=""{
 			s+= "\n"+ item_names(ids)

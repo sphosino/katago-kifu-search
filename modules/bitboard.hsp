@@ -2,7 +2,7 @@
 #include "rotate_coordinate.hsp"
 #include "coordinate_set.hsp"
 #module
-#const NODE_MAX 4200000
+#const NODE_MAX 4300000
 
 #deffunc init_bitboard
 	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368ƒ}ƒX‚ğÅ‘å‚Æ‚·‚é
