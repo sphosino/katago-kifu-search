@@ -89,8 +89,9 @@
 			}
 			
 			//ŒŸõŽÀs
+			
 			match_node = search_main(topnode, rotated_p)
-		
+			
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
 				result(0, rn) = sgf_filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
 				if inverse{
@@ -221,11 +222,14 @@
     }
     repeat get_SGF_childs(node, child)
       lpoke node_data,  , depth + 1
+      
       lpoke node_data, 4, lpeek(child, cnt * 4)
+      
       lpoke node_data, 8, valid_pattern_count
       memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
       r_push node_data
     loop
+    
   wend
   return -1
 

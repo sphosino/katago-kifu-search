@@ -65,8 +65,6 @@
 	
 #modfunc load_from_SGF_topnode int SGF_topnode
 
-	logmes "AAA" + SGF_topnode
-
 	node_stack = SGF_topnode ; 現在のSGFノード番号	
 	parent_tree_stack = -1   ; 親ノード番号(SGFノードではなく、ツリーノードの番号）
 	sn = 1

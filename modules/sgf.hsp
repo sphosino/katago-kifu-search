@@ -1,5 +1,4 @@
 #ifndef sgf_node
-#include "basic.hsp"
 #include "bitboard.hsp"
 #module sgf_node
 
@@ -13,24 +12,50 @@
 	dim sgf_node_turn, MAX_NODE //ノードの手番
 	dim sgf_node_x, MAX_NODE //ノードの座標ｘ
 	dim sgf_node_y, MAX_NODE //ノードの座標ｙ
-	sdim sgf_properties_data,, MAX_NODE //その他のプロパティ
-	dim sgf_properties_num, MAX_NODE //その他のプロパティの数
 	
+	dim sgf_properties_data, MAX_NODE //メモリブロック番号
+    dim sgf_properties_num, MAX_NODE //その他のプロパティの数
+    dim sgf_node_childs, MAX_NODE //メモリブロック番号
+    dim child_num, MAX_NODE //子ノードの数
+
+	//ビットボードIDの発行・管理用
 	dim bitboard_id, MAX_NODE
 	dim node_to_bitboard_used_list, MAX_NODE
+	
 	dimtype bitboard_id_manager, 5
 	newmod bitboard_id_manager, id_manager, MAX_NODE
-	
-	sdim sgf_node_childs,, MAX_NODE //子ノードリスト
-	dim child_num, MAX_NODE //子ノードの数
+
+	//一時コピー用
+	sdim child_block, 128 ; 子ノード　
+	sdim block_data, 1024 ; プロパティデータ　
 
 	SEP = " "
 	poke SEP, 0, $1F
-	    list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
-	    text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
+    list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
+    text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
+
+
 	return
 
-#defcfunc make_new_SGFnode int p1
+#deffunc local init_node int node_id, int p1, int p2, local c
+	parent(node_id) = p1
+	sgf_node_turn(node_id) = -1
+	sgf_node_x(node_id) = -1
+	sgf_node_y(node_id) = -1
+	node_to_bitboard_used_list(node_id) = 0
+
+	//SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
+	sgf_properties_data(node_id) = get_new_block(1 + p2)
+	write_mem_str stat, SEP
+	sgf_properties_num(node_id) = 0
+	
+	//子ノードリスト初期化
+	sgf_node_childs(node_id) = get_new_block(4) ;最初は１つ分だけ確保
+	child_num(node_id) = 0
+
+	return
+
+#defcfunc make_new_SGFnode int p1, int p2
 	if open_id_list_num{
 		open_id_list_num--
 		new_id = lpeek(open_id_list, open_id_list_num * 4)
@@ -39,48 +64,51 @@
 		node_count++
 	}
 
-	init_node new_id, p1
+	init_node new_id, p1, p2
 	
 	return new_id
 
-#deffunc add_sgf_property int node_id, str s1, str s2
+#deffunc add_sgf_property int node_id, str key, str value
 
-	sgf_properties_data(node_id) += s1 + KEY_VALUE_SEP + s2 + SEP
+	append_str sgf_properties_data(node_id), key + KEY_VALUE_SEP + value + SEP
 	sgf_properties_num(node_id)++
 	
 	return
-#deffunc del_sgf_property int node_id, str s1
+	
+#deffunc del_sgf_property int node_id, str key
 
-	dup data, sgf_properties_data(node_id)
+	//文字列ブロックを読み出す
+	data = read_mem_str(sgf_properties_data(node_id))
 	
-	index = instr(data, 0, SEP + s1 + KEY_VALUE_SEP)
+	//対象プロパティの開始位置を探す
+	index = instr(data, 0, SEP + key + KEY_VALUE_SEP)
 	if index == -1: return
-	
-	next_index = index + 1 + instr(data, index + 1, SEP)
+
+	//次のSEPまでさがす
+	next_index = instr(data, index + 1, SEP)
+
 
 	left = strmid(data, 0, index)
 	right = strmid(data, next_index, 999999)
 
-	data = left + right
+	newdata = left + right
 
+	write_mem_str sgf_propetries_data(node_id), newdata
 	sgf_properties_num(node_id)--
-
 	return
 
 #deffunc add_SGFchild int node_id, int p1
     if search_SGFchild(node_id, p1) == -1 {
-        index = child_num(node_id) * 4  // 4バイト単位で格納
-        memexpand sgf_node_childs(node_id), index + 4
-        lpoke sgf_node_childs(node_id), index, p1
+        Lpoke_block sgf_node_childs(node_id), p1, child_num(node_id) * 4
         child_num(node_id)++
     }
     return
 
 #deffunc del_sgf_node int node_id, int flag, local child, local i, local num
 	if flag{
-		num = get_sgf_childs(node_id,child)
+		num = get_sgf_childs(node_id,child_block)
 		for i,,num
-			del_sgf_node lpeek(child, i * 4) , 1
+			del_sgf_node lpeek(child_block, i * 4) , 1
 		next
 	}
 	release_bitboard node_id
@@ -93,23 +121,23 @@
 	sgf_node_y(node_id) = y
 	return
 	
-#deffunc set_property_data int node_id, str s, str d
-	if s == "B"{
-		tmp = d
+#deffunc set_property_data int node_id, str key, str value
+	if key == "B"{
+		tmp = value
 		set_property_move node_id, 1, peek(tmp, 0) - 'a', peek(tmp, 1) - 'a'
-	}else: if s == "W"{
-		tmp = d
+	}else: if key == "W"{
+		tmp = value
 		set_property_move node_id, 2, peek(tmp, 0) - 'a', peek(tmp, 1) - 'a'
 	}else{
 		//登録
-		del_sgf_property node_id, s
-		add_sgf_property node_id, s, d
+		del_sgf_property node_id, key
+		add_sgf_property node_id, key, value
 	}
 	return
 
 #defcfunc get_property_data int node_id, str property_name
 
-	dup data, sgf_properties_data(node_id)
+	data = read_mem_str(sgf_properties_data(node_id))
 	
 	// プロパティの名前と値を探す
 	index = instr(data, 0, SEP + property_name + KEY_VALUE_SEP)
@@ -124,7 +152,6 @@
 	// プロパティの値を抽出して返す
 	result = strmid(data, value_start, value_end - value_start)
 	
-	;logmes "@@@@" + result
 	return result
 
 #defcfunc get_property_coordinate_cash int node_id, var x, var y
@@ -132,14 +159,15 @@
 	y = sgf_node_y(node_id)
 	return sgf_node_turn(node_id)
 
-#defcfunc get_SGF_childs int node_id, array a
-	dup a, sgf_node_childs(node_id)
+#defcfunc get_SGF_childs int node_id, var a
+	sdim a
+	copy_block sgf_node_childs(node_id), a
 	return child_num(node_id)
 
 #defcfunc search_SGFchild int node_id, int target
 	result = -1
-    repeat child_num(node_id)
-        if lpeek(sgf_node_childs(node_id), cnt * 4) == target{
+    repeat get_sgf_childs(node_id, child_block)
+        if lpeek(child_block, cnt * 4) == target{
 	    	result = cnt
 	    	break
 	    }
@@ -149,10 +177,10 @@
 #defcfunc search_SGFchild_byxy int node_id, int _x, int _y, int turn, local child
 
 	result = -1
-	repeat get_SGF_childs(node_id, child)
-		if turn == get_property_coordinate_cash(lpeek(child, cnt * 4), x, y){
+	repeat get_SGF_childs(node_id, child_block)
+		if turn == get_property_coordinate_cash(lpeek(child_block, cnt * 4), x, y){
 			if _x == x && _y == y{
-				result = lpeek(child, cnt * 4): break
+				result = lpeek(child_block, cnt * 4): break
 			}
 		}
 	loop
@@ -182,7 +210,9 @@
 		}
 	}
 
-	split sgf_properties_data(node_id), SEP, tmp
+
+	block_data = read_mem_str(sgf_properties_data(node_id))
+	split block_data, SEP, tmp
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
 		if is_list_property(kv){
@@ -195,14 +225,14 @@
 		}
 	loop
 	
-	n = get_SGF_childs(node_id, child)
+	n = get_SGF_childs(node_id, child_block)
 	for i,, n
 	
 		if n >= 2{
 			s+="("
 		}
 		
-		_get_node_sgf lpeek(child, i * 4), s
+		_get_node_sgf lpeek(child_block, i * 4), s
 		
 		
 		if n >= 2{
@@ -244,8 +274,10 @@
 			i += "W[" + 座標 + "]"
 		}	
 	}
-
+	
+	block_data = read_mem_str(sgf_properties_data)
 	split sgf_properties_data(node_id), SEP, tmp
+	
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
 		if is_list_property(kv){
@@ -279,7 +311,7 @@
 		}
 	}
 	
-	new = make_new_SGFnode(nownode)
+	new = make_new_SGFnode(nownode, 300)
 	
 	if nownode >= 0{
 		add_SGFchild nownode, new
@@ -374,22 +406,23 @@
         logmes "Error: Circular reference detected! parent=" + parent_node_id +"child=" + child_node_id
         return
     }
+
+	sdim block_data, child_num(parent_node_id) * 4
+
     
     // プロパティベース重複チェック
-    for i,, child_num(parent_node_id)
-        current_child = lpeek(sgf_node_childs(parent_node_id), i*4)
+    pnum = get_sgf_childs(parent_node_id,child_block)
+    for i,, pnum
+        current_child = lpeek(child_block, i*4)
         if compare_nodes(child_node_id, current_child) {
             logmes "Warning: Duplicate node. properties=" + get_node_properties(child_node_id)
             return
         }
     next
 
-    ; mes parent_node_id,1
-    ;mes "," + child_node_id
-
 	//子ノード接続処理
-	memexpand sgf_node_childs(parent_node_id), child_num(parent_node_id) * 4 + 4
-	lpoke sgf_node_childs(parent_node_id), child_num(parent_node_id) * 4, child_node_id
+
+	Lpoke_block sgf_node_childs(parent_node_id), child_node_id, child_num(parent_node_id) * 4 
 	child_num(parent_node_id)++
 	parent(child_node_id) = parent_node_id
 
@@ -400,9 +433,10 @@
 	sgf_node_turn(node1) = sgf_node_turn(node2)
 	sgf_node_x(node1) = sgf_node_x(node2)
 	sgf_node_y(node1) = sgf_node_y(node2)
-	sgf_properties_data(node1) = sgf_properties_data(node2) //その他のプロパティ
+
+	write_mem_str sgf_properties_data(node1), read_mem_str(sgf_properties_data(node2))
 	sgf_properties_num(node1) = sgf_properties_num(node2) //その他のプロパティの数
-	;logmes sgf_properties_num(node1)
+	
 	return
 
 #defcfunc deep_copy_sgf_node int node_id, local i, local num, local c, local new_node, local sn
@@ -424,8 +458,8 @@
   		
  		connect_sgf_node p, new_node // ノード接続
  		
-   		repeat get_sgf_childs(nn,c)
-	    	stack(sn) = lpeek(c, cnt * 4)
+   		repeat get_sgf_childs(nn, child_block)
+	    	stack(sn) = lpeek(child_block, cnt * 4)
 	    	stackp(sn) = new_node
 	    	sn++
       	loop
@@ -433,12 +467,12 @@
     wend
     return result
 
-#defcfunc has_child int node_id, int node_id2, local c
+#defcfunc has_child int node_id, int node_id2
 	result = -1
-	repeat get_SGF_childs(node_id, c)
-		mes "" + lpeek(c,cnt*4) + "   " + node_id2
-		if compare_nodes(lpeek(c, cnt * 4), node_id2){
-			result = lpeek(c, cnt*4)
+	repeat get_SGF_childs(node_id, child_block)
+		mes "" + lpeek(child_block, cnt * 4) + "   " + node_id2
+		if compare_nodes(lpeek(child_block, cnt * 4), node_id2){
+			result = lpeek(child_block, cnt * 4)
 			mes "" + result + ":" + node_id2 + "  " + node_id 
 			break
 		}
@@ -446,7 +480,7 @@
 	return result
 
 #defcfunc merge_node array node_list
-	new = make_new_SGFnode(-1) //新たなトップノードを作成する
+	new = make_new_SGFnode(-1,300) //新たなトップノードを作成する
 	repeat length(node_list)
 		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
 		merge_node_main new, copied_node //マージ実行
@@ -482,7 +516,7 @@
 					stack3(sn) = 0
 					sn++
 				}else{
-					connect_sgf_node tn1, tn2_child	
+					connect_sgf_node tn1, tn2_child
 				}
 			next
 		}else{
@@ -500,23 +534,7 @@
 
 //////////マージ処理ここまで/////////////////////////////////////////////////////////
 	
-#deffunc local init_node int node_id, int p1, local c
 
-	parent(node_id) = p1
-	
-	sgf_node_turn(node_id) = -1
-	sgf_node_x(node_id) = -1
-	sgf_node_y(node_id) = -1
-
-	node_to_bitboard_used_list(node_id) = 0
-	
-	sgf_properties_data(node_id) = SEP //SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
-	sgf_properties_num(node_id) = 0
-	
-	sgf_node_childs(node_id) = ""
-	child_num(node_id) = 0
-
-	return
 
 #global
 init_sgf_module
@@ -550,7 +568,7 @@ init_sgf_module
 	nc = 0
 	MN = 0	//手数をカウントする独自プロパティ
 
-	topnode = make_new_SGFnode(node)
+	topnode = make_new_SGFnode(node,300)
 	load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	set_property_data topnode, "MN",str(lastnode)
 	return topnode
@@ -577,6 +595,7 @@ init_sgf_module
 			
 			point = 対応する文字まで取得(sgfs, point, "[", P)
 			point = 対応する文字まで取得(sgfs, point + 1, "]", D)
+
 			set_property_data nn, P, D
 			
 		}else:if token == '['{
@@ -605,65 +624,5 @@ init_sgf_module
 	wend
 	return
 #global
-
-/*/
-#module
-#define global ctype load_sgf(%1, %2 = -1) _load_sgf2(%1, %2)
-
-// 分岐なしSGF読み込み
-#defcfunc _load_sgf2 str ss, int parent_node
-
-	sss = ss
-	sgflen = strlen(sss)
-	if sgflen < 3 : return -1
-	if (peek(sss) != '(') || (peek(sss, sgflen - 1) != ')') : return -1
-	
-	start_point = instr(sss, 0, ";")
-	if start_point == -1 : return -1
-
-	nc = 0
-	MN = 0
-
-	topnode = make_new_SGFnode(parent_node)
-	set_property_data topnode, "MN", "0"
-
-	nn = topnode
-	point = start_point + 1
-	sgflen--
-
-	sdim P, 32
-	sdim D, 512
-
-	while point < sgflen
-		token = peek(sss, point)
-
-		if token == ';' {
-			new_id = make_new_SGFnode(nn)
-			add_SGFchild nn, new_id
-			nn = new_id
-			nc++
-			if MN < nc : MN = nc : lastnode = nn
-			point++
-			_continue
-		}
-
-		if token >= 'A' && token <= 'Z' {
-			point = 対応する文字まで取得(sss, point, "[", P)
-			point = 対応する文字まで取得(sss, point + 1, "]", D)
-			set_property_data nn, P, D
-		} else : if token == '[' {
-			point = 対応する文字まで取得(sss, point + 1, "]", D)
-			set_property_data nn, P, get_property_data(nn, P) + D
-		} else {
-			logmes "不正なトークンが含まれています"
-		}
-		point++
-	wend
-
-	set_property_data topnode, "MN", str(lastnode)
-	return topnode
-
-#global
-;*/
 
 #endif
