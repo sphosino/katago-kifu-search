@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 4200000
+#define MAX_NODE 4400000
 
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //eƒm[ƒh
@@ -86,6 +86,7 @@
 
 	//ŽŸ‚ÌSEP‚Ü‚Å‚³‚ª‚·
 	next_index = instr(data, index + 1, SEP)
+	assert next_index >= 0
 
 
 	left = strmid(data, 0, index)
@@ -93,7 +94,7 @@
 
 	newdata = left + right
 
-	write_mem_str sgf_propetries_data(node_id), newdata
+	write_mem_str sgf_properties_data(node_id), newdata
 	sgf_properties_num(node_id)--
 	return
 
@@ -276,7 +277,7 @@
 	}
 	
 	block_data = read_mem_str(sgf_properties_data)
-	split sgf_properties_data(node_id), SEP, tmp
+	split block_data, SEP, tmp
 	
 	repeat sgf_properties_num(node_id), 1
 		split tmp(cnt), KEY_VALUE_SEP, kv
