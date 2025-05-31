@@ -34,7 +34,6 @@
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 
-
 	return
 
 #deffunc local init_node int node_id, int p1, int p2, local c
