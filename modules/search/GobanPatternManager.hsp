@@ -86,11 +86,14 @@
 	return an
 
 #deffunc initialize_rects var rect_set, array rects, array stones
+	//セットリストをもとに矩形を生成　+ 石リストを初期化
 	num_rects = create_rect_from_coordinate_set(rect_set, rects)
 	sdim stones,, num_rects
 	return
 
 #deffunc add_stone_pattern array rects, array stones, int x, int y, int col, local i
+
+	//石の位置を指定して、適切な矩形に石を挿入
 
 	stone_info = strf("%02d:%02d:%d", x, y, col)
 	logmes "AA" + stone_info
@@ -117,6 +120,10 @@
 
 #deffunc create_pattern_with_rects_and_stones array rects, array stones, array patterns
 
+	//生成した矩形情報と石情報でパターン作成
+
+	//
+
     sdim patterns,,length2(rects), 3, 2
 
     repeat length2(rects)
@@ -125,7 +132,7 @@
 
      	s = ""
      	split stones(cnt),"-",stone_data
-     	logmes "A"+stones(cnt)
+     	
      	info_num = stat
      	none_count = 0
         repeat info_num
@@ -150,18 +157,10 @@
     loop
     return
 
-#defcfunc get_pattern_all_stones_num array a, local i
-	
-	repeat length(a)
-		i += int(a(cnt,2))
-	loop
-
-	return i
-
 #defcfunc get_pattern_all_groups_num array a
 	count = 0
 	mask = 0
-	dim group_has_real_stone, 4  ; A?Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
+	dim group_has_real_stone, 4  ; A-Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
 
 	repeat length(a)
 		dim stone_info
@@ -196,7 +195,7 @@
 	; ×以外の石を含むグループをカウント
 	groups = 0
 	repeat 4
-		if  group_has_real_stone(cnt) {
+		if  group_has_real_stone(cnt){
 			groups++
 		}
 	loop
@@ -237,7 +236,6 @@
 			
 			for i,,2
 			
-				
 				split a(r,1,i), "-", stone_datas
 				e = stat
 				

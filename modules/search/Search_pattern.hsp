@@ -174,16 +174,13 @@
 	            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
 		            
 					if rg{
-			            hit_group_count = 0
-						repeat 4 ; // グループA?D（最大4つ）を順にチェックする
+						repeat 4 ; // グループA-D（最大4つ）を順にチェックする
 						    bit = 1 << cnt ; // 今回チェックするグループのビット（1, 2, 4, 8）
-						
 						    if (rg & bit){
 						        vlist(NOT_YET_MATCHED_FLAGS, i) -= bit ; // そのグループはもうヒット済みにする（ビットOFF）
-						        hit_group_count++ ; // ヒットカウントを+1
+						        vlist(MATCH_GROUP_COUNT, i)++
 						    }
 						loop
-						vlist(MATCH_GROUP_COUNT, i) += hit_group_count ; // ヒットしたグループの数だけ加算
 					}else{
 						vlist(MATCH_GROUP_COUNT, i) ++ ; // 通常石
 					}

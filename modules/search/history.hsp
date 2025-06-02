@@ -1,0 +1,57 @@
+#module search_pattern_history
+
+#const MAX_HISTORY 100
+
+
+#deffunc init
+
+	sdim set_history,, MAX_HISTORY //対象座標セットリスト
+	dim board_history, 26, 26, MAX_HISTORY //パターン（碁盤の状態）
+	dim group_history, 26, 26, 4, MAX_HISTORY //グループ情報
+
+	dim gdata, 26,26,4
+
+	history_num = 0 //検索パターンの数
+	
+	return
+
+#deffunc save_history var v, array board, array group
+
+	sizex = length(board)
+	sizey = length2(board)
+
+	set_history(history_num) = v
+	
+	repeat sizex
+		for i,,sizey
+			logmes cnt
+			logmes i
+			board_history(cnt,i, history_num) = board(cnt,i)
+			for j,,4
+				group_history(cnt,i,j, history_num) = group(cnt,i,j)
+			next
+		next
+	loop
+
+	history_num = (history_num + 1) \ MAX_HISTORY
+	
+	return
+
+#deffunc load_history int history_number, var v, array board, array group
+
+	logmes history_number
+	v = set_history(history_number)
+
+	for i,, limit(length(board),,26)
+	for j,, limit(length2(board),,26)
+		board(i,j) = board_history(i,j,history_number)
+		repeat 4
+			gdata(i,j,cnt) = group_history(i,j,cnt,history_number)
+		loop
+	next
+	next
+	load_group_from_history gdata
+
+	return
+#global
+init

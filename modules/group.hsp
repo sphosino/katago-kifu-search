@@ -1,8 +1,8 @@
 #ifndef group_manager
 #module group_manager
 
-#const BOARD_X_MAX 100
-#const BOARD_Y_MAX 100
+#const BOARD_X_MAX 26
+#const BOARD_Y_MAX 26
 
 #deffunc group_init
 	group_str = "A","B","C","D" //４つまで指定できるようにする
@@ -138,6 +138,39 @@
 		logmes "不正なグループ値です" + group_num
 	}
 	return invalid
+	
+#deffunc load_group_from_history  array a
+
+	group_init
+
+	gn = 0
+
+	for i,,limit(BOARD_X_MAX,,length(a))
+		for j,,limit(BOARD_Y_MAX,,length2(a))
+			for k,,4
+			stone_map(i,j,k) = a(i,j,k)
+			if stone_map(i,j,k){
+				stone_map_count(i,j)++
+				groups(gn,k) += strf("%02d%02d,",i,j)
+				gn++
+			}
+			next
+		next
+	next
+	return
+
+#deffunc get_group_data array a
+	dim a,BOARD_X_MAX,BOARD_Y_MAX, 4
+	group_init
+	for i,,BOARD_X_MAX
+		for j,,BOARD_Y_MAX
+			for k,,4
+		 		a(i,j,k) = stone_map(i,j,k)
+			next
+		next
+	next
+	return
+
 #global
 group_init
 #endif

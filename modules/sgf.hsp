@@ -6,6 +6,9 @@
 
 #define MAX_NODE 4400000
 
+#define TOPNODE_SIZE 270
+#define NORMALNODE_SIZE 30
+
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //親ノード
 	
@@ -160,7 +163,6 @@
 	return sgf_node_turn(node_id)
 
 #defcfunc get_SGF_childs int node_id, var a
-	sdim a
 	copy_block sgf_node_childs(node_id), a
 	return child_num(node_id)
 
@@ -311,7 +313,7 @@
 		}
 	}
 	
-	new = make_new_SGFnode(nownode, 300)
+	new = make_new_SGFnode(nownode, TOPNODE_SIZE)
 	
 	if nownode >= 0{
 		add_SGFchild nownode, new
@@ -449,7 +451,7 @@
 		sn--
 		nn = stack(sn)
 		p = stackp(sn)
-    	new_node = make_new_SGFnode(-1) // 空ノードを作成
+    	new_node = make_new_SGFnode(-1, NORMALNODE_SIZE) // 空ノードを作成
     	
     	if result = -1{
 	    	result = new_node
@@ -480,7 +482,7 @@
 	return result
 
 #defcfunc merge_node array node_list
-	new = make_new_SGFnode(-1,300) //新たなトップノードを作成する
+	new = make_new_SGFnode(-1,TOPNODE_SIZE) //新たなトップノードを作成する
 	repeat length(node_list)
 		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
 		merge_node_main new, copied_node //マージ実行
@@ -568,7 +570,7 @@ init_sgf_module
 	nc = 0
 	MN = 0	//手数をカウントする独自プロパティ
 
-	topnode = make_new_SGFnode(node,300)
+	topnode = make_new_SGFnode(node,TOPNODE_SIZE)
 	load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
 	set_property_data topnode, "MN",str(lastnode)
 	return topnode
@@ -585,7 +587,7 @@ init_sgf_module
 
 		if (token == ';'){
 			
-			new_id = make_new_SGFnode(nn)
+			new_id = make_new_SGFnode(nn, NORMALNODE_SIZE)
 			add_SGFchild nn, new_id
 			nn = new_id
 			nc++

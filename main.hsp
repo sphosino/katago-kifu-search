@@ -13,6 +13,7 @@
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
 #include "modules/search/memorize_hit_rect.hsp"
+#include "modules/search/history.hsp"
 
 
 #include "go_game_manager.hsp"
@@ -346,7 +347,7 @@ newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
 set_margin_line_graph l_graph, 15, 10, 15, 10
 
-newmod h, hash_manager
+newmod filename_to_topnode, hash_manager
 
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
@@ -389,11 +390,11 @@ pretime = keyfpstime
 						kifu_update = 0
 						break
 					}
-					if get_value(h, sgf_file_name) == NOT_DEFINED_HASH{
+					if get_value(filename_to_topnode, sgf_file_name) == NOT_DEFINED_HASH{
 						notesel sgf
 							chdir kifu_dirname
 							noteload sgf_file_name
-							new_value h, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
+							new_value filename_to_topnode, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
 						noteunsel
 						break
 					}
@@ -522,9 +523,10 @@ pretime = keyfpstime
 					rect = -1
 				}
 				if treebox_onmouseid(t) >=0{
-					set_current_node t, stat		
+					set_current_node t, stat
 					sync_treebox_board t, board 
 					手数 = treeview_onmouse_id_deep()
+					gosub*syncboard
 				}
 			}
 		}
@@ -668,6 +670,10 @@ pretime = keyfpstime
 		logmes "switched debugmode ->" +debugmode
 	}
 
+	if getdbl_ms(2,250) == 1{
+		load_search_history 0
+	}
+
 	計測 "object_managers"
 
 	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
@@ -768,7 +774,7 @@ pretime = keyfpstime
 		rn = 0
 
 
-		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, h)
+		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, filename_to_topnode)
 
 		clear_graph l_graph
 
@@ -801,7 +807,6 @@ pretime = keyfpstime
 		gosub*syncboard
 		redraw_stones board
 		redraw_buffer l_graph
-		logmes "AFAF"
 		
 		return 1
 	}
@@ -863,7 +868,7 @@ pretime = keyfpstime
 	dim nodelist
 	
 	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = int(get_value(h,get_item_name(kifulist.current_kifulist, s(cnt))))
+		nodelist(cnt) = int(get_value(filename_to_topnode,get_item_name(kifulist.current_kifulist, s(cnt))))
 	loop
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
@@ -901,7 +906,7 @@ pretime = keyfpstime
 
 	dim nodelist
 	repeat get_selected_item_indices(kifulist.current_kifulist, node_ids)
-		nodelist(cnt) = int(get_value(h,get_item_name(kifulist.current_kifulist, node_ids(cnt))))
+		nodelist(cnt) = int(get_value(filename_to_topnode,get_item_name(kifulist.current_kifulist, node_ids(cnt))))
 	loop
 	new_node = merge_node(nodelist)
 	s = get_node_sgf(new_node)
@@ -932,6 +937,7 @@ pretime = keyfpstime
 	kl = search_result_sgflist
 	gosub*create_pattern_main
 	return
+	
 *create_pattern_main
 	logmes "検索開始"
 
@@ -942,9 +948,11 @@ pretime = keyfpstime
 		get_board_data board.1, m
 	}
 
+	save_search_history
+
 	if use_bitboard{
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, h)
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{
 
@@ -959,7 +967,7 @@ pretime = keyfpstime
 	
 		logmes patterns_to_notepad(p)
 		
-		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, h)
+		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}
 
 
@@ -1004,7 +1012,7 @@ pretime = keyfpstime
 		noteunsel
 		repeat result_num
 		
-			tn = int(get_value(h,search_result(0,cnt))) //topnodeからプレイヤー情報取得
+			tn = int(get_value(filename_to_topnode,search_result(0,cnt))) //topnodeからプレイヤー情報取得
 			blackplayer = get_property_data(tn, "PB")
 			split blackplayer,"-",bp
 			whiteplayer = get_property_data(tn, "PW")
@@ -1097,7 +1105,6 @@ pretime = keyfpstime
 
 	if moved{
 		gosub*syncboard
-		redraw_stones board
 		redraw_buffer l_graph
 	}
 
@@ -1124,6 +1131,7 @@ pretime = keyfpstime
 
 	split tmp," ", c_list
 	
+	redraw_stones board
 	return
 	
 *load_kifu_folder
@@ -1145,7 +1153,27 @@ pretime = keyfpstime
 	kifu_update = 1
 	kifulist_notepad = filelist
 	return
+	
+#deffunc save_search_history
+	get_board_data board.uimode, m
+	get_group_data g
+	save_history v, m, g
+	return
 
+#deffunc load_search_history int p1
+	
+	load_history p1, v, m, a //p1番のデータをv,m,aに読み出す（それぞれ、対象座標セット、碁盤情報、グループ情報
+
+	ui_mode = MODE_BOARD_EDIT
+	
+	//碁盤グループに情報共有
+	set_board_data board.ui_mode, m
+	//グループモジュールに情報共有
+	load_group_from_history a
+
+	redraw_stones board.ui_mode
+
+	return
 *save_info　//終了処理
 	chdir dirname
 	sdim s,1024
