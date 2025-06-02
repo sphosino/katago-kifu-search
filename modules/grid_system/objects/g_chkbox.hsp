@@ -16,7 +16,8 @@
 	logmes "check_id_check ->  " + check_id
 	check_eid = get_entity_id(check_id)
 	gosub*“¯Šú
-	return
+	mref thismod_ID, 2
+	return thismod_ID
 
 #modfunc toggle_g_checkbox
 	flag ^ 1

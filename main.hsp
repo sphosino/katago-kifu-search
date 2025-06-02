@@ -15,7 +15,6 @@
 #include "modules/search/memorize_hit_rect.hsp"
 #include "modules/search/history.hsp"
 
-
 #include "go_game_manager.hsp"
 
 #include "hspext.as"
@@ -297,7 +296,7 @@ newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
-newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu
+newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: modechkbox = stat
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi,"星表示", chkbox_view_hosi
@@ -859,7 +858,6 @@ pretime = keyfpstime
 	
 *getsgf_nowpoint
 	if nownode < 0: return
-	logmes get_tree_item_id(nownode)
 	clipset get_node_sgf_nowpoint(get_tree_item_id(nownode))
 	title "現局面をクリップボードにコピーしました"
 	return
@@ -1164,6 +1162,10 @@ pretime = keyfpstime
 	
 	load_history p1, v, m, a //p1番のデータをv,m,aに読み出す（それぞれ、対象座標セット、碁盤情報、グループ情報
 
+
+	if ui_mode != MODE_BOARD_EDIT{
+		toggle_g_checkbox g_chkbox.modechkbox
+	}
 	ui_mode = MODE_BOARD_EDIT
 	
 	//碁盤グループに情報共有
@@ -1172,6 +1174,8 @@ pretime = keyfpstime
 	load_group_from_history a
 
 	redraw_stones board.ui_mode
+
+	pre_ui_mode = ui_mode
 
 	return
 *save_info　//終了処理

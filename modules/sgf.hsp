@@ -4,13 +4,15 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 4400000
+#define MAX_NODE 4800000
 
 #define TOPNODE_SIZE 270
 #define NORMALNODE_SIZE 30
 
 #deffunc init_sgf_module
 	dim parent, MAX_NODE //親ノード
+
+	dim using, MAX_NODE //使用中かフラグ
 	
 	dim sgf_node_turn, MAX_NODE //ノードの手番
 	dim sgf_node_x, MAX_NODE //ノードの座標ｘ
@@ -29,13 +31,15 @@
 	newmod bitboard_id_manager, id_manager, MAX_NODE
 
 	//一時コピー用
-	sdim child_block, 128 ; 子ノード　
+	sdim child, 128 ; 子ノード　
 	sdim block_data, 1024 ; プロパティデータ　
 
 	SEP = " "
 	poke SEP, 0, $1F
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
+
+    sdim block_data
 
 	return
 
@@ -46,7 +50,15 @@
 	sgf_node_y(node_id) = -1
 	node_to_bitboard_used_list(node_id) = 0
 
+	if using(node_id){
+		release_bitboard node_id
+		free_block sgf_properties_data(node_id)
+		free_block sgf_node_childs(node_id)
+		using(node_id) = 1
+	}
+
 	//SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
+	
 	sgf_properties_data(node_id) = get_new_block(1 + p2)
 	write_mem_str stat, SEP
 	sgf_properties_num(node_id) = 0
@@ -107,7 +119,8 @@
     }
     return
 
-#deffunc del_sgf_node int node_id, int flag, local child, local i, local num
+#deffunc del_sgf_node int node_id, int flag, local child_block, local i, local num
+	if using(node_id) == 0: return
 	if flag{
 		num = get_sgf_childs(node_id,child_block)
 		for i,,num
@@ -115,7 +128,9 @@
 		next
 	}
 	release_bitboard node_id
-	init_node node_id, -1
+	free_block sgf_properties_data(node_id)
+	free_block sgf_node_childs(node_id)
+	using(node_id) = 0
 	return
 
 #deffunc set_property_move int node_id, int turn, int x, int y
@@ -167,16 +182,18 @@
 	return child_num(node_id)
 
 #defcfunc search_SGFchild int node_id, int target
+	sdim child
 	result = -1
-    repeat get_sgf_childs(node_id, child_block)
-        if lpeek(child_block, cnt * 4) == target{
+    repeat get_sgf_childs(node_id, child)
+        if lpeek(child, cnt * 4) == target{
 	    	result = cnt
 	    	break
 	    }
     loop
     return result
 
-#defcfunc search_SGFchild_byxy int node_id, int _x, int _y, int turn, local child
+#defcfunc search_SGFchild_byxy int node_id, int _x, int _y, int turn, local child_block
+	sdim child_block
 
 	result = -1
 	repeat get_SGF_childs(node_id, child_block)
@@ -196,7 +213,7 @@
 	result += ")"
 	return result
 
-#deffunc _get_node_sgf int node_id, var s, local i, local n, local child
+#deffunc _get_node_sgf int node_id, var s, local i, local n, local child_block
 
 	s += ";"
 	
@@ -212,7 +229,6 @@
 		}
 	}
 
-
 	block_data = read_mem_str(sgf_properties_data(node_id))
 	split block_data, SEP, tmp
 	repeat sgf_properties_num(node_id), 1
@@ -226,7 +242,8 @@
 			s += kv + "[" + kv.1 + "]"
 		}
 	loop
-	
+
+	sdim child_block
 	n = get_SGF_childs(node_id, child_block)
 	for i,, n
 	
@@ -235,7 +252,6 @@
 		}
 		
 		_get_node_sgf lpeek(child_block, i * 4), s
-		
 		
 		if n >= 2{
 			s+=")"
@@ -502,6 +518,7 @@
 	stack2(sn) = topnode2
 	stack3(sn) = 0 //子ノード処理済みか
 	sn++
+	sdim c
 	while sn
 		sn--
 		tn1 = stack1(sn)

@@ -24,8 +24,6 @@
 	
 	repeat sizex
 		for i,,sizey
-			logmes cnt
-			logmes i
 			board_history(cnt,i, history_num) = board(cnt,i)
 			for j,,4
 				group_history(cnt,i,j, history_num) = group(cnt,i,j)

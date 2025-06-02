@@ -266,7 +266,6 @@
     n = 0
     repeat get_listbox_ids(id_man, ids)
         id = ids(cnt)
-        logmes id
         if listbox_item_select_status(id) == 1 {
             a(n) = cnt 
             n++
@@ -277,7 +276,7 @@
 #modcfunc get_list_item_num
 	return get_listbox_count(id_man)
 
-//リストボックスのどこにx,yがあるか？
+//x,yがリストボックスのどこにあるか？
 #modcfunc listbox_on_id int x, int y, local i
 	get_rect area_number,rect
 

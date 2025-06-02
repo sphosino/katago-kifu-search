@@ -146,7 +146,6 @@ dimtype treenode@global, 5
 		現ノードの高さ = takasa(現在の深さ) + 1　//現ノードをそのノードの下にする。
 	}
 	if rect.0 + 現在の深さ * node_sizex + node_sizex/2 - rect.4 > rect.2: result = 現ノードの高さ,0: return //画面を超えた
-	if rect.1 + 現ノードの高さ * node_sizey + node_sizey/2 > rect.3: result = 現ノードの高さ,0: return
 	
 	for i,,cn
 
@@ -164,6 +163,8 @@ dimtype treenode@global, 5
 		}
 		
 	next
+
+	if rect.1 + 現ノードの高さ * node_sizey + node_sizey/2 >= rect.3: result = 現ノードの高さ,0: return
 
 	sx = node_sizex / 2
 	sy = node_sizey / 2
