@@ -939,13 +939,6 @@ pretime = keyfpstime
 *create_pattern_main
 	logmes "検索開始"
 
-
-	if ui_mode == MODE_KIFU_VIEW{
-		get_board_data board, m
-	}else{
-		get_board_data board.1, m
-	}
-
 	save_search_history
 
 	if use_bitboard{
@@ -958,10 +951,9 @@ pretime = keyfpstime
 		
 		repeat load_stones_from_board(m, n)
 			add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
-			logmes n(2,cnt)
 		loop
 	
-		create_pattern_with_rects_and_stones r,stones,p
+		create_pattern_with_rects_and_stones r, stones, p
 	
 		logmes patterns_to_notepad(p)
 		
@@ -1153,23 +1145,20 @@ pretime = keyfpstime
 	return
 	
 #deffunc save_search_history
-	get_board_data board.uimode, m
+	get_board_data board.ui_mode, m
 	get_group_data g
 	save_history v, m, g
 	return
 
 #deffunc load_search_history int p1
 	
-	load_history p1, v, m, a //p1番のデータをv,m,aに読み出す（それぞれ、対象座標セット、碁盤情報、グループ情報
-
-
+	load_history p1, v, user_board, a //それぞれ、対象座標情報、碁盤情報、グループ情報
 	if ui_mode != MODE_BOARD_EDIT{
 		toggle_g_checkbox g_chkbox.modechkbox
 	}
 	ui_mode = MODE_BOARD_EDIT
-	
 	//碁盤グループに情報共有
-	set_board_data board.ui_mode, m
+	set_board_data board.ui_mode, user_board
 	//グループモジュールに情報共有
 	load_group_from_history a
 

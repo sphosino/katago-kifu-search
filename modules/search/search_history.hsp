@@ -2,11 +2,12 @@
 
 #const MAX_HISTORY 100
 
+
 #deffunc init
 
 	sdim set_history, MAX_HISTORY //対象座標セットリスト
 	dim board_history, 19, 19, MAX_HISTORY //パターン（碁盤の状態）
-	dim group_history, BOARD_X_MAX, BOARD_Y_MAX, 4, MAX_HISTORY //グループ情報
+	dim group_history, 26, 26, 4, MAX_HISTORY //グループ情報
 
 	history_num = 0 //検索パターンの数
 	
@@ -21,7 +22,7 @@
 	set_history(history_num) = v
 	
 	dim board_history, sizex, sizey, history_num
-	dim group_history, sizex, sizey,4, history_num
+	dim group_history, sizex, sizey, 4, history_num
 
 	repeat sizex
 		for i,,sizey
@@ -32,7 +33,7 @@
 		next
 	loop
 
-	history = (history + 1) \ 20
+	history = (history + 1) \ 1
 	
 	return
 
@@ -45,9 +46,9 @@
 
 	repeat sizex
 		for i,,sizey
-			board(cnt,i) = board_history(cnt,i)
+			board(cnt,i) = board_history(cnt,i, history_number)
 			for j,, 4
-				group(cnt,i,j) = group_history(cnt,i,j)
+				group(cnt,i,j) = group_history(cnt,i,j, history_number)
 			next
 		next
 	loop

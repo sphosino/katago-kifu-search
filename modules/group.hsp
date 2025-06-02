@@ -84,7 +84,7 @@
 	return
 	
 #defcfunc get_group_by_position int x, int y
-	return stone_map(x, y, 3) << 3 | stone_map(x, y, 2) << 2 | stone_map(x, y, 1) << 1| stone_map(x, y, 0)
+	return stone_map(x, y, 3) << 3 | stone_map(x, y, 2) << 2 | stone_map(x, y, 1) << 1 | stone_map(x, y, 0)
 
 //‰ñ“]‚É‘Î‰žBŒŸõ‘O‚Éì¬‚µ‚Ä—˜—p
 #deffunc make_rotated_group array rotation_table, int board_size_x, int board_size_y
@@ -110,6 +110,7 @@
 	return
 
 #deffunc clear_group int group_num
+	return
     if group_num_validation(group_num) {
         return
     }
@@ -143,16 +144,13 @@
 
 	group_init
 
-	gn = 0
-
 	for i,,limit(BOARD_X_MAX,,length(a))
 		for j,,limit(BOARD_Y_MAX,,length2(a))
 			for k,,4
 			stone_map(i,j,k) = a(i,j,k)
 			if stone_map(i,j,k){
 				stone_map_count(i,j)++
-				groups(gn,k) += strf("%02d%02d,",i,j)
-				gn++
+				groups(k) += strf("%02d%02d,",i,j)
 			}
 			next
 		next
@@ -160,8 +158,8 @@
 	return
 
 #deffunc get_group_data array a
-	dim a,BOARD_X_MAX,BOARD_Y_MAX, 4
-	group_init
+	dim a, BOARD_X_MAX,BOARD_Y_MAX, 4
+	
 	for i,,BOARD_X_MAX
 		for j,,BOARD_Y_MAX
 			for k,,4

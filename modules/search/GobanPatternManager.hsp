@@ -183,7 +183,6 @@
 					; 実石がある → グループ内フラグON
 					repeat 4
 						if group_mask & (1 << cnt) {
-							//今回のヒットグループに対して
 							group_has_real_stone(cnt) = 1
 						}
 					loop
