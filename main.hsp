@@ -296,8 +296,8 @@ newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
 
-newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: modechkbox = stat
-newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip
+newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
+newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
 newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
 newmod g_chkbox, grid_checkbox, view_hosi,"星表示", chkbox_view_hosi
 newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
@@ -399,7 +399,6 @@ pretime = keyfpstime
 					}
 				loop
 			noteunsel
-			;/*/
 		}
 	}
 	
@@ -671,6 +670,7 @@ pretime = keyfpstime
 
 	if getdbl_ms(2,250) == 1{
 		load_search_history 0
+		set_g_checkbox g_chkbox.mode_chkbox,  MODE_BOARD_EDIT
 	}
 
 	計測 "object_managers"
@@ -806,7 +806,9 @@ pretime = keyfpstime
 		gosub*syncboard
 		redraw_stones board
 		redraw_buffer l_graph
-		
+
+
+		group_init
 		return 1
 	}
 	return 0
@@ -850,6 +852,7 @@ pretime = keyfpstime
 		set_board_data board.1,user_board
 		group_init
 	}
+	
 	treebox_clear t
 	topnode = stat
 	title ""
@@ -979,9 +982,7 @@ pretime = keyfpstime
 
 	gosub *filtering_and_make_listbox
 
-	repeat 4
-		clear_group cnt
-	loop
+
 	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + fn + "件の検索結果"
 
 	return
@@ -1002,7 +1003,7 @@ pretime = keyfpstime
 		noteunsel
 		repeat result_num
 		
-			tn = int(get_value(filename_to_topnode,search_result(0,cnt))) //topnodeからプレイヤー情報取得
+			tn = int(get_value(filename_to_topnode, search_result(0, cnt))) //topnodeからプレイヤー情報取得
 			blackplayer = get_property_data(tn, "PB")
 			split blackplayer,"-",bp
 			whiteplayer = get_property_data(tn, "PW")
@@ -1147,23 +1148,19 @@ pretime = keyfpstime
 #deffunc save_search_history
 	get_board_data board.ui_mode, m
 	get_group_data g
-	save_history v, m, g
+	save_history v, m, g, enableColorFlip //それぞれ、対象座標情報、碁盤情報、グループ情報, 色反転含むかどうか
+
+
 	return
 
 #deffunc load_search_history int p1
 	
-	load_history p1, v, user_board, a //それぞれ、対象座標情報、碁盤情報、グループ情報
-	if ui_mode != MODE_BOARD_EDIT{
-		toggle_g_checkbox g_chkbox.modechkbox
-	}
+	load_history p1, v, user_board, a, enableColorFlip //それぞれ、対象座標情報、碁盤情報、グループ情報
 	ui_mode = MODE_BOARD_EDIT
-	//碁盤グループに情報共有
+	set_g_checkbox g_chkbox.mode_chkbox, ui_mode
+	set_g_checkbox g_chkbox.colorflip_chkbox, enableColorFlip
 	set_board_data board.ui_mode, user_board
-	//グループモジュールに情報共有
-	load_group_from_history a
-
 	redraw_stones board.ui_mode
-
 	pre_ui_mode = ui_mode
 
 	return

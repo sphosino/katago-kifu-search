@@ -1,0 +1,65 @@
+#module
+#deffunc search_init str 棋譜パス
+    // 検索の初期化処理
+    棋譜リスト = 棋譜パス
+    全棋譜数 = 棋譜数
+    現在位置 = 0  // ←これ重要！どこまで処理したか
+    
+    // 初期設定
+    batch_size = 20
+    一回の検索にかける最大時間 = 3000
+    十分な数 = 10
+    return
+
+#deffunc search_continue
+    // 「もっと検索」ボタン用
+    batch_size *= 2
+    一回の検索にかける最大時間 *= 2
+    十分な数 = 9999999  // 制限解除
+    
+    search_batch  // 続きから検索
+    return
+
+#deffunc search_all
+    // 「全部検索」ボタン用
+    batch_size = 全棋譜数 - 現在位置  // 残り全部
+    十分な数 = 9999999
+    一回の検索にかける最大時間 = 9999999
+    
+    search_batch
+    return
+
+#deffunc search_batch
+    starttime = d3timer()
+    見つかった数 = 0
+    
+    while (d3timer() - starttime) < 一回の検索にかける最大時間
+        if 現在位置 >= 全棋譜数 : break  // 全部終了
+        
+        // batch_size分だけ処理
+        処理終了位置 = 現在位置 + batch_size
+        if 処理終了位置 > 全棋譜数 : 処理終了位置 = 全棋譜数
+        
+        repeat 処理終了位置 - 現在位置
+            結果 = search_single_sgf(現在位置 + cnt)
+            if 結果 != "" {
+                add_item result_listbox, 結果
+                見つかった数++
+            }
+        loop
+        
+        現在位置 = 処理終了位置
+        
+        // 進行状況表示
+        update_progress 現在位置, 全棋譜数, 見つかった数
+        
+        // 十分見つかったら中断
+        if 見つかった数 >= 十分な数 : break
+        
+        redraw : await 1  // 画面更新
+    wend
+    
+    // 結果判定と次のアクション提示
+    show_result_actions 見つかった数, 現在位置, 全棋譜数
+    return
+#global

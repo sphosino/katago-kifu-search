@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 4800000
+#define MAX_NODE 5100000
 
 #define TOPNODE_SIZE 270
 #define NORMALNODE_SIZE 30
@@ -60,7 +60,7 @@
 	//SEPで始まりSEPで終わる形式で保存 (splitしたら、先頭と末尾は空になることに注意)
 	
 	sgf_properties_data(node_id) = get_new_block(1 + p2)
-	write_mem_str stat, SEP
+	re_write_mem_str stat, SEP
 	sgf_properties_num(node_id) = 0
 	
 	//子ノードリスト初期化
@@ -102,13 +102,12 @@
 	next_index = instr(data, index + 1, SEP)
 	assert next_index >= 0
 
-
 	left = strmid(data, 0, index)
-	right = strmid(data, next_index, 999999)
+	right = strmid(data, next_index, $FFFFFFF)
 
 	newdata = left + right
 
-	write_mem_str sgf_properties_data(node_id), newdata
+	re_write_mem_str sgf_properties_data(node_id), newdata
 	sgf_properties_num(node_id)--
 	return
 
@@ -452,7 +451,7 @@
 	sgf_node_x(node1) = sgf_node_x(node2)
 	sgf_node_y(node1) = sgf_node_y(node2)
 
-	write_mem_str sgf_properties_data(node1), read_mem_str(sgf_properties_data(node2))
+	re_write_mem_str sgf_properties_data(node1), read_mem_str(sgf_properties_data(node2))
 	sgf_properties_num(node1) = sgf_properties_num(node2) //その他のプロパティの数
 	
 	return

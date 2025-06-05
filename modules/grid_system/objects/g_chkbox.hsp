@@ -33,6 +33,11 @@
 	logmes "toggle on id: " + check_id + " ¨ flag: " + flag
 	return
 
+#modfunc set_g_checkbox int p1
+	flag = p1
+	gosub*“¯Šú
+	return
+
 #modfunc draw_g_chkbox
 
 	get_rect area_number,rect

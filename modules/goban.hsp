@@ -142,8 +142,8 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d", goban_buffer )
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,256,0,,,$00FF00", stones_buffer)
+	make_instant_draw_object "SPRITE", px, py, sizex + 1, sizey, strf("%d", goban_buffer )
+	make_instant_draw_object "SPRITE", px, py, sizex + 1, sizey, strf("%d,0,0,256,0,,,$00FF00", stones_buffer)
 	
 	return
 *get_goban_info

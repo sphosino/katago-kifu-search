@@ -140,7 +140,7 @@
 	}
 	return invalid
 	
-#deffunc load_group_from_history  array a
+#deffunc load_group  array a
 
 	group_init
 
