@@ -39,13 +39,16 @@
 	
 	notesel ss
 		ss = SGF_list
+
+		ŒŸõŠû•ˆ” = notemax * loadmax@ / 100
+		logmes "ŒŸõŠû•ˆ” = " + ŒŸõŠû•ˆ”@+ "loadmax = " + loadmax@
 	
 		titlestr = ""
 	
 		starttime = keyfpstime
 	
 		if kifu_update{		
-			repeat , next_kifuload_index
+			repeat ŒŸõŠû•ˆ”, next_kifuload_index
 				noteget sgf_filename, cnt
 				next_kifuload_index++
 				if sgf_filename == "": break
@@ -66,7 +69,7 @@
 		title titlestr
 		
 		starttime = keyfpstime
-		repeat notemax
+		repeat ŒŸõŠû•ˆ”
 			noteget sgf_filename, cnt
 			
 			topnode = int(get_value(h, sgf_filename))

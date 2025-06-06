@@ -110,7 +110,7 @@
 	return
 
 #deffunc clear_group int group_num
-	return
+
     if group_num_validation(group_num) {
         return
     }
