@@ -7,7 +7,7 @@ layout: home
 
 [KataGo棋譜検索システム(使用方法)](readme.html)
 
-[KataGo棋譜検索システム（使用方法 by chatgpt)](katago_readme_chatgpt.html)
+[ダウンロードはこちらから](https://github.com/sphosino/katago-kifu-search/releases)
 
 ***
 
