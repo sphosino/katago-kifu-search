@@ -23,10 +23,10 @@
 	if in_rect(rect){ //イベント１
 		bc = backcolors(colors(1))
 		fc = fontcolors(colors(1))
-		if _getkey(1) >= 1{　//イベント２
+		if g_getkey(1) >= 1{　//イベント２
 			bc = backcolors(colors(2))
 			fc = fontcolors(colors(2))
-			if _getkey(1) == 1{
+			if g_getkey(1) == 1{
 				logmes "g_button clicked!!"
 				gosub label
 			}

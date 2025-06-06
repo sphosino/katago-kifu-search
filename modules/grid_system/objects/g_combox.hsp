@@ -5,7 +5,7 @@
 #addition "area_grid_system.hsp"
 #addition "id_manager.hsp"
 
-#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id, combox_id
+#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id, combox_id, selected_flag
 
 #modinit var a, str s1, int area_number, local thismod_ID
 
@@ -40,10 +40,15 @@
 #modcfunc get_value_g_combox
 	return dropdown_result
 
+#modcfunc combox_selected_flag
+	return selected_flag
+
 #modfunc combox_manager
 	get_rect area,oya
 
 	update_static_rect get_entity_id(combox_id), oya
+
+	selected_flag = 0
 	
 	notesel s
 
@@ -79,7 +84,8 @@
 				
 				if cnt == cursor_item{ //選択中のアイテムがあれば本体に結果をセット
 					dropdown_result = cnt
-					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,$C8C8C8)	
+					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,$C8C8C8)
+					selected_flag = 1
 				}
 
 				destroy_draw_object_immediately drop_id(cnt)
@@ -95,7 +101,7 @@
 
 		}
 	}else{
-		if _getkey(1) == 1{
+		if g_getkey(1) == 1{
 			if in_rect(oya) && closing == 0{
 
 				repeat notemax //各アイテムを生成
@@ -111,6 +117,7 @@
 					update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
 				loop
 				dropdown = 1
+				set_topmost_status 1
 			}
 		}
 	}
@@ -123,6 +130,7 @@
 	    if alive == 0 {
 	        dropdown = 0
 	        closing = 0
+	        set_topmost_status 0
 	    }
 	}
 

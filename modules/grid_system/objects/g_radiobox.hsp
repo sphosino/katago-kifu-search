@@ -92,7 +92,7 @@
 		
 		backcolor = colors(0)
 		if in_rect(this_rect){
-			if _getkey(1) == 1{
+			if g_getkey(1) == 1{
 				if cnt == v{
 					v = -1
 				}else{

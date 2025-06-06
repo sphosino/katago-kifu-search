@@ -231,11 +231,12 @@ root = make_area_child(1,1)
 					go_end = make_area_child()
 					button_clearboard = make_area_child()
 					
-		goban_tool_area = make_area_child(1,5,body_area)
+		goban_tool_area = make_area_child(1,6,body_area)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
 			goban_loadmax_area = make_area_child(,,goban_tool_area)
+			combox_history = make_area_child(,,goban_tool_area)
 			
 			goban_search_area = make_area_child(3,2,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
@@ -247,7 +248,7 @@ root = make_area_child(1,1)
 			goban_filter_area = make_area_child(1,2,goban_tool_area)
 				goban_filter_area_header = make_area_child(,,goban_filter_area)
 					chkbox_filter = make_area_child(,,goban_filter_area_header)
-				goban_filter_area_body   = make_area_child(2,2,goban_filter_area)
+				goban_filter_area_body   = make_area_child(2,,goban_filter_area)
 					combox_modelname = make_area_child(,,goban_filter_area_body)
 							
 			goban_edit_area = make_area_child(2,1, goban_tool_area)
@@ -320,6 +321,7 @@ newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 1, 100, 14 , 16:lo
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
+newmod g_combox, grid_combox, history_num, "1\n2\n3", combox_history: combox_history_obj = stat
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "●"
@@ -370,7 +372,7 @@ pretime = keyfpstime
 
 	計測 "kifuload"
 
-	if kifu_update & waitedtime() >= 2{//棋譜がアップデートされたときのみ走る
+	if kifu_update & waitedtime() >= 2{//棋譜がアップデートされたとき且つ、待ち時間が(2ms)以上あったときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
 		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
@@ -414,7 +416,10 @@ pretime = keyfpstime
 			setfps 35
 		}
 	}
-
+	if combox_selected_flag(g_combox(combox_history_obj)){
+		load_search_history history_num
+		set_g_checkbox g_chkbox.mode_chkbox,  MODE_BOARD_EDIT
+	}
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
 		pre_window_size = window_size, window_size.1
@@ -671,10 +676,7 @@ pretime = keyfpstime
 		logmes "switched debugmode ->" +debugmode
 	}
 
-	if getdbl_ms(2,250) == 1{
-		load_search_history 0
-		set_g_checkbox g_chkbox.mode_chkbox,  MODE_BOARD_EDIT
-	}
+
 
 	計測 "object_managers"
 
@@ -972,8 +974,6 @@ pretime = keyfpstime
 		logmes "検索早期リターン！当然０件だよ"
 		return
 	}
-
-	if loadmax = 100: kifu_update = 0
 
 	search_result_sgflist = ""
 	

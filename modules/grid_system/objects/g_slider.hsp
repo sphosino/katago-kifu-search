@@ -59,13 +59,13 @@
 		bar_rect = oya + x, oya.1 + y, limit(oya + x + tickness,, oya.2),  limit(oya.1 + y + len    ,,oya.3)
 	}
 	
-	if _getkey(1) == 1{
+	if g_getkey(1) == 1{
 		if in_rect(bar_rect){
 			dragging = 1
 		}
 	}
 
-	if _getkey(1) == -1{
+	if g_getkey(1) == -1{
 		dragging = 0
 	}
 

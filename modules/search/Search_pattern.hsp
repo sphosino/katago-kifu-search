@@ -69,11 +69,16 @@
 		title titlestr
 		
 		starttime = keyfpstime
-		repeat ŒŸõŠû•ˆ”
+		repeat notemax
 			noteget sgf_filename, cnt
-			
-			topnode = int(get_value(h, sgf_filename))
-			if topnode == -1:logmes "sgf“Ç‚Ýž‚Ý‚ÉŽ¸”s -> " + sgf_filename:continue
+
+			topnode = get_value(h, sgf_filename)
+			if topnode == NOT_DEFINED_HASH{
+				logmes topnode
+				break
+			}
+
+			topnode = int(topnode)
 			
 			get_board_size_from_SGF topnode, xy
 	

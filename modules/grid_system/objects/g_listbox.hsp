@@ -134,13 +134,13 @@
 
 	
 	// --- クリック検出 ---
-	if _getkey(1) == 1 {
+	if g_getkey(1) == 1 {
 		if mousex >= rect.0 & mousex < rect.2 & mousey >= rect.1 & mousey < rect.3 {
 			clicked_index = (mousey - rect.1) / item_y + scroll_value
 			if clicked_index < max_num {
 				clicked_id = get_listbox_id(id_man, clicked_index)
 
-				if _getkey(17) >=1 { // Ctrl押しながら
+				if g_getkey(17) >=1 { // Ctrl押しながら
 					listbox_item_select_status(clicked_id) = 1 - listbox_item_select_status(clicked_id)
 				}else{
 					// Ctrl押してないなら単独選択
@@ -154,12 +154,12 @@
 	}
 
 	if current_flag{
-		if _getkey(38) ==  1 || _getkey(40) == 1{
-			offset = ( _getkey(40) == 1 ) * 2 - 1
+		if g_getkey(38) ==  1 || g_getkey(40) == 1{
+			offset = ( g_getkey(40) == 1 ) * 2 - 1
 			move_listbox_index thismod ,offset
 			
 		}
-		if _getkey(17) >= 1 && _getkey('A') == 1{
+		if g_getkey(17) >= 1 && g_getkey('A') == 1{
 			repeat get_listbox_ids(id_man,ids)
 				listbox_item_select_status(ids.cnt) = 1
 			loop	

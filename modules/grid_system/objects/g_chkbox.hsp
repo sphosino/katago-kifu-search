@@ -57,7 +57,7 @@
 		
 	backcolor = $F5F5DC
 	if in_rect(rect){
-		if _getkey(1) == 1{
+		if g_getkey(1) == 1{
 			toggle_g_checkbox thismod
 		}
 		backcolor = $222222

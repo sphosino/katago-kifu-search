@@ -137,7 +137,7 @@
 	mx = limit(mousex, rect.0,rect.2)
 	my = limit(mousey, rect.1,rect.3)
 	if in_rect(rect){
-		if _getkey(1) == 1{
+		if g_getkey(1) == 1{
 			手数 = (mx - rect.0 - msize) * (end_x - start_x) / (rect.2 - rect-msize)
 		}
 		make_instant_draw_object "LINE_FAST", mx,rect.1,mx, rect.3 - msize,"$FFFFFF"
@@ -145,7 +145,7 @@
 		make_instant_draw_object "STR",mx, rect.1 - msize/2,msize,msize, strf("%d,%d", (mx - rect.0-msize) * end_x / (rect.2 - rect-msize),$FFFFFF)
 		make_instant_draw_object "STR",rect.2, my    ,msize,msize, strf("%d,%d", end_y - (my - rect.1) * end_y / (rect.3 - rect.1-msize), $FFFFFF)
 
-		if _getkey(2) = 1{
+		if g_getkey(2) = 1{
 			//評価値グラフを、黒番と白番で分けるかの01トグル
 			div_line ^ 1
 			redraw_buffer thismod
