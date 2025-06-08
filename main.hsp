@@ -1186,7 +1186,7 @@ pretime = keyfpstime
 	noteadd str(save_window_size(1))
 	noteadd str(max_depth)
 	noteadd str(enableColorFlip)
-	noteadd str(view_hosi@goban)
+	noteadd str(view_hosi)
 	noteadd str(last_move_mark)
 	noteadd str(kifu_start_num)
 	noteadd str(loadmax)
