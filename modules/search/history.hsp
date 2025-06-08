@@ -1,6 +1,6 @@
 #module search_pattern_history
 
-#const MAX_HISTORY 3
+#const MAX_HISTORY 5
 
 
 #deffunc init
@@ -14,7 +14,6 @@
 
 	history_num = 0 //ŒŸõƒpƒ^[ƒ“‚Ì”
 
-	
 	return
 
 #deffunc save_history var v, array board, array group, var flip
@@ -34,7 +33,13 @@
 		next
 	loop
 
-	history_num = (history_num + 1) \ MAX_HISTORY
+	
+
+	history_num = (history_num + 1) 
+
+	if max < history_num: max = history_num
+
+	history_num = history_num \ MAX_HISTORY
 	
 	return
 
@@ -56,6 +61,19 @@
 	next
 	load_group group
 
+	return
+
+#deffunc sync_combox var a
+	
+
+	s = ""
+	repeat max
+		if cnt:s+="\n"
+		s +=  ""+(cnt + 1)
+	loop
+	logmes"sync->" + max
+	combox_set_str a, s
+	
 	return
 #global
 init

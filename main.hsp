@@ -131,6 +131,9 @@ if strsize == -1{
 	//棋譜を何手目から表示するか
 	kifu_start_num = 10
 
+	//１回の検索でどれぐらい読み込むか（％）
+	loadmax = 10
+
 	//棋譜再生速度(ms)
 	auto_interval = 1000
 	alpha_interval = 10000
@@ -152,6 +155,7 @@ if strsize == -1{
 	noteget_ view_hosi
 	noteget_ last_move_mark
 	noteget_ kifu_start_num
+	noteget_ loadmax
 	noteget_ auto_interval
 	noteget_ alpha_interval
 	noteget_ m_interval
@@ -317,11 +321,11 @@ newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_ste
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
-newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 1, 100, 14 , 16:loadmax = 10 //十パーセントずつ検索
+newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 1, 100, 14 , 16
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
-newmod g_combox, grid_combox, history_num, "1\n2\n3", combox_history: combox_history_obj = stat
+newmod g_combox, grid_combox, history_num, "history", combox_history: combox_history_obj = stat
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "●"
@@ -725,6 +729,7 @@ pretime = keyfpstime
 	goto*main
 	
 #deffunc all_items_draw
+
 	foreach kifulist
 		listbox_manager kifulist.cnt, current_kifulist = cnt
 	loop
@@ -948,6 +953,8 @@ pretime = keyfpstime
 	logmes "検索開始"
 
 	save_search_history
+
+	sync_combox g_combox(combox_history_obj)
 
 	if use_bitboard{
 		
@@ -1182,6 +1189,7 @@ pretime = keyfpstime
 	noteadd str(view_hosi@goban)
 	noteadd str(last_move_mark)
 	noteadd str(kifu_start_num)
+	noteadd str(loadmax)
 	noteadd str(auto_interval)
 	noteadd str(alpha_interval)
 	noteadd str(m_interval)

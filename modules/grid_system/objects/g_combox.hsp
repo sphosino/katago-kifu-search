@@ -43,6 +43,11 @@
 #modcfunc combox_selected_flag
 	return selected_flag
 
+#modfunc combox_set_str str s1
+	s = s1
+	logmes "combox " + s
+	return 
+
 #modfunc combox_manager
 	get_rect area,oya
 
@@ -78,6 +83,7 @@
 		if _getkey(1) == 1{
 			dropdown = 0
 			closing = 1 //閉じ処理中フラグ
+			set_topmost_status 0
 			
 			repeat notemax
 				noteget t, cnt
@@ -86,6 +92,7 @@
 					dropdown_result = cnt
 					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,$C8C8C8)
 					selected_flag = 1
+					
 				}
 
 				destroy_draw_object_immediately drop_id(cnt)
@@ -130,7 +137,7 @@
 	    if alive == 0 {
 	        dropdown = 0
 	        closing = 0
-	        set_topmost_status 0
+	        
 	    }
 	}
 

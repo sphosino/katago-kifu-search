@@ -13,7 +13,6 @@
 	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0,string)
 	label_eid = get_entity_id(label_id)
 	check_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF", LIFE_FOREVER, 0,0,0,0,"")
-	logmes "check_id_check ->  " + check_id
 	check_eid = get_entity_id(check_id)
 	gosub*“¯Šú
 	mref thismod_ID, 2
@@ -30,7 +29,6 @@
 	}else{
 		set_extra_param check_id, 0, "$333333"
 	}
-	logmes "toggle on id: " + check_id + " ¨ flag: " + flag
 	return
 
 #modfunc set_g_checkbox int p1

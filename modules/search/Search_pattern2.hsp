@@ -22,9 +22,14 @@
 
 		titlestr = ""
 		starttime = keyfpstime
+
+		
+		ŒŸõŠû•ˆ” = notemax * loadmax@ / 100
+		logmes "ŒŸõŠû•ˆ” = " + ŒŸõŠû•ˆ”@+ "loadmax = " + loadmax@
 		
 		if kifu_update{		
-			repeat , next_kifuload_index
+
+			repeat ŒŸõŠû•ˆ”, next_kifuload_index
 				noteget sgf_filename, cnt
 				next_kifuload_index++
 				if sgf_filename == "": break
@@ -46,7 +51,13 @@
 		title titlestr
 		repeat notemax
 			noteget sgf_filename, cnt
-			topnode = int(get_value(h,sgf_filename))
+			topnode = get_value(h, sgf_filename)
+			if topnode == NOT_DEFINED_HASH{
+				logmes topnode
+				break
+			}
+
+			topnode = int(topnode)
 
 			get_board_size_from_SGF topnode, xy
 	
