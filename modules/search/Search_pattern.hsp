@@ -60,7 +60,9 @@
 					new_value h, sgf_filename, str(topnode)
 					await
 					titlestr = "Šû•ˆ“Ç‚Ýž‚Ý’† -> "+ (cnt+1) * 100 / notemax + "%"
-					title titlestr
+					getkey key, 27
+					if key: break
+					title titlestr + "... yESCz-> “Ç‚Ýž‚ÝÏ‚ÝŠû•ˆ‚ð‚·‚®‚ÉŒŸõ"
 				}
 			loop
 		}

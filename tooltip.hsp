@@ -1,0 +1,41 @@
+#module
+#deffunc init_tooltip
+	sdim id_to_hint,, 400
+	if buf:return
+
+	tmp = ginfo_sel
+	buf = ginfo_newid
+	buffer buf, 640, 480
+	gsel tmp
+	
+	return
+#deffunc add_tooltip int id, str s1
+	id_to_hint(id) = s1
+	return
+#deffunc set_tooltip int id
+	if id < 0: return
+	logmes "setooltip" + id
+	//バッファにidの文字列を描画
+	tmp = ginfo_sel
+	gsel buf
+		色を設定 back_color
+		boxf
+		色を設定 string_color
+		pos 0,0
+		mes id_to_hint(id)
+		size = ginfo_mesx,ginfo_mesy
+	gsel tmp
+	return
+#deffunc set_tooltip_color int _back_color, int _string_color
+	back_color = _back_color
+	string_color =  _string_color
+	return
+
+#deffunc draw_tooltip int id
+	if id_to_hint(id) == "": return
+	logmes "hint->" + id_to_hint(id)
+	make_instant_draw_object "SPRITE", mousex + size/2, mousey - size.1/2, size, size.1, strf("%d", buf)
+	update_priority_draw_object stat, PRIORITY_FRONT
+	return
+#global
+init_tooltip

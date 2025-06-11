@@ -9,7 +9,7 @@
 #addition "../../../hsp_common/rboxf.hsp" 
 #addition "../../../hsp_common/color_manager.hsp"
 
-dimtype areagrid@global, 5, 500
+dimtype areagrid@global, 5, 400
 
 #module area grid, —ñ”, s”, grid_x, grid_y, padding_left, padding_right, padding_top,padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
 
