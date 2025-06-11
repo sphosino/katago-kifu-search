@@ -32,6 +32,7 @@
 	return
 
 #deffunc draw_tooltip int id
+	if id < 0: return
 	if id_to_hint(id) == "": return
 	logmes "hint->" + id_to_hint(id)
 	make_instant_draw_object "SPRITE", mousex + size/2, mousey - size.1/2, size, size.1, strf("%d", buf)
