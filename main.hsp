@@ -7,12 +7,14 @@
 
 #include "modules/grid_system/area_grid_system.hsp"
 #include "modules/sgf.hsp"
+#include "modules/search/memorize_hit_rect.hsp"
 #include "modules/group.hsp"
 #include "modules/katago_sqr.hsp"
-#include "modules/search/GobanPatternManager.hsp"
+
+#include "modules/search/pattern.hsp"
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
-#include "modules/search/memorize_hit_rect.hsp"
+
 #include "modules/search/history.hsp"
 #include "tooltip.hsp"
 

@@ -1,10 +1,19 @@
-#include "../rotate_coordinate.hsp"
-#module
+#ifndef PATTERN_MODULE
+#addition "../rotate_coordinate.hsp"
+
+#module PATTERN_MODULE
 
 #const BOARD_X_MAX 26
 #const BOARD_Y_MAX 26
 
 #const HISTORY_MAX 5
+
+#const global PATTERN_NONE 1
+#const global PATTERN_ANY_COLOR 0xFFFFFFFF & (PATTERN_NONE ^-1)
+#const global PATTERN_BLACK 1 << 1
+#const global PATTERN_WHITE 1 << 2
+#const global PATTERN_RED   1 << 3
+#const global PATTERN_GREEN 1 << 4
 
 #deffunc init_pattern
 
@@ -278,3 +287,5 @@
 	
 #global
 init_pattern
+
+#endif
