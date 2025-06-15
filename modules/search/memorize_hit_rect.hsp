@@ -73,7 +73,6 @@
 //turn -> 0: •”Ô   1: ”’”Ô
 #define memdef mem(rect_number, color_pattern << 3 | rotate_pattern, stone_num, turn)
 
-assert rotate_pattern >= 0 && rotate_pattern <= 7 && stone_num >= 0 && (turn == 0 || turn == 1) && color_pattern >= 0 && color_pattern < 16 
 if memdef == UNMEMORIZED{
 	memdef = 0
 	split pattern(rect_number, 1, color_pattern, rotate_pattern),"-", stones

@@ -5,7 +5,7 @@
 #include "modules/search/memorize_hit_rect.hsp" //検索用メモ化関連-> ( clear_mem, memorize_hit_rect )
 
 #module
-	#const VLIST_NUM 4 * 16
+	#const VLIST_NUM 5 * 16
 	#const VLIST_SIZE VLIST_NUM * 4
 	#const NODE_INFO_NUM 3
 	#const NODE_INFO_SIZE NODE_INFO_NUM * 4
@@ -14,7 +14,7 @@
 
 
 #deffunc search_init
-	dim vlist , 4, 16
+	dim vlist , 5, 16
 	init_ringbuffer DATA_SIZE, 128
 	sdim node_data, DATA_SIZE
 	return
@@ -87,8 +87,7 @@
 			//前回検索した棋譜とボードサイズが違う場合
 			if prexy != xy || prexy.1 != xy.1{
 				//新たなパターンを生成
-				make_rotated_patterns pattern, xy, xy.1 , rotated_p
-				make_rotated_group rotated_group, xy, xy.1
+				get_pattern rotated_color, rotated_group, rotated_tejun
 				clear_mem
 				prexy = xy,xy.1
 
@@ -119,10 +118,11 @@
 	return rn
 
 
-#define COLOR_INFO 0
-#define ROTATE_INFO 1
-#define MATCH_GROUP_COUNT 2
-#define NOT_YET_MATCHED_FLAGS 3//まだマッチしていないグループフラグ
+#enum FLIP_INFO = 0 //色反転
+#enum ROTATE_INFO  //回転
+#enum MATCH_GROUP_COUNT  //マッチしたグループの数
+#enum NOT_YET_MATCHED_FLAGS //まだマッチしていないグループフラグ
+#enum TEJUN  //今の手数
 
 #defcfunc search_main int t, array pattern
 
@@ -141,17 +141,23 @@
   valid_pattern_count = 0
   repeat r_pattern_num
     for i,, colorflip_num
-      vlist(0, valid_pattern_count) = i, cnt, 0, (8 | 4 | 2 | 1) ;四つのグループフラグを立てておく
+      vlist(FLIP_INFO, valid_pattern_count) = i
+      vlist(ROTATE_INFO, valid_pattern_count) = cnt
+      vlist(MATCH_GROUP_COUNT, valid_pattern_count = 0
+      vlist(NOT_YET_MATCHED_FLAGS, valid_pattern_count) = (8 | 4 | 2 | 1) ;四つのグループフラグを立てておく
+      vlist(TEJUN, valid_pattern_count) = 0 
       valid_pattern_count++
     next
   loop
 
+　//初期ノード登録
   lpoke node_data, , 0         //現在の深さ(手数)
-  lpoke node_data, 4, t         //
+  lpoke node_data, 4, t         //ノード
   lpoke node_data, 8, all_pattern_num //全ての有効なパターン数
   memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
   r_push node_data
 
+  //探索開始
   *next_node
   while ringbuffer_count
 
@@ -171,67 +177,86 @@
 
         *check_pattern_list
 
-        if memorize_hit_rect(vlist(ROTATE_INFO, i), x, y, pattern, hit_stone) == -1{
-            _continue //指定エリア外（関係ない着手）
-        }
 
-        if hit_stone >= 0{
-            if memorize_hit_color(stat, vlist(COLOR_INFO, i), vlist(ROTATE_INFO, i), hit_stone, turn, pattern){
-	            
-	             p_none = stat&1
-	            
-	            rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
-	            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
+        pt = rotated_color(x, y, vlist(ROTATE_INFO,i), vlist(FLIP_INFO, i) )
+        
+        if pt == 0: _continue //パターンに含まれない場所　(pt == 1～6)
+
+        //色判定
+       	if turn == 1{
+			if pt & PATTERN_BLACK: hit = 1
+	    }else: if pt & PATTERN_WHITE: hit = 1
+		
+        if hit{ //パターンに含まれていて、色が一致
+
+	        //グループチェック
+            rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
+            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
+		        
+				if rg{
+					repeat 4 ; // グループA-D（最大4つ）を順にチェックする
+					    bit = 1 << cnt ; // 今回チェックするグループのビット（1, 2, 4, 8）
+					    if (rg & bit){
+					        vlist(NOT_YET_MATCHED_FLAGS, i) -= bit ; // そのグループはもうヒット済みにする（ビットOFF）
+					        vlist(MATCH_GROUP_COUNT, i)++
+					    }
+					loop
+				}else{
+					if (pt & PATTERN_NONE) == 0: vlist(MATCH_GROUP_COUNT, i) ++ ; // 通常石
+				}
+
+
+	            if vlist(MATCH_GROUP_COUNT,i) <= group_num{
 		            
-					if rg{
-						repeat 4 ; // グループA-D（最大4つ）を順にチェックする
-						    bit = 1 << cnt ; // 今回チェックするグループのビット（1, 2, 4, 8）
-						    if (rg & bit){
-						        vlist(NOT_YET_MATCHED_FLAGS, i) -= bit ; // そのグループはもうヒット済みにする（ビットOFF）
-						        vlist(MATCH_GROUP_COUNT, i)++
-						    }
-						loop
-					}else{
-						if p_none: vlist(MATCH_GROUP_COUNT, i) ++ ; // 通常石
-					}
+		        	//最終チェック（手順）
+		            rt = rotated_tejun(x, y, vlist(ROTATE_INFO, i))
+		            if rt{
+			            //手順が指定されている
+			            if rt < vlist(TEJUN, i){
+				            //手順が逆流したのでアウト
+				            goto *out
+				        }
+			            vlist(TEJUN, i) = rt
+			        }
 
-		            if vlist(MATCH_GROUP_COUNT, i) == group_num{
-		              return node //検索成功
-		            }else:if vlist(MATCH_GROUP_COUNT,i) > group_num{
-			            //オーバーカウントなのでアウト
+		           	if vlist(MATCH_GROUP_COUNT, i) == group_num{
+	           		   return node //検索成功
 				    }else{
 		            	_continue
 		            }
-	        	}else{
-		        	//グループに二回目のヒットなのでこのパターンはアウト
-		        }
-	      	}else{
-		      	//色が違うのでアウト
-		    }
+		            
+		       	}else{
+			       	//オーバーカウントしたのでアウト
+			    }
+        	}else{
+	        	//グループに二回目のヒットなのでこのパターンはアウト
+	        }
         }else{
-	        //エリア内でパターンの石以外に着手したのでアウト
+	        //パターン内で色が違うのでアウト
 	    }
+	    
+		*out　//このパターンを削除します
+
         valid_pattern_count--
+        
         if i == valid_pattern_count{
-          //有効パターンリストを全て探索した。
-          if valid_pattern_count{
-            //まだ有効リストが残っているので、子ノードを積みに行く
-            _break
-          }
-          //有効なパターンがなくなった。  ＝  このノードは可能性がなくなった。
-          goto *next_node
+        	  //有効パターンリストを全て探索した。
+        	if valid_pattern_count{
+            	//まだ有効リストが残っているので、子ノードを積みに行く
+				_break
+          	}
+         	 //有効なパターンがなくなった。  ＝  このノードは可能性がなくなった。
+          	goto *next_node
         }
         //今の位置をパターンリストの末尾要素で置き換えて再探索
-        memcpy vlist(0, i), vlist(0, valid_pattern_count), 16
+        memcpy vlist(0, i), vlist(0, valid_pattern_count), 20
         goto *check_pattern_list
 
       next
     }
     repeat get_SGF_childs(node, child)
       lpoke node_data,  , depth + 1
-      
       lpoke node_data, 4, lpeek(child, cnt * 4)
-      
       lpoke node_data, 8, valid_pattern_count
       memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
       r_push node_data

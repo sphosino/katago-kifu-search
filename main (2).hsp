@@ -15,6 +15,7 @@
 #include "modules/search/memorize_hit_rect.hsp"
 #include "modules/search/history.hsp"
 #include "tooltip.hsp"
+#include "modules/search/pattern.hsp"
 
 #include "go_game_manager.hsp"
 
@@ -993,16 +994,16 @@ pretime = keyfpstime
 		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{
-
-		initialize_rects v, r, stones
+		init_pattern
 		
-		repeat load_stones_from_board(m, n)
-			add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
-		loop
-	
-		create_pattern_with_rects_and_stones r, stones, p
-	
-		logmes patterns_to_notepad(p)
+		set_base_color m,v
+
+		get_groups a
+		set_base_group a, 19, 19
+
+		get_tejun a
+		set_base_tejun a
+		
 		
 		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}

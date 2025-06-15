@@ -40,6 +40,11 @@
 		next
 	next
 	return
+#deffunc get_groups array a
+	repeat 4
+		a(cnt) = groups(cnt)
+	loop
+	return
 #defcfunc select_group_color int c
 	switch c
 	case 0

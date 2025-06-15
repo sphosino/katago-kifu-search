@@ -7,7 +7,7 @@
 #const global 黒番 1
 #const global 白番 2
 
-#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, stepboard, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
+#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
 
 #modinit int x, int y, int p1, int p2, int _area, local thismod_ID
 	dim board, x, y
@@ -18,24 +18,21 @@
 	area_number = _area
 	tmp = ginfo_sel
 	goban_buffer = ginfo_newid
-	buffer goban_buffer,1000,1000
+	buffer goban_buffer, 1000, 1000
 	stones_buffer = ginfo_newid
-	buffer stones_buffer,1000,1000
-	dim prerect,4
-	dim r,4
+	buffer stones_buffer, 1000,1000
+	dim prerect, 4
+	dim r, 4
 	gsel tmp
 	mref thismod_ID,2
 	return thismod_ID
 #modfunc clear_board int x, int y
 	if x == 0{
 		dim board, length(board), length2(board)
-		dim stepboard, length(board), length2(board)
 	}else: if y == 0{
 		dim board, x, x
-		dim stepboard , x, x
 	}else{
 		dim board, x, y
-		dim stepboard , x, y
 	}
 	黒が取った数 = 0
 	白が取った数 = 0
@@ -57,6 +54,11 @@
 	if 手番 == 黒番: 手番 = 白番: return
 	if 手番 == 白番: 手番 = 黒番
 	return
+
+#modcfunc get_x_board_size
+	return length(board)
+#modcfunc get_y_board_size
+	return length2(board)
 	
 #modcfunc get_手数
 	return 手数
@@ -305,11 +307,10 @@
 		repeat length2(a)
 			board(m,cnt) = a(m,cnt)
 		loop
-		get_rect area_number, r
-		gosub*get_goban_info
-		redraw_stones thismod
 	loop
-	
+	get_rect area_number, r
+	gosub*get_goban_info
+	redraw_stones thismod
 	return
 	
 #modcfunc get_goban_position_color int _x, int _y
