@@ -1,6 +1,5 @@
 #ifndef coordinate_set_manager
 #module coordinate_set_manager
-
 #define ctype coordinate_range_validation(%1,%2,%3,%4) ((%1) < 0 || (%3) > 99 || (%2) < 0 || (%4) > 99)
 	
 #deffunc del_coordinate_set var a, int x, int y
@@ -10,8 +9,8 @@
 	return
 	
 #deffunc add_coordinate_set var a, int x, int y
-	if is_coordinate_in_set(a,x,y) < 0{
-		a += strf("%02d",x) + strf("%02d",y) + ","
+	if is_coordinate_in_set(a, x, y) < 0{
+		a += strf("%02d%02d,", x, y)
 		return
 	}
 	return
@@ -21,14 +20,14 @@
 		dialog "指定位置が範囲外です -> (" + x + ":" + y + ")" ,, __FILE__
 		end
 	}
-	return instr(a,,strf("%02d",x) + strf("%02d",y))
+	return instr(a,,strf("%02d%02d,", x, y))
 
 #defcfunc get_coordinates_set str a, array result, local tmp
 	sdim result
 	if a == "": return 0
 	_a = a
-	tmp = strtrim(_a,2,',')
-	split tmp,",", result
+	tmp = strtrim(_a, 2, ',')
+	split tmp, ",", result
 	return stat
 
 #defcfunc get_coordinates_set_int str a, array result, local tmp
@@ -36,8 +35,8 @@
 	dim result, 2
 	num = get_coordinates_set(a, tmp)
 	repeat num
-		result(0,cnt) = 0 + strmid(tmp.cnt,0,2)
-		result(1,cnt) = 0 + strmid(tmp.cnt,2,2)
+		result(0, cnt) = 0 + strmid(tmp.cnt, 0, 2)
+		result(1, cnt) = 0 + strmid(tmp.cnt, 2, 2)
 	loop
 	return num
 
@@ -74,129 +73,6 @@
 	loop
 	
 	return
-
-#defcfunc create_rect_from_coordinate_set var a, array result, int _xmax, int _ymax
-
-	xmax = _xmax
-	ymax = _ymax
-	if xmax <= 0: xmax = 19
-	if ymax <= 0: ymax = 19
-
-	set = a
-	sort_set set
-
-	dim result, 4
-	rn = 0
-	
-	while strlen(set) >= 4 // セットが空になるまで繰り返す
-		x = int(strmid(set, 0, 2))
-		y = int(strmid(set, 2, 2))
-
-		//矩形作成処理
-
-		new_rect_end_x = x
-		new_rect_end_y = y
-		
-		
-		for i,x + 1, xmax + 1
-			if is_coordinate_in_set(set, i, y) >= 0{ //セットに存在するならxを広げる
-				new_rect_end_x++
-			}else{
-				_break
-			}
-		next
-
-		repeat ymax - y + 1, y + 1
-			for j, x , new_rect_end_x + 1
-				if is_coordinate_in_set(set, j, cnt) == -1{
-					break //不一致が一つでも見つかったら追加不可能
-				}
-			next
-			//y方向に広げる
-			new_rect_end_y++
-		loop
-		
-		//矩形を追加
-		result(0, rn) =  x, y, new_rect_end_x, new_rect_end_y
-		rn++
-
-		//セットから矩形範囲を取り除く
-		modify_coordinates_by_rect set, x, y, new_rect_end_x, new_rect_end_y, 1
-		
-	
-	wend
-
-	return rn
-
-//矩形生成最適化用
-#deffunc local sort_set var a
-
-	num = get_coordinates_set(a, n)
-	//ソート
-	sortstr n
-
-	//再構築
-	sdim a
-	repeat num
-		a += strf("%04d", n(cnt)) + ","
-	loop
-	return
 #global
-
-
-
-#endif
-
-
-#if 0
-
-
-// 座標セットの管理変数
-coordinates_set = ""
-
-// 座標の追加
-add_coordinate_set coordinates_set, 3, 5
-add_coordinate_set coordinates_set, 4, 5
-add_coordinate_set coordinates_set, 5, 5
-add_coordinate_set coordinates_set, 6, 6
-add_coordinate_set coordinates_set, 7, 6
-add_coordinate_set coordinates_set, 8, 6
-add_coordinate_set coordinates_set, 8, 7
-add_coordinate_set coordinates_set, 8, 8
-
-// 追加した座標を表示
-mes "Coordinates Set after adding:"
-repeat get_coordinates_set(coordinates_set, coords)
-    x = int(strmid(coords.cnt, 0, 2))
-    y = int(strmid(coords.cnt, 2, 2))
-    mes "x = " + x + ": y = " + y
-loop
-
-// 座標の削除
-del_coordinate_set coordinates_set, 5, 5
-del_coordinate_set coordinates_set, 8, 6
-del_coordinate_set coordinates_set, 8, 7
-
-// 削除後の座標を表示
-mes "Coordinates Set after deletion:"
-repeat get_coordinates_set(coordinates_set, coords)
-    x = int(strmid(coords.cnt, 0, 2))
-    y = int(strmid(coords.cnt, 2, 2))
-    mes "x = " + x + ": y = " + y
-loop
-
-// 矩形の作成
-dim result, 4
-rn = create_rect_from_coordinate_set(coordinates_set, result)
-
-// 作成した矩形を表示
-mes "Created Rectangles:"
-for i, 0, rn
-    x1 = result(0, i)
-    y1 = result(1, i)
-    x2 = result(2, i)
-    y2 = result(3, i)
-    mes "Rect " + i + ": (" + x1 + "," + y1 + ") -> (" + x2 + "," + y2 + ")"
-next
 
 #endif

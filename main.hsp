@@ -6,14 +6,15 @@
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
 #include "modules/grid_system/area_grid_system.hsp"
+
 #include "modules/sgf.hsp"
-#include "modules/group.hsp"
 #include "modules/katago_sqr.hsp"
-#include "modules/search/GobanPatternManager.hsp"
+
+#include "modules/search/pattern.hsp"
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
-#include "modules/search/memorize_hit_rect.hsp"
-#include "modules/search/history.hsp"
+#include "modules/search/draw_pattern.hsp"
+
 #include "tooltip.hsp"
 
 #include "go_game_manager.hsp"
@@ -256,7 +257,12 @@ root = make_area_child(1,1)
 					chkbox_filter = make_area_child(,,goban_filter_area_header)
 				goban_filter_area_body   = make_area_child(2,,goban_filter_area)
 					combox_modelname = make_area_child(,,goban_filter_area_body)
-			radiobox_tejun = make_area_child(,,goban_tool_area)
+			tejun_area = make_area_child(1,2,goban_tool_area)
+				tejun_sub = make_area_child(2,1,tejun_area)
+					button_tejun_clear = make_area_child(,,tejun_sub)
+					chkbox_inc = make_area_child()
+				radiobox_tejun = make_area_child(,,tejun_area)
+			
 			goban_edit_area = make_area_child(2,1, goban_tool_area)
 				goban_edit_stone = make_area_child(1,2,goban_edit_area)
 					chkbox_tyakusyu = make_area_child(,,goban_edit_stone)
@@ -280,6 +286,7 @@ set_grid_area_back_color goban_edit_group,$333333
 set_grid_area_back_color goban_footer,$333333
 set_grid_area_back_color treebox_area ,$333333
 set_grid_area_back_color goban_filter_area , $333333
+set_grid_area_back_color tejun_area, $333333
 
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
@@ -310,6 +317,7 @@ newmod g_buttons, grid_button, ">", *move_next, go_one
 newmod g_buttons, grid_button, ">>", *go10, go_ten
 newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
 newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
+newmod g_buttons, grid_button, "手順解除",*tejun_clear, button_tejun_clear
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
@@ -319,6 +327,7 @@ newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
 newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
 newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
 newmod g_chkbox, grid_checkbox, filter_on, "検索結果にフィルターを適用", chkbox_filter
+newmod g_chkbox, grid_checkbox, inc_tejun, "手順をインクリメント", chkbox_inc: set_g_checkbox g_chkbox.stat, 1
 
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
 newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
@@ -467,7 +476,8 @@ pretime = keyfpstime
 		pre_ui_mode = ui_mode
 
 		if ui_mode = MODE_KIFU_VIEW{
-			group_init
+			init_group
+			init_tejun
 		}else{
 			get_board_data board  , user_board
 			set_board_data board.1, user_board
@@ -507,7 +517,7 @@ pretime = keyfpstime
 							set_board_data board.1, user_board
 							if user_board(point,point.1) == 0{
 								repeat 4
-									del_group_stone point, point.1,cnt
+									del_group point, point.1,cnt
 								loop
 							}
 						}
@@ -546,7 +556,7 @@ pretime = keyfpstime
 				if in_board{
 					get_board_data board , tmp
 					get_board_data board.1, m
-					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
+					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && te == -1 && m(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}else{
@@ -555,8 +565,13 @@ pretime = keyfpstime
 					//手順
 					if te >= 0{
 						if m(point(0),point(1)){
-							add_tejun point(0),point(1), te + 1
-							te = (te + 1) \ 9
+							repeat 9
+								del_tejun point(0),point(1), cnt
+							loop
+							add_tejun point(0),point(1), te
+							if inc_tejun{
+								te = (te + 1) \ 9
+							}
 						}
 					}
 					
@@ -605,7 +620,7 @@ pretime = keyfpstime
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
 					repeat 4
-						del_group_stone point, point.1,cnt
+						del_group point, point.1,cnt
 					loop
 				swbreak
 
@@ -621,7 +636,7 @@ pretime = keyfpstime
 							OK = user_board(point,point.1)
 						}
 						if OK{
-							add_group_stone point, point.1, g_group
+							add_group point, point.1, g_group
 						}
 					}
 				}
@@ -726,12 +741,13 @@ pretime = keyfpstime
 
 	//エリア矩形表示
 	draw_all_rect root, debugmode
-	
+
 	//グループ表示
-	get_goban_mas_size board.ui_mode, goban_mas_size
-	get_goban_position board.ui_mode, goban_position
-	group_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
-	tejun_draw goban_position, goban_position.1, goban_mas_size, goban_mas_size.1, board.ui_mode
+	get_group tmp
+	group_draw board.ui_mode, tmp
+
+	get_tejun tmp
+	tejun_draw board.ui_mode, tmp
 	
 	//検索範囲表示
 
@@ -849,8 +865,9 @@ pretime = keyfpstime
 		redraw_stones board
 		redraw_buffer l_graph
 
-
-		group_init
+		init_group
+		init_tejun
+		
 		return 1
 	}
 	return 0
@@ -892,7 +909,8 @@ pretime = keyfpstime
 	}else{
 		dim user_board,19,19
 		set_board_data board.1,user_board
-		group_init
+		init_group
+		init_tejun
 	}
 	
 	treebox_clear t
@@ -935,13 +953,17 @@ pretime = keyfpstime
 	return
 *group_clear
 	if g_group = -1{
-		repeat 4
-			clear_group cnt
-		loop
+		init_group
 	}else{
 		clear_group g_group
 	}
-	
+	return
+*tejun_clear
+	if te = -1{
+		init_tejun
+	}else{
+		clear_tejun te
+	}
 	return
 *save_file
 	tmpdir = dir_cur
@@ -983,28 +1005,23 @@ pretime = keyfpstime
 	
 *create_pattern_main
 	logmes "検索開始"
+	
+	get_board_data board.ui_mode, m
+	
+	set_board m
+	set_coordinate_set v
+	set_base
 
-	save_search_history
-
-	sync_combox g_combox(combox_history_obj)
+	save_history
 
 	if use_bitboard{
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
+		result_num = search2(kl, mm, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{
 
-		initialize_rects v, r, stones
 		
-		repeat load_stones_from_board(m, n)
-			add_stone_pattern r, stones, n(0,cnt), n(1,cnt), n(2,cnt)
-		loop
-	
-		create_pattern_with_rects_and_stones r, stones, p
-	
-		logmes patterns_to_notepad(p)
-		
-		result_num = search(kl, p, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
+		result_num = search(kl, mm, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}
 
 
@@ -1187,13 +1204,6 @@ pretime = keyfpstime
 	kifulist_notepad = filelist
 	return
 	
-#deffunc save_search_history
-	get_board_data board.ui_mode, m
-	get_group_data g
-	save_history v, m, g, enableColorFlip //それぞれ、対象座標情報、碁盤情報、グループ情報, 色反転含むかどうか
-
-
-	return
 
 #deffunc load_search_history int p1
 	
@@ -1206,7 +1216,7 @@ pretime = keyfpstime
 	pre_ui_mode = ui_mode
 
 	return
-*save_info　//終了処理
+*save_info //終了処理
 	chdir dirname
 	sdim s,1024
 	notesel s
@@ -1214,7 +1224,7 @@ pretime = keyfpstime
 	noteadd str(ginfo(11))
 	noteadd str(ginfo(4)) //ウィンドウ位置
 	noteadd str(ginfo(5))
-	noteadd str(save_window_size  )　//描画領域サイズ
+	noteadd str(save_window_size) //描画領域サイズ
 	noteadd str(save_window_size(1))
 	noteadd str(max_depth)
 	noteadd str(enableColorFlip)

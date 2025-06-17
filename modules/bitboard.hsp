@@ -1,5 +1,4 @@
 #ifndef init_bitboard
-#include "rotate_coordinate.hsp"
 #include "coordinate_set.hsp"
 #module
 #const NODE_MAX 5000000
