@@ -521,6 +521,9 @@ pretime = keyfpstime
 								repeat 4
 									del_group point, point.1,cnt
 								loop
+								repeat 9
+									del_tejun point, point.1,cnt
+								loop
 							}
 						}
 					}
@@ -558,24 +561,13 @@ pretime = keyfpstime
 				if in_board{
 					get_board_data board , tmp
 					get_board_data board.1, m
-					if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0) || te == -1) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && te != -1 && m(point, point.1) == 0){
+					if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}else{
 						rect = -1
 					}
-					//Žè‡
-					if te >= 0{
-						if m(point(0),point(1)){
-							repeat 9
-								del_tejun point(0),point(1), cnt
-							loop
-							add_tejun point(0),point(1), te
-							if inc_tejun{
-								te = (te + 1) \ 9
-							}
-						}
-					}
+
 					
 				}else{
 					rect = -1
@@ -595,7 +587,6 @@ pretime = keyfpstime
 			rect(2) = limit(point(0),0,18)
 			rect(3) = limit(point(1),0,18)
 
-			
 			if in_board {
 				switch g_edit
 
@@ -622,7 +613,10 @@ pretime = keyfpstime
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
 					repeat 4
-						del_group point, point.1,cnt
+						del_group point, point.1, cnt
+					loop
+					repeat 9
+						del_tejun point, point.1, cnt
 					loop
 				swbreak
 
@@ -642,7 +636,25 @@ pretime = keyfpstime
 						}
 					}
 				}
+							//Žè‡
+				if _getkey(1) == 1{
+					if te >= 0{
+						get_board_data board(ui_mode), m
+						if m(point(0),point(1)){
+							repeat 9
+								del_tejun point(0),point(1), cnt
+							loop
+							add_tejun point(0),point(1), te
+							if inc_tejun{
+								te = (te + 1) \ 9
+							}
+						}
+					}
+				}
 			}
+
+
+			
 			if _getkey(1) == -1{//ƒ}ƒEƒX‚ª—£‚³‚ê‚½‚Æ‚«
 				
 				dragging_flag = 0
