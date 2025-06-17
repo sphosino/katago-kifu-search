@@ -1,4 +1,4 @@
-#ifndef memorize_hit_rect
+#ifndef memorize_hit_mask
 #module
 
 #const MAX_BOARD_SIZE 26

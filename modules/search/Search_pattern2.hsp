@@ -1,6 +1,7 @@
 #ifndef search2
 #include "basic.hsp"
 #include "modules/bitboard.hsp"
+#include "memorize_hit_rect.hsp"
 #module
 
 #defcfunc search2 var SGF_list, array ’T‚µ‚½‚¢‹Ç–Ê, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index, int inverse, var h

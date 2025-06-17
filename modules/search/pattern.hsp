@@ -1,5 +1,5 @@
 #ifndef PATTERN_MODULE
-#addition "../rotate_coordinate.hsp"
+#addition "modules/rotate_coordinate.hsp"
 
 #module PATTERN_MODULE
 
@@ -8,6 +8,7 @@
 
 #const HISTORY_MAX 5
 
+#const global PATTERN_ZERO 0 //検索範囲外
 #const global PATTERN_NONE 1
 #const global PATTERN_ANY_COLOR 0xFFFFFFFF & (PATTERN_NONE ^-1)
 #const global PATTERN_BLACK 1 << 1
@@ -17,15 +18,7 @@
 
 #deffunc init_pattern
 
-	//碁盤
-	dim board, BOARD_X_MAX, BOARD_Y_MAX
-	sdim v //対象の座標リスト
-
-	//グループ
-	sdim group,, 4 //グループの最大数
-
-	//手順
-	sdim tejun,, 9 //手順の最大数
+	init_edit_pattern
 
 	//-----------------------------------------------------
 	
@@ -37,9 +30,9 @@
 	//------------------------------------------------------
 
 	//最終出力用
-	dim rotated_board, BOARD_X_MAX, BOARD_Y_MAX, 8, 2 //碁盤
-	dim rotated_group, BOARD_X_MAX,BOARD_Y_MAX, 8 //グループ
-	dim rotated_tejun, BOARD_X_MAX,BOARD_Y_MAX, 8　//手順
+	dim rotated_board, BOARD_X_MAX, BOARD_Y_MAX, 8 //碁盤
+	dim rotated_group, BOARD_X_MAX, BOARD_Y_MAX, 8 //グループ
+	dim rotated_tejun, BOARD_X_MAX, BOARD_Y_MAX, 8 //手順
 
 	//-------------------------------------------------------
 
@@ -47,12 +40,40 @@
 	dim board_history, BOARD_X_MAX, BOARD_Y_MAX, HISTORY_MAX
 	sdim v_history,, HISTORY_MAX
 	sdim group_history,, 4, HISTORY_MAX
-	sdim tejun,, 9, HISTORY_MAX
+	sdim tejun_history,, 9, HISTORY_MAX
 
 	history_num = -1 //最新履歴の番号
 
 	return
 
+#deffunc init_edit_pattern
+
+	init_board
+	init_group
+	init_tejun
+
+	return
+	
+#deffunc init_board
+	dim board, BOARD_X_MAX, BOARD_Y_MAX
+	sdim v //対象の座標リスト
+	return
+#deffunc init_group
+	//グループ
+	sdim group,, 4 //グループの最大数
+	return
+#deffunc init_tejun
+	//手順
+	sdim tejun,, 9 //手順の最大数
+	return
+
+#deffunc clear_group int p1
+	group(p1) = ""
+	return
+#deffunc clear_tejun int p1
+	tejun(p1) = ""
+	return
+	
 //------------------------------------------------------------------------
 
 //外部から直接読み込み
@@ -108,30 +129,18 @@
 
 //グループ操作
 #deffunc add_group int x, int y, int group_num
-	del_group x, y, group_num //削除して
-    group(group_num) += strf("%02d%02d,",x,y) //追加
+	add_coordinate_set group(group_num), x, y
 	return
 #deffunc del_group int x, int y, int group_num
-	if group_num < 0 || group_num > 3{
-		logmes "不正な呼び出し -> del_group"
-		return
-	}
-	index = instr(groups(group_num),0,strf("%02d%02d",x,y))
-	groups(group_num) = strmid(group(group_num),0,index) + strmid(group(group_num), index + 5, 65535)
+	del_coordinate_set group(group_num)
 	return
 
 //手順操作
 #deffunc add_tejun int x, int y, int tejun_num
-	del_tejun x, y, group_num //削除して
-    tejun(tejun_num) += strf("%02d%02d,",x,y) //追加
+	add_coordinate_set tejun(tejun_num), x, y
 	return
 #deffunc del_tejun int x, int y, int tejun_num
-	if tejun_num < 1 || tejun_num > 9{
-		logmes "不正な呼び出し -> del_tejun" 
-		return
-	}
-	index = instr(tejun(tejun_num),0,strf("%02d%02d",x,y))
-	tejun(tejun_num) = strmid(tejun(tejun_num),0,index) + strmid(tejun(tejun_num), index + 5, 65535)
+	del_coordinate_set tejun(tejun_num), x, y
 	return
 
 	
@@ -171,6 +180,10 @@
 		case 6
 			base_board(x, y) = PATTERN_NONE ; 1 灰色＋（×）
 		swbreak
+		default
+			dialog "想定外の値 -> set_base_board"
+			stop
+		swbreak
 		swend
 	loop
 	return
@@ -180,7 +193,7 @@
 	dim base_group, BOARD_X_MAX, BOARD_Y_MAX
 	repeat length(group)
 		group_flag = 1 << cnt
-		split base_group(cnt),",", coordinate_list
+		split group(cnt),",", coordinate_list
 		
 		repeat stat
 			coord_str = coordinate_list(cnt)
@@ -196,14 +209,14 @@
 #deffunc set_base_tejun
 	dim base_tejun, BOARD_X_MAX, BOARD_Y_MAX
 	for i,, length(tejun)
-		split base_tejun(cnt),",", coordinate_list
+		split tejun(i),",", coordinate_list
 		
 		repeat stat
 			coord_str = coordinate_list(cnt)
 			if strlen(coord_str) < 4: continue
 			x = int(strmid(coord_str,0,2))
 			y = int(strmid(coord_str,2,2))
-			base_tejun(x,y) = i
+			base_tejun(x,y) = i + 1
 		loop
 	next
 	return
@@ -220,10 +233,9 @@
 		rotate_coordinate result, i, j, k, board_sizex, board_sizey // (i,j)をkによる回転を加えて resultに格納
 		
 		rotated_board(result, result.1, k , 0) = base_board(i, j)
-		rotated_board(reuslt, result.1, k , 1) = base_board(i, j) ^ (PATTERN_BLACK | PATTERN_WHITE) //黒白反転も作成
-		rotated_tejun(result, result.1, k)     = base_tejun(i, j)
 		rotated_group(result, result.1, k)     = base_group(i, j)
-		
+		rotated_tejun(result, result.1, k)     = base_tejun(i, j)
+
 	next
 	next
 	next
@@ -231,17 +243,24 @@
 	return
 	
 //回転を含めたパターンを利用。
-#deffunc get_pattern array 色, array 手順, array グループ
+#deffunc get_pattern array 色, array グループ, array 手順
 
-	dup 色, rotated_board
-	dup 手順, rotated_tejun
-	dup グループ, rotated_group
+	//最終出力用
+	dim 色, BOARD_X_MAX, BOARD_Y_MAX, 8 //碁盤
+	dim グループ, BOARD_X_MAX,BOARD_Y_MAX, 8 //グループ
+	dim 手順, BOARD_X_MAX,BOARD_Y_MAX, 8　//手順
+
+	memcpy 色, rotated_board, varsize(rotated_board)
+	memcpy グループ, rotated_group, varsize(rotated_group)
+	memcpy 手順, rotated_tejun, varsize(rotated_tejun)
+
 	return
 
 //------------------------------------------------------------------
 
 #deffunc save_history
 	//現在のパターン((board-v),group,tejun)を履歴として登録
+	history_num = (history_num + 1) \ HISTORY_MAX
 	
 	for i,,BOARD_X_MAX
 	for j,,BOARD_Y_MAX
@@ -251,14 +270,14 @@
 	v_history(history_num) = v
 
 	for i,,4
-		group_history(i,history_num) = group(i)
+		group_history(i, history_num) = group(i)
 	next
 
 	for i,,9
 		tejun_history(i, history_num) = tejun(i)
 	next
 
-	history_num = (history_num + 1) \ HISTORY_MAX
+	
 	return
 
 #deffunc load_history int p1
@@ -284,7 +303,47 @@
 	next
 
 	return
-	
+
+
+//ヒットと判定するために必要なヒット数を計算
+
+#defcfunc get_pattern_all_groups_num array a
+	count = 0
+	mask = 0
+	dim group_has_real_stone, 4  ; A-Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
+
+	repeat get_coordinates_set_int(v, t)
+		x = t(0,cnt)
+		y = t(1,cnt)
+		
+		group_mask = base_group(x, y)
+		stone_color = base_board(x, y)
+		
+		if group_mask == 0 {
+			; グループ外の石 → ×でなければカウント
+			count += ((stone_color & PATTERN_NONE) == 0)
+		} else {
+			mask |= group_mask
+			if ((stone_color & PATTERN_NONE) == 0) {
+				; 実石がある → グループ内フラグON
+				repeat 4
+					if group_mask & (1 << cnt) {
+						group_has_real_stone(cnt) = 1
+					}
+				loop
+			}
+		}
+	loop
+
+	; ×以外の石を含むグループをカウント
+	groups = 0
+	repeat 4
+		if  group_has_real_stone(cnt){
+			groups++
+		}
+	loop
+
+	return count + groups
 #global
 init_pattern
 
