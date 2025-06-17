@@ -1,7 +1,7 @@
 #ifndef search
 #include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift ) //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
-#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
-#include "modules/search/pattern.hsp" //パターン関連-> ( make_rotate_patterns, PATTERN_BLACK, PATTERN_WHITE )
+#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF, get_property_coordinate_cash)
+#include "modules/search/pattern.hsp" //パターン関連-> (get_pattern_all_groups_num, make_rotate_patterns, PATTERN_BLACK, PATTERN_WHITE, PATTERN_ZERO)
 
 #module 検索
 
@@ -11,11 +11,11 @@
 #const NODE_INFO_SIZE NODE_INFO_NUM * 4
 
 //ノードが持つ有効なパターンリストの各要素の意味を定義
-#enum FLIP_INFO = 0 //色反転
-#enum ROTATE_INFO  //回転
-#enum MATCH_GROUP_COUNT  //マッチしたグループの数
+#enum FLIP_INFO = 0　　     //色反転
+#enum ROTATE_INFO           //回転
+#enum MATCH_GROUP_COUNT     //マッチしたグループの数
 #enum NOT_YET_MATCHED_FLAGS //まだマッチしていないグループフラグ
-#enum TEJUN  //通過済みの手数
+#enum TEJUN                 //通過済みの手数
 
 #enum VLIST_ELEMENT_NUM //要素の数
 
@@ -29,13 +29,12 @@
 
 
 #deffunc search_init
-	dim vlist , VLIST_ELEMENT_NUM, VLIST_MAX
-	init_ringbuffer DATA_SIZE, 128
-	sdim node_data, DATA_SIZE
+	dim vlist , VLIST_ELEMENT_NUM, VLIST_MAX //探索時ノードが持つ有効なパターンリスト（これがなくなってしまうと検索失敗となる）
+	init_ringbuffer DATA_SIZE, 128           //キュー初期化（自動拡張付き）
+	sdim node_data, DATA_SIZE　              //データを纏めてキューに出し入れするための媒介変数
 	return
 
 #defcfunc search str SGF_list, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse, var h
-
 
 	group_num = get_pattern_all_groups_num() //パターンのhitと判定するために判定に必要な数を取得
 	logmes "group_num = " + group_num
