@@ -289,10 +289,10 @@
 	
 	for i,,BOARD_X_MAX
 	for j,,BOARD_Y_MAX
-		board(i,j) = board_history(i,j,p1)
+		board(i,j) = board_history(i,j, p1)
 	next
 	next
-	v_history(history_num) = v
+	v = v_history(p1)
 
 	for i,,4
 		group(i) = group_history(i, p1)
@@ -304,10 +304,9 @@
 
 	return
 
-
 //ヒットと判定するために必要なヒット数を計算
 
-#defcfunc get_pattern_all_groups_num array a
+#defcfunc get_pattern_all_groups_num
 	count = 0
 	mask = 0
 	dim group_has_real_stone, 4  ; A-Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
@@ -344,6 +343,16 @@
 	loop
 
 	return count + groups
+
+//--util
+#defcfunc get_history_str_for_combox
+	s = ""
+	repeat history_num + 1
+		if cnt: s += "\n"
+		s += str(cnt)
+	loop
+	return s
+
 #global
 init_pattern
 
