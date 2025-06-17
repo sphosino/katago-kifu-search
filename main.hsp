@@ -453,6 +453,8 @@ pretime = keyfpstime
 		if count >= 1: draw_tooltip now_area
 	}
 	if combox_selected_flag(g_combox(combox_history_obj)){
+		logmes "selected => " + history_num
+		rect = -1
 		load_search_history history_num
 		set_g_checkbox g_chkbox.mode_chkbox,  MODE_BOARD_EDIT
 	}
@@ -556,7 +558,7 @@ pretime = keyfpstime
 				if in_board{
 					get_board_data board , tmp
 					get_board_data board.1, m
-					if (ui_mode == MODE_KIFU_VIEW & (g_group = -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && te == -1 && m(point, point.1) == 0){
+					if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0) || te == -1) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && te != -1 && m(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
 					}else{
@@ -1013,15 +1015,16 @@ pretime = keyfpstime
 	set_base
 
 	save_history
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
 
 	if use_bitboard{
 		
-		result_num = search2(kl, mm, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
+		result_num = search2(kl,mm, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{
 
 		
-		result_num = search(kl, mm, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
+		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}
 
 
@@ -1206,16 +1209,27 @@ pretime = keyfpstime
 	
 
 #deffunc load_search_history int p1
-	
-	load_history p1, v, user_board, a, enableColorFlip //それぞれ、対象座標情報、碁盤情報、グループ情報
+
 	ui_mode = MODE_BOARD_EDIT
+	
+	load_history p1 //それぞれ、対象座標情報、碁盤情報、グループ情報
+	get_board user_board
+	get_coordinate_set v
 	set_g_checkbox g_chkbox.mode_chkbox, ui_mode
-	set_g_checkbox g_chkbox.colorflip_chkbox, enableColorFlip
 	set_board_data board.ui_mode, user_board
+
 	redraw_stones board.ui_mode
 	pre_ui_mode = ui_mode
 
 	return
+
+/* history復元関連のをメモ
+#deffunc get_board array a
+#deffunc get_coordinate_set var a
+#deffunc get_group array a
+#deffunc get_tejun array a
+*/
+	
 *save_info //終了処理
 	chdir dirname
 	sdim s,1024

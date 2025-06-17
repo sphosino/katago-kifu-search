@@ -1,7 +1,7 @@
 #ifndef search
 #include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift ) //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF )
-#include "modules/search/pattern.hsp" //パターン関連-> ( make_rotated_patterns, PATTERN_BLACK, PATTERN_WHITE )
+#include "modules/search/pattern.hsp" //パターン関連-> ( make_rotate_patterns, PATTERN_BLACK, PATTERN_WHITE )
 
 #module 検索
 
@@ -15,7 +15,7 @@
 #enum ROTATE_INFO  //回転
 #enum MATCH_GROUP_COUNT  //マッチしたグループの数
 #enum NOT_YET_MATCHED_FLAGS //まだマッチしていないグループフラグ
-#enum TEJUN  //今の手数
+#enum TEJUN  //通過済みの手数
 
 #enum VLIST_ELEMENT_NUM //要素の数
 
@@ -34,15 +34,15 @@
 	sdim node_data, DATA_SIZE
 	return
 
-#defcfunc search str SGF_list, array pattern, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse, var h
+#defcfunc search str SGF_list, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse, var h
 
 
-	group_num = get_pattern_all_groups_num(pattern) //パターンのhitと判定するために判定に必要な数を取得
+	group_num = get_pattern_all_groups_num() //パターンのhitと判定するために判定に必要な数を取得
 	logmes "group_num = " + group_num
 	if group_num == 0: return -1
 	if group_num > max_depth: return -1
 
-	colorflip_num = 1 + colorflip
+	colorflip_num = 1 + colorflip // (0-1)を(1-2)で扱う
 	
 	最大の深さ = 50
 	if max_depth{
@@ -106,8 +106,7 @@
 				make_rotate_patterns xy, xy.1
 				get_pattern rotated_color, rotated_group, rotated_tejun
 				prexy = xy,xy.1
-
-				//サーチメイン関数用の変数設定
+				//回転パターン数
 				r_pattern_num = 4 << (xy == xy.1)
 				
 			}
@@ -242,7 +241,7 @@
 			       	//オーバーカウントしたのでアウト
 			    }
         	}else{
-	        	//グループに二回目のヒットなのでアウト
+	        	//なんらかのグループに二回目のヒットなのでアウト
 	        }
         }else{
 	        //色が違うのでアウト
