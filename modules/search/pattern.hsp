@@ -1,10 +1,14 @@
 #ifndef PATTERN_MODULE
 #addition "modules/rotate_coordinate.hsp"
+;#addition "modules/coordinate_set.hsp"
 
 #module PATTERN_MODULE
 
 #const BOARD_X_MAX 26
 #const BOARD_Y_MAX 26
+
+#const BOARD_SIZE (BOARD_X_MAX * BOARD_Y_MAX * 4)
+#const PATTERN_SIZE (BOARD_SIZE + (64 * 1) + (64 * 4) + (64 * 9)) //ボード + ３種類の要素
 
 #const HISTORY_MAX 5
 
@@ -25,7 +29,7 @@
 	//回転前の二次元配列
 	dim base_board, BOARD_X_MAX, BOARD_Y_MAX
 	dim base_group, BOARD_X_MAX, BOARD_Y_MAX
-	dim base_tajun, BOARD_X_MAX, BOARD_Y_MAX
+	dim base_tejun, BOARD_X_MAX, BOARD_Y_MAX
 
 	//------------------------------------------------------
 
@@ -41,8 +45,14 @@
 	sdim v_history,, HISTORY_MAX
 	sdim group_history,, 4, HISTORY_MAX
 	sdim tejun_history,, 9, HISTORY_MAX
+	
+	dim hash_value, HISTORY_MAX //保存時、ハッシュを計算して保存
+
+	//履歴ハッシュ計算用の一時変数
+	sdim hash_tmp_data, PATTERN_SIZE
 
 	history_num = -1 //最新履歴の番号
+	_history_max = 0 //保存されている履歴の数
 
 	return
 
@@ -94,7 +104,7 @@
 	return
 #deffunc set_tejun array a
 	repeat 9
-		tejun(cnt) = cnt
+		tejun(cnt) = a(cnt)
 	loop
 	return
 
@@ -170,7 +180,7 @@
 			base_board(x, y) = PATTERN_BLACK | PATTERN_WHITE; 6
 		swbreak
 		case 4
-			base_board(x, y) = PATTERN_NONE | PATTERN_WHITE; 5　黒石＋（×）
+			base_board(x, y) = PATTERN_NONE | PATTERN_WHITE; 5 黒石＋（×）
 		swbreak
 		case 5
 			base_board(x, y) = PATTERN_NONE | PATTERN_BLACK; 3 白石＋（×）
@@ -256,11 +266,48 @@
 
 	return
 
-//------------------------------------------------------------------
-
+//---------履歴関連------------------------------------------------
+#deffunc make_hash_tmp_data
+	memcpy hash_tmp_data, board, BOARD_SIZE, 0
+	memcpy hash_tmp_data, v    , 64        , BOARD_SIZE
+	c = 1
+	repeat 4
+		memcpy hash_tmp_data, group(cnt), 64, BOARD_SIZE + 64 * c
+		c++
+	loop
+	repeat 9
+		memcpy hash_tmp_data, tejun(cnt), 64, BOARD_SIZE + 64 * c
+		c++
+	loop
+	return
+#defcfunc get_hash
+	hash = 0
+	repeat PATTERN_SIZE
+		hash = (hash * 137 + peek(hash_tmp_data, cnt))
+	loop
+	return hash & $7FFFFFFF
+    
 #deffunc save_history
 	//現在のパターン((board-v),group,tejun)を履歴として登録
+	make_hash_tmp_data
+	now_hash = get_hash()
+
+	exist_hash = 0
+	repeat _history_max
+		if hash_value(cnt) == now_hash{
+			exist_hash = 1
+			break
+		}
+	loop
+	if exist_hash: return
+	
 	history_num = (history_num + 1) \ HISTORY_MAX
+	if _history_max < history_num + 1{
+		_history_max = history_num + 1
+	}
+
+	hash_value(history_num) = now_hash
+	
 	
 	for i,,BOARD_X_MAX
 	for j,,BOARD_Y_MAX
@@ -347,7 +394,7 @@
 //--util
 #defcfunc get_history_str_for_combox
 	s = ""
-	repeat history_num + 1
+	repeat _history_max
 		if cnt: s += "\n"
 		s += str(cnt)
 	loop
