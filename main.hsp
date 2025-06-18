@@ -452,7 +452,7 @@ pretime = keyfpstime
 		count = 0.
 	}else{
 		count+= frametime()
-		if count >= 1: draw_tooltip now_area
+		if count >= 0.500: draw_tooltip now_area
 	}
 	if combox_selected_flag(g_combox(combox_history_obj)){
 		logmes "selected => " + history_num
