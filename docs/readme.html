@@ -5,67 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KataGo棋譜検索システム 操作ガイド</title>
     <style>
+        /* 基本スタイル */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            font-family: 'Segoe UI', 'BIZ UDPGothic', 'Hiragino Sans', 'Meiryo', sans-serif; /* 日本語フォントを優先 */
+            line-height: 1.8; /* 行間を広げて読みやすく */
             color: #333;
             max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 25px; /* 全体のパディングを少し増やす */
+            background-color: #f8f8f8; /* 背景色をわずかに変更 */
         }
+        
+        /* タイトルと見出し */
         h1 {
             color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db; /* ボーダーを太く */
+            padding-bottom: 15px; /* パディングを増やす */
+            margin-bottom: 30px; /* 下のマージンを増やす */
+            text-align: center; /* 中央寄せ */
+            font-size: 2.2em; /* フォントサイズを大きく */
         }
         h2 {
             color: #2980b9;
-            margin-top: 30px;
-            padding-left: 10px;
-            border-left: 5px solid #3498db;
+            margin-top: 40px; /* 上のマージンを増やす */
+            padding-left: 15px; /* パディングを増やす */
+            border-left: 6px solid #3498db; /* ボーダーを太く */
+            font-size: 1.6em; /* フォントサイズを大きく */
+            margin-bottom: 25px; /* 下のマージンを追加 */
         }
+        
+        /* セクション */
         .section {
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background-color: #ffffff; /* セクションの背景を白に */
+            border-radius: 8px; /* 角を丸く */
+            padding: 25px; /* パディングを増やす */
+            margin-bottom: 30px; /* 下のマージンを増やす */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* 影を強調 */
         }
+        
+        /* 特徴・詳細説明 */
         .feature {
-            margin-left: 20px;
+            margin-left: 25px; /* インデントを増やす */
+            border-left: 3px dashed #bbdefb; /* 左側に点線のボーダーを追加 */
+            padding-left: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
+        .feature p {
+            margin-bottom: 10px; /* 段落間のスペースを調整 */
+        }
+
+        /* Tipsスタイル */
         .tips {
-            background-color: #e8f4f8;
-            border-left: 4px solid #3498db;
-            padding: 10px 15px;
-            margin: 15px 0;
+            background-color: #e3f2fd; /* 明るい青の背景 */
+            border-left: 5px solid #2196f3; /* 濃い青のボーダー */
+            padding: 15px 20px; /* パディングを増やす */
+            margin: 25px 0; /* マージンを増やす */
+            border-radius: 5px; /* 角を丸く */
         }
+        .tips ul {
+            margin-top: 10px;
+        }
+        .tips li {
+            margin-bottom: 5px; /* リスト項目の下マージン */
+        }
+
+        /* Warningスタイル */
         .warning {
-            background-color: #ffeeee;
-            border-left: 4px solid #e74c3c;
-            padding: 10px 15px;
-            margin: 15px 0;
+            background-color: #ffebee; /* 明るい赤の背景 */
+            border-left: 5px solid #f44336; /* 濃い赤のボーダー */
+            padding: 15px 20px; /* パディングを増やす */
+            margin: 25px 0; /* マージンを増やす */
+            border-radius: 5px; /* 角を丸く */
+            color: #d32f2f; /* テキストの色を赤系に */
         }
+        .warning ul {
+            margin-top: 10px;
+        }
+        .warning li {
+            margin-bottom: 5px; /* リスト項目の下マージン */
+        }
+        .warning p {
+            margin-bottom: 0; /* 段落の下マージンをなくす */
+        }
+        
+        /* ハイライト */
         .highlight {
             font-weight: bold;
-            color: #e74c3c;
-        }
-        code {
-            background-color: #f0f0f0;
-            padding: 2px 4px;
+            color: #d32f2f; /* 注意を促す赤 */
+            background-color: #fff9c4; /* 蛍光ペン風の背景色 */
+            padding: 2px 5px;
             border-radius: 3px;
-            font-family: Consolas, monospace;
         }
-        ul {
-            padding-left: 25px;
+        
+        /* コードスタイル */
+        code {
+            background-color: #eceff1; /* やや濃いグレー */
+            padding: 3px 6px; /* パディングを増やす */
+            border-radius: 4px; /* 角を丸く */
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+            color: #3f51b5; /* コードの色を青系に */
         }
+        
+        /* リスト */
+        ul, ol {
+            padding-left: 30px; /* パディングを増やす */
+            margin-bottom: 15px; /* リストの下マージン */
+        }
+        ul li, ol li {
+            margin-bottom: 8px; /* リスト項目の間隔 */
+        }
+
+        /* 画像 */
+        img {
+            max-width: 100%; /* 親要素からはみ出さないように */
+            height: auto;
+            display: block; /* 中央寄せのためにブロック要素に */
+            margin: 20px auto; /* 上下マージンと中央寄せ */
+            border: 1px solid #ddd; /* 軽いボーダーを追加 */
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* フッター */
         .footer {
-            margin-top: 40px;
-            text-align: right;
+            margin-top: 50px; /* 上のマージンを増やす */
+            text-align: center; /* 中央寄せ */
             font-style: italic;
             color: #7f8c8d;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
+            border-top: 1px solid #e0e0e0; /* ボーダーを明るく */
+            padding-top: 20px; /* パディングを増やす */
+            font-size: 0.9em;
+        }
+        .footer a {
+            color: #3498db; /* リンク色 */
+            text-decoration: none; /* 下線をなくす */
+            font-weight: bold;
+        }
+        .footer a:hover {
+            text-decoration: underline; /* ホバーで下線 */
         }
     </style>
 </head>
@@ -73,148 +152,168 @@
     <h1>KataGo棋譜検索システム - 操作ガイド</h1>
     
     <div class="section">
-        <p>棋譜フォルダに入っているkatago-rating-gamesの中から検索するツールです。</p>
+        <p>棋譜フォルダに入っている <code>katago-rating-games</code> の中から棋譜を検索するためのツールです。</p>
         
         <div class="feature">
-            <p>碁盤の左側にある棋譜リストから棋譜を選択すると閲覧できます。ホイールで前後に手順を進めることができます。</p>
-            <p>KataGoエンジンの形勢判断が背景の色でわかります（グレーは互角）。<br>
-            最後に着手した側の判断です → 最終手マークが白石についていたら、白側のエンジンの判断。</p>
+            <p>碁盤の左側にある棋譜リストから棋譜を選択すると閲覧できます。ホイール操作で前後に手順を進めることが可能です。</p>
+            <p>KataGoエンジンの形勢判断が背景の色で表示されます（グレーは互角を示します）。<br>
+            これは最後に着手した側のエンジンの判断です。例えば、最終手マークが白石についている場合、それは白側のエンジンの判断を示しています。</p>
         </div>
     </div>
 
     <h2>基本操作</h2>
     <div class="section">
         <ul>
-            <li>碁盤の上でドラッグすると検索したい範囲を指定できます（ドラッグ中に右クリックで逆に範囲を取り除きます）</li>
-            <li>右クリック長押しで直前に指定した範囲を取り除くことができます</li>
-            <li>複数の矩形を組み合わせて指定できます</li>
+            <li>碁盤の上でドラッグすると、検索したい範囲を指定できます（ドラッグ中に右クリックすることで範囲指定を逆に取り除きます）。</li>
+            <li>右クリックを長押しすることで、直前に指定した範囲を取り除くことができます。</li>
+            <li>複数の矩形を組み合わせて範囲を指定することも可能です。</li>
         </ul>
 
-        <p><strong>編集モード：</strong></p>
+        <p><strong>編集モードでの操作：</strong></p>
         <ul>
-            <li><strong>右クリック</strong>で石を置くことができます</li>
-            <li>続けて右クリックすることで色を変えることができます</li>
-            <li>灰色の石はどちらかの石があればヒット</li>
-            <li>「×」の付いた石は特殊な条件になります。黒石に×がついているとき、そこに黒石があるとマッチしません。</li>
+            <li><strong>右クリック</strong>で碁盤に石を置くことができます。</li>
+            <li>続けて右クリックすることで石の色（黒、白、灰色）を変更できます。</li>
+            <li>灰色の石は「どちらかの石があればヒットする」という条件になります。</li>
+            <li>「×」の付いた石は特殊な条件です。例えば、黒石に「×」がついている場合、その位置に黒石があるとマッチしません。</li>
         </ul>
     </div>
 
     <h2>検索機能</h2>
     <div class="section">
-        <p><strong>「検索」ボタン</strong>で検索を開始します。</p>
+        <p><strong>「検索」ボタン</strong>をクリックすると検索が開始されます。</p>
         <ul>
-            <li>もう一つのリストボックスに検索結果が表示されるので、クリックして閲覧してください</li>
-            <li>抜かれた部分はそこに石をおいた状態で検索すればOKです</li>
+            <li>もう一つのリストボックスに検索結果が表示されますので、クリックして閲覧してください。</li>
+            <li>抜き跡（石が取られた場所）を検索したい場合は、そこに石を置いた状態で検索してください。</li>
         </ul>
 
-        <p><strong>棋譜リストボックスの下のスピンボックス</strong>は、棋譜を選択したときに何手目から開始するかを設定します。</p>
-        <p><strong>検索結果の下のスピンボックス</strong>は、検索結果の棋譜を選択したときにマッチ局面の前後何手目を表示するかを設定します。</p>
+        <p><strong>棋譜リストボックスの下のスピンボックス</strong>は、棋譜を選択した際に何手目から表示を開始するかを設定します。</p>
+        <p><strong>検索結果の下のスピンボックス</strong>は、検索結果の棋譜を選択した際に、マッチした局面の前後何手目を表示するかを設定します。</p>
 
-        <p><strong>「除外検索」ボタン</strong>は検索結果を除いた全ての棋譜から検索します。</p>
-        <p><strong>「絞込検索」ボタン</strong>は検索結果の中だけからさらに検索を行います。</p>
+        <p><strong>「除外検索」ボタン</strong>は、現在の検索結果を除いた全ての棋譜から検索を行います。</p>
+        <p><strong>「絞込検索」ボタン</strong>は、現在の検索結果の中からさらに絞り込んで検索を行います。</p>
         
         <div class="tips">
-            <p><strong>「厳密検索」</strong></p>
+            <p><strong>「厳密検索」について</strong></p>
             <ul>
-                <li>抜き跡にさらに着手した局面も検索可能です</li>
-                <li class="highlight">遅いです！（非推奨）</li>
-                <li>※【×石】の使用には対応していません</li>
+                <li>抜き跡にさらに着手があった局面も検索可能です。</li>
+                <li class="highlight">この検索方法は処理が遅いため、<span class="highlight">非推奨</span>です！</li>
+                <li>※「×石」の使用には対応していません。</li>
             </ul>
         </div>
 
         <div class="tips">
-            <p><strong>「反転検索」</strong></p>
+            <p><strong>「反転検索」について</strong></p>
             <ul>
-                <li>マッチしなかった棋譜が結果に追加されるようになります</li>
-                <li>全ての検索方式に対応しています</li>
-                <li>※検索結果に、位置ジャンプ情報が含まれません。フィルター用途向けです</li>
+                <li>マッチしなかった棋譜が結果に追加されるようになります。</li>
+                <li>全ての検索方式に対応しています。</li>
+                <li>※検索結果に、位置ジャンプ情報が含まれません。主にフィルター用途としてご活用ください。</li>
             </ul>
         </div>
     </div>
 
     <h2>グルーピング機能</h2>
     <div class="section">
-        <p>A-Dまでのボタンは石をグループ化して、そのうち１つだけある局面をマッチさせることができます。</p>
+        <p>A〜Dまでのボタンは石をグループ化し、そのグループ内のいずれか1つの石がある局面をマッチさせることができます。</p>
         
         <div class="warning">
             <ul>
-                <li>現状では、厳密検索ではグルーピング対応していません（無視されます）</li>
-		<li>【×石】をグルーピングすることも可能です。
+                <li>現状では、厳密検索ではグルーピング機能に対応していません（無視されます）。</li>
+		<li>「×石」をグルーピングすることも可能です。
             </ul>
         </div>
     </div>
+
+    <h2>手順検索</h2>
+    <div class="section">
+       <p>1〜9までのボタンは、石に番号を振り、その出現順を指定して検索することができます。</p>
+	<div class="tips">      
+ 	 <ul>
+            <li>石に1〜9までの番号を振ることで、着手順序を指定した検索が可能です。</li>
+            <li class="highlight">番号の大きい手が小さい手より先に出現した場合（逆順）はマッチしません。</li>
+         </ul>	
+    </div>
+        <ul>
+            <li>例：「1」「2」「3」と番号を振った場合、実際の手順で「3」→「1」→「2」の順で打たれた局面は検索にヒットしません。</li>
+            <li>番号は必ずしも連番である必要はありません。例えば、「2」→「4」→「6」といった順序でもヒットします。</li>
+            <li>複数の石に同じ番号を振ることも可能です。「1」→[番号なし]→「2」→「2」→「番号なし」→「2」→「3」などもヒット対象です。</li>
+        </ul>
+    </div>
+
 
     <h2>検索テクニック</h2>
     <div class="section">
         <p class="highlight">★◇★　こういう時はどうやって検索する？</p>
         
         <div class="tips">
-            <p><strong>例１【黒星、白カカリのあと、どこかにハサんだ局面を検索したい】</strong></p>
-            <p>ハサミの候補位置全てに黒石を置き、それらをグループ化して検索。</p>
-		<img src = "screenshot_grouping.png">
+            <p><strong>例１：【黒星、白カカリのあと、どこかにハサんだ局面を検索したい】</strong></p>
+            <p>ハサミの候補位置全てに黒石を置き、それらをグループ化して検索します。</p>
+            <img src="screenshot_grouping.png" alt="グルーピング機能のスクリーンショット">
+            <p class="warning" style="margin-top: 15px; font-size: 0.9em;">
+                ※この画像はサンプルです。ファイルが存在しない場合は表示されません。
+            </p>
         </div>
 
         <div class="tips">
-            <p><strong>例２【ある局面で、次の一手が打たれなかった局面を検索したい】</strong></p>
+            <p><strong>例２：【ある局面で、次の一手が打たれなかった局面を検索したい】</strong></p>
             <ol>
-                <li>次の一手を打った局面を検索</li>
-                <li>そのあと一手もどして、「除外検索」</li>
+                <li>まず、次の一手を打った局面を検索します。</li>
+                <li>そのあと一手もどして、「除外検索」を実行します。</li>
             </ol>
-            <p>このようにすれば、ある局面で、次にその手を打たなかった棋譜だけを抽出できます。</p>
+            <p>このようにすれば、ある局面で、次にその手を打たなかった棋譜だけを効率的に抽出できます。</p>
         </div>
     </div>
 
     <h2>SGF取得</h2>
     <div class="section">
-        <p class="highlight">★☆SGF取得☆★</p>
+        <p class="highlight">★☆SGF取得機能☆★</p>
         <ul>
-            <li>選択中の棋譜をクリップボードにコピーします</li>
-            <li><code>Ctrl + 左クリック</code>で複数選択ができます</li>
-            <li><code>Ctrl + A</code>で全て選択します</li>
+            <li>選択中の棋譜をクリップボードにコピーします。</li>
+            <li><code>Ctrl + 左クリック</code>で複数の棋譜を選択できます。</li>
+            <li><code>Ctrl + A</code>で全ての棋譜を選択します。</li>
         </ul>
 
         <p>複数選択されている場合、それらを全てマージしたSGFがクリップボードにコピーされます。</p>
-        <p><strong>保存ボタン</strong> → 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したいときに使ってください。</p>
+        <p><strong>保存ボタン：</strong> 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したい場合にご活用ください。</p>
     </div>
 
     <h2>自動再生</h2>
     <div class="section">
-        <p class="highlight">★★自動再生★★</p>
-        <p>自動再生のチェックを入れると選んだ棋譜を自動再生します。</p>
+        <p class="highlight">★★自動再生機能★★</p>
+        <p>自動再生のチェックを入れると、選択した棋譜を自動で再生します。</p>
         <p>スライダーで一手ごとの待ち時間を設定します：</p>
         <ol>
-            <li>１番目のスライダーで、基本待ち時間を設定します（100ms - 10000ms）</li>
-            <li>２番目のスライダーで、各エンジンの形勢判断の差が大きいほど待ち時間を延ばします（0-10000ms）</li>
-            <li>３番目のスライダーで、直前の手との距離が遠いほど、待ち時間を延ばします（0-10000ms）</li>
+            <li>１番目のスライダーで、基本待ち時間を設定します（100ms 〜 10000ms）。</li>
+            <li>２番目のスライダーで、各エンジンの形勢判断の差が大きいほど待ち時間を延ばします（0ms 〜 10000ms）。</li>
+            <li>３番目のスライダーで、直前の手との距離が遠いほど、待ち時間を延ばします（0ms 〜 10000ms）。</li>
         </ol>
-        <p>１手ごとの待ち時間は全てのスライダーの値を合わせた値になります。</p>
+        <p>１手ごとの待ち時間は、これら全てのスライダーの値を合計した値になります。</p>
     </div>
 
     <h2>レイアウト変更</h2>
     <div class="section">
-        <p class="highlight">☆☆★★　レイアウト変更</p>
+        <p class="highlight">☆☆★★　レイアウト変更機能</p>
         <ul>
-            <li>CTRLをダブルクリック？するとデバッグモードに入ります。もう一度やれば戻ります</li>
-            <li>グリッドが表示されるのでつまんで移動できます</li>
-            <li>各エリアのパディング部をつまむとエリアが選択状態になり、他のエリアのパディングをクリックすると場所を交換します</li>
+            <li><code>CTRL</code>をダブルクリックするとデバッグモードに入ります。もう一度ダブルクリックすると元のモードに戻ります。</li>
+            <li>デバッグモード中にはグリッドが表示され、各要素をつまんで移動できます。</li>
+            <li>各エリアのパディング部分をつまんでエリアを選択状態にし、他のエリアのパディングをクリックすると場所を交換します。</li>
         </ul>
         <div class="warning">
-            <p>操作中、おかしくなった場合は、<code>area.var</code>ファイルを削除すればリセットできます。</p>
+            <p>操作中、レイアウトがおかしくなった場合は、<code>area.var</code>ファイルを削除するとリセットできます。</p>
         </div>
     </div>
 
     <h2>注意事項</h2>
     <div class="section warning">
         <ul>
-            <li>起動後少しずつ棋譜を読み込んでいるため、起動後、初回の検索は時間がかかります</li>
-            <li class="highlight">厳密検索は更にノードに碁盤を作成するのでかなり遅いです</li>
+            <li>起動後、少しずつ棋譜を読み込んでいるため、起動直後の初回検索には時間がかかります。</li>
+            <li class="highlight">「厳密検索」はさらにノードに碁盤を作成するため、<span class="highlight">非常に遅い</span>です。ご注意ください。</li>
         </ul>
     </div>
 
     <div class="footer">
-        <p>このツールについて要望があれば連絡ください。<br>
+        <p>このツールについてご要望がございましたら、お気軽にご連絡ください。<br>
         作者メールアドレス → <a href="mailto:sphosino@gmail.com">sphosino@gmail.com</a></p>
-        <p>最新版はこちらから：<a href="https://github.com/sphosino/katago-kifu-search" target="_blank">https://github.com/sphosino/katago-kifu-search</a></p>
+        <p>最新版はこちらから：<a href="https://github.com/sphosino/katago-kifu-search" target="_blank" rel="noopener noreferrer">https://github.com/sphosino/katago-kifu-search</a></p>
     </div>
 </body>
 </html>

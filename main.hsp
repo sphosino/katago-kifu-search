@@ -75,7 +75,7 @@ setfps 30
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21)
-screen 0, ginfo(12),ginfo(13)
+screen 0, ginfo(12), ginfo(13)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 onexit *save_info //終了時に*save_infoにジャンプ
@@ -400,7 +400,7 @@ pretime = keyfpstime
 
 	計測 "kifuload"
 
-	if kifu_update & waitedtime() >= 2{//棋譜がアップデートされたとき且つ、待ち時間が(2ms)以上あったときのみ走る
+	if kifu_update & waitedtime() >= 4{//棋譜がアップデートされたとき且つ、待ち時間が(4ms)以上あったときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
 		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
