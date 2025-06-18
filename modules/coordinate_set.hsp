@@ -1,4 +1,4 @@
-#ifndef coordinate_set_manager
+#ifndef del_coordinate_set
 #module coordinate_set_manager
 #define ctype coordinate_range_validation(%1,%2,%3,%4) ((%1) < 0 || (%3) > 99 || (%2) < 0 || (%4) > 99)
 	

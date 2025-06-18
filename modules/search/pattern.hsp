@@ -1,6 +1,6 @@
 #ifndef PATTERN_MODULE
+#addition "modules/coordinate_set.hsp"
 #addition "modules/rotate_coordinate.hsp"
-;#addition "modules/coordinate_set.hsp"
 
 #module PATTERN_MODULE
 
@@ -170,6 +170,9 @@
 		x = t(0,cnt)
 		y = t(1,cnt)
 		switch board(x,y)
+		case 0
+			base_board(x, y) = PATTERN_NONE ; 1
+		swbreak
 		case 1
 			base_board(x, y) = PATTERN_BLACK ;2
 		swbreak
@@ -184,11 +187,6 @@
 		swbreak
 		case 5
 			base_board(x, y) = PATTERN_NONE | PATTERN_BLACK; 3 ”’Î{i~j
-		swbreak
-		
-		case 0 ;(À•WƒZƒbƒgƒŠƒXƒg“à‚ÌÎ‚ª‚È‚¢êŠ)‚Æ(ŠDF+X)‚Í“™‰¿B
-		case 6
-			base_board(x, y) = PATTERN_NONE ; 1 ŠDF{i~j
 		swbreak
 		default
 			dialog "‘z’èŠO‚Ì’l -> set_base_board"
