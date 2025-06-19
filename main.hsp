@@ -760,10 +760,8 @@ pretime = keyfpstime
 
 	//グループ表示
 	get_group tmp
-	group_draw board.ui_mode, tmp
-
-	get_tejun tmp
-	tejun_draw board.ui_mode, tmp
+	get_tejun tmp2
+	group_tejun_draw board.ui_mode, tmp, tmp2
 	
 	//検索範囲表示
 

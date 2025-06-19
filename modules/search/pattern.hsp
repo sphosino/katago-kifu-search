@@ -278,7 +278,7 @@
 		c++
 	loop
 	return
-#defcfunc get_hash
+#defcfunc local get_history_hash
 	hash = 0
 	repeat PATTERN_SIZE
 		hash = (hash * 137 + peek(hash_tmp_data, cnt))
@@ -288,7 +288,7 @@
 #deffunc save_history
 	//Œ»İ‚Ìƒpƒ^[ƒ“((board-v),group,tejun)‚ğ—š—ğ‚Æ‚µ‚Ä“o˜^
 	make_hash_tmp_data
-	now_hash = get_hash()
+	now_hash = get_history_hash()
 
 	exist_hash = 0
 	repeat _history_max

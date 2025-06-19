@@ -39,7 +39,7 @@
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 
-    sdim block_data
+   	init_memory_pool
 
 	return
 
