@@ -521,10 +521,10 @@ pretime = keyfpstime
 							set_board_data board.1, user_board
 							if user_board(point,point.1) == 0{
 								repeat 4
-									del_group point, point.1,cnt
+									del_group point, point.1, cnt
 								loop
 								repeat 9
-									del_tejun point, point.1,cnt
+									del_tejun point, point.1, cnt
 								loop
 							}
 						}

@@ -8,7 +8,7 @@
 	get_goban_position board, goban_position
 	
 	//各地点を計算
-	dim tmp_board,BOARD_X_MAX,BOARD_Y_MAX
+	dim tmp_board, BOARD_X_MAX, BOARD_Y_MAX
 	for i,,4
 		repeat get_coordinates_set_int(group(i),t)
 			x = t(0, cnt)

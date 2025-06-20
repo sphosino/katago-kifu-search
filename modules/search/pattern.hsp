@@ -142,7 +142,7 @@
 	add_coordinate_set group(group_num), x, y
 	return
 #deffunc del_group int x, int y, int group_num
-	del_coordinate_set group(group_num)
+	del_coordinate_set group(group_num), x, y
 	return
 
 //è‡‘€ì

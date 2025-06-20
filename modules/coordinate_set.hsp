@@ -3,7 +3,7 @@
 #define ctype coordinate_range_validation(%1,%2,%3,%4) ((%1) < 0 || (%3) > 99 || (%2) < 0 || (%4) > 99)
 	
 #deffunc del_coordinate_set var a, int x, int y
-	if is_coordinate_in_set(a,x,y) >= 0{
+	if is_coordinate_in_set(a, x, y) >= 0{
 		a = strmid(a, 0, stat) + strmid(a, stat + 5 , $FFFF)
 	}
 	return

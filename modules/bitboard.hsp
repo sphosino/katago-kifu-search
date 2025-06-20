@@ -1,7 +1,7 @@
 #ifndef init_bitboard
 #include "coordinate_set.hsp"
 #module
-#const NODE_MAX 5000000
+#const NODE_MAX 5300000
 
 #deffunc init_bitboard
 	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368ƒ}ƒX‚ğÅ‘å‚Æ‚·‚é

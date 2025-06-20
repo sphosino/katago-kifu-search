@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 5200000
+#define MAX_NODE 5300000
 
 #define TOPNODE_SIZE 270
 #define NORMALNODE_SIZE 30
@@ -39,7 +39,7 @@
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 
-   	init_memory_pool
+   	init_memory_pool 200000000, 14000000
 
 	return
 
@@ -50,6 +50,9 @@
 	sgf_node_y(node_id) = -1
 	node_to_bitboard_used_list(node_id) = 0
 
+	if length(using) <= node_id{
+		using(node_id) = 0
+	}
 	if using(node_id){
 		release_bitboard node_id
 		free_block sgf_properties_data(node_id)
