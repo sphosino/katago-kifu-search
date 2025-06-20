@@ -762,6 +762,7 @@ pretime = keyfpstime
 	get_group tmp
 	get_tejun tmp2
 	group_tejun_draw board.ui_mode, tmp, tmp2
+	;debug_tg_draw board.ui_mode, tmp,tmp2
 	
 	//ŒŸõ”ÍˆÍ•\¦
 

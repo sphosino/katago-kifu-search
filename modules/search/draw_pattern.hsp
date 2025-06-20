@@ -3,6 +3,35 @@
 #const BOARD_X_MAX 26
 #const BOARD_Y_MAX 26
 
+#deffunc debug_tg_draw var board, array group, array tejun
+	if rnd(10): return
+	get_goban_position board, goban_position
+	get_goban_mas_size board, goban_mas_size
+	
+	// 具体的な値を確認
+	logmes strf("goban_position: %d", goban_position)
+	logmes strf("goban_mas_size: %d", goban_mas_size)
+
+	// 左端、中央、右端の計算結果
+	x = 0
+	cx0 = goban_position + x * goban_mas_size + goban_mas_size / 2
+	logmes strf("x=0: cx=%d", cx0)
+	
+	x = 9  
+	cx9 = goban_position + x * goban_mas_size + goban_mas_size / 2
+	logmes strf("x=9: cx=%d", cx9)
+	
+	x = 18
+	cx18 = goban_position + x * goban_mas_size + goban_mas_size / 2
+	logmes strf("x=18: cx=%d", cx18)
+	
+	// 理論値との比較
+	logmes strf("理論的な間隔: %d", goban_mas_size)
+	logmes strf("実際の間隔 0-9: %d", cx9 - cx0)
+	logmes strf("実際の間隔 9-18: %d", cx18 - cx9)
+
+	return
+
 #deffunc group_tejun_draw var board, array group, array tejun
 	get_goban_mas_size board, goban_mas_size
 	get_goban_position board, goban_position
@@ -37,8 +66,8 @@
 		if tmp_board(x,y) >= 2 {
 			sx /= 2
 			sy /= 2
-			cx += (i \ 2) * sx + sx / 2
-			cy += (i / 2) * sy + sy / 2
+			cx += (i \ 2) * (sx + 1)/2 + (sx + 1) / 2
+			cy += (i / 2) * (sy + 1)/2 + (sy + 1) / 2
 		}else{
 			cx += sx / 2
 			cy += sy / 2
