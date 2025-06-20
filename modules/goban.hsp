@@ -83,6 +83,7 @@
 #modfunc redraw_goban
 	nowsel = ginfo_sel
 	gsel goban_buffer
+	gosub *get_goban_info
 	
 	//背景描画
 	色を設定　$cd853f
@@ -127,32 +128,28 @@
 	
 	if (prerect != r.0) || (prerect.1!=r.1) || (prerect.2!=r.2) || (prerect.3!=r.3){
 		prerect = r.0,r.1,r.2,r.3
-		gosub*get_goban_info
 		redraw_goban thismod
 		redraw_stones thismod
-		logmes "redraw"
 	}else{
 		if pre最終手表示 != 最終手表示 {
-			gosub*get_goban_info
 			pre最終手表示 = 最終手表示
 			redraw_stones thismod
 		}
 		if pre星表示 != 星表示{
-			gosub*get_goban_info
 			pre星表示 = 星表示
 			redraw_goban thismod
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex + 1, sizey, strf("%d", goban_buffer )
-	make_instant_draw_object "SPRITE", px, py, sizex + 1, sizey, strf("%d,0,0,256,0,,,$00FF00", stones_buffer)
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d", goban_buffer )
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,256,0,,,$00FF00", stones_buffer)
 	
 	return
 *get_goban_info
 	
 	//現在のエリア状態でのマスを計算(margin=最小限取りたい量)
-	masx = limit((r.2 - r.0 - margin*2) / length(board),1)
-	masy = limit((r.3 - r.1 - margin*2) / length2(board),1)
+	masx = limit((r.2 - r.0 - margin * 2) / length(board),1)
+	masy = limit((r.3 - r.1 - margin * 2) / length2(board),1)
 	
 	if stone_circle == 1{
 		if masy > masx: masy = masx
@@ -160,8 +157,8 @@
 	}
 	sizex = length(board)  * masx
 	sizey = length2(board) * masy
-	marginx = (r.2-r.0 - sizex) / 2 //計算後のｘマージン
-	marginy = (r.3-r.1 - sizey) / 2 //計算後のｙマージン
+	marginx = (r.2 - r.0 - sizex + 1) / 2 //計算後のｘマージン
+	marginy = (r.3 - r.1 - sizey + 1) / 2 //計算後のｙマージン
 
 	//エリアの中心
 	px = (r.0 + r.2) / 2
@@ -177,6 +174,7 @@
 	color 0,255,0
 	boxf 0,0,sizex,sizey
 	//石描画
+	gosub *get_goban_info
 
 	repeat length(board): m= cnt
 		repeat length2(board)
@@ -239,7 +237,7 @@
 	return
 *draw_batu
 	centerx = posx + masx/2
-	centery = posy + masx/2
+	centery = posy + masy/2
 	mv = double(masx)/2/sqrt(2)
 	x1 = centerx - mv
 	y1 = centery - mv
@@ -264,7 +262,7 @@
 		y = r.1 + marginy + masy * strmid(sets(cnt), 2, 2)
 		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx, masy, "$c8c8c8"
 		update_priority_draw_object stat,PRIORITY_FRONT
-		set_static_alpha get_entity_id(stat), 128
+		set_static_alpha get_entity_id(stat), 90
 		
 	loop
 	
@@ -309,7 +307,6 @@
 		loop
 	loop
 	get_rect area_number, r
-	gosub*get_goban_info
 	redraw_stones thismod
 	return
 	
@@ -369,7 +366,7 @@
 	return 
 	
 #modfunc get_goban_position array a
-	a = r + marginx, r.1+marginy
+	a = r + marginx, r.1 + marginy
 	return
 
 #modfunc 置き石 int _x, int _y, int col
