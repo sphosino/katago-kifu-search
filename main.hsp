@@ -1032,7 +1032,7 @@ pretime = keyfpstime
 
 	if use_bitboard{
 		
-		result_num = search2(kl,mm, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
+		result_num = search2(kl,m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{
 
