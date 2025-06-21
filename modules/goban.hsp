@@ -173,7 +173,7 @@
 	boxf 0,0,sizex,sizey
 	//Î•`‰æ
 
-	repeat length(board): m= cnt
+	repeat length(board): m = cnt
 		repeat length2(board)
 			posx = m   * masx
 			posy = cnt * masy

@@ -241,10 +241,10 @@ root = make_area_child(1,1)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
+			
 			goban_loadmax_area = make_area_child(,,goban_tool_area)
 			combox_history = make_area_child(,,goban_tool_area)
 
-			
 			goban_search_area = make_area_child(3,2,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
 				button_exclude_search = make_area_child()
