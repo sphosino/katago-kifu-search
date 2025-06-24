@@ -294,10 +294,7 @@ set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
 
 add_tooltip goban_loadmax_area, "検索時追加で読み込む量"
-set_tooltip goban_loadmax_area
 add_tooltip combox_history, "検索パターン履歴"
-set_tooltip combox_history
-
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
 add_tooltip kifustart, "何手目から表示するかを設定"
@@ -1038,7 +1035,7 @@ pretime = keyfpstime
 
 	if use_bitboard{ ;厳密検索
 		
-		result_num = search2(kl,m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
 	}else{ ;通常検索
 
@@ -1241,7 +1238,7 @@ pretime = keyfpstime
 
 	return
 
-/* history復元関連のをメモ
+/* history復元関連のメモ
 #deffunc get_board array a
 #deffunc get_coordinate_set var a
 #deffunc get_group array a
