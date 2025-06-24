@@ -254,9 +254,9 @@
 	
 #modfunc Draw_set_list_on_board var set_list
 
-	repeat get_coordinates_set(set_list, sets)
-		x = r.0 + marginx + masx * strmid(sets(cnt), 0, 2)
-		y = r.1 + marginy + masy * strmid(sets(cnt), 2, 2)
+	repeat get_coordinates_set_int(set_list, sets)
+		x = r.0 + marginx + masx * sets(0, cnt)
+		y = r.1 + marginy + masy * sets(1, cnt)
 		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx, masy, "$c8c8c8"
 		update_priority_draw_object stat,PRIORITY_FRONT
 		set_static_alpha get_entity_id(stat), 90

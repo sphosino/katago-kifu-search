@@ -59,7 +59,7 @@ pre_ui_mode = -1
 
 //矩形範囲指定用
 rn = 0
-dim rect, 4
+dim rect, 4: rect = -1
 dim rect_stack, 4
 
 //検索結果受け取り用
@@ -514,7 +514,13 @@ pretime = keyfpstime
 				set_current_node t, treebox_onmouseid(t)
 				Treebox_toggle_openflag t, treebox_onmouseid(t)
 			}
-			if ui_mode == MODE_BOARD_EDIT && dragging_flag == 0{//矩形描画モード
+			if dragging_flag == 1{
+				if rect >= 0{
+					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
+					rect = -1
+				}
+				dragging_flag = 0
+			}else: if ui_mode == MODE_BOARD_EDIT{//矩形描画モード
 				if in_board{
 					if treebox_onmouseid(t) < 0{
 						if in_board{
@@ -545,21 +551,8 @@ pretime = keyfpstime
 		
 		if _getkey(1) == 1{ //左クリック
 			if in_board == 0{
-				//chatGPTさん作のエフェクト
-				spawn_ripple_effect mousex, mousey //碁盤以外の部分で採用！
-			}
-	
-			inlistbox = 0
-	
-			foreach kifulist
-				sel = listbox_on_id(kifulist.cnt, mousex, mousey)
-				if sel != -1: inlistbox = 1 //リストボックスのなかだ。
-				if sel >= 0{
-					if select_kifulist_item(sel, cnt): break
-				}
-			loop
-			
-			if inlistbox == 0{
+				spawn_ripple_effect mousex, mousey
+			}else{
 				dragging_flag = 1
 				if in_board{
 					get_board_data board , tmp
@@ -581,8 +574,16 @@ pretime = keyfpstime
 					手数 = treeview_onmouse_id_deep()
 					gosub*syncboard
 				}
-
 			}
+			inlistbox = 0
+			
+			foreach kifulist
+				sel = listbox_on_id(kifulist.cnt, mousex, mousey)
+				if sel != -1: inlistbox = 1 //リストボックスのなかだ。
+				if sel >= 0{
+					if select_kifulist_item(sel, cnt): break
+				}
+			loop
 		}
 
 		//キーによるドラッグ解除処理（先）
@@ -669,15 +670,6 @@ pretime = keyfpstime
 				}
 			}
 
-			
-
-
-			if _getkey(2) == 1{
-				if rect(0) >= 0{
-					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
-				}
-				dragging_flag = 0
-			}
 		}
 
 	
@@ -745,7 +737,6 @@ pretime = keyfpstime
 		debugmode ^ 1
 		logmes "switched debugmode ->" +debugmode
 	}
-
 
 
 	計測 "object_managers"

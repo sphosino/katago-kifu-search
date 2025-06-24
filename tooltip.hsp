@@ -14,7 +14,6 @@
 	return
 #deffunc set_tooltip int id
 	if id < 0: return
-	logmes "setooltip" + id
 	//バッファにidの文字列を描画
 	tmp = ginfo_sel
 	gsel buf
@@ -34,7 +33,6 @@
 #deffunc draw_tooltip int id
 	if id < 0: return
 	if id_to_hint(id) == "": return
-	logmes "hint->" + id_to_hint(id)
 	make_instant_draw_object "SPRITE", mousex + size/2, mousey - size.1/2, size, size.1, strf("%d", buf)
 	update_priority_draw_object stat, PRIORITY_FRONT
 	return
