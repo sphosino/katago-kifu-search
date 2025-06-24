@@ -299,15 +299,9 @@ add_tooltip combox_history, "検索パターン履歴"
 set_tooltip combox_history
 
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
-set_tooltip button_getsgf
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
-set_tooltip button_getsgf_nowpoint
-
 add_tooltip kifustart, "何手目から表示するかを設定"
-set_tooltip kifustart
 add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
-set_tooltip kifustart_result
-
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
