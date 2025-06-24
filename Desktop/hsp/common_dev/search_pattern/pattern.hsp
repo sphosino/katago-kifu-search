@@ -1,0 +1,108 @@
+#include "rotate_coordinate.hsp"
+#module
+
+#const BOARD_X_MAX 26
+#const BOARD_Y_MAX 26
+
+#deffunc init_pattern
+	dim p_col, BOARD_X_MAX, BOARD_Y_MAX, 8, 2
+	dim tejun, BOARD_X_MAX,BOARD_Y_MAX, 8
+	dim group, BOARD_X_MAX,BOARD_Y_MAX, 8
+	return
+
+#deffunc set_pattern_size int _x, int _y
+	board_sizex = _x
+	board_sizey = _y
+	return
+#deffunc get_pattern_size array a
+	a = board_sizex, board_sizey
+	return
+
+//基本石パターン作成
+#deffunc add_pattern_stone array board, str v //碁盤とセットリストを受け取る
+	repeat get_coordinates_set_int(v, t)
+		x = t(0,cnt)
+		y = t(1,cnt)
+		switch board(x,y)
+		case 1
+			col(x, y) = PATTERN_BLACK ;2
+		swbreak
+		case 2 
+			col(x, y) = PATTERN_WHITE ;4
+		swbreak
+		case 3
+			col(x, y) = PATTERN_BLACK | PATTERN_WHITE; 6
+		swbreak
+		case 4
+			col(x, y) = PATTERN_NONE | PATTERN_WHITE; 5　黒石＋（×）
+		swbreak
+		case 5
+			col(x, y) = PATTERN_NONE | PATTERN_BLACK; 3 白石＋（×）
+		swbreak
+		
+		case 0 ;(座標セットリスト内の石がない場所)と(灰色+X)は等価。
+		case 6 
+			col(x, y) = PATTERN_NONE ; 1 灰色＋（×）
+		swbreak
+		swend
+		
+	return
+
+
+//基本グループ作成
+#deffunc set_group array groups, int board_size_x, int board_size_y
+	dim group, BOARD_X_MAX, BOARD_Y_MAX
+	repeat length(groups)
+		group_flag = 1 << cnt
+		split groups(cnt),",", coordinate_list
+		
+		repeat stat
+			coord_str = coordinate_list(cnt)
+			if strlen(coord_str) < 4: continue
+			x = int(strmid(coord_str,0,2))
+			y = int(strmid(coord_str,2,2))
+			group(x,y) |= group_flag
+		loop
+	loop
+	return
+
+//基本手順作成
+#deffunc set_tejun array board
+	dim tejun, BOARD_X_MAX, BOARD_Y_MAX
+	repeat length(tejun)	
+		for i,, length2(tejun)
+			tejun(cnt,i) = board(cnt,i)
+		next
+	loop
+	return
+
+//基本パターンから回転のパターンを作成
+#deffunc make_rotate_patterns
+	num_rotations = 4 << (board_sizex == board_sizey)
+	for i,, BOARD_X_MAX
+	for j,, BOARD_Y_MAX
+	for k,, num_rotations
+	
+		rotate_coordinate result, i, j, k, board_sizex, board_sizey // (i,j)をkによる回転を加えて resultに格納
+		
+		p_col(result, result.1, k , 0) = base_p_col(i, j)
+		p_col(reuslt, result.1, k , 1) = base_p_col(i, j) ^ (PATTERN_BLACK | PATTERN_WHITE)) //黒白反転も作成
+		tejun(result, result.1, k)     = base_tejun(i, j)
+		group(result, result.1, k)     = base_group(i, j)
+		
+	next
+	next
+	next
+
+	return
+	
+//回転を含めたパターンを利用。
+#deffunc get_pattern array 色, array 手順, array グループ
+
+	dup 色, p_col
+	dup 手順, tejun
+	dup グループ, group
+	return
+	
+#global
+init_pattern

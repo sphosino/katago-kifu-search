@@ -1,0 +1,492 @@
+#ifndef list_id_manager
+#include "id_manager.hsp"
+#module list_id_manager id_man, nextid, backid, lastid
+
+#const MAX_SIZE 500
+#const TOPNODE 0
+#modinit int max
+	if max{
+		dim nextid, max + 1
+		dim backid, max + 1
+		newmod id_man, id_manager, max + 1
+	}else{
+		dim nextid, MAX_SIZE
+		dim backid, MAX_SIZE
+		newmod id_man, id_manager, MAX_SIZE + 1
+	}
+	lastid = get_new_id(id_man) //id_managerは０～の値を返すので初期化直後は必ず０
+	backid(0) = -1
+	nextid(0) = -1
+	
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modcfunc get_new_list_id
+	newid = get_new_id(id_man)
+	nextid(lastid) = newid
+	backid(newid) = lastid
+	nextid(newid) = -1
+	lastid = newid
+	return newid
+
+#modfunc del_list_id int p1
+	if p1 == TOPNODE || is_id_alive(id_man, p1) == 0: return ;無効なID
+	if p1 == lastid{
+		; 削除するIDがリストの最後の場合
+		lastid = backid(p1)
+		nextid(lastid) = -1 ; 新しい最後のIDのnextは-1
+		
+	}else{
+		; リストの途中を削除する場合
+		backid(nextid(p1)) = backid(p1)
+	    nextid(backid(p1)) = nextid(p1)
+	
+	}
+	release_id id_man, p1
+	return
+
+#modcfunc get_next_id int p1
+	return nextid(p1)
+
+
+#modfunc sort_list_by_value_array array a
+	if nextid(TOPNODE) == -1: return
+
+	//ソートしてから再接続
+
+	nextid(TOPNODE) = _sort_list_by_value_array(thismod, a, nextid(TOPNODE))
+
+	rebuild_backids thismod, TOPNODE
+	
+	;validate_list_integrity thismod, "ソート後"
+	return　//終了
+	
+#modcfunc _sort_list_by_value_array array a, int node, local right_top
+	if nextid(node) == -1 : return node ; 要素1個ならそのまま
+	
+	// ウサギとカメ
+	slow = node
+	fast = node
+	while nextid(fast) >= 0
+		fast = nextid(fast)
+		if nextid(fast) >= 0{
+			slow = nextid(slow)
+			fast = nextid(fast)
+		}
+	wend
+	
+	// slow の次で切断！ これと要素１リターンで無限再帰の回避が保障された。
+	mid = nextid(slow)
+	nextid(slow) = -1
+	
+	// 左右再帰(左を先にするなら、(right_top)ではなく(left_topとmid)をローカル変数にしなければならない
+	right_top = _sort_list_by_value_array(thismod, a, mid)
+	left_top  = _sort_list_by_value_array(thismod, a, node)
+
+	// マージして返す
+	
+	return merge(thismod,a, left_top, right_top)
+
+#modfunc rebuild_backids int p1
+	tmp = p1
+	head = p1
+	while nextid(head) >= 0
+		backid(nextid(head)) = head
+		tmp = nextid(head)
+		head = tmp
+	wend
+	lastid = tmp
+	return
+
+#modcfunc merge array a, int list1, int list2
+	if list1 < 0: return list2
+	if list2 < 0: return list1
+
+	l = list1
+	r = list2
+	if a(l) > a(r){
+		top = list2
+		r = nextid(list2)
+	}else{
+		top = list1
+		l = nextid(list1)
+	}
+
+	tail = top
+	
+	while l >= 0 && r >= 0
+		if a(l) > a(r){
+			nextid(tail) = r
+			tail = r
+			r = nextid(r)
+		}else{
+			nextid(tail) = l
+			tail = l
+			l = nextid(l)
+		}
+	wend
+
+	if l >= 0{
+		nextid(tail) = l
+	}else: if r >= 0{
+		nextid(tail) = r
+	}
+	
+	return top
+
+#modcfunc is_list_id_alive int id
+	if id == TOPNODE: return 0
+	return is_id_alive(id_man, id)
+	
+#modcfunc link_ids int pre, int nex
+    nextid(pre) = nex
+    if nex >= 0: backid(nex) = pre_
+	return
+#modfunc remove_list_id int id
+	if is_list_id_alive(thismod,id){
+		link_ids thismod, prev_id
+		release_id id_man, id
+	}
+	return
+
+#modcfunc find_all_by_condition array values, int min_val, int max_val, array result_ids
+    // 結果カウンタ
+    found_count = 0    
+    // リストを順番にチェック
+    current_id = nextid(TOPNODE)
+    while current_id >= 0
+        // 値が条件範囲内かチェック
+        if values(current_id) >= min_val && values(current_id) <= max_val {
+            result_ids(found_count) = current_id
+            found_count++
+        }
+        current_id = nextid(current_id)
+    wend
+    
+    return found_count
+
+// おまけ：単一値検索版
+#modcfunc find_by_value array values, int target_value
+    current_id = nextid(TOPNODE)
+    while current_id >= 0
+        if values(current_id) == target_value {
+            return current_id
+        }
+        current_id = nextid(current_id)
+    wend
+    return -1  // 見つからない場合
+
+// おまけ：条件に一致する個数をカウント
+#modcfunc count_by_condition array values, int min_val, int max_val
+    count = 0
+    current_id = nextid(TOPNODE)
+    while current_id >= 0
+        if values(current_id) >= min_val && values(current_id) <= max_val {
+            count++
+        }
+        current_id = nextid(current_id)
+    wend
+    return count
+#modfunc validate_list_integrity str call_location
+    // 整合性チェック結果
+    error_count = 0
+    warning_count = 0
+    
+    logmes "=== リスト整合性チェック開始 [" + call_location + "] ==="
+    
+    // 1. 基本的な循環チェック（ウサギとカメアルゴリズム）
+    slow = TOPNODE
+    fast = TOPNODE
+    has_cycle = 0
+
+    switch get_list_count(thismod)
+	case 0: swbreak
+	case 1
+		if slow == fast{ has_cycle = 1}
+		if backid(nextid(TOPNODE)) = TOPNODE{ has_cycle = 1}
+	swbreak
+	default
+	    while nextid(nextid(fast)) >= 0
+	        slow = nextid(slow)
+	        fast = nextid(nextid(fast))
+	        if slow == fast {
+	            logmes "[ERROR] 循環リストが検出されました！"
+	            error_count++
+	            has_cycle = 1
+	            _break
+	        }
+	        if nextid(fast) == -1: swbreak
+	    wend
+    swbreak
+    swend
+    
+    if has_cycle == 0 {
+        logmes "[OK] 循環チェック: 循環なし"
+    }
+    
+    // 2. 前方向リンクのチェック
+    now_point = TOPNODE
+    forward_count = 0
+    max_iterations = get_using_count(id_man) + 10  // 無限ループ防止
+    
+    while now_point >= 0 && forward_count < max_iterations
+        next_point = nextid(now_point)
+        
+        // 次のポイントが有効かチェック
+        if next_point >= 0 {
+            if is_id_alive(id_man, next_point) == 0 {
+                mes "[ERROR] 無効なIDへのリンクを発見: " + now_point + " -> " + next_point
+                error_count++
+            }
+        }
+        
+        now_point = next_point
+        forward_count++
+    wend
+    
+    if forward_count >= max_iterations {
+        logmes "[ERROR] 前方向チェックで無限ループの可能性"
+        error_count++
+    } else {
+        logmes "[OK] 前方向リンク: " + forward_count + "個のノードを確認"
+    }
+    
+    // 3. 後方向リンクのチェック
+    now_point = TOPNODE
+    backward_errors = 0
+    
+    while now_point >= 0
+        next_point = nextid(now_point)
+        if next_point >= 0 {
+            // 次のノードのbackが現在のノードを指しているかチェック
+            if backid(next_point) != now_point {
+                logmes "[ERROR] 後方向リンク不整合: " + next_point + "のback=" + backid(next_point) + " (期待値:" + now_point + ")"
+                backward_errors++
+            }
+        }
+        now_point = next_point
+    wend
+    
+    if backward_errors == 0 {
+        logmes "[OK] 後方向リンク: 整合性確認"
+    } else {
+        error_count += backward_errors
+    }
+    
+    // 4. lastidの整合性チェック
+    // 実際の最後のIDを探す
+    actual_last = TOPNODE
+    while nextid(actual_last) >= 0
+        actual_last = nextid(actual_last)
+    wend
+    
+    if actual_last != lastid {
+        logmes "[ERROR] lastid不整合: 実際=" + actual_last + " 記録=" + lastid
+        error_count++
+    } else {
+        logmes "[OK] lastid整合性: 正常"
+    }
+    
+    // 5. IDマネージャーとの整合性チェック
+    using_count = get_using_count(id_man) - 1  // TOPNODEを除く
+    list_count = get_list_count(thismod)
+    
+    if using_count != list_count {
+        logmes "[WARNING] IDマネージャーとリストカウントの不一致: IDMgr=" + using_count + " List=" + list_count
+        warning_count++
+    } else {
+        logmes "[OK] カウント整合性: " + list_count + "個"
+    }
+    
+    // 6. 孤立ノードのチェック
+    orphaned_nodes = 0
+    repeat get_using_count(id_man)
+        check_id = cnt
+        if is_id_alive(id_man, check_id) && check_id != TOPNODE {
+            // このIDがリストに含まれているかチェック
+            found_in_list = 0
+            scan_point = TOPNODE
+            while nextid(scan_point) >= 0
+                scan_point = nextid(scan_point)
+                if scan_point == check_id {
+                    found_in_list = 1
+                    break
+                }
+            wend
+            
+            if found_in_list == 0 {
+                logmes "[WARNING] 孤立ノード発見: ID=" + check_id
+                orphaned_nodes++
+            }
+        }
+    loop
+    
+    if orphaned_nodes == 0 {
+        logmes "[OK] 孤立ノード: なし"
+    } else {
+        warning_count += orphaned_nodes
+    }
+    
+    // 7. メモリ使用効率のチェック
+    total_allocated = get_using_count(id_man)
+    if total_allocated > 0 {
+        efficiency = (list_count * 100) / total_allocated
+        logmes "[INFO] メモリ効率: " + efficiency + "% (" + list_count + "/" + total_allocated + ")"
+        if efficiency < 70 {
+            logmes "[WARNING] メモリ効率が低下しています（70%未満）"
+            warning_count++
+        }
+    }
+    
+    // 結果サマリー
+    logmes "=== チェック結果サマリー ==="
+    logmes "エラー: " + error_count + "件"
+    logmes "警告: " + warning_count + "件"
+    
+    if error_count == 0 && warning_count == 0 {
+        logmes "[SUCCESS] リストは完全に正常です！"
+        return 0  // 正常
+    } else: if error_count == 0 {
+        logmes "[WARNING] 軽微な問題がありますが、動作に支障はありません"
+        return 1  // 警告あり
+    } else {
+        logmes "[CRITICAL] 重大な問題が検出されました！"
+        return 2  // エラーあり
+    }
+
+// デバッグ用のリスト可視化関数も追加
+#modfunc debug_print_list array values, str title
+    mes "=== " + title + " ==="
+    if get_list_count(thismod) == 0 {
+        mes "リストは空です"
+        return
+    }
+    
+    mes "TOPNODE(0) -> ",
+    now_point = nextid(TOPNODE)
+    node_count = 0
+    
+    while now_point >= 0 && node_count < 50  // 表示制限
+        mes "ID:" + now_point + "(val:" + values(now_point) + ") -> ",
+        now_point = nextid(now_point)
+        node_count++
+    wend
+    
+    if node_count >= 50 {
+        mes "... (省略)"
+    } else {
+        mes "NULL"
+    }
+    
+    mes "総ノード数: " + get_list_count(thismod)
+    mes "最後のID: " + lastid
+    return
+
+#modfunc swap_left_right int id1, int id2
+	if id1 == id2: return
+	if is_list_id_alive(thismod,id1) == 0 || is_list_id_alive(thismod,id2) == 0: return
+
+	// 位置関係の判定
+	adjacent = 0
+	if nextid(id1) == id2 {  // id1 → id2 の隣接
+		adjacent = 1
+		left = id1
+		right = id2
+	}
+	else: if nextid(id2) == id1 {  // id2 → id1 の隣接
+		adjacent = 2
+		left = id2
+		right = id1
+	}
+	else {  // 非隣接
+		left = id1
+		right = id2
+	}
+
+	// 前後ノードの取得
+	prev1 = backid(left)
+	prev2 = backid(right)
+	next1 = nextid(left)
+	next2 = nextid(right)
+
+	if adjacent == 1 {  // 隣接: left → right
+		// 外側リンク更新
+		nextid(prev1) = right
+		backid(right) = prev1
+		
+		// 相互リンク更新
+		nextid(right) = left
+		backid(left) = right
+		
+		// 右側リンク更新
+		nextid(left) = next2
+		if next2 >= 0 : backid(next2) = left
+
+	}else: if adjacent == 2 {  // 隣接: right → left
+		// 外側リンク更新
+		nextid(prev2) = left
+		backid(left) = prev2
+		
+		// 相互リンク更新
+		nextid(left) = right
+		backid(right) = left
+		
+		// 右側リンク更新
+		nextid(right) = next1
+		if next1 >= 0 : backid(next1) = right
+	}else {  // 非隣接
+		// leftの元位置へのリンク更新
+		nextid(prev1) = right
+		backid(right) = prev1
+		if next1 >= 0 : backid(next1) = right
+		
+		// rightの元位置へのリンク更新
+		nextid(prev2) = left
+		backid(left) = prev2
+		if next2 >= 0 : backid(next2) = left
+		
+		// 相互リンク更新
+		nextid(right) = next1
+		nextid(left) = next2
+	}
+	return
+
+#modcfunc get_list_count
+	return get_using_count(id_man) - 1
+
+#modcfunc get_list_ids array a
+	set_stat_to_TOPNODE
+	acount = 0
+	while get_next_id(thismod, stat)  >= 0
+		a(acount) = stat
+		acount++
+	wend
+	return get_list_count(thismod)
+#deffunc set_stat_to_TOPNODE
+	return TOPNODE
+#global
+
+#define global foreach_list(%1, %2, %3 = TOPNODE)%tforlist :\
+	%i = get_next_id(%1, %3) :\
+	while %p >= TOPNODE :\
+	%2 = %p :\
+	%s1
+
+#define global foreach_list_end%tforlist %p1 = get_next_id(%o, %o) : wend
+
+#endif
+
+
+//テストゾーン
+#if 00
+#undef mes
+#define mes(%1) mes@hsp %1:logmes %1
+/////////////////////
+
+
+
+
+
+
+/////////////////////
+#endif

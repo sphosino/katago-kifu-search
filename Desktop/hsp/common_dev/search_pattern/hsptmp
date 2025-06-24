@@ -1,0 +1,105 @@
+#ifndef init_tejun
+#include "ease.hsp"
+#include "physis.hsp"
+#include "static.hsp"
+#include "list.hsp"
+#include "renderer.hsp"
+
+#include "id_manager.hsp"
+#include "color_manager.hsp"
+#include "goban.hsp"
+#module 
+#defcfunc get_rect
+	return 0
+#const BOARD_X_MAX 26
+#const BOARD_Y_MAX 26
+
+#deffunc init_tejun
+	dim tejun, BOARD_X_MAX, BOARD_Y_MAX
+	return
+	
+#deffunc tejun_draw int posx, int posy, int MAS_X, int MAS_Y, array board
+	for i,,BOARD_X_MAX
+		for j,,BOARD_Y_MAX
+			;if tejun(i,j){				
+				sx = MAS_X
+				sy = MAS_Y
+				cx = posx + i * MAS_X
+				cy = posy + j * MAS_Y
+				cx += sx / 2
+				cy += sy / 2
+				make_instant_draw_object "STR", cx, cy, sx, sy, strf("%s,%d", tejun(i,j), select_tejun_color(get_goban_position_color(board(i,j))))
+			;}
+		next
+	next
+	return
+	
+#deffunc add_tejun int _x, int _y, int tejun_num
+	if tejun_num_validation(group_num){
+		return
+	}
+    if tejun(_x, _y) == tejun_num
+	return
+	
+#deffunc del_group_stone int _x, int _y, int tejun_num
+	if tejun_num_validation(tejun_num){
+		return
+	}
+	tejun(x, y) = 0
+
+	return
+
+#defcfunc tejun_num_validation int tejun_num
+	invalid = group_num < 0 || group_num > 9
+	if invalid{
+		logmes "éËèáÇÕÇPÅ|ÇXÇ‹Ç≈Ç≈Ç∑ -> " + group_num
+		stop
+	}
+	return invalid
+	
+#deffunc set_tejun  array a
+
+	init_tejun
+
+	for i,,limit(BOARD_X_MAX,,length(a))
+		for j,,limit(BOARD_Y_MAX,,length2(a))
+			tejun(i,j) = a(i,j)
+		next
+	next
+	return
+
+#deffunc get_tejun array a
+	dup a, tejun
+	return
+#defcfunc select_tejun_color int c
+	switch c
+	case 0
+	case 2
+	case 3
+	case 5
+	case 6 : return "$000000" ; çïï∂éö
+	case 1
+	case 4 : return "$FFFFFF" ; îíï∂éö
+	default : dialog "ëzíËäOÇÃêŒÇÃéÌóﬁÇ≈Ç∑",,__FILE__: end
+	swend
+#global
+init_tejun
+#endif
+
+#include "../../hsp_common/keyfps.hsp"
+#include "../../hsp_common/rboxf.hsp"
+#include "../../hsp_common/centering_mes.hsp"
+#include "../../hsp_common/draw_type/all_include"
+
+_make_draw_object MOVE_TYPE_STATIC,"BOXF_FAST",LIFE_FOREVER,0,0,ginfo(12),ginfo(13),""
+update_priority_draw_object stat, PRIORITY_BACK
+newmod a, goban, 19,19
+dim b,19,19
+
+*main
+	manage_keyfps
+	notify_dt_draw_object frametime()
+	tejun_draw 20,20,20,20,a
+	draw_objects
+	redraw:redraw 2
+	goto*main

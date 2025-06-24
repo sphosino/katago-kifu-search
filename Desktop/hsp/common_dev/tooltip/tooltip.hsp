@@ -1,0 +1,26 @@
+#module
+#deffunc init_tooltip
+	if buf{
+		tmp = ginfo_sel
+		buf = ginfo_newid
+		buffer buf, 640,480
+		gsel tmp
+	}
+	dim id_to_hint, 500
+	return
+#deffunc add_tooltip int id, str s1
+	id_to_hint(id) = s1
+	return
+
+#deffunc draw_tooltip int id
+	if id_to_hint(id) == "": return
+	tmp = ginfo_sel
+	gsel buf
+		color:boxf
+		color 255,255,255:pos 0,0: mes id_to_hint(id)
+		size = ginfo_mesx,ginfo_mesy
+	gsel tmp
+	make_instant_draw_object "TYPE_SPRITE",mousex,mousey,size,size.1,"" + buf
+	return
+#global
+init_tooltip

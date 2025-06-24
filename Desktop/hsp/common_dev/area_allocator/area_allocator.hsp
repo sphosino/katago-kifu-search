@@ -1,0 +1,177 @@
+#ifndef area_allocator
+#include "../../hsp_common/draw_obj/all_include"
+#include "../../hsp_common/all_include"
+#include "../../hsp_common/draw_type/all_include"
+
+#module area_allocator
+
+#const AREA_MAX 1000
+
+#enum AREA_TYPE_NORMAL = 0 //自由配置
+#enum AREA_GRID //グリッド配置
+
+
+#deffunc init_area_allocator
+	dim parent, AREA_MAX
+	sdim childs,, AREA_MAX
+	dim child_num, AREA_MAX
+
+	dim pos_x, AREA_MAX //親エリアに対しての相対位置
+	dim pos_y, AREA_MAX //親エリアに対しての相対位置
+	dim size_x, AREA_MAX
+	dim size_y, AREA_MAX
+	dim use_size_x, AREA_MAX
+	dim use_size_y, AREA_MAX
+
+	dim scrollbar_x, AREA_MAX
+	dim scrollbar_y, AREA_MAX
+
+	dim area_id_manager
+	newmod area_id_manager, id_manager, AREA_MAX
+	return
+#defcfunc make_area int _parent, int _x, int _y, int _sx, int _sy
+	newid = get_new_id(area_id_manager)
+	if _parent != -1{
+		lpoke childs(_parent), child_num(_parent) * 4, newid
+		child_num(_parent)++
+	}
+	parent(newid) = _parent
+	newmod scrollbar, scroll:scrollbar_x(newid) = stat
+	newmod scrollbar, scroll:scrollbar_y(newid) = stat
+	pos_x(newid) = _x
+	pos_y(newid) = _y
+	size_x(newid) = _sx
+	size_y(newid) = _sy
+	
+	return newid
+#deffunc del_area int p1, local i
+	if parent(p1) != -1{
+		if has_child(parent(p1), p1) >= 0{
+			child_num(parent(p1))--
+			memcpy childs(parent(p1)), childs(parent(p1)), child_num(parent(p1)) - stat << 2, stat << 2, stat + 1 << 2 
+		}
+	}
+	for i,, child_num(p1), 4
+		del_area lpeek(childs(p1), i)
+	next
+	release_id area_id_manager, p1
+	return
+#defcfunc has_child int p1, int p2
+	result = -1
+	repeat child_num(p1)
+		if lpeek(childs(p1),cnt*4) == p2{
+			result = cnt
+			break
+		}
+	loop
+	return result
+#deffunc move_area_pos int p1, int _x, int _y
+	pos_x(p1) += _x
+	pos_y(p1) += _y
+	return
+#deffunc get_rect int p1, array a
+	get_position p1, a
+	a(2) = a(0) + size_x(p1), a(1) + size_y(p1)
+	
+	return
+#deffunc draw_rect int p1
+	onrect = -1
+	onscb = -1
+	_draw_rect p1
+	if _getkey(1) == 1 && onrect != -1 && onscb == -1{
+		if parent(onrect) != -1{
+			startmx = mousex
+			startmy = mousey
+			startrect = onrect
+		}
+	}
+	if _getkey(1) >= 1 && startrect != -1{
+		nx = mousex - startmx
+		ny = mousey - startmy
+		move_area_pos startrect, nx,ny
+		startmx = mousex
+		startmy = mousey
+	}
+	if _getkey(1) == -1{
+		startrect = -1
+	}
+	return
+#deffunc _draw_rect int p1
+	get_rect p1, pos_
+	make_instant_draw_object "BOXF_FAST", pos_(0), pos_(1), pos_(2), pos_(3), str(get_color_by_depth(sublev\10))
+	if use_size_x(p1) > size_x(p1){
+		//Xスクロールバー表示
+		set_position_scroll_bar scrollbar(scrollbar_x(p1)), pos_.0, pos_.1
+		set_tickness_scroll_bar scrollbar(scrollbar_x(p1)), 5
+		set_size_scroll_bar     scrollbar(scrollbar_x(p1)), size_x(p1)
+		set_value_minmax        scrollbar(scrollbar_x(p1)), 0, use_size_x(p1) - size_x(p1)
+		;set_color_scroll_bar    scrollbar(scrollbar_x(p1)), $000000,$FF0000
+		draw_scroll_bar         scrollbar(scrollbar_x(p1))
+	}
+
+	
+	if is_in_scrollbar(scrollbar(scrollbar_x(p1))): onscb = p1
+	if in_rect(pos_): onrect = p1
+	repeat child_num(p1)
+		_draw_rect lpeek(childs(p1), cnt * 4)
+	loop
+	
+	return
+#defcfunc in_area
+	return onrect
+#deffunc get_position int p1, array a
+	if p1 == -1{
+		a = 0,0
+		return
+	}
+	get_position parent(p1), a
+	a(0) += pos_x(p1)
+	a(1) += pos_y(p1)
+	return
+#deffunc notify_using_area int p1, int _x, int _y
+	use_size_x(p1) = _x
+	use_size_y(p1) = _y
+
+	return
+#defcfunc local get_color_by_depth int _depth_
+	switch _depth_
+	case 0 : return $ff6666
+	case 1 : return $ff9933 
+	case 2 : return $ffff66
+	case 3 : return $66cc66 
+	case 4 : return $3399ff 
+	case 5 : return $6666ff 
+	case 6 : return $cc66ff
+	case 7 : return $ff66cc
+	case 8 : return $33cc99
+	case 9 : return $999999
+	default: return $333333
+	swbreak
+	swend
+	return
+#deffunc local set_color_16 int p1
+	color p1 >> 16 & 255, p1 >> 8 & 255, p1 & 255
+	return
+#defcfunc local in_rect array rect
+	return mousex >= rect && mousey >= rect.1 && mousex < rect.2 && mousey < rect.3
+#global
+init_area_allocator
+
+#endif
+
+root = make_area (-1, 0,0,ginfo(12),ginfo(13))
+c = make_area(root,200,200,200,200)
+d = make_area(c   ,30,30,30,30)
+e = make_area(c   ,100,100,80,80)
+
+notify_using_area e, 200
+setfps 30
+*main
+	manage_keyfps
+	notify_dt_draw_object frametime()
+
+	draw_rect root
+	draw_objects
+	redraw:redraw 2
+	title ""+in_area() + "::"+waitedtime()
+	goto*main
