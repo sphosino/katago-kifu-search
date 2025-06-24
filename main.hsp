@@ -517,7 +517,6 @@ pretime = keyfpstime
 			if dragging_flag == 1{
 				if rect >= 0{
 					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
-					rect = -1
 				}
 				dragging_flag = 0
 			}else: if ui_mode == MODE_BOARD_EDIT{//矩形描画モード
@@ -560,13 +559,7 @@ pretime = keyfpstime
 					if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
 						rect = limit(point,0,18),limit(point.1,0,18)
 						rect(2) = rect, rect.1
-					}else{
-						rect = -1
 					}
-
-					
-				}else{
-					rect = -1
 				}
 				if treebox_onmouseid(t) >=0{
 					set_current_node t, stat
@@ -575,8 +568,8 @@ pretime = keyfpstime
 					gosub*syncboard
 				}
 			}
-			inlistbox = 0
 			
+			inlistbox = 0
 			foreach kifulist
 				sel = listbox_on_id(kifulist.cnt, mousex, mousey)
 				if sel != -1: inlistbox = 1 //リストボックスのなかだ。
@@ -669,7 +662,8 @@ pretime = keyfpstime
 					}
 				}
 			}
-
+		}else{
+			rect = -1
 		}
 
 	
