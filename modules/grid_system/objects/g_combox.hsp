@@ -31,7 +31,7 @@
 	combox_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0, strf("%s,$000000,ÉÅÉCÉäÉI,0,0,$AAAAAA",t))
 
 	tmpcol = $C8C8C8,$808080
-	open_time = 0.3
+	open_time = 0.2
 	close_time = 0.3
 
     mref thismod_ID, 2

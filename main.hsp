@@ -298,6 +298,16 @@ set_tooltip goban_loadmax_area
 add_tooltip combox_history, "検索パターン履歴"
 set_tooltip combox_history
 
+add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
+set_tooltip button_getsgf
+add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
+set_tooltip button_getsgf_nowpoint
+
+add_tooltip kifustart, "何手目から表示するかを設定"
+set_tooltip kifustart
+add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
+set_tooltip kifustart_result
+
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
@@ -337,6 +347,7 @@ newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$3333
 newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
 
+
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
@@ -365,12 +376,11 @@ add_item_radiobox g_radiobox.tmp, str(cnt+1)
 loop
 
 
-newmod kifulist, grid_listbox, sidebar_kifulist, 25000
-newmod kifulist, grid_listbox, sidebar_kifulist_match, 25000: matchlist = stat
-
+newmod kifulist, grid_listbox, sidebar_kifulist, 26000
+newmod kifulist, grid_listbox, sidebar_kifulist_match, 26000: matchlist = stat
 foreach kifulist
-	set_listbox_item_ysize kifulist.cnt, 29
-	set_listbox_scollbar_width kifulist.cnt, 15
+	set_listbox_item_ysize kifulist.cnt, 25
+	set_listbox_scollbar_width kifulist.cnt, 16
 loop
 
 newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
@@ -381,7 +391,7 @@ newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
 set_margin_line_graph l_graph, 15, 10, 15, 10
 
-newmod filename_to_topnode, hash_manager, 25000
+newmod filename_to_topnode, hash_manager, 26000
 
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4|8
@@ -402,7 +412,7 @@ pretime = keyfpstime
 
 	計測 "kifuload"
 
-	if kifu_update & waitedtime() >= 4{//棋譜がアップデートされたとき且つ、待ち時間が(4ms)以上あったときのみ走る
+	if kifu_update & waitedtime() >= 5{//棋譜がアップデートされたとき且つ、待ち時間が(5ms)以上あったときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
 		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
@@ -583,7 +593,20 @@ pretime = keyfpstime
 
 			}
 		}
-	
+
+		//キーによるドラッグ解除処理（先）
+		if _getkey(1) == -1{//マウスが離されたとき
+				
+			dragging_flag = 0
+			if rect(0) >= 0{
+				modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
+				rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
+				rn++
+				dim rect,4
+			}
+		}
+
+		//ドラッグ中の処理(後）
 		if dragging_flag{
 			
 			rect(2) = limit(point(0),0,18)
@@ -602,7 +625,7 @@ pretime = keyfpstime
 					set_board_data board.1, user_board
 				swbreak
 				case 2
-					if prex = point.0 & prey = point.1{
+					if prex == point.0 & prey == point.1{
 					}else{
 						prex = point.0
 						prey = point.1
@@ -655,18 +678,8 @@ pretime = keyfpstime
 				}
 			}
 
-
 			
-			if _getkey(1) == -1{//マウスが離されたとき
-				
-				dragging_flag = 0
-				if rect(0) >= 0{
-					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
-					rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
-					rn++
-					dim rect,4
-				}
-			}
+
 
 			if _getkey(2) == 1{
 				if rect(0) >= 0{
@@ -716,7 +729,7 @@ pretime = keyfpstime
 				pre_jidou = 1
 			}
 
-			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36),keyfpstime -pretime)
+			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime -pretime)
 			if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
 				pretime = keyfpstime
 				logmes "moved"
@@ -762,7 +775,6 @@ pretime = keyfpstime
 	get_group tmp
 	get_tejun tmp2
 	group_tejun_draw board.ui_mode, tmp, tmp2
-	;debug_tg_draw board.ui_mode, tmp,tmp2
 	
 	//検索範囲表示
 
@@ -1030,13 +1042,12 @@ pretime = keyfpstime
 	save_history
 	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
 
-	if use_bitboard{
+	if use_bitboard{ ;厳密検索
 		
 		result_num = search2(kl,m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
 		
-	}else{
+	}else{ ;通常検索
 
-		
 		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}
 

@@ -43,10 +43,12 @@
 	update_static_rect bg_eid, rect
 	update_static_rect label_eid, rect
 
-	cx1 = rect.2 - margin - check_size
-	cy1 = (rect.1 + rect.3) / 2 - check_size / 2
+	real_check_size = limit((rect.3-rect.1)*2/3,,check_size)
+
+	cx1 = rect.2 - margin - real_check_size
+	cy1 = (rect.1 + rect.3) / 2 - real_check_size / 2
 	cx2 = rect.2 - margin
-	cy2 = cy1 + check_size
+	cy2 = cy1 + real_check_size
 	crect = cx1, cy1, cx2, cy2
 	update_static_rect check_eid, crect
 
@@ -69,25 +71,3 @@
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 #global
-
-#if 0
-mock_flag@global = 1
-
-repeat 12
-set_rect_mock cnt, 0,0,0,0
-loop
-set_rect_mock 90, 0,0,60,30
-set_rect_mock 30, 60,60, 100,100
-
-newmod c, grid_checkbox, a, "AA",30
-newmod c, grid_checkbox, b, "BB",90
-
-
-*main
-	manage_keyfps
-	foreach c
-	draw_g_chkbox c(cnt)
-	loop
-	redraw:redraw 2
-	goto*main
-#endif
