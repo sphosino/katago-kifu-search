@@ -560,6 +560,12 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		if _getkey(1) == 1{ //左クリック
 			if in_board == 0{
 				spawn_ripple_effect mousex, mousey
+				if treebox_onmouseid(t) >=0{
+					set_current_node t, stat
+					sync_treebox_board t, board 
+					手数 = treeview_onmouse_id_deep()
+					gosub*syncboard
+				}
 			}else{
 				dragging_flag = 1
 				if in_board{
@@ -570,12 +576,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 						rect(2) = rect, rect.1
 					}
 				}
-				if treebox_onmouseid(t) >=0{
-					set_current_node t, stat
-					sync_treebox_board t, board 
-					手数 = treeview_onmouse_id_deep()
-					gosub*syncboard
-				}
+
 			}
 			
 			inlistbox = 0
