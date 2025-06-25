@@ -78,7 +78,7 @@ screen 0, ginfo(20), ginfo(21)
 screen 0, ginfo(12), ginfo(13)
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
-onexit *save_info //終了時に*save_infoにジャンプ
+
 
 //使用キーの宣言
 delkey_all
@@ -185,9 +185,16 @@ if strsize == -1{
 
 //ウィンドウ情報設定
 width sx, sy, wx, wy
-save_window_size = ginfo(12), ginfo(13)
+dim save_window_size, 2
+dim save_window_position, 2
+if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
+if ginfo(4) >= 0: save_window_position = ginfo(4), ginfo(5)
 if 最大化: sendmsg hwnd, $112, $F030
 if 最小化: sendmsg hwnd, $112, $F020
+
+tmp = 0, 0, sx, sy
+boxf : color 255, 255, 255: centering_mes "now loading...", tmp, "メイリオ"
+
 
 //検索時のメモ化用モジュール初期化
 init_mem max_depth
@@ -396,6 +403,8 @@ bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF_FAST", LIFE_FOREVER, 0,0, ginfo
 update_priority_draw_object bg_id, PRIORITY_BACK
 //最初の時刻
 pretime = keyfpstime
+
+onexit *save_info //終了時に*save_infoにジャンプ
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
@@ -816,6 +825,7 @@ pretime = keyfpstime
 	IsIconic hwnd :最小化 = stat
 	if (最大化 | 最小化) == 0{
 		save_window_size = window_size, window_size.1
+		save_window_position = ginfo(4), ginfo(5)
 	}
 	return
 	
@@ -1236,8 +1246,8 @@ pretime = keyfpstime
 	notesel s
 	noteadd str(ginfo(10)) //ウィンドウサイズ
 	noteadd str(ginfo(11))
-	noteadd str(ginfo(4)) //ウィンドウ位置
-	noteadd str(ginfo(5))
+	noteadd str(save_window_position) //ウィンドウ位置
+	noteadd str(save_window_position.1)
 	noteadd str(save_window_size) //描画領域サイズ
 	noteadd str(save_window_size(1))
 	noteadd str(max_depth)
