@@ -87,15 +87,16 @@
 //------------------------------------------------------------------------
 
 //ŠO•”‚©‚ç’¼Ú“Ç‚İ‚İ
-#deffunc set_board array a
+#deffunc set_board_pattern array a
 	for i,, length(a)
 	for j,, length2(a)	
 		board(i,j) = a(i,j)
 	next
 	next
 	return
-#deffunc set_coordinate_set str s1
+#deffunc set_coordinate_pattern str s1
 	v = s1
+	logmes v
 	return
 #deffunc set_group array a
 	repeat 4
@@ -386,6 +387,8 @@
 			groups++
 		}
 	loop
+
+	logmes ""+count + "::" + groups
 
 	return count + groups
 

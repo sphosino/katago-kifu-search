@@ -39,7 +39,7 @@
 	group_num = get_pattern_all_groups_num() //パターンのhitと判定するために判定に必要な数を取得
 	logmes "group_num = " + group_num
 	if group_num == 0: return -1
-	if group_num > max_depth: return -1
+	if group_num > max_depth: return -2
 
 	colorflip_num = 1 + colorflip // (0-1)を(1-2)で扱う
 	
