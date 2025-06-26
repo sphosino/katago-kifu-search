@@ -81,10 +81,12 @@
 
 	//ñ⁄ê∑ÇËï\é¶
 	color 255,255,255
+	font "", (graphboxf.2 - graphboxf) / (x_ticks + 20)
 	repeat x_ticks
 		pos (graphboxf.2 - graphboxf) * cnt / x_ticks + margin_left, rect.3 - rect.1 - margin_bottom
 		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
+	font "", (graphboxf.3 - graphboxf.1) / (y_ticks + 1)
 	repeat y_ticks
 		pos 0, (graphboxf.3 - graphboxf.1) * cnt / y_ticks + margin_top
 		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
