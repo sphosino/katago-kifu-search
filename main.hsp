@@ -1022,12 +1022,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	
 	get_board_data board.ui_mode, m
 	
-	set_board m
-	set_coordinate_set v
-	set_base
 
-	save_history
-	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
 
 	if use_bitboard{ ;厳密検索
 		
@@ -1038,12 +1033,18 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
 	}
 
-
 	if result_num < 0{
 		//早期リターンなら何もせず終わる。
 		logmes "検索早期リターン！当然０件だよ"
 		return
 	}
+
+	set_board m
+	set_coordinate_set v
+	set_base
+
+	save_history
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
 
 	search_result_sgflist = ""
 	
