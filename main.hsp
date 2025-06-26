@@ -1,5 +1,7 @@
 #packopt name "KataGo棋譜検索"
+#packopt hide 1
 #bootopt notimer 1 //ツールなので、高精度タイマーを使用しない
+
 
 ;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重くなるので謎バグ特定専用
 
@@ -34,78 +36,6 @@
 #else
 	dirname = dir_exe
 #endif
-
-kifu_dirname = dirname + "/棋譜"
-v = "" //検索対象座標セット　xxyy,xxyy... 形式
-search_result_sgflist = ""
-jidou = 0
-着手番号表示 = 0
-ui_mode = MODE_KIFU_VIEW
-set_treeview 37, 37
-set_treeview_position 10,20
-set_tree_direction 6
-
-kifu_update = 1
-
-topnode = -1
-
-//-- ゲーム状態の管理用変数 ---
-c_list = "0.50" ; 形勢（評価値）データ（KataGoコメントから）
-dim pre_xy, 2   ; 前の座標を保持（マンハッタン距離用)
-dim user_board, 19, 19 ;　プレイヤーが操作する仮盤面
-
-pre_window_size = -9999,-9999
-pre_ui_mode = -1
-
-//矩形範囲指定用
-rn = 0
-dim rect, 4: rect = -1
-dim rect_stack, 4
-
-//検索結果受け取り用
-sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
-sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
-dim matchlist                ; 検索結果用リストボックスIDを格納
-
-pre_filter_on = -1
-pre_filter = -1
-
-//FPS設定
-setfps 30
-
-//ウィンドウ作成
-screen 0, ginfo(20), ginfo(21)
-screen 0, ginfo(12), ginfo(13)
-GetWindowLong hwnd, -16
-SetWindowLong hwnd, -16, stat | $10000 | $40000
-
-
-//使用キーの宣言
-delkey_all
-addkey 1 //左クリック
-addkey 2 //右クリック
-addkey 17 //ctrl
-addkey 'C'
-addkey 'V'
-addkey 'A'
-
-
-repeat 4
-	addkey 37+cnt //カーソルキー
-loop
-
-//乱数を初期化
-randomize
-
-//起動時にsaveフォルダを空にする
-chdir dirname + "/save"
-dirlist filelist, "*.sgf"
-notesel filelist
-	repeat notemax
-		noteget tmp, cnt
-		delete tmp
-	loop
-noteunsel
 
 //前回起動時の情報があれば復元
 chdir dirname
@@ -183,8 +113,12 @@ if strsize == -1{
 	return
 #global
 
-//ウィンドウ情報設定
-width sx, sy, wx, wy
+//ウィンドウ作成
+screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
+
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
+
 dim save_window_size, 2
 dim save_window_position, 2
 if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
@@ -192,8 +126,80 @@ if ginfo(4) >= 0: save_window_position = ginfo(4), ginfo(5)
 if 最大化: sendmsg hwnd, $112, $F030
 if 最小化: sendmsg hwnd, $112, $F020
 
+boxf
+color 255, 255, 255
+
 tmp = 0, 0, sx, sy
-boxf : color 255, 255, 255: centering_mes "now loading...", tmp, "メイリオ"
+set_max_centering_mes 40
+centering_mes "システム起動中・・・", tmp, "メイリオ"
+
+
+//初期化開始
+
+
+kifu_dirname = dirname + "/棋譜"
+v = "" //検索対象座標セット　xxyy,xxyy... 形式
+search_result_sgflist = ""
+jidou = 0
+着手番号表示 = 0
+ui_mode = MODE_KIFU_VIEW
+set_treeview 37, 37
+set_treeview_position 10,20
+set_tree_direction 6
+
+kifu_update = 1
+
+topnode = -1
+
+//-- ゲーム状態の管理用変数 ---
+c_list = "0.50" ; 形勢（評価値）データ（KataGoコメントから）
+dim pre_xy, 2   ; 前の座標を保持（マンハッタン距離用)
+dim user_board, 19, 19 ;　プレイヤーが操作する仮盤面
+
+pre_window_size = -9999,-9999
+pre_ui_mode = -1
+
+//矩形範囲指定用
+rn = 0
+dim rect, 4
+dim rect_stack, 4
+
+//検索結果受け取り用
+sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
+sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
+dim matchlist                ; 検索結果用リストボックスIDを格納
+
+pre_filter_on = -1
+pre_filter = -1
+
+//FPS設定
+setfps 30
+
+//使用キーの宣言
+delkey_all
+addkey 1 //左クリック
+addkey 2 //右クリック
+addkey 17 //ctrl
+addkey 'C'
+addkey 'V'
+addkey 'A'
+
+repeat 4
+	addkey 37+cnt //カーソルキー
+loop
+
+//乱数を初期化
+randomize
+
+//saveフォルダを空にする
+chdir dirname + "/save"
+dirlist filelist, "*.sgf"
+notesel filelist
+	repeat notemax
+		noteget tmp, cnt
+		delete tmp
+	loop
+noteunsel
 
 
 //検索時のメモ化用モジュール初期化
@@ -279,6 +285,7 @@ root = make_area_child(1,1)
 					radiobox_grouping = make_area_child()
 
 //グリッド情報をロード（エリアを作成してからでないと復元できない）
+chdir dirname
 exist "area.var" 
 if strsize >= 0{
 	save_load_manager_load
