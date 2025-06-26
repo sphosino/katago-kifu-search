@@ -69,21 +69,24 @@
 	color 128,128,128
 	boxf 0,0,rect.2-rect,rect.3-rect.1
 
-	
+	graphboxf = margin_left, margin_top, rect.2 - rect.0 - margin_right, rect.3 - rect.1 - margin_bottom
 	色を設定 $76310
-	boxfl msize,0,rect.2,rect.3 -rect.1- msize
+	aboxfl graphboxf
+
+	
 	//y中心線表示
 	color 0,0,0
-	line msize, (rect.3-rect.1-msize)/2, rect.2 - rect, (rect.3 - rect.1-msize) / 2
+	graph_y_center =  (graphboxf.1 + graphboxf.3) / 2
+	line graphboxf, graph_y_center, graphboxf.2, graph_y_center
 
 	//目盛り表示
 	color 255,255,255
 	repeat x_ticks
-		pos (rect.2 - rect) * cnt / x_ticks , rect.3 - rect.1 - msize
+		pos (graphboxf.2 - graphboxf) * cnt / x_ticks + margin_left, rect.3 - rect.1 - margin_bottom
 		mes start_x + (end_x - start_x) * cnt / x_ticks
 	loop
 	repeat y_ticks
-		pos 0, (rect.3 - rect.1) * cnt / y_ticks
+		pos 0, (graphboxf.3 - graphboxf.1) * cnt / y_ticks + margin_top
 		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
 	loop
 
@@ -95,14 +98,14 @@
 	half = thick / 2
 	
 	repeat div_line + 1
-		nowpos = msize, (rect.3 - rect.1 - msize) / 2
+		nowpos = margin_left, (graphboxf.1 + graphboxf.3) / 2
 
 		
 		if div_line{
 			line_col = colset(cnt)
 		}
 		for i, 1 + cnt, limit(dn - 1, 0), 1 + div_line
-			endpos = msize + i * (rect.2 - rect - msize) / dn, (rect.3 - rect.1 - msize) * data(i) / 100
+			endpos = margin_left + i * (graphboxf.2 - graphboxf) / dn,  margin_top + (graphboxf.3 - graphboxf.1) * data(i) / 100
 			repeat thick
 				offset = cnt - half
 				色を設定 line_col
@@ -118,17 +121,17 @@
 
 	get_rect area_number, oya //oya に矩形情報取得
 	
-	rect   = oya.0 + margin_left   * (margin_left   != -1)
-	rect.1 = oya.1 + margin_top    * (margin_top    != -1)
-	rect.2 = oya.2 - margin_right  * (margin_right  != -1)
-	rect.3 = oya.3 - margin_bottom * (margin_bottom != -1)
-
+	rect   = oya.0
+	rect.1 = oya.1
+	rect.2 = oya.2
+	rect.3 = oya.3
+	realboxf = rect + margin_left, rect.1 + margin_top, rect.2 - margin_right, rect.3 - margin_bottom
 	msize = 18
 
-	centerx = (rect+rect.2)/2
-	centery = (rect.3+rect.1)/2
-	sizex = rect.2-rect
-	sizey = rect.3-rect.1
+	centerx = (rect   + rect.2) / 2
+	centery = (rect.1 + rect.3) / 2
+	sizex = rect.2 - rect
+	sizey = rect.3 - rect.1
 	make_instant_draw_object "SPRITE",centerx,centery,sizex,sizey,strf("%d,%d,%d",line_graph_buf,0,0)
 ;*/
 
@@ -136,14 +139,15 @@
 	//マウス位置表示
 	mx = limit(mousex, rect.0,rect.2)
 	my = limit(mousey, rect.1,rect.3)
-	if in_rect(rect){
+
+	if in_rect(realboxf){
 		if g_getkey(1) == 1{
-			手数 = (mx - rect.0 - msize) * (end_x - start_x) / (rect.2 - rect-msize)
+			手数 = (mx - realboxf) * (end_x - start_x) / (realboxf.2 - realboxf)
 		}
-		make_instant_draw_object "LINE_FAST", mx,rect.1,mx, rect.3 - msize,"$FFFFFF"
-		make_instant_draw_object "LINE_FAST", rect.0 + msize,my, rect.2, my,"$FFFFFF"
-		make_instant_draw_object "STR",mx, rect.1 - msize/2,msize,msize, strf("%d,%d", (mx - rect.0-msize) * end_x / (rect.2 - rect-msize),$FFFFFF)
-		make_instant_draw_object "STR",rect.2, my    ,msize,msize, strf("%d,%d", end_y - (my - rect.1) * end_y / (rect.3 - rect.1-msize), $FFFFFF)
+		make_instant_draw_object "LINE_FAST", mx, realboxf.1 , mx, realboxf.3 , "$FFFFFF"
+		make_instant_draw_object "LINE_FAST", realboxf, my   , rect + realboxf.2, my , "$FFFFFF"
+		make_instant_draw_object "STR", mx, realboxf.1, msize,msize, strf("%d,%d", (mx - realboxf) * end_x / (realboxf.2 - realboxf),$FFFFFF)
+		make_instant_draw_object "STR", realboxf.2, my, msize,msize, strf("%d,%d", end_y - (my - realboxf.1) * end_y / (realboxf.3 - realboxf.1), $FFFFFF)
 
 		if g_getkey(2) = 1{
 			//評価値グラフを、黒番と白番で分けるかの01トグル
@@ -158,8 +162,8 @@
 	}
 
 		//現在手数の線表示
-	xx = rect + msize + 手数  * (rect.2 - rect - msize) / (end_x - start_x)
-	make_instant_draw_object "LINE_FAST",xx,rect.1,xx,rect.3-msize,""
+	xx = realboxf + 手数  * (realboxf.2 - realboxf) / (end_x - start_x)
+	make_instant_draw_object "LINE_FAST", xx, realboxf.1, xx, realboxf.3,"$000000"
 	
 	return
 	

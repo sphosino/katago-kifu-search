@@ -352,7 +352,6 @@ newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$3333
 newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
 
-
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
@@ -380,7 +379,6 @@ repeat 9
 add_item_radiobox g_radiobox.tmp, str(cnt+1)
 loop
 
-
 newmod kifulist, grid_listbox, sidebar_kifulist, 26000
 newmod kifulist, grid_listbox, sidebar_kifulist_match, 26000: matchlist = stat
 foreach kifulist
@@ -394,12 +392,12 @@ newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
 newmod t, treebox,treebox_area
 
 newmod l_graph, line_graph, line_graph_area
-set_margin_line_graph l_graph, 15, 10, 15, 10
+set_margin_line_graph l_graph, 27, 18, 27, 18
 
 newmod filename_to_topnode, hash_manager, 26000
 
 foreach g_label
-	set_g_label_r g_label.cnt , 5, 4|8
+	set_g_label_r g_label.cnt , 5, 4 | 8
 loop
 gosub*load_kifu_folder
 gosub*loadsgf
@@ -526,28 +524,31 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	if debugmode == 0{
 		//マウス操作
 		if _getkey(2) == 1{ //右クリック
-			if treebox_onmouseid(t) >= 0{
-				set_current_node t, treebox_onmouseid(t)
-				Treebox_toggle_openflag t, treebox_onmouseid(t)
-			}
+
 			if dragging_flag == 1{
 				if rect >= 0{
 					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
 				}
 				dragging_flag = 0
-			}else: if ui_mode == MODE_BOARD_EDIT{//矩形描画モード
-				if in_board{
-					if treebox_onmouseid(t) < 0{
-						if in_board{
-							user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
-							set_board_data board.1, user_board
-							if user_board(point,point.1) == 0{
-								repeat 4
-									del_group point, point.1, cnt
-								loop
-								repeat 9
-									del_tejun point, point.1, cnt
-								loop
+			}else{
+				if treebox_onmouseid(t) >= 0{
+					set_current_node t, treebox_onmouseid(t)
+					Treebox_toggle_openflag t, treebox_onmouseid(t)
+				}
+				if ui_mode == MODE_BOARD_EDIT{//編集モード
+					if in_board{
+						if treebox_onmouseid(t) < 0{
+							if in_board{
+								user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
+								set_board_data board.1, user_board
+								if user_board(point,point.1) == 0{
+									repeat 4
+										del_group point, point.1, cnt
+									loop
+									repeat 9
+										del_tejun point, point.1, cnt
+									loop
+								}
 							}
 						}
 					}
@@ -723,7 +724,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 				pre_jidou = 1
 			}
 
-			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime -pretime)
+			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime - pretime)
 			if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
 				pretime = keyfpstime
 				logmes "moved"
