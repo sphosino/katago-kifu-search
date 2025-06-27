@@ -34,7 +34,7 @@
 		set_position_scroll_bar s, rect.0, rect.3
 		set_direction s, 1 | 2 
 		set_size_scroll_bar s, rect.2-rect.0
-		set_tickness_scroll_bar s, 10
+		set_tickness_scroll_bar s, 12
 		set_value_minmax s, 0, data_num
 		draw_scroll_bar s, 0, mousex < rect || mousex > rect.2 || mousey < rect.1 || mousey > rect.3 || onmouse_id >= 0
 
