@@ -1,15 +1,14 @@
 #ifndef search2
 #include "basic.hsp"
 #include "modules/bitboard.hsp"
-#include "memorize_hit_rect.hsp"
 #module
 
-#defcfunc search2 var SGF_list, array 探したい局面, array result, int max_depth,int colorFlip, str mask, int kifu_update, var next_kifuload_index, int inverse, var h
+#defcfunc search2 var SGF_list, array 探したい局面, array result, int max_depth,int colorFlip, str mask, int kifu_update, var loadmax, int inverse, var h
 
 	dim patterns, 23,16
 	dim pattern_masks, 23, 8
 	init_ringbuffer 64, 128
-	clear_mem
+
 	sdim node_data
 	rn = 0
 	prexy = -1,-1
@@ -25,12 +24,12 @@
 		starttime = keyfpstime
 
 		
-		検索棋譜数 = notemax * loadmax@ / 100
-		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax@
+		検索棋譜数 = notemax * loadmax / 100
+		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax
 		
-		if kifu_update{		
+		if kifu_update{
 
-			repeat 検索棋譜数, next_kifuload_index
+			repeat 検索棋譜数, get_entry_count(h)
 				noteget sgf_filename, cnt
 				next_kifuload_index++
 				if sgf_filename == "": break
@@ -52,23 +51,16 @@
 
 		titlestr += strf("(%dms) -> 厳密検索開始 -> ", keyfpstime - starttime)
 		title titlestr
-		repeat notemax
-			noteget sgf_filename, cnt
-			topnode = get_value(h, sgf_filename)
-			if topnode == NOT_DEFINED_HASH{
-				logmes topnode
-				break
-			}
-
-			topnode = int(topnode)
+		repeat get_keys(h,key)
+			topnode = int(get_value(h, key(cnt)))
 
 			get_board_size_from_SGF topnode, xy
 	
 			//前回検索した棋譜とボードサイズが違う場合
 			if prexy != xy || prexy.1 != xy.1{
 				create_mask 探したい局面, mask, patterns, pattern_masks, xy, xy.1 //patternに16種類, maskに８種類格納する
-				clear_mem
 				prexy = xy,xy.1
+				get_pattern rotated_color, rotated_group, rotated_tejun
 
 				//サーチメイン関数用の変数設定
 				int_count = calc_int_count(xy, xy.1)
@@ -79,7 +71,7 @@
 			//検索実行
 			match_node = search_main2(topnode, patterns, pattern_masks, 1 + colorflip)
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = sgf_filename //一致したSGFを結果に追加
+				result(0, rn) = key(cnt) //一致したSGFを結果に追加
 				if inverse{
 					result(1, rn) = str(topnode)
 				}else{
@@ -115,7 +107,7 @@
     if x >= 0{
 	    copy_bitboard_data get_bitboard(node), board
 	   	for j,,r_pattern_num //回転
-	   		if memorize_hit_mask(j, x, y, pattern_mask){ //ノードの着手がmaskにない場合、このノードでは一致しない。
+	   		if rotated_color(x, y, j){ //ノードの着手がmaskにない場合、このノードでは一致しない。
 	   			dup mk, pattern_mask(0, j)
 		   		for i,,colorflip //色反転
 		   			dup pt, pattern(0, j + i * 8)

@@ -34,7 +34,7 @@
 	sdim node_data, DATA_SIZE　              //データを纏めてキューに出し入れするための媒介変数
 	return
 
-#defcfunc search str SGF_list, array result, int max_depth, int colorflip, int kifu_update, var next_kifuload_index, int inverse, var h
+#defcfunc search str SGF_list, array result, int max_depth, int colorflip, int kifu_update, var loadmax, int inverse, var h
 
 	group_num = get_pattern_all_groups_num() //パターンのhitと判定するために判定に必要な数を取得
 	logmes "group_num = " + group_num
@@ -55,17 +55,16 @@
 	notesel ss
 		ss = SGF_list
 
-		検索棋譜数 = notemax * loadmax@ / 100
-		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax@
+		検索棋譜数 = notemax * loadmax / 100
+		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax
 	
 		titlestr = ""
 	
 		starttime = keyfpstime
 	
 		if kifu_update{		
-			repeat 検索棋譜数, next_kifuload_index
+			repeat 検索棋譜数, get_entry_count(h) //SGF_listを単純に順番に読み込んでいるため、将来SGF_LISTをソートするようなことがあれば変更必要
 				noteget sgf_filename, cnt
-				next_kifuload_index++
 				if sgf_filename == "": break
 				if get_value(h, sgf_filename) == NOT_DEFINED_HASH{
 					notesel sgf
@@ -86,16 +85,9 @@
 		title titlestr
 		
 		starttime = keyfpstime
-		repeat notemax
-			noteget sgf_filename, cnt
+		repeat get_keys(h, key)
 
-			topnode = get_value(h, sgf_filename)
-			if topnode == NOT_DEFINED_HASH{
-				//まだ読み込み済みでない棋譜なら終了
-				break
-			}
-
-			topnode = int(topnode)
+			topnode = int(get_value(h,key(cnt)))
 			
 			get_board_size_from_SGF topnode, xy
 	
@@ -115,7 +107,7 @@
 			match_node = search_main(topnode)
 			
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = sgf_filename //一致したSGFを結果に追加
+				result(0, rn) = key(cnt) //一致したSGFを結果に追加
 				if inverse{
 					result(1, rn) = str(topnode)
 				}else{

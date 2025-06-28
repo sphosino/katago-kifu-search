@@ -175,6 +175,8 @@ pre_filter = -1
 
 //FPS設定
 setfps 30
+enable_auto_adjust //FPS自動調整有効化
+set_target_wait 6 //１フレームの待ち時間の目標(ms)
 
 //使用キーの宣言
 delkey_all
@@ -201,10 +203,6 @@ notesel filelist
 		delete tmp
 	loop
 noteunsel
-
-
-//検索時のメモ化用モジュール初期化
-init_mem max_depth
 
 //エリア作成
 root = make_area_child(1,1)
@@ -356,7 +354,7 @@ newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_ste
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
-newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 1, 100, 14 , 16
+newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 0, 100, 14 , 16
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
@@ -434,8 +432,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			notesel filelist
 				repeat
 				
-					noteget sgf_file_name, next_kifuload_index
-					next_kifuload_index++
+					noteget sgf_file_name, get_entry_count(h)
 					if sgf_file_name == ""{
 						//全て読み込んだ
 						kifu_update = 0
@@ -1035,11 +1032,11 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	
 	if use_bitboard{ ;厳密検索
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, next_kifuload_index, inverse, filename_to_topnode)
+		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, loadmax, inverse, filename_to_topnode)
 		
 	}else{ ;通常検索
 
-		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, next_kifuload_index,inverse, filename_to_topnode)
+		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, loadmax,inverse, filename_to_topnode)
 	}
 
 	if result_num < 0{
