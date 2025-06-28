@@ -290,7 +290,6 @@ if strsize >= 0{
 	save_load_manager_load
 }
 
-
 //各エリアの設定
 set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
@@ -417,7 +416,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 
 	計測 "kifuload"
 
-	if kifu_update & waitedtime() >= 5{//棋譜がアップデートされたとき且つ、待ち時間が(5ms)以上あったときのみ走る
+	if kifu_update & waitedtime() > get_target_wait(){//棋譜がアップデートされたとき且つ、十分な余裕時間があったときのみ走る
 		new_ = get_in_area()
 		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
 		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
