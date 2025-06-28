@@ -430,23 +430,18 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			//毎フレーム１棋譜読み込む
 			
 			notesel filelist
-				repeat
 				
-					noteget sgf_file_name, get_entry_count(filename_to_topnode)
-					if sgf_file_name == ""{
-						//全て読み込んだ
-						kifu_update = 0
-						break
-					}
-					if get_value(filename_to_topnode, sgf_file_name) == NOT_DEFINED_HASH{
-						notesel sgf
-							chdir kifu_dirname
-							noteload sgf_file_name
-							new_value filename_to_topnode, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
-						noteunsel
-						break
-					}
-				loop
+				noteget sgf_file_name, get_entry_count(filename_to_topnode)
+				if sgf_file_name == ""{
+					//全て読み込んだ
+					kifu_update = 0
+				}else{
+					notesel sgf
+						chdir kifu_dirname
+						noteload sgf_file_name
+						new_value filename_to_topnode, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
+					noteunsel
+				}
 			noteunsel
 		}
 	}
@@ -1029,6 +1024,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	set_board_pattern m
 	set_coordinate_pattern v
 	set_base
+	
 	
 	if use_bitboard{ ;厳密検索
 		
