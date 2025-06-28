@@ -432,7 +432,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			notesel filelist
 				repeat
 				
-					noteget sgf_file_name, get_entry_count(h)
+					noteget sgf_file_name, get_entry_count(filename_to_topnode)
 					if sgf_file_name == ""{
 						//全て読み込んだ
 						kifu_update = 0
