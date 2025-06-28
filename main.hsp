@@ -174,9 +174,8 @@ pre_filter_on = -1
 pre_filter = -1
 
 //FPS設定
-setfps 30
-enable_auto_adjust //FPS自動調整有効化
-set_target_wait 6 //１フレームの待ち時間の目標(ms)
+setfps 30 //目標FPSセット(初期値)
+enable_auto_adjust //目標FPS自動調整有効化
 
 //使用キーの宣言
 delkey_all
