@@ -29,6 +29,7 @@
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 
+
 #const BG_COLOR $808080 // 128,128,128
 
 #ifdef _debug
@@ -410,10 +411,11 @@ update_priority_draw_object bg_id, PRIORITY_BACK
 pretime = keyfpstime
 
 onexit *save_info //終了時に*save_infoにジャンプ
+
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
-	notify_dt_draw_object frametime() 
+	notify_dt_draw_object frametime()
 
 	計測 "kifuload"
 
@@ -455,12 +457,9 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	計測 "前フレームからの状態変化取得"
 	if pre_kifu_update != kifu_update{
 		pre_kifu_update = kifu_update
-		if kifu_update{
-			setfps 30
-		}else{
-			setfps 35
-		}
 	}
+
+	
 	if now_area != get_in_area() || _getkey(1) >= 1{
 		now_area = get_in_area()
 		set_tooltip now_area
