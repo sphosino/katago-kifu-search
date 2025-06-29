@@ -303,6 +303,8 @@ set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
 
+set_padding goban_area, , 0
+
 add_tooltip goban_loadmax_area, "検索時追加で読み込む量"
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
@@ -384,8 +386,8 @@ foreach kifulist
 	set_listbox_scollbar_width kifulist.cnt, 16
 loop
 
-newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
-newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat,20
+newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
+newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
 
 newmod t, treebox,treebox_area
 

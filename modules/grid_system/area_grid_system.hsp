@@ -11,7 +11,7 @@
 
 dimtype areagrid@global, 5, 400
 
-#module area grid, —ñ”, s”, grid_x, grid_y, padding_left, padding_right, padding_top,padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
+#module area grid, —ñ”, s”, grid_x, grid_y, padding_left, padding_right, padding_top, padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
 
 #defcfunc make_area int x, int y
 	newmod areagrid@global, area, x, y
