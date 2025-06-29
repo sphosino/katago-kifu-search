@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 5300000
+#define MAX_NODE 5400000
 
 #define TOPNODE_SIZE 270
 #define NORMALNODE_SIZE 30
@@ -39,7 +39,7 @@
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 
-   	init_memory_pool 200000000, 14000000
+   	init_memory_pool MAX_NODE * 38, MAX_NODE * 2 //ノード当たりの大体のバイト数　、　ノード当たり２ブロック利用
 
 	return
 
