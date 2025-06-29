@@ -362,7 +362,7 @@ newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "œ"
 add_item_radiobox g_radiobox, "Z"
 add_item_radiobox g_radiobox, "œZ"
-add_item_radiobox g_radiobox, "~"
+add_item_radiobox g_radiobox, "íœ"
 g_edit = 2
 
 newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
