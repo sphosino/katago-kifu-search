@@ -19,8 +19,8 @@
 	dim prerect, 4
 	dim r, 4
 	tmp = ginfo_sel
-	 goban_buffer = ginfo_newid: buffer goban_buffer , 1000, 1000
-	stones_buffer = ginfo_newid: buffer stones_buffer, 1000, 1000
+	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1000
+	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1000
 	gsel tmp
 	mref thismod_ID,2
 	return thismod_ID
