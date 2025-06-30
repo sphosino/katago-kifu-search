@@ -129,7 +129,12 @@ if 最小化: sendmsg hwnd, $112, $F020
 boxf
 color 255, 255, 255
 
-tmp = 0, 0, sx, sy
+if 最大化{
+	tmp = 0, 0, ginfo(20), ginfo(21)
+}else{
+	tmp = 0, 0, sx, sy
+}
+
 set_max_centering_mes 40
 centering_mes "システム起動中・・・", tmp, "メイリオ"
 
