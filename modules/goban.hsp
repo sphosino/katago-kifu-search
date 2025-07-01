@@ -85,7 +85,7 @@
 	
 	//”wŒi•`‰æ
 	F‚ğİ’è@$cd853f
-	boxf 0,0, masx * length(board) , masy * length2(board)
+	boxf 0,0, masx * length(board), masy * length2(board)
 
 	//ü•`‰æ
 	color 0,0,0

@@ -91,7 +91,6 @@ if strsize == -1{
 	noteget_ auto_interval
 	noteget_ alpha_interval
 	noteget_ m_interval
-	noteget_ 最小化
 	noteget_ 最大化
 
 	if wx < 0{
@@ -124,7 +123,6 @@ dim save_window_position, 2
 if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
 if ginfo(4) >= 0: save_window_position = ginfo(4), ginfo(5)
 if 最大化: sendmsg hwnd, $112, $F030
-if 最小化: sendmsg hwnd, $112, $F020
 
 boxf
 color 255, 255, 255
@@ -1268,9 +1266,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	noteadd str(auto_interval)
 	noteadd str(alpha_interval)
 	noteadd str(m_interval)
-	IsIconic hwnd: 最小化 = stat
 	IsZoomed hwnd: 最大化 = stat
-	noteadd str(最小化)
 	noteadd str(最大化)
 	notesave window_file_name
 	save_load_manager_save //グリッド情報保存
