@@ -4,7 +4,7 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define MAX_NODE 5400000
+#define MAX_NODE 5450000
 
 #define TOPNODE_SIZE 270
 #define NORMALNODE_SIZE 30
