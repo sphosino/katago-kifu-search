@@ -113,7 +113,7 @@ if strsize == -1{
 #global
 
 //ウィンドウ作成
-screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
+screen 0, ginfo(20), ginfo(21), screen_hide, wx, wy, sx, sy
 
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
@@ -126,15 +126,10 @@ if 最大化: sendmsg hwnd, $112, $F030
 
 boxf
 color 255, 255, 255
-
-if 最大化{
-	tmp = 0, 0, ginfo(20), ginfo(21)
-}else{
-	tmp = 0, 0, sx, sy
-}
-
+tmp = 0, 0, ginfo(12), ginfo(13)
 set_max_centering_mes 40
 centering_mes "システム起動中・・・", tmp, "メイリオ"
+gsel 0, 1
 
 
 //初期化開始
@@ -171,6 +166,8 @@ dim rect_stack, 4
 sdim search_result,, 2, 10000; [0]=SGFファイル名, [1]=SGFノードID
 sdim search_result_sgflist　 ; 改行区切りでファイル名だけを保持
 dim matchlist                ; 検索結果用リストボックスIDを格納
+
+sdim kifulist_notepad
 
 pre_filter_on = -1
 pre_filter = -1
@@ -402,6 +399,7 @@ newmod filename_to_topnode, hash_manager, 26000
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4 | 8
 loop
+
 gosub*load_kifu_folder
 gosub*loadsgf
 
@@ -1039,7 +1037,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		
 	}else{ ;通常検索
 
-		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, loadmax,inverse, filename_to_topnode)
+		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, loadmax, inverse, filename_to_topnode)
 	}
 
 	if result_num < 0{
