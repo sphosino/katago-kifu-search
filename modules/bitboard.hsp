@@ -1,18 +1,17 @@
 #ifndef init_bitboard
 #include "coordinate_set.hsp"
 #module
-#const NODE_MAX 5400000
 
-#deffunc init_bitboard
-	dim bitboard, 23, NODE_MAX //(23*32bit) / 2 = 368マスを最大とする
-	dim sizex, NODE_MAX //ビットボードの形状を表現
-	dim sizey, NODE_MAX
-	dim capture_black, NODE_MAX //取石
-	dim capture_white, NODE_MAX
-	dim コウ禁止点,2,NODE_MAX
+#deffunc init_bitboard int 棋譜数
+	dim bitboard, 23, 棋譜数 //(23*32bit) / 2 = 368マスを最大とする
+	dim sizex, 棋譜数 //ビットボードの形状を表現
+	dim sizey, 棋譜数
+	dim capture_black, 棋譜数 //取石
+	dim capture_white, 棋譜数
+	dim コウ禁止点,2,棋譜数
 
 	dimtype bitboard_id_manager, 5
-	newmod bitboard_id_manager, id_manager, NODE_MAX
+	newmod bitboard_id_manager, id_manager, 棋譜数
 
 	//上下左右の定義
 	sx = 1,0,-1,0
@@ -242,7 +241,7 @@
 	return num
 
 #global
-init_bitboard
+
 #module
 // テスト用の碁盤を表示
 #deffunc print_board array a, int MAS_X, int MAS_Y

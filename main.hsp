@@ -379,12 +379,8 @@ repeat 9
 add_item_radiobox g_radiobox.tmp, str(cnt+1)
 loop
 
-newmod kifulist, grid_listbox, sidebar_kifulist, 26000
-newmod kifulist, grid_listbox, sidebar_kifulist_match, 26000: matchlist = stat
-foreach kifulist
-	set_listbox_item_ysize kifulist.cnt, 25
-	set_listbox_scollbar_width kifulist.cnt, 16
-loop
+
+
 
 newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
 newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
@@ -394,13 +390,18 @@ newmod t, treebox,treebox_area
 newmod l_graph, line_graph, line_graph_area
 set_margin_line_graph l_graph, 27, 18, 13, 18
 
-newmod filename_to_topnode, hash_manager, 26000
+
 
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4 | 8
 loop
 
 gosub*load_kifu_folder
+
+foreach kifulist
+	set_listbox_item_ysize kifulist.cnt, 25
+	set_listbox_scollbar_width kifulist.cnt, 16
+loop
 gosub*loadsgf
 
 set_max_centering_mes 33
@@ -1188,21 +1189,34 @@ onexit *save_info //終了時に*save_infoにジャンプ
 *load_kifu_folder
 	treebox_clear t
 	chdir kifu_dirname
-	del_item_all kifulist
 	dirlist files,"*.sgf"
-	sdim ss
-	notesel ss 
-		ss = shuffle_notepad(files)
+	notesel ss
+	ss = shuffle_notepad(files)
+		棋譜数 = notemax
+				
+		//SGFモジュール初期化
+		init_sgf_module 棋譜数
+		
+		//ハッシュ初期化
+		dimtype filename_to_topnode, 5
+		newmod filename_to_topnode, hash_manager, 棋譜数
+
+		//棋譜リスト初期化
+		dimtype kifulist, 5, 2
+		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
+		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
 		sdim filelist
-		repeat notemax
+		repeat 棋譜数
 			noteget tmp, cnt
 			filelist += tmp + "\n"
 		loop
-		set_g_label g_label, "棋譜リスト("+notemax+")件"
+		set_g_label g_label, "棋譜リスト("+ 棋譜数 +")件"
+		
 	noteunsel
 	add_item kifulist, filelist
 	kifu_update = 1
 	kifulist_notepad = filelist
+
 	return
 	
 
