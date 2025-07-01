@@ -113,7 +113,7 @@ if strsize == -1{
 #global
 
 //ウィンドウ作成
-screen 0, ginfo(20), ginfo(21), screen_hide, wx, wy, sx, sy
+screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
 
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
@@ -124,13 +124,13 @@ if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
 if ginfo(4) >= 0: save_window_position = ginfo(4), ginfo(5)
 if 最大化: sendmsg hwnd, $112, $F030
 
+redraw 2
 boxf
 color 255, 255, 255
 tmp = 0, 0, ginfo(12), ginfo(13)
 set_max_centering_mes 40
 centering_mes "システム起動中・・・", tmp, "メイリオ"
-gsel 0, 1
-
+redraw
 
 //初期化開始
 
@@ -483,15 +483,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 
 	repeat 2
 		set_最終手表示 board.cnt, last_move_mark
-		set_星表示 board.cnt,view_hosi
+		set_星表示 board.cnt, view_hosi
 	loop
 	
 	if pre_ui_mode != ui_mode {
 		pre_ui_mode = ui_mode
 
 		if ui_mode = MODE_KIFU_VIEW{
-			init_group
-			init_tejun
+			init_group_tejun
 		}else{
 			get_board_data board  , user_board
 			set_board_data board.1, user_board
@@ -533,19 +532,10 @@ onexit *save_info //終了時に*save_infoにジャンプ
 				}
 				if ui_mode == MODE_BOARD_EDIT{//編集モード
 					if in_board{
-						if treebox_onmouseid(t) < 0{
-							if in_board{
-								user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
-								set_board_data board.1, user_board
-								if user_board(point,point.1) == 0{
-									repeat 4
-										del_group point, point.1, cnt
-									loop
-									repeat 9
-										del_tejun point, point.1, cnt
-									loop
-								}
-							}
+						user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
+						set_board_data board.1, user_board
+						if user_board(point, point.1) == 0{
+							del_all_group_tejun , point, point.1
 						}
 					}
 				}
@@ -637,12 +627,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 				case 3
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
-					repeat 4
-						del_group point, point.1, cnt
-					loop
-					repeat 9
-						del_tejun point, point.1, cnt
-					loop
+					del_all_group_tejun
 				swbreak
 
 				swend
@@ -884,8 +869,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		redraw_stones board
 		redraw_buffer l_graph
 
-		init_group
-		init_tejun
+		init_group_tejun
 		
 		return 1
 	}
@@ -926,10 +910,9 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	if ui_mode == MODE_KIFU_VIEW{
 		clear_board board
 	}else{
-		dim user_board,19,19
-		set_board_data board.1,user_board
-		init_group
-		init_tejun
+		dim user_board, 19, 19
+		set_board_data board.1, user_board
+		init_group_tejun
 	}
 	
 	treebox_clear t

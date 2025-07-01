@@ -76,6 +76,10 @@
 	//手順
 	sdim tejun,, 9 //手順の最大数
 	return
+#deffunc init_group_tejun
+	init_group
+	init_tejun
+	return
 
 #deffunc clear_group int p1
 	group(p1) = ""
@@ -152,6 +156,17 @@
 	return
 #deffunc del_tejun int x, int y, int tejun_num
 	del_coordinate_set tejun(tejun_num), x, y
+	return
+
+
+//特定の地点の手順とグループを全て解除
+#deffunc del_all_group_tejun int x, int y
+	repeat 4
+		del_group x, y, cnt
+	loop
+	repeat 9
+		del_tejun x, y, cnt
+	loop
 	return
 
 	
