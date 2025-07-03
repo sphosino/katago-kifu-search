@@ -553,8 +553,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		
 		if _getkey(1) == 1{ //左クリック
 			if in_board == 0{
-				spawn_ripple_effect mousex, mousey
-				update_priority_draw_object stat, PRIORITY_FRONT
+				spawn_ripple_effect mousex, mousey, PRIORITY_FRONT
 				if treebox_onmouseid(t) >=0{
 					set_current_node t, stat
 					sync_treebox_board t, board
