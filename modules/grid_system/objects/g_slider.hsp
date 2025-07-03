@@ -90,17 +90,8 @@
 		}
 	}
 
-
-	;color $4A,$37,$28
-	;rboxf bar_rect,bar_rect.1,bar_rect.2,bar_rect.3
-
 	make_instant_draw_object "RBOXF_FAST",(bar_rect + bar_rect.2) / 2, (bar_rect.1+bar_rect.3)/2, bar_rect.2-bar_rect, bar_rect.3-bar_rect.1,"4A3728"
-	
-	;color $5E,$8B,$7E
-	
-	;circle tumami - r/2, tumami.1 -r/2, tumami + r/2, tumami.1 + r/2
-
-	make_instant_draw_object "CIRCLE_FAST",tumami, tumami.1 ,  r, r, "$5E8b7E"
+	make_instant_draw_object "CIRCLE_FAST", tumami, tumami.1 ,  r, r, "$6E9b7E"
 	
 	return
 	

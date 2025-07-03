@@ -104,12 +104,30 @@
 	assert next_index >= 0
 
 	left = strmid(data, 0, index)
-	right = strmid(data, next_index, $FFFFFFF)
 
-	newdata = left + right
-
-	re_write_mem_str sgf_properties_data(node_id), newdata
+	re_write_mem_str sgf_properties_data(node_id), left + strmid(data, next_index, $FFFFFFF)
 	sgf_properties_num(node_id)--
+	return
+
+#deffunc del_add_sgf_property int node_id, str key, str value
+
+	//文字列ブロックを読み出す
+	data = read_mem_str(sgf_properties_data(node_id))
+	
+	//対象プロパティの開始位置を探す
+	index = instr(data, 0, SEP + key + KEY_VALUE_SEP)
+	if index == -1{
+		//見つからなかったら末尾に追加
+		write_mem_str sgf_properties_data(node_id), key + KEY_VALUE_SEP + value + SEP, strlen(data)
+		sgf_properties_num(node_id)++
+	}else{
+		//次のSEPまでさがす
+		next_index = instr(data, index + 1, SEP)
+		assert next_index >= 0
+		left = strmid(data, 0, index)
+		re_write_mem_str sgf_properties_data(node_id), left + strmid(data, next_index, $FFFFFFF) + key + KEY_VALUE_SEP + value + SEP
+	}
+	
 	return
 
 #deffunc add_SGFchild int node_id, int p1
@@ -147,9 +165,8 @@
 		tmp = value
 		set_property_move node_id, 2, peek(tmp, 0) - 'a', peek(tmp, 1) - 'a'
 	}else{
-		//登録
-		del_sgf_property node_id, key
-		add_sgf_property node_id, key, value
+		//登録（重複しないよう削除してから登録）
+		del_add_sgf_property node_id, key, value
 	}
 	return
 
@@ -508,7 +525,7 @@
 			if gethold_ms(2, 1000): break
 			
 			manage_keyfps
-			await 10
+			await 5
 		}
 	loop
 	return new

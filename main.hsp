@@ -380,10 +380,8 @@ add_item_radiobox g_radiobox.tmp, str(cnt+1)
 loop
 
 
-
-
-newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
-newmod board, goban, 19,19,26,26, goban_body_area:set_goban_margin board.stat, 10
+newmod board, goban, 19,19,26,26, goban_body_area
+newmod board, goban, 19,19,26,26, goban_body_area
 
 newmod t, treebox,treebox_area
 
@@ -395,6 +393,7 @@ set_margin_line_graph l_graph, 27, 18, 13, 18
 foreach g_label
 	set_g_label_r g_label.cnt , 5, 4 | 8
 loop
+
 
 gosub*load_kifu_folder
 
@@ -536,7 +535,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 						user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
 						set_board_data board.1, user_board
 						if user_board(point, point.1) == 0{
-							del_all_group_tejun , point, point.1
+							del_all_group_tejun point, point.1
 						}
 					}
 				}
@@ -628,7 +627,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 				case 3
 					user_board(point,point.1) = 0
 					set_board_data board.1, user_board
-					del_all_group_tejun
+					del_all_group_tejun point, point.1
 				swbreak
 
 				swend
@@ -946,6 +945,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	clipget s, varsize(s)
 	
 	if load_sgf(s) < 0: return
+
 	
 	topnode = load_sgf_set_board(t, stat, board)
 	
