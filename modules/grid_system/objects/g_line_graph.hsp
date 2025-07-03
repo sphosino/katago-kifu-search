@@ -147,7 +147,7 @@
 			éËêî = (mx - realboxf) * (end_x - start_x) / (realboxf.2 - realboxf)
 		}
 		make_instant_draw_object "LINE_FAST", mx, realboxf.1 , mx, realboxf.3 , "$FFFFFF"
-		make_instant_draw_object "LINE_FAST", realboxf, my   , rect + realboxf.2, my , "$FFFFFF"
+		make_instant_draw_object "LINE_FAST", realboxf, my   , realboxf.2, my , "$FFFFFF"
 		make_instant_draw_object "STR", mx, realboxf.1, msize,msize, strf("%d,%d", (mx - realboxf) * end_x / (realboxf.2 - realboxf),$FFFFFF)
 		make_instant_draw_object "STR", realboxf.2, my, msize,msize, strf("%d,%d", end_y - (my - realboxf.1) * end_y / (realboxf.3 - realboxf.1), $FFFFFF)
 

@@ -256,9 +256,9 @@
 	
 		rotate_coordinate result, i, j, k, board_sizex, board_sizey // (i,j)‚ðk‚É‚æ‚é‰ñ“]‚ð‰Á‚¦‚Ä result‚ÉŠi”[
 		
-		rotated_board(result, result.1, k , 0) = base_board(i, j)
-		rotated_group(result, result.1, k)     = base_group(i, j)
-		rotated_tejun(result, result.1, k)     = base_tejun(i, j)
+		rotated_board(result, result.1, k) = base_board(i, j)
+		rotated_group(result, result.1, k) = base_group(i, j)
+		rotated_tejun(result, result.1, k) = base_tejun(i, j)
 
 	next
 	next
