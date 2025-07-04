@@ -315,9 +315,9 @@
 	loop
 	if exist_hash: return
 	
-	history_num = (history_num + 1) \ HISTORY_MAX
-	if _history_max < history_num + 1{
-		_history_max = history_num + 1
+	history_num = (history_num + 1) \ HISTORY_MAX //Å‰‚Í -1 + 1 ‚Æ‚È‚è0”Ô‚É“o˜^‚³‚ê‚é‚Í‚¸B
+	if _history_max == history_num{
+		_history_max = history_num + 1 //ƒqƒXƒgƒŠ[‚ÌŒÂ”‚ÍÅ‘å‚Ì”Ô†{‚P
 	}
 
 	hash_value(history_num) = now_hash

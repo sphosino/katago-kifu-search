@@ -68,7 +68,6 @@ dimtype areagrid@global, 5, 400
 #modfunc _push_grid_child int id, int child_id
 	if get_open_grid(thismod, xy){
 		add_grid_child id, child_id, xy, xy.1
-		logmes "push_grid -> " +xy+","+xy.1 + "oya = " + id + " child = " + child_id
 	}else{
 		logmes "ƒOƒŠƒbƒh‚ª‹ó‚¢‚Ä‚¢‚Ü‚¹‚ñ"
 	}
