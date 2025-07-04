@@ -142,15 +142,15 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,   , ,,,0", goban_buffer )
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,255,0,,,4,$00FF00", stones_buffer)
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 3,sizey )
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 3, sizey)
 	
 	return
 *get_goban_info
 	
 	//現在のエリア状態でのマスを計算(margin=最小限取りたい量)
-	masx = limit((r.2 - r.0 - margin * 2) / length(board),1)
-	masy = limit((r.3 - r.1 - margin * 2) / length2(board),1)
+	masx = limit((r.2 - r.0 + 1 - margin * 2) / length(board),1)
+	masy = limit((r.3 - r.1 + 1 - margin * 2) / length2(board),1)
 	
 	if stone_circle == 1{
 		if masy > masx{
@@ -160,15 +160,15 @@
 		}
 	}
 	sizex = length(board)  * masx
-	sizey = length2(board) * masy
-	marginx = (r.2 - r.0 - sizex) / 2 //計算後のｘマージン
-	marginy = (r.3 - r.1 - sizey) / 2 //計算後のｙマージン
-	sizex = r.2 - r.0 - marginx * 2
-	sizey = r.3 - r.1 - marginy * 2
+	sizey = length2(board) * masy 
+	marginx = (r.2 - r.0 + 1 - sizex) / 2 //計算後のｘマージン
+	marginy = (r.3 - r.1 + 1 - sizey) / 2 //計算後のｙマージン
+	sizex = r.2 - r.0 + 1 - marginx * 2
+	sizey = r.3 - r.1 + 1 - marginy * 2
 
 	//エリアの中心
-	px = (r.0 + r.2) / 2
-	py = (r.1 + r.3) / 2
+	px = (r.0 + r.2 + 1) / 2
+	py = (r.1 + r.3 + 1) / 2
 	return
 	
 #modfunc redraw_stones
@@ -264,7 +264,7 @@
 	repeat get_coordinates_set_int(set_list, sets)
 		x = r.0 + marginx + masx * sets(0, cnt)
 		y = r.1 + marginy + masy * sets(1, cnt)
-		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx, masy, "$c8c8c8"
+		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx + masx\2, masy + masy\2, "$c8c8c8"
 		update_priority_draw_object stat,PRIORITY_FRONT
 		set_static_alpha get_entity_id(stat), 90
 		
@@ -285,7 +285,7 @@
 		x2 = r.0 + marginx + x2 * masx
 		y2 = r.1 + marginy + y2 * masy
 
-		make_instant_draw_object "BOXF",(x2+x1)/2 + masx/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$c8c8c8"
+		make_instant_draw_object "BOXF",(x2+x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$c8c8c8"
 		set_static_alpha get_entity_id(stat), 120
 
 	return
