@@ -10,7 +10,7 @@
 #const BOARD_SIZE (BOARD_X_MAX * BOARD_Y_MAX * 4)
 #const PATTERN_SIZE (BOARD_SIZE + (64 * 1) + (64 * 4) + (64 * 9)) //ボード + ３種類の要素
 
-#const HISTORY_MAX 5
+#const HISTORY_MAX 6
 
 #const global PATTERN_ZERO 0 //検索範囲外
 #const global PATTERN_NONE 1
