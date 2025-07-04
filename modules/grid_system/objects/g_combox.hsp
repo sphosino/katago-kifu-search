@@ -5,7 +5,7 @@
 #addition "area_grid_system.hsp"
 #addition "id_manager.hsp"
 
-#module grid_combox s, v, item_ysize, item_num, area, dropdown, dropdown_result, closing, drop_id, combox_id, selected_flag
+#module grid_combox s, v, item_ysize, item_num, area, pre_dropdown, dropdown, dropdown_result, closing, drop_id, combox_id, selected_flag, cursor_item, pre_cursor_item
 
 #modinit var a, str s1, int area_number, local thismod_ID
 
@@ -40,6 +40,8 @@
 #modcfunc get_value_g_combox
 	return dropdown_result
 
+
+
 #modcfunc combox_selected_flag
 	return selected_flag
 
@@ -56,7 +58,8 @@
 	selected_flag = 0
 	
 	notesel s
-
+	pre_cursor_item = cursor_item
+	pre_dropdown = dropdown
 	if dropdown {
 		cursor_item = -1
 		repeat notemax
@@ -142,7 +145,17 @@
 	}
 
 	noteunsel
+
 	return
+	
+#modcfunc get_cursor_item
+	return cursor_item
+#modcfunc is_changed_cursor_item
+	return pre_cursor_item != cursor_item
+#modcfunc get_dropdown_status
+	return dropdown
+#modcfunc is_changed_dropdown
+	return pre_dropdown != dropdown
 	
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey

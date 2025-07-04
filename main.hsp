@@ -449,13 +449,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			noteunsel
 		}
 	}
+
 	
 	計測 "前フレームからの状態変化取得"
 	if pre_kifu_update != kifu_update{
 		pre_kifu_update = kifu_update
 	}
 
-	
+	//マウスのエリア間移動チェック
 	if now_area != get_in_area() || _getkey(1) >= 1{
 		now_area = get_in_area()
 		set_tooltip now_area
@@ -464,12 +465,8 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		count+= frametime()
 		if count >= 0.500: draw_tooltip now_area
 	}
-	if combox_selected_flag(g_combox(combox_history_obj)){
-		logmes "selected => " + history_num
-		rect = -1
-		load_search_history history_num
-		set_g_checkbox g_chkbox.mode_chkbox,  MODE_BOARD_EDIT
-	}
+
+	//window状態変化
 	window_size = ginfo(12), ginfo(13)
 	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
 		pre_window_size = window_size, window_size.1
@@ -479,7 +476,50 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			set_static_sizey get_entity_id(bg_id), ginfo(13)
 		}
 	}
-	if 最小化:goto*main
+	
+	if 最小化: goto*main
+
+	//combox状態変化
+	
+	cbox = g_combox(combox_history_obj)
+	
+	if get_dropdown_status(cbox){
+		if is_changed_dropdown(cbox){
+			;開かれた瞬間
+			;現在の碁盤の状態を保存（履歴とはまた別に特別保持
+			get_board_data board.ui_mode, now_board //碁盤の状態取得
+			now_v = v //判定対象セットリスト
+			get_group now_group //グループ状態取得
+			get_tejun now_tejun //手順状態取得
+			
+			now_ui_mode = ui_mode //操作モード
+			
+		}else{
+			if is_changed_cursor_item(cbox){
+				
+				if get_cursor_item(cbox) == -1{ //ドロップダウンの項目から外れたら
+		
+		
+					; 記憶した碁盤を復元
+					set_board_data board.ui_mode, now_board
+					v = now_v
+					set_group now_group
+					set_tejun now_tejun
+					
+					ui_mode = now_ui_mode
+		
+				}else{
+					load_search_history stat //履歴から復元するメソッド
+					
+					ui_mode = MODE_BOARD_EDIT
+				}
+				
+				set_g_checkbox g_chkbox.mode_chkbox,  ui_mode //チェックボックスに操作モード通知
+			}
+		}
+	}
+
+
 
 	repeat 2
 		set_最終手表示 board.cnt, last_move_mark
