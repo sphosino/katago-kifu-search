@@ -1,4 +1,4 @@
-#include "memory_allocator.hsp"
+#include "memory_allocator_mod.hsp"
 #include "nodmod/scrollbarmodule.hsp"
 
 #addition "WrapCall.as"

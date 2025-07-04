@@ -1,4 +1,4 @@
-#include "memory_allocator.hsp"
+#include "memory_allocator_mod.hsp"
 #undef mes
 #define mes(%1 = "",%2=0) mes@hsp %1,%2:logmes %1
 

@@ -1,0 +1,25 @@
+#include "hspsock.as"
+#include "../hsp_common/keyfps.hsp"
+
+#const SOCKID_PYTHON 0
+
+sockopen SOCKID_PYTHON, "127.0.0.1", 12345
+if stat != 0 {
+    mes "接続失敗"
+    end
+}
+sdim 受信データ
+*main
+	manage_keyfps
+	if _getkey(1) == 1{
+		data = "こんにちはHSP"
+		sockputb data,64,SOCKID_PYTHON
+	}
+
+	sockcheck SOCKID_PYTHON
+	if stat == 0{
+		sockget 受信データ, 64, SOCKID_PYTHON
+		mes 受信データ
+
+	}
+	goto*main
