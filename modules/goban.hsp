@@ -142,15 +142,18 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 3,sizey )
-	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 3, sizey)
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 5 - sizex \ 2, sizey )
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 5 - sizex \ 2, sizey)
 	
 	return
 *get_goban_info
+
+	areasizex = r.2-r.0+1
+	areasizey = r.3-r.1+1
 	
 	//現在のエリア状態でのマスを計算(margin=最小限取りたい量)
-	masx = limit((r.2 - r.0 + 1 - margin * 2) / length(board),1)
-	masy = limit((r.3 - r.1 + 1 - margin * 2) / length2(board),1)
+	masx = limit((areasizex - margin * 2) / length(board),1)
+	masy = limit((areasizey - margin * 2) / length2(board),1)
 	
 	if stone_circle == 1{
 		if masy > masx{
@@ -161,10 +164,10 @@
 	}
 	sizex = length(board)  * masx
 	sizey = length2(board) * masy 
-	marginx = (r.2 - r.0 + 1 - sizex) / 2 //計算後のｘマージン
-	marginy = (r.3 - r.1 + 1 - sizey) / 2 //計算後のｙマージン
-	sizex = r.2 - r.0 + 1 - marginx * 2
-	sizey = r.3 - r.1 + 1 - marginy * 2
+	marginx = (areasizex - sizex) / 2 //計算後のｘマージン
+	marginy = (areasizey - sizey) / 2 //計算後のｙマージン
+	sizex = areasizex - marginx * 2 - (areasizex - sizex) \ 2
+	sizey = areasizey - marginy * 2
 
 	//エリアの中心
 	px = (r.0 + r.2 + 1) / 2
@@ -266,7 +269,7 @@
 		y = r.1 + marginy + masy * sets(1, cnt)
 		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx + masx\2, masy + masy\2, "$c8c8c8"
 		update_priority_draw_object stat,PRIORITY_FRONT
-		set_static_alpha get_entity_id(stat), 90
+		set_static_alpha get_entity_id(stat), 85
 		
 	loop
 	
@@ -277,21 +280,23 @@
 		y1 = rects(1)
 		x2 = rects(2)
 		y2 = rects(3)
-		if x1 > x2: tmp = x1:x1 = x2: x2 = tmp
-		if y1 > y2: tmp = y1:y1 = y2: y2 = tmp
+		if x1 > x2: tmp = x1: x1 = x2: x2 = tmp
+		if y1 > y2: tmp = y1: y1 = y2: y2 = tmp
 		
 		x1 = r.0 + marginx + x1 * masx
 		y1 = r.1 + marginy + y1 * masy
 		x2 = r.0 + marginx + x2 * masx
 		y2 = r.1 + marginy + y2 * masy
 
-		make_instant_draw_object "BOXF",(x2+x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$c8c8c8"
+		make_instant_draw_object "BOXF",(x2 + x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$c8c8c8"
 		set_static_alpha get_entity_id(stat), 120
 
 	return
 
 #modfunc getBoardCoordinates array result
-	result = (mousex - (r.0 + marginx)) / masx, (mousey - (r.1 + marginy)) / masy
+	result = -1, -1
+	if mousex > (r.0 + marginx): result   = (mousex - (r.0 + marginx)) / masx
+	if mousey > (r.1 + marginy): result.1 = (mousey - (r.1 + marginy)) / masy
 	return
 
 #modfunc get_board_data array a
