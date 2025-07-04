@@ -89,11 +89,13 @@
 
 	//ü•`‰æ
 	color 0,0,0
+	// cüi¶‰E‚É‘–‚éüŒQj
 	repeat length(board)
-		line masx/2 + masx * cnt , masy/2              , masx * cnt + masx/2, sizey - masy/2
+	    line masx/2 + masx * cnt, masy/2, masx/2 + masx * cnt, sizey - masy/2 - 1
 	loop
+	// ‰¡üiã‰º‚É‘–‚éüŒQj  
 	repeat length2(board)
-		line masx/2              , masy/2 + masy * cnt , sizex - masx/2, masy * cnt + masy/2
+	    line masx/2, masy/2 + masy * cnt, sizex - masx/2 - 1, masy/2 + masy * cnt
 	loop
 
 	//¯•`‰æ
@@ -151,8 +153,11 @@
 	masy = limit((r.3 - r.1 - margin * 2) / length2(board),1)
 	
 	if stone_circle == 1{
-		if masy > masx: masy = masx
-		if masx > masy:	masx = masy
+		if masy > masx{
+			masy = masx
+		}else: if masx > masy{
+			masx = masy
+		}
 	}
 	sizex = length(board)  * masx
 	sizey = length2(board) * masy

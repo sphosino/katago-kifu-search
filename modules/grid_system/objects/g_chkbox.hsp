@@ -60,7 +60,7 @@
 		if g_getkey(1) == 1{
 			toggle_g_checkbox thismod
 		}
-		backcolor = $222222
+		backcolor = $fedf03
 	}
 
 	// ”wŒiFXV
