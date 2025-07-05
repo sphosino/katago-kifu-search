@@ -51,8 +51,12 @@
 
 		titlestr += strf("(%dms) -> Œµ–§ŒŸõŠJŽn -> ", keyfpstime - starttime)
 		title titlestr
-		repeat get_keys(h,key)
-			topnode = int(get_value(h, key(cnt)))
+		repeat notemax
+			noteget sgf_filename, cnt
+
+			if get_value(h, sgf_filename) == NOT_DEFINED_HASH: continue
+
+			topnode = int(refstr)
 
 			get_board_size_from_SGF topnode, xy
 	

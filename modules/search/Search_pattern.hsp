@@ -84,10 +84,12 @@
 		titlestr += strf("(%dms) -> ŒŸõŠJŽn -> ", keyfpstime - starttime)
 		title titlestr
 		
-		starttime = keyfpstime
-		repeat get_keys(h, key)
 
-			topnode = int(get_value(h,key(cnt)))
+		repeat notemax
+			noteget sgf_filename, cnt
+			if get_value(h, sgf_filename) == NOT_DEFINED_HASH: continue
+					
+			topnode = int(refstr)
 			
 			get_board_size_from_SGF topnode, xy
 	
@@ -107,7 +109,7 @@
 			match_node = search_main(topnode)
 			
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = key(cnt) //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
+				result(0, rn) = filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
 				if inverse{
 					result(1, rn) = str(topnode)
 				}else{
