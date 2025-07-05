@@ -37,6 +37,8 @@
 	dirname = dir_exe
 #endif
 
+log_init dirname, 4098
+
 //前回起動時の情報があれば復元
 chdir dirname
 exist window_file_name
@@ -1035,10 +1037,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	gosub*create_pattern_main
 	return
 *create_pattern2
+	add_log "除外検索が呼ばれた"
 	time = keyfpstime
+	add_log "セットの引き算開始"
 	kl = notepad_minus_notepad(kifulist_notepad, search_result_sgflist)
-	logmes strmid(kifulist_notepad,0,50)
+	add_log "セットの引き算完了"
+	add_log "検索実行"
 	gosub*create_pattern_main
+	add_log "除外検索完了"
 	return
 *create_pattern3
 	time = keyfpstime
