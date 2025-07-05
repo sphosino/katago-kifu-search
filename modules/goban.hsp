@@ -142,8 +142,8 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 5 - sizex \ 2, sizey )
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 5 - sizex \ 2, sizey)
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 4, sizey )
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 4, sizey)
 	
 	return
 *get_goban_info

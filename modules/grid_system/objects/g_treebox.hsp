@@ -7,6 +7,7 @@
 	area_number = _area
 	treebox_clear thismod
 	newmod s, scroll
+	set_color_scroll_bar s, $101010, $00FFFF
 	return
 
 #modfunc set_current_node int p1, local i
