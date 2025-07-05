@@ -109,7 +109,7 @@
 			match_node = search_main(topnode)
 			
 			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
+				result(0, rn) = sgf_filename //ˆê’v‚µ‚½SGF‚ðŒ‹‰Ê‚É’Ç‰Á
 				if inverse{
 					result(1, rn) = str(topnode)
 				}else{
