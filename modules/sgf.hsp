@@ -4,14 +4,20 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define TOPNODE_SIZE 260   ; katago_rating_gamesの棋譜では(241) 
-#define NORMALNODE_SIZE 30 ; katago_rating_gamesの棋譜では(27)
+#define TOPNODE_SIZE 250   ; katago_rating_gamesの棋譜では(241) 
+#define NORMALNODE_SIZE 29 ; katago_rating_gamesの棋譜では(27)
 
 #deffunc init_sgf_module int 棋譜数
 
 	MAX_NODE = 棋譜数 * 210 //棋譜当たりの大体の平均手数(実測208)ぐらい
 	init_memory_pool MAX_NODE * 38, MAX_NODE * 2 //ノード当たりの大体のバイト数　、　ノード当たり２ブロック利用
 	init_bitboard MAX_NODE //ビットボードモジュールの初期化
+
+	//ビットボードIDの発行・管理用
+	dim bitboard_id, MAX_NODE	
+	dim node_to_bitboard_used_list, MAX_NODE
+	dimtype bitboard_id_manager, 5
+	newmod bitboard_id_manager, id_manager, MAX_NODE
 
 	dim parent, MAX_NODE //親ノード
 	dim using, MAX_NODE //使用中かフラグ
@@ -22,20 +28,14 @@
     dim sgf_properties_num, MAX_NODE //その他のプロパティの数
     dim sgf_node_childs, MAX_NODE //メモリブロック番号
     dim child_num, MAX_NODE //子ノードの数
-
-	//ビットボードIDの発行・管理用
-	dim bitboard_id, MAX_NODE
-	dim node_to_bitboard_used_list, MAX_NODE	
-	dimtype bitboard_id_manager, 5
-	newmod bitboard_id_manager, id_manager, MAX_NODE
 	
-
 	//一時コピー用
 	sdim child, 128 ; 子ノード　
 	sdim block_data, 1024 ; プロパティデータ　
 
 	SEP = " "
 	poke SEP, 0, $1F
+
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
 

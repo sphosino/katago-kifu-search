@@ -397,6 +397,7 @@ loop
 
 gosub*load_kifu_folder
 
+
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 25
 	set_listbox_scollbar_width kifulist.cnt, 16
@@ -1235,6 +1236,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 				
 		//SGFモジュール初期化
 		init_sgf_module 棋譜数
+		
 		
 		//ハッシュ初期化
 		dimtype filename_to_topnode, 5

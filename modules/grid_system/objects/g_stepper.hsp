@@ -1,6 +1,6 @@
 #ifndef grid_stepper
 #addition "../keyfps.hsp"
-#module grid_stepper area_number, v, under_limit, top_limit, gap, backcolor
+#module grid_stepper area_number, v, under_limit, top_limit, gap, backcolor,spincolor
 
 
 #modinit array value, int _area
@@ -10,6 +10,7 @@
 	top_limit = 99999
 	gap = 1
 	backcolor = $F5F5DC
+	spincolor = $4A37A8
 	mref thismod_ID, 2
 	return thismod_ID
 
@@ -32,17 +33,16 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	sy = rect.3-rect.1
 	cx = rect.0 + sx / 2
 	cy = rect.1 + sy / 2
-
-	make_instant_draw_object "BOXF",cx,cy,sx,sy,strf("%d",backcolor)
 	
 	half_y = (rect.3 - rect.1) / 2
 	
 	sx -= half_y
 	cx -= half_y / 2
-	make_instant_draw_object "STR",cx,cy,sx,sy, strf("%s,%d",v,$4A3728)
+	make_instant_draw_object "STR",cx,cy,sx,sy, strf("%s,%d,,,,%d",v,$4A3728,backcolor)
 
+	spincolor = $4A37A8
+	make_instant_draw_object "BOXF",rect.2-half_y/2,rect.1+half_y, half_y, half_y*2,str(spincolor)
 
-	make_instant_draw_object "BOXF",rect.2-half_y/2,rect.1+half_y, half_y, half_y*2,"$4A37A8"
 
 	margin_under_limit = 2 ;px
 	margin = 3 ; %
@@ -51,25 +51,28 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
 	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
 
-	tmpcolor = backcolor
+	tmpcolor = spincolor
 	if in_rect(uprect){
-		tmpcolor = F‚ğ‰ÁZ‚·‚é(backcolor, 50)
+		tmpcolor = F‚ğ‰ÁZ‚·‚é(spincolor, 50)
 		if getPhold_ms(1, 400 , 100){
 			v += gap
 			v = limit(v, under_limit, top_limit)
 		}
 	}
-	make_instant_draw_object "BOXF",rect.2 - half_y /2, rect.1 + half_y/2,half_y - msize*2, half_y - msize*2,strf("%d",tmpcolor)
+	make_instant_draw_object "STR",rect.2 - half_y /2, rect.1 + half_y/2,half_y - msize*2, half_y - msize*2,strf("ª,%d,,,,%d",backcolor,tmpcolor)
 
-	tmpcolor = backcolor
+	tmpcolor = spincolor
 	if in_rect(downrect){
-		tmpcolor = F‚ğ‰ÁZ‚·‚é(backcolor, 50)
+		tmpcolor = F‚ğ‰ÁZ‚·‚é(spincolor, 50)
 		if getPhold_ms(1, 400 , 100){
 			v -= gap
 			v = limit(v, under_limit, top_limit)
 		}
 	}
-	make_instant_draw_object "BOXF",rect.2 - half_y/2, rect.3 - half_y/2, half_y-msize*2,half_y - msize*2,strf("%d",tmpcolor)
+	make_instant_draw_object "STR",rect.2 - half_y/2, rect.3 - half_y/2, half_y-msize*2,half_y - msize*2,strf("«,%d,,,,%d",backcolor,tmpcolor)
+
+
+
 
 	return
 
@@ -77,23 +80,4 @@ _set_stepper_limit %1, a@stepper,b@stepper,c@stepper
 #defcfunc local in_rect array a
 	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 #global
-#endif
-
-#if 0
-mock_flag@global = 1
-
-
-set_rect_mock 90, 0,0,60,30
-set_rect_mock 30, 60,60, 100,100
-
-newmod c, grid_stepper, a, 90
-newmod c, grid_stepper, v, 30
-
-*main
-	manage_keyfps
-	foreach c
-	draw_g_stepper c(cnt)
-	loop
-	redraw:redraw 2
-	goto*main
 #endif
