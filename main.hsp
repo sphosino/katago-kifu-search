@@ -209,10 +209,10 @@ randomize
 chdir dirname + "/save"
 dirlist filelist, "*.sgf"
 notesel filelist
-	repeat notemax
-		noteget tmp, cnt
-		delete tmp
-	loop
+repeat notemax
+	noteget tmp, cnt
+	delete tmp
+loop
 noteunsel
 
 //エリア作成
@@ -407,15 +407,6 @@ foreach g_label
 loop
 
 
-gosub*load_kifu_folder
-
-
-foreach kifulist
-	set_listbox_item_ysize kifulist.cnt, 25
-	set_listbox_scollbar_width kifulist.cnt, 16
-loop
-gosub*loadsgf
-
 set_max_centering_mes 33
 
 bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF_FAST", LIFE_FOREVER, 0,0, ginfo(12), ginfo(13), strf("%d",BG_COLOR))
@@ -428,6 +419,16 @@ onexit *save_info //終了時に*save_infoにジャンプ
 //子プロセス管理初期化
 
 gosub *init_parent_process
+
+gosub*load_kifu_folder
+
+
+foreach kifulist
+	set_listbox_item_ysize kifulist.cnt, 25
+	set_listbox_scollbar_width kifulist.cnt, 16
+loop
+gosub*loadsgf
+
 
 *main
 	計測 "manage_keyfps"
@@ -1050,9 +1051,10 @@ gosub *init_parent_process
 	logmes "検索開始"
 	tmp = dir_cur
 	chdir dirname
-	repeat 5 - nocoConnectInfo(0)
+	while nocoConnectInfo(0) < MAX_CHILDREN + 1
     	exec "search_process"
-    loop
+    	await
+    wend
     chdir tmp
 	get_board_data board.ui_mode, m
 	set_board_pattern m
@@ -1070,12 +1072,7 @@ gosub *init_parent_process
 		
 	}else{ ;通常検索
 
-		//担当棋譜リストをを作る
-		div_notepad kl, child_count_current, b //棋譜リストを各プロセス用に分割
-		//棋譜リスト送信
-		repeat child_count_current
-			nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
-		loop
+		棋譜リスト送信 kl
 
 		//検索条件作成
 		sdim params
@@ -1093,6 +1090,14 @@ gosub *init_parent_process
 		loop
 	}
 	
+	return
+#deffunc 棋譜リスト送信 str s1
+	//担当棋譜リストをを作る
+	div_notepad s1, child_count_current, b //棋譜リストを各プロセス用に分割
+	//棋譜リスト送信
+	repeat child_count_current
+		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
+	loop
 	return
 	
 *filtering_and_make_listbox
@@ -1270,6 +1275,8 @@ gosub *init_parent_process
 	kifu_update = 1
 	kifulist_notepad = filelist
 
+	棋譜リスト送信 kifulist_notepad
+
 	return
 	
 
@@ -1318,13 +1325,14 @@ gosub *init_parent_process
 	noteadd str(最大化)
 	notesave window_file_name
 	save_load_manager_save //グリッド情報保存
+	gsel 0,-1
 	terminate_children //子プロセス解放
 	end
 
 
 *init_parent_process
     // ユニークなアプリ名を作成
-    app_name = "MyApp_" + str(rnd(10000))
+    app_name = "MyApp_" + str(rnd(32768))
     // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
     sdim s
     notesel s
@@ -1344,25 +1352,24 @@ gosub *init_parent_process
     // なごコネに参加 (他のプロセスからの接続を受け入れ)
     nocoConnectAccept app_name
     
-
+	tmp = dir_cur
+    chdir dirname
+    repeat MAX_CHILDREN
+    	exec "search_process"
+    loop
+    chdir tmp
+    //全て起動するまで待つ
+    while nocoConnectInfo(0) <= MAX_CHILDREN
+    await
+    wend
+    update_child_list
+    
     // 自動受信設定と受信コールバック関数の設定
     nocoAutoCopyData
     nocoOnCopyData *on_copydata
     oncmd gosub *on_copydata, stat 
 
 
-
-    if nocoConnectInfo(0) != 5{
-	    	tmp = dir_cur
-    chdir dirname
-	    repeat limit(5 - nocoConnectInfo(0),0)
-	    	exec "search_process"
-	    loop
-	    	chdir tmp
-	}
-
-
-	
     return
 
 
@@ -1377,29 +1384,29 @@ gosub *init_parent_process
     if (total_connected_apps > 1) { // 自アプリ(index 0)以外にも接続しているアプリがある場合
         repeat total_connected_apps
             connected_hwnd = nocoConnectInfo(1, cnt)
+            if connected_hwnd == hwnd: continue
             
-            // 取得したハンドルが有効で、かつそれが親プロセス自身ではないことを確認
-            if (connected_hwnd != 0 && connected_hwnd != hwnd) {
-                // 新しいリストに追加
-                if (new_child_count <= MAX_CHILDREN) {
+            // 新しいリストに追加
+            if (new_child_count <= MAX_CHILDREN) {
 
-	                
-					found_index = find_child_by_hwnd(child_hwnd_list, connected_hwnd) //このhwndが既存のリストのどこにあるか？
-					if found_index == -1{
-                    	temp_child_status(new_child_count) = "初期状態"
-                    	
-                    }else{
-						temp_child_status(new_child_count) = child_status_list(found_index)
-	               	}
-	               	
-	                temp_child_hwnd(new_child_count) = connected_hwnd
-	                
-                    new_child_count++
-                } else {
-                    logmes "警告: 検出された子プロセスがMAX_CHILDRENを超えました。一部を無視します。"
-                    break // 配列の容量を超えたらループを抜ける
-                }
+                
+				found_index = find_child_by_hwnd(child_hwnd_list, connected_hwnd) //このhwndが既存のリストのどこにあるか？
+				if found_index == -1{
+                	temp_child_status(new_child_count) = "初期状態"
+                	
+                }else{
+					temp_child_status(new_child_count) = child_status_list(found_index)
+               	}
+               	
+                temp_child_hwnd(new_child_count) = connected_hwnd
+                
+                new_child_count++
+                
+            } else {
+                logmes "警告: 検出された子プロセスがMAX_CHILDRENを超えました。一部を無視します。"
+                break // 配列の容量を超えたらループを抜ける
             }
+            
         loop
     }
 
@@ -1524,7 +1531,8 @@ gosub *init_parent_process
 			nowpointer += result_size
 		loop
 
-		
+		set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
+
 		
     	swbreak
                         
