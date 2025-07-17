@@ -435,9 +435,6 @@ gosub *init_parent_process
 	notify_dt_draw_object frametime()
 
 	update_child_list //子プロセス監視
-
-	計測 "kifuload"
-
 	
 	計測 "前フレームからの状態変化取得"
 	if pre_kifu_update != kifu_update{
@@ -851,6 +848,8 @@ gosub *init_parent_process
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
 
+		if topnode != -1: del_sgf_node topnode, 1
+
 		current_kifulist = kifulist_id
 		ui_mode = MODE_KIFU_VIEW
 		if get_root_tree_node(t) >= 0{
@@ -1062,6 +1061,8 @@ gosub *init_parent_process
 	save_history
 	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
 
+	del_item_all kifulist.matchlist
+
 
 	if use_bitboard{ ;厳密検索
 		
@@ -1245,8 +1246,7 @@ gosub *init_parent_process
 		棋譜数 = notemax
 		
 		//SGFモジュール初期化
-		init_sgf_module 5000
-		dialog notemax
+		init_sgf_module 100
 		
 		//ハッシュ初期化
 		dim filename_to_topnode

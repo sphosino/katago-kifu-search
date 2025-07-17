@@ -91,7 +91,7 @@ loop
 	inverse   = lpeek(received_params, 8)
 	set_base_from_binary received_params, 12
 
-	mes stat
+	mes "受信した検索命令のサイズ -> " + stat
 
 	
 	割り込み = 0
@@ -102,7 +102,7 @@ loop
 	result_num = 0
 	nowpointer = 0
 
-	mes max_depth
+	mes "検索の最大深さ -> " + max_depth
 	
     repeat set_to_array(kifulist, kifu)
 		if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
@@ -133,10 +133,6 @@ loop
 			group_num = get_pattern_all_groups_num()
 			
 		}
-
-		mes group_num
-
-		
 		
 		//検索実行
 		search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
@@ -165,7 +161,7 @@ loop
 		}
     loop
 
-    mes result_num
+    mes "検索結果の数 -> " + result_num
 
 	nocoSendCopyData parent_hwnd, result, 検索結果, (1024 + 64) * result_num //親プロセスに結果を送信
 
