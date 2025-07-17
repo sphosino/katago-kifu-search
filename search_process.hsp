@@ -51,6 +51,11 @@ kifulist = make_new_set()
 
 // メッセージ待機
 repeat
+	exist_parent = 0
+	repeat nocoConnectInfo(0)
+		if nocoConnectInfo(1,cnt) == parent_hwnd: exist_parent = 1: break //親が生きてるか？
+	loop
+	if exist_parent = 0: end
     await 50
 loop
 *dummy

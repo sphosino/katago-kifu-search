@@ -1,10 +1,11 @@
 #module
 #deffunc div_notepad str s1, int array_count, array a
 	s = s1
-	sdim a,, array_count
+
 	notesel s
+	
 		if notemax <= 0 : noteunsel : return  // 空文字列の場合は何もしない
-		
+		sdim a,strlen(s)/notemax + 200, array_count
 		// より均等に分割する方法
 		base_lines = notemax / array_count        // 基本的な行数
 		extra_lines = notemax \ array_count       // 余りの行数

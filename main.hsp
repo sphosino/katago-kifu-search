@@ -47,7 +47,7 @@ log_init dirname, 4098
 
 //前回起動時の情報があれば復元
 
-#if 0
+#if 01
 chdir dirname
 exec "download_sgf.exe"
 #endif
@@ -1065,15 +1065,16 @@ gosub*loadsgf
 
 	del_item_all kifulist.matchlist
 
-
 	if use_bitboard{ ;厳密検索
 		
 		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, loadmax, inverse, filename_to_topnode)
 		
 	}else{ ;通常検索
 
+		logmes "棋譜リスト送信"
 		棋譜リスト送信 kl
 
+		logmes "条件作成"
 		//検索条件作成
 		sdim params
 		lpoke params, , max_depth
