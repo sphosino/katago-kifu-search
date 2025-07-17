@@ -5,7 +5,7 @@
 
 #const global LISTBOX_DEFAULT_MAX 300
 
-#module grid_listbox id_man, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status
+#module grid_listbox id_man, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status, res
 
 #modinit int p1, int p2, local thismod_ID
 
@@ -16,7 +16,7 @@
 	if p2 = 0: size = LISTBOX_DEFAULT_MAX
 
 	sdim item_names,, size
-	sdim item_datas,, size
+	sdim item_datas,1024, size
 	dim listbox_item_select_status, size
 	
 	newmod id_man, listbox_id_manager, size
@@ -50,8 +50,10 @@
         noteget tmp_str, cnt
         id = get_new_listbox_id(id_man)
         item_names(id) = tmp_str
+        lpoke item_datas(id), 0, -1
     loop
     noteunsel
+  
     return id
 
 //リスト番号ベースで操作
@@ -62,6 +64,13 @@
     return item_names(get_listbox_id(id_man, index))
 #modcfunc get_item_data int index
     return item_datas(get_listbox_id(id_man, index))
+    
+#modfunc push_item_data int index, array a
+	memcpy   item_datas(get_listbox_id(id_man, index)), a, 1024
+#modfunc dup_item_data int index, array a
+	memcpy a,item_datas(get_listbox_id(id_man, index)),    1024
+	return
+	
 #modfunc remove_item int index
 	delete_listbox_num id_man, index
 	fix_scroll_after_remove thismod
@@ -75,10 +84,18 @@
     return item_names(_id)
 #modcfunc get_item_data_by_id int _id
     return item_datas(_id)
+
+#modfunc push_item_data_by_id int _id, array a
+	memcpy   item_datas(_id), a, 1024
+#modfunc dup_item_data_by_id int _id, array a
+	memcpy a,item_datas(_id),    1024
+	return
+
 #modfunc remove_item_by_id int _id
 	delete_listbox_id id_man, _id
 	fix_scroll_after_remove thismod
 	return
+
 	
 #modfunc remove_selected_items
 	// 選択中のやつを全部削除
@@ -278,7 +295,7 @@
 
 //x,yがリストボックスのどこにあるか？
 #modcfunc listbox_on_id int x, int y, local i
-	get_rect area_number,rect
+	get_rect area_number, rect
 
 	if rect.0 > x || rect.1 > y || rect.2 < x || rect.3 < y {
 		//リストボックス外

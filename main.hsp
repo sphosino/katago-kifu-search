@@ -2,7 +2,7 @@
 #packopt hide 1
 #bootopt notimer 1 //ツールなので、高精度タイマーを使用しない
 
-;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重くなるので謎バグ特定専用
+;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重バグ特定専用
 
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
@@ -12,9 +12,11 @@
 #include "modules/katago_sqr.hsp"
 
 #include "modules/search/pattern.hsp"
-#include "modules/search/Search_pattern.hsp"
-#include "modules/search/Search_pattern2.hsp"
 #include "modules/search/draw_pattern.hsp"
+#include "nodmod/ProcLinkModule.hsp"
+#include "メッセージ定数.hsp"
+#include "div_notepad.hsp"
+
 
 #include "tooltip.hsp"
 
@@ -28,6 +30,10 @@
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 
+#const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
+
+#const MAX_CHILDREN 4 //子プロセス数
+
 
 #const BG_COLOR $808080 // 128,128,128
 
@@ -40,7 +46,12 @@
 log_init dirname, 4098
 
 //前回起動時の情報があれば復元
+
+#if 0
 chdir dirname
+exec "download_sgf.exe"
+#endif
+
 exist window_file_name
 
 if strsize == -1{
@@ -318,7 +329,6 @@ add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
 set_tooltip_color 0x333333, 0xFFFFFF
 
 //実体作成
-newmod g_buttons, grid_button, "最新棋譜取得", *loadfile, button_download_file
 newmod g_buttons, grid_button, "保存",*save_file,button_save_file
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
@@ -415,43 +425,18 @@ pretime = keyfpstime
 
 onexit *save_info //終了時に*save_infoにジャンプ
 
+//子プロセス管理初期化
+
+gosub *init_parent_process
+
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
 	notify_dt_draw_object frametime()
 
-	計測 "kifuload"
+	update_child_list //子プロセス監視
 
-	if kifu_update & waitedtime() > get_target_wait(){//棋譜がアップデートされたとき且つ、十分な余裕時間があったときのみ走る
-		new_ = get_in_area()
-		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
-		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
-			pat = keyfpstime
-			pre_ = new_
-		}
-		//ユーザーがアクティブでない時
-		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
-			
-			//毎フレーム１棋譜読み込む
-			
-			notesel filelist
-				
-				noteget sgf_file_name, get_entry_count(filename_to_topnode)
-				if sgf_file_name == ""{
-					//全て読み込んだ
-					kifu_update = 0
-				}else{
-					if get_value(filename_to_topnode, sgf_file_name) == NOT_DEFINED_HASH{
-						notesel sgf
-							chdir kifu_dirname
-							noteload sgf_file_name
-							new_value filename_to_topnode, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
-						noteunsel
-					}
-				}
-			noteunsel
-		}
-	}
+	計測 "kifuload"
 
 	
 	計測 "前フレームからの状態変化取得"
@@ -769,7 +754,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	}
 	
 	//CTRLダブルクリックでデバッグモード切替
-	if getdbl_ms(17, 250) == 1{
+	if getdbl_ms(17, DBL_INTERVAL) == 1{
 		debugmode ^ 1
 		logmes "switched debugmode ->" +debugmode
 	}
@@ -877,7 +862,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		rn = 0
 
 
-		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, filename_to_topnode)
+		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board)
 
 		clear_graph l_graph
 
@@ -892,11 +877,15 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		
 		手数 = 0
 
-		if get_item_data(kifulist.kifulist_id, itemid) != ""{ //アイテムデータが設定されていたら、それは検索結果。
-			nstat = int(refstr) //検索結果のSGFノード
-			
+		dim path, 1024 / 4
+		path = -1
+
+		dup_item_data kifulist.kifulist_id, itemid, path
+		
+		if path >= 0{
 			//それが格納されているツリーIDを探してカレントノードに設定、手数も合わせる
-			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat, 手数)
+			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), path)
+			手数 = path
 
 			move_next_int kifu_start_num_result
 
@@ -921,7 +910,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	a = select_kifulist_item(stat, current_kifulist,1)
 	return
 *back_kifu
-	move_listbox_index kifulist(current_kifulist),-1
+	move_listbox_index kifulist(current_kifulist), -1
 	a = select_kifulist_item(stat, current_kifulist)
 
 	return
@@ -973,11 +962,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	dim nodelist
 	
 	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = int(get_value(filename_to_topnode,get_item_name(kifulist.current_kifulist, s(cnt))))
+		nodelist(cnt) = load_sgf(s)
 	loop
 	new_node = merge_node(nodelist)
 	clipset get_node_sgf(new_node)
-	del_sgf_node new_node, 1 //削除して完了
+
+	repeat length(nodelist)
+		del_sgf_node nodelist(cnt), 1 //削除して完了
+	loop
 	title "棋譜をクリップボードにコピーしました"
 	return
 *loadsgf
@@ -985,11 +977,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	newmod t, treebox, treebox_area
 	sdim s, $FFFF
 	clipget s, varsize(s)
+
+	del_sgf_node sgf_topnode, 1
+	sgf_topnode = load_sgf(s)
 	
-	if load_sgf(s) < 0: return
+	if sgf_topnode < 0: return
 
 	
-	topnode = load_sgf_set_board(t, stat, board)
+	topnode = load_sgf_set_board(t, sgf_topnode, board)
 	
 	blackplayer = get_property_data(topnode, "PB")
 	whiteplayer = get_property_data(topnode, "PW")
@@ -1054,44 +1049,49 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	
 *create_pattern_main
 	logmes "検索開始"
-	
+	tmp = dir_cur
+	chdir dirname
+	repeat 5 - nocoConnectInfo(0)
+    	exec "search_process"
+    loop
+    chdir tmp
 	get_board_data board.ui_mode, m
 	set_board_pattern m
 	set_coordinate_pattern v
 	set_base
-	
-	
+	save_history
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
+
+
 	if use_bitboard{ ;厳密検索
 		
 		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, loadmax, inverse, filename_to_topnode)
 		
 	}else{ ;通常検索
 
-		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, loadmax, inverse, filename_to_topnode)
+		//担当棋譜リストをを作る
+		div_notepad kl, child_count_current, b //棋譜リストを各プロセス用に分割
+		//棋譜リスト送信
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
+		loop
+
+		//検索条件作成
+		sdim params
+		lpoke params, , max_depth
+		lpoke params,4, enableColorFlip
+		lpoke params,8, inverse
+		get_base_binary params, 12
+
+		psize = stat
+		logmes "命令実行-send -> "+psize
+
+		//検索実行させる
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), params, 検索実行, psize
+		loop
 	}
-
-	if result_num < 0{
-		//早期リターンなら何もせず終わる。
-		logmes "検索早期リターン！当然０件だよ" + result_num
-		return
-	}
-
-	save_history
-	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
-
-	search_result_sgflist = ""
 	
-	repeat result_num
-		search_result_sgflist += search_result(0, cnt) + "\n"
-	loop
-
-	//search_result_sgflistに結果リスト、result_numに結果の数が入っている。
-
-	gosub *filtering_and_make_listbox
-
-
-	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + fn + "件の検索結果"
-
 	return
 	
 *filtering_and_make_listbox
@@ -1233,25 +1233,31 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	return
 	
 *load_kifu_folder
+	
 	treebox_clear t
 	chdir kifu_dirname
 	dirlist files,"*.sgf"
 	notesel ss
+	
 	ss = shuffle_notepad(files)
+	
+	
 		棋譜数 = notemax
-				
-		//SGFモジュール初期化
-		init_sgf_module 棋譜数
 		
+		//SGFモジュール初期化
+		init_sgf_module 5000
+		dialog notemax
 		
 		//ハッシュ初期化
-		dimtype filename_to_topnode, 5
+		dim filename_to_topnode
 		newmod filename_to_topnode, hash_manager, 棋譜数
 
 		//棋譜リスト初期化
-		dimtype kifulist, 5, 2
+		dim kifulist
+		
 		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
 		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
+		
 		sdim filelist
 		repeat 棋譜数
 			noteget tmp, cnt
@@ -1312,4 +1318,239 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	noteadd str(最大化)
 	notesave window_file_name
 	save_load_manager_save //グリッド情報保存
+	terminate_children //子プロセス解放
 	end
+
+
+*init_parent_process
+    // ユニークなアプリ名を作成
+    app_name = "MyApp_" + str(rnd(10000))
+    // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
+    sdim s
+    notesel s
+	    noteadd app_name
+	    noteadd str(hwnd)
+	    tmp = dir_cur
+		chdir dirname
+	    	notesave "app_name.txt"
+		chdir tmp
+	noteunsel
+
+    dim child_hwnd_current, MAX_CHILDREN      // 子プロセスのウィンドウハンドル配列
+	sdim child_status_current, 64, MAX_CHILDREN // 子プロセスの状態配列
+	child_count_current = 0                   // 現在起動中の子プロセス数
+	dim prekeys, 9                        // キー入力の状態を保持
+
+    // なごコネに参加 (他のプロセスからの接続を受け入れ)
+    nocoConnectAccept app_name
+    
+
+    // 自動受信設定と受信コールバック関数の設定
+    nocoAutoCopyData
+    nocoOnCopyData *on_copydata
+    oncmd gosub *on_copydata, stat 
+
+
+
+    if nocoConnectInfo(0) != 5{
+	    	tmp = dir_cur
+    chdir dirname
+	    repeat limit(5 - nocoConnectInfo(0),0)
+	    	exec "search_process"
+	    loop
+	    	chdir tmp
+	}
+
+
+	
+    return
+
+
+#deffunc update_child_list
+    new_child_count = 0
+    dim temp_child_hwnd, MAX_CHILDREN
+    sdim temp_child_status, 64, MAX_CHILDREN
+
+    // なごコネに参加している全てのアプリ数を取得
+    total_connected_apps = nocoConnectInfo(0, 0)
+    
+    if (total_connected_apps > 1) { // 自アプリ(index 0)以外にも接続しているアプリがある場合
+        repeat total_connected_apps
+            connected_hwnd = nocoConnectInfo(1, cnt)
+            
+            // 取得したハンドルが有効で、かつそれが親プロセス自身ではないことを確認
+            if (connected_hwnd != 0 && connected_hwnd != hwnd) {
+                // 新しいリストに追加
+                if (new_child_count <= MAX_CHILDREN) {
+
+	                
+					found_index = find_child_by_hwnd(child_hwnd_list, connected_hwnd) //このhwndが既存のリストのどこにあるか？
+					if found_index == -1{
+                    	temp_child_status(new_child_count) = "初期状態"
+                    	
+                    }else{
+						temp_child_status(new_child_count) = child_status_list(found_index)
+	               	}
+	               	
+	                temp_child_hwnd(new_child_count) = connected_hwnd
+	                
+                    new_child_count++
+                } else {
+                    logmes "警告: 検出された子プロセスがMAX_CHILDRENを超えました。一部を無視します。"
+                    break // 配列の容量を超えたらループを抜ける
+                }
+            }
+        loop
+    }
+
+    // 新しいリストを現在のリストにコピー
+    
+    dim child_hwnd_list, new_child_count
+    dim child_status_list, new_child_count
+    repeat new_child_count
+        child_hwnd_list(cnt) = temp_child_hwnd(cnt)
+        child_status_list(cnt) = temp_child_status(cnt)
+    loop
+
+    child_count_current = new_child_count
+    
+    return
+
+// 全子プロセスに終了指示を送信し、終了を待機する
+#deffunc terminate_children
+    logmes "全子プロセスに終了指示を送信しています..."
+    
+    // 現在管理している子プロセスに終了指示を送る (既存の処理)
+    repeat child_count_current
+        if (child_hwnd_list(cnt) != 0) {
+            nocoSendCopyDataInt child_hwnd_list(cnt), 終了指示 // 終了指示
+            mes "管理下の子プロセス " + cnt + " (HWND:" + child_hwnd_list(cnt) + ") に終了指示を送信しました。"
+        }
+    loop
+    
+    // --- ここから nocoConnectInfo を使った追加処理 ---
+    
+    // なごコネに参加している全てのアプリ数を取得
+    total_connected_apps = nocoConnectInfo(0, 0)
+    
+    if (total_connected_apps > 1) { // 自アプリ(index 0)以外にも接続しているアプリがある場合
+        mes "なごコネ経由で他のプロセスも探索し、終了指示を送信します..."
+        
+        // 自アプリを除外するため、インデックス1からループを開始
+        repeat total_connected_apps
+            idx = cnt
+            
+            // 接続中のアプリのウィンドウハンドルを取得
+            connected_hwnd = nocoConnectInfo(1, idx)
+            
+            // 取得したハンドルが有効で、かつそれが親プロセス自身ではないことを確認
+            // (親自身のハンドルは hwnd 変数に格納されているはず)
+            if (connected_hwnd != 0 && connected_hwnd != hwnd) {
+                // このハンドルが既にchild_hwnd配列に登録されているか確認
+                is_already_managed = -1
+                repeat child_count_current
+                    if (child_hwnd_list(cnt) == connected_hwnd) {
+                        is_already_managed = true
+                        break
+                    }
+                loop
+                
+                // まだ管理されていない（ハンドル通知を受けていない）子プロセスであれば終了指示を送る
+                if is_already_managed == -1 {
+                    mes "未管理の子プロセス (HWND: " + connected_hwnd + ") に終了指示を送信します。"
+                    nocoSendCopyDataInt connected_hwnd, 終了指示
+                }
+            }
+        loop
+    } else {
+        mes "なごコネ経由で他に接続中の子プロセスはありません。"
+    }
+
+    // --- ここまで追加処理 ---
+
+    await 2000 // 子プロセスが終了するのを待つ (適宜調整)
+    
+
+    mes "全子プロセスの終了処理が完了しました。"
+    
+    // 子プロセス管理配列をリセット
+    child_count_current = 0
+    dim child_hwnd_list
+    sdim child_status_list
+    return
+
+*on_copydata
+    // 受信データの詳細情報を取得
+
+    sender_hwnd = nocoCopyDataInfo(2)   // 送信元ウィンドウハンドル
+    param = nocoCopyDataInfo(3)         // メッセージタイプ (LPARAM)
+    data_size = nocoCopyDataInfo(4)     // データサイズ (dwData)
+
+    logmes strf("hwnd -> %d, type -> %d, size -> %d", sender_hwnd,param,data_size)
+    
+    // 送信元の子プロセスを特定
+    child_index = find_child_by_hwnd(child_hwnd_list, sender_hwnd)
+
+    // 未知の送信元からのメッセージはログに記録
+    if child_index == -1{
+        logmes "警告: 未知の送信元 (HWND: " + sender_hwnd + ") からメッセージを受信しました。タイプ: " + param
+        stop
+    }
+
+    
+    
+    // メッセージタイプに応じた処理
+    switch param
+
+    case 検索結果:
+    
+		nocoGetCopyData received_data
+		result_size = 64 + 1024
+		result_num = data_size / result_size
+		sdim result_list, 64      , result_num
+		sdim path       , 1024 / 4, result_num
+		nowpointer = 0
+		
+		sdim k, 64
+		dim p, 256
+		repeat result_num
+			memcpy k, received_data,  64, 0, nowpointer
+			memcpy p, received_data,1024, 0, nowpointer + 64
+			
+			//リストボックスに追加
+			add_item kifulist.matchlist, k
+			push_item_data_by_id kifulist.matchlist, stat, p
+			
+			nowpointer += result_size
+		loop
+
+		
+		
+    	swbreak
+                        
+    default:
+        // 未知のメッセージタイプ
+        if child_index != -1 {
+            mes "子プロセス " + child_index + " から未知のメッセージタイプ (" + param + ") を受信しました。"
+        } else {
+            mes "未知の送信元 (HWND: " + sender_hwnd + ") から未知のメッセージタイプ (" + param + ") を受信しました。"
+        }
+        swbreak
+    swend
+    
+    return
+
+
+#module
+// 子プロセスのハンドルを検索し、そのインデックスを返す
+// 見つからない場合は -1 を返す
+#defcfunc find_child_by_hwnd array h_array, int search_hwnd
+    result = -1
+    repeat length(h_array)
+        if (h_array(cnt) == search_hwnd) {
+            result = cnt
+            break
+        }
+    loop
+    return result
+#global

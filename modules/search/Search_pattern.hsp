@@ -27,119 +27,52 @@
 //最終的なノードサイズ
 #const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
 
+//パス(結果）を含めたサイズ
+#const DATA_SIZE_PATH DATA_SIZE + 1024
+
 
 #deffunc search_init
 	dim vlist , VLIST_ELEMENT_NUM, VLIST_MAX //探索時ノードが持つ有効なパターンリスト（これがなくなってしまうと検索失敗となる）
-	init_ringbuffer DATA_SIZE, 128           //キュー初期化（自動拡張付き）
-	sdim node_data, DATA_SIZE　              //データを纏めてキューに出し入れするための媒介変数
+	init_ringbuffer DATA_SIZE_PATH, 128      //キュー初期化（要素数(128)に関しては自動拡張付き）
+	sdim node_data, DATA_SIZE_PATH　         //データを纏めてキューに出し入れするための媒介変数
+	
 	return
 
-#defcfunc search str SGF_list, array result, int max_depth, int colorflip, int kifu_update, var loadmax, int inverse, var h
-
-	group_num = get_pattern_all_groups_num() //パターンのhitと判定するために判定に必要な数を取得
-	logmes "group_num = " + group_num
-	if group_num == 0: return -1
-	if group_num > max_depth: return -2
-
-	colorflip_num = 1 + colorflip // (0-1)を(1-2)で扱う
-	
-	最大の深さ = 50
-	if max_depth{
-		最大の深さ = max_depth
-	}
-	rn = 0
-	prexy = -1, -1
-	
-	logmes "探索を開始します-> 必要なヒット数 = " + group_num
-	
-	notesel ss
-		ss = SGF_list
-
-		検索棋譜数 = notemax * loadmax / 100
-		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax
-	
-		titlestr = ""
-	
-		starttime = keyfpstime
-	
-		if kifu_update{		
-			repeat 検索棋譜数, get_entry_count(h) //SGF_listを単純に順番に読み込んでいるため、将来SGF_LISTをソートするようなことがあれば変更必要
-				noteget sgf_filename, cnt
-				if sgf_filename == "": break
-				if get_value(h, sgf_filename) == NOT_DEFINED_HASH{
-					notesel sgf
-						noteload sgf_filename
-					noteunsel
-					topnode = load_sgf(sgf)
-					new_value h, sgf_filename, str(topnode)
-					await
-					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
-					getkey key, 27
-					if key: break
-					title titlestr + "... 【ESC】-> 読み込み済み棋譜をすぐに検索"
-				}
-			loop
-		}
-	
-		titlestr += strf("(%dms) -> 検索開始 -> ", keyfpstime - starttime)
-		title titlestr
-		
-
-		repeat notemax
-			noteget sgf_filename, cnt
-			if get_value(h, sgf_filename) == NOT_DEFINED_HASH: continue
-					
-			topnode = int(refstr)
-			
-			get_board_size_from_SGF topnode, xy
-	
-			//前回検索した棋譜とボードサイズが違う場合
-			if prexy != xy || prexy.1 != xy.1{
-				//新たなパターンを生成
-				make_rotate_patterns xy, xy.1
-				get_pattern rotated_color, rotated_group, rotated_tejun
-				prexy = xy,xy.1
-				//回転パターン数
-				r_pattern_num = 4 << (xy == xy.1)
-				
-			}
-			
-			//検索実行
-			
-			match_node = search_main(topnode)
-			
-			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = sgf_filename //一致したSGFを結果に追加
-				if inverse{
-					result(1, rn) = str(topnode)
-				}else{
-					result(1, rn) = str(stat)
-				}
-				rn++
-			}
-			
-		loop
-	noteunsel
-
-	title titlestr + strf("検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
-	return rn
-
-
-
-
-#defcfunc search_main int t
+#deffunc search_main int t, int max_depth, int colorflip, array rotated_color, array rotated_group, array rotated_tejun, array r_pattern_num, int group_num, array path
 /*
   t:
   - 検索開始のノード番号
-  
-  return_value -> マッチしたノード番号、マッチしない場合 -1
+
+  max_depth:
+  - 検索の深さ（何手まで検索するか）
+
+  colorflip:
+  - 黒白逆転も含めるかのフラグ
+
+  rotated_color:
+  - 回転を含む石の色に関するパターンデータ
+
+  rotated_group:
+  - 回転を含む石グループのパターンデータ
+
+  rotated_tejun:
+  - 回転を含む手順のパターンデータ
+
+  r_pattern_num:
+  - 回転の数（４または８)
+
+  group_num:
+  - ヒットと判定するために必要な数
+
+  path:
+  - マッチした位置を返す配列。 pathの先頭要素は特別で、 はヒットした深さの位置を返し、path(0) が-1ならヒットしなかったことを示す。
 */
 
-  //パターンリスト初期化
+  //パターンリスト初期化(最大１６種）
   valid_pattern_count = 0
   repeat r_pattern_num
-    for i,, colorflip_num
-      vlist(FLIP_INFO, valid_pattern_count) = i
+    for i,, colorflip + 1
+      vlist(FLIP_INFO, valid_pattern_count) = i + 1 // 1-2（黒、白）に変換
       vlist(ROTATE_INFO, valid_pattern_count) = cnt
       vlist(MATCH_GROUP_COUNT, valid_pattern_count) = 0
       vlist(NOT_YET_MATCHED_FLAGS, valid_pattern_count) = (8 | 4 | 2 | 1)
@@ -148,12 +81,17 @@
     next
   loop
 
+  dim path, 256 //パス初期化
+  path(0) = -1 //一致した位置
+  
   //初期ノード登録
-  lpoke node_data, , 0         //現在の深さ(手数)
+  lpoke node_data,  , 0         //現在の深さ(手数)
   lpoke node_data, 4, t         //開始ノード番号
   lpoke node_data, 8, valid_pattern_count //有効なパターン数
   memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+  memcpy node_data, path, 1024, DATA_SIZE
   r_push node_data
+
 
   //探索開始
   *next_node
@@ -162,10 +100,12 @@
     r_shift node_data //キューからノードデータを復元
 
     //ノードデータ展開
-    depth = lpeek(node_data) : if depth > 最大の深さ: _continue
+    depth = lpeek(node_data) : if depth > max_depth: _continue
     node = lpeek(node_data, 4)
     valid_pattern_count = lpeek(node_data, 8)
     memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
+
+    memcpy path, node_data, 1024,,DATA_SIZE
 
     turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
 
@@ -183,15 +123,21 @@
         if pt == PATTERN_ZERO: _continue
 
         assert pt >= 1 && pt <= 6
-
+        //pt = 0 範囲外
+        //pt = 1 石なし
+        //pt = 2 黒
+        //pt = 4 白
+        //pt = 3 黒以外
+        //pt = 5 白以外
+        //pt = 6 黒か白
+        
         //色判定
         hit = 0
-       	if turn == 1 + vlist(FLIP_INFO, i){
+       	if turn == vlist(FLIP_INFO, i){
 			if pt & PATTERN_BLACK: hit = 1
 	    }else: if pt & PATTERN_WHITE: hit = 1
 		
         if hit{ //色が一致
-
 	        //グループチェック
             rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
             if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
@@ -205,8 +151,9 @@
 					    }
 					loop
 				}else{
+					// グループ指定なし
 					if (pt & PATTERN_NONE) == 0{
-						vlist(MATCH_GROUP_COUNT, i)++ ; // 通常石
+						vlist(MATCH_GROUP_COUNT, i)++ 
 					}
 				}
 
@@ -225,7 +172,9 @@
 			        }
 
 		           	if vlist(MATCH_GROUP_COUNT, i) == group_num{
-	           		   return node //検索成功
+			           path(0) = depth
+			           
+	           		   return 1 //検索成功
 				    }else{
 		            	_continue //検索続行（着手自体はマッチしたが、必要なhit数に届いていない)
 		            }
@@ -264,11 +213,13 @@
       lpoke node_data, 4, lpeek(child, cnt * 4)
       lpoke node_data, 8, valid_pattern_count
       memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+      path(depth + 1) = cnt
+      memcpy node_data, path, 1024, DATA_SIZE
       r_push node_data
     loop
     
   wend
-  return -1
+  return 0
 
 #global
 search_init

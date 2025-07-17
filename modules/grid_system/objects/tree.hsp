@@ -63,25 +63,19 @@ dimtype treenode@global, 5
 #define global ctype search_tree_child_by_item_ID(%1, %2) _search_tree_child_by_item_ID(treenode@global(%1),%2)
 #modcfunc _search_tree_child_by_item_ID int p1, local i
 	for i,,cn
-		if get_tree_item_id(childs(i)) == p1: return childs(i)
+		if get_tree_item_id(treenode@global(childs(i))) == p1: return childs(i)
 	next
 	return -1
 
-#defcfunc search_tree_by_item_id int p1, int p2, var vv
-	vv = sublev
-	return _search_tree_by_item_id(treenode@global(p1), p2, vv)
-#modcfunc _search_tree_by_item_id int p1, var vv, local i
-	if item_id == p1{
-		vv = sublev - vv - 1
-		return this_id
-	} 
-	for i,,cn
-		tmp = _search_tree_by_item_id(treenode@global(childs(i)), p1, vv)
-		if tmp != -1{
-			return tmp
-		}
-	next
-	return -1
+#defcfunc search_tree_by_item_id int root, array match_array
+	depth = 0
+	if match_array(0) = -1: return -1
+	return _search_tree_by_item_id(treenode@global(root), match_array)
+#modcfunc _search_tree_by_item_id array match_array, local i
+	if depth >= match_array(0): return this_id //深さがパスの長さに到達したところがマッチノード
+	depth++
+	return _search_tree_by_item_id(treenode@global(childs(match_array(depth))), match_array)
+
 
 //削除処理
 #deffunc del_treenode int p1

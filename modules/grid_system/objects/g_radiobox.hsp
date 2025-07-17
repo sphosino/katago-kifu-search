@@ -122,9 +122,6 @@
 	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9
 	return
 
-#deffunc local setcolor int p1
-	color p1>>16&255,p1>>8&255,p1&255
-	return
 #global
 init_g_radio_button_colorlist
 
