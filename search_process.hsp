@@ -20,7 +20,7 @@ init_sgf_module 10000
 enable_auto_adjust
 set_target_wait 30
 delkey_all
-addkey 27, 1
+addkey 27, 1 //ESCをバックグラウンドでも受け付け
 
 
 #ifdef _debug
