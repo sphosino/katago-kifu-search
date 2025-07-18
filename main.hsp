@@ -43,7 +43,7 @@
 	dirname = dir_exe
 #endif
 
-log_init dirname, 4098
+
 
 //前回起動時の情報があれば復元
 
@@ -889,7 +889,7 @@ gosub*loadsgf
 
 			move_next_int kifu_start_num_result
 
-			logmes "検索結果を発見 -> " + nstat
+			logmes "検索結果を発見 -> " + path
 
 		}else{
 			nownode = get_root_tree_node(t)
@@ -1028,22 +1028,30 @@ gosub*loadsgf
 	return
 *create_pattern
 	time = keyfpstime
-	kl = kifulist_notepad
+	if pre_list_pattern{
+		kl = kifulist_notepad
+		div_notepad kl, child_count_current, b
+		棋譜リスト送信
+	}
+	pre_list_pattern = 0
 	gosub*create_pattern_main
 	return
 *create_pattern2
-	add_log "除外検索が呼ばれた"
+	pre_list_pattern = 1 //棋譜全体が対象ではない
 	time = keyfpstime
-	add_log "セットの引き算開始"
 	kl = notepad_minus_notepad(kifulist_notepad, search_result_sgflist)
-	add_log "セットの引き算完了"
-	add_log "検索実行"
+	div_notepad kl, child_count_current, b //棋譜リストを各プロセス用に分割
+	棋譜リスト送信
+	
 	gosub*create_pattern_main
 	add_log "除外検索完了"
 	return
 *create_pattern3
+	pre_list_pattern = 1 //棋譜全体が対象ではない
 	time = keyfpstime
 	kl = search_result_sgflist
+	div_notepad kl, child_count_current, b //棋譜リストを各プロセス用に分割
+	棋譜リスト送信
 	gosub*create_pattern_main
 	return
 	
@@ -1071,9 +1079,6 @@ gosub*loadsgf
 		
 	}else{ ;通常検索
 
-		logmes "棋譜リスト送信"
-		棋譜リスト送信 kl
-
 		logmes "条件作成"
 		//検索条件作成
 		sdim params
@@ -1092,9 +1097,8 @@ gosub*loadsgf
 	}
 	
 	return
-#deffunc 棋譜リスト送信 str s1
-	//担当棋譜リストをを作る
-	div_notepad s1, child_count_current, b //棋譜リストを各プロセス用に分割
+#deffunc 棋譜リスト送信
+
 	//棋譜リスト送信
 	repeat child_count_current
 		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
@@ -1276,7 +1280,13 @@ gosub*loadsgf
 	kifu_update = 1
 	kifulist_notepad = filelist
 
-	棋譜リスト送信 kifulist_notepad
+	
+
+	//担当棋譜リストをを作る
+	
+	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
+
+	棋譜リスト送信
 
 	return
 	
@@ -1327,7 +1337,7 @@ gosub*loadsgf
 	notesave window_file_name
 	save_load_manager_save //グリッド情報保存
 	gsel 0,-1
-	terminate_children //子プロセス解放
+	terminate_children //子プロセス解放(なくても親プロセスがいなくなれば子プロセスは自身を閉じる）
 	end
 
 
@@ -1360,7 +1370,8 @@ gosub*loadsgf
     loop
     chdir tmp
     //全て起動するまで待つ
-    while nocoConnectInfo(0) <= MAX_CHILDREN
+    waitstarttime = keyfpstime
+    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
     await
     wend
     update_child_list
@@ -1504,8 +1515,6 @@ gosub*loadsgf
         logmes "警告: 未知の送信元 (HWND: " + sender_hwnd + ") からメッセージを受信しました。タイプ: " + param
         stop
     }
-
-    
     
     // メッセージタイプに応じた処理
     switch param

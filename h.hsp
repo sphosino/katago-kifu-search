@@ -1,8 +1,0 @@
-#include "../hsp_common/id_manager.hsp"
-#include "../hsp_common/memory_allocator.hsp"
-#include "../hsp_common/keyfps.hsp"
-#include "modules/rotate_coordinate.hsp"
-#include "modules/sgf.hsp"
-
-
-mes load_sgf("(;B[s])")

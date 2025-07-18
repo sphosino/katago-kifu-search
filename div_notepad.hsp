@@ -5,8 +5,8 @@
 	notesel s
 	
 		if notemax <= 0 : noteunsel : return  // 空文字列の場合は何もしない
-		sdim a,strlen(s)/notemax + 200, array_count
-		// より均等に分割する方法
+		sdim a, (strlen(s) + notemax) / notemax, array_count
+
 		base_lines = notemax / array_count        // 基本的な行数
 		extra_lines = notemax \ array_count       // 余りの行数
 		
@@ -16,18 +16,17 @@
 			if current_idx >= notemax : _break
 			
 			// 最初のextra_lines個の配列には1行多く割り当て
-			if i < extra_lines {
-				lines_for_this_array = base_lines + 1
-			} else {
-				lines_for_this_array = base_lines
-			}
-			
+			lines_for_this_array = base_lines + (i < extra_lines)
+
 			// この配列に割り当てる行を処理
 			repeat lines_for_this_array
 				if current_idx < notemax {
 					noteget tmp, current_idx
-					if a(i) != "": a(i) += "\n"
-					a(i) += tmp
+					if cnt = 0{
+						a(i) = tmp
+					}else{
+						a(i) += "\n" + tmp
+					}
 					current_idx++
 				}
 			loop
@@ -40,8 +39,11 @@
 #if 0
 #undef mes
 #define mes(%1="") mes@hsp %1:logmes %1
-a = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15"
 
+sdim a
+repeat 30000
+a += "\n" + cnt
+loop
 
 div_notepad a,4,b
 
