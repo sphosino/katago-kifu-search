@@ -960,16 +960,27 @@ gosub*loadsgf
 *getsgf
 
 	dim nodelist
-	
-	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = load_sgf(s)
-	loop
-	new_node = merge_node(nodelist)
-	clipset get_node_sgf(new_node)
+	original_directory = dir_cur
+	chdir kifu_dirname
+	notesel sgf
+		repeat get_selected_item_indices(kifulist.current_kifulist, selected_index) //sにリストボックスの何番目が選択されているかが代入される
+			filename = get_item_name(kifulist.current_kifulist, selected_index) //ファイル名を取得
+			noteload filename //ファイルをロード	
+			nodelist(cnt) = load_sgf(sgf) //展開してトップノードの番号を取得
+		loop
+	noteunsel
 
+	chdir original_directory
+	
+	new_node = merge_node(nodelist) //選択された棋譜をマージ
+	clipset get_node_sgf(new_node) //それをクリップボードにセット
+
+	//削除して完了
 	repeat length(nodelist)
-		del_sgf_node nodelist(cnt), 1 //削除して完了
+		del_sgf_node nodelist(cnt), 1
 	loop
+	del_sgf_node new_node, 1
+	
 	title "棋譜をクリップボードにコピーしました"
 	return
 *loadsgf
