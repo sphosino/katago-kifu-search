@@ -146,7 +146,7 @@ centering_mes "システム起動中・・・", tmp, "メイリオ"
 redraw
 
 //初期化開始
-
+nocoClearCopyDataQueue (1024 + 64) * 10000
 
 kifu_dirname = dirname + "/棋譜"
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -433,6 +433,7 @@ gosub*loadsgf
 	notify_dt_draw_object frametime()
 
 	update_child_list //子プロセス監視
+	gosub*on_copydata
 	
 	計測 "前フレームからの状態変化取得"
 	if pre_kifu_update != kifu_update{
@@ -833,7 +834,6 @@ gosub*loadsgf
 
 
 *save_window_size_main
-	await
 	IsZoomed hwnd :最大化 = stat
 	IsIconic hwnd :最小化 = stat
 	if (最大化 | 最小化) == 0{
@@ -1037,11 +1037,12 @@ gosub*loadsgf
 *create_pattern
 	time = keyfpstime
 	if pre_list_pattern{
+		pre_list_pattern = 0
 		kl = kifulist_notepad
 		div_notepad kl, child_count_current, b
 		棋譜リスト送信
 	}
-	pre_list_pattern = 0
+	
 	gosub*create_pattern_main
 	return
 *create_pattern2
@@ -1386,10 +1387,11 @@ gosub*loadsgf
     
     // 自動受信設定と受信コールバック関数の設定
     nocoAutoCopyData
-    nocoOnCopyData *on_copydata
-    oncmd gosub *on_copydata, stat 
+    nocoOnCopyData *dummy
 
-
+	return
+	
+*dummy
     return
 
 
@@ -1506,64 +1508,45 @@ gosub*loadsgf
     sdim child_status_list
     return
 
-*on_copydata
-    // 受信データの詳細情報を取得
+*on_copydata //毎フレーム呼び出す
 
-    sender_hwnd = nocoCopyDataInfo(2)   // 送信元ウィンドウハンドル
-    param = nocoCopyDataInfo(3)         // メッセージタイプ (LPARAM)
-    data_size = nocoCopyDataInfo(4)     // データサイズ (dwData)
-
-    logmes strf("hwnd -> %d, type -> %d, size -> %d", sender_hwnd,param,data_size)
+    repeat nocoCopyDataQueueCount()
     
-    // 送信元の子プロセスを特定
-    child_index = find_child_by_hwnd(child_hwnd_list, sender_hwnd)
+    	nocoGetCopyDataQueue received_data, cnt
+    	sender_hwnd = nocoCopyDataQueueInfo(2, cnt)
+		param = nocoCopyDataQueueInfo(3, cnt)
+		data_size = nocoCopyDataQueueInfo(4, cnt)
 
-    // 未知の送信元からのメッセージはログに記録
-    if child_index == -1{
-        logmes "警告: 未知の送信元 (HWND: " + sender_hwnd + ") からメッセージを受信しました。タイプ: " + param
-        stop
-    }
-    
-    // メッセージタイプに応じた処理
-    switch param
-
-    case 検索結果:
-    
-		nocoGetCopyData received_data
-		result_size = 64 + 1024
-		result_num = data_size / result_size
-		sdim result_list, 64      , result_num
-		sdim path       , 1024 / 4, result_num
-		nowpointer = 0
+		switch param
+		case 検索結果
 		
-		sdim k, 64
-		dim p, 256
-		repeat result_num
-			memcpy k, received_data,  64, 0, nowpointer
-			memcpy p, received_data,1024, 0, nowpointer + 64
+			result_size = 64 + 1024
+			result_num = data_size / result_size
+			sdim result_list, 64      , result_num
+			sdim path       , 1024 / 4, result_num
+			nowpointer = 0
 			
-			//リストボックスに追加
-			add_item kifulist.matchlist, k
-			push_item_data_by_id kifulist.matchlist, stat, p
-			
-			nowpointer += result_size
-		loop
-
-		set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
-
+			sdim k, 64
+			dim p, 256
+			repeat result_num
+				memcpy k, received_data,  64, 0, nowpointer
+				memcpy p, received_data,1024, 0, nowpointer + 64
+				
+				//リストボックスに追加
+				add_item kifulist.matchlist, k
+				push_item_data_by_id kifulist.matchlist, stat, p
+				
+				nowpointer += result_size
+			loop
+	
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
 		
-    	swbreak
-                        
-    default:
-        // 未知のメッセージタイプ
-        if child_index != -1 {
-            mes "子プロセス " + child_index + " から未知のメッセージタイプ (" + param + ") を受信しました。"
-        } else {
-            mes "未知の送信元 (HWND: " + sender_hwnd + ") から未知のメッセージタイプ (" + param + ") を受信しました。"
-        }
-        swbreak
-    swend
+		swbreak
+		swend
+   	loop
+   	
     
+    nocoClearQueue
     return
 
 
