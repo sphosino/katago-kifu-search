@@ -120,7 +120,14 @@
 		a(i,j) = board(i,j)
 	next
 	next
-	return	
+	return
+#deffunc get_base_board array a
+	for i,, length(a)
+	for j,, length2(a)	
+		a(i,j) = base_board(i,j)
+	next
+	next
+	return
 #deffunc get_coordinate_set var a
 	a = v
 	return
@@ -151,7 +158,7 @@
 	memcpy base_group, a, BOARD_SIZE,, offset + BOARD_SIZE * 1
 	memcpy base_tejun, a, BOARD_SIZE,, offset + BOARD_SIZE * 2
 
-	return
+	return offset + BOARD_SIZE * 3
 
 //-----------------------------------------------------------------------
 

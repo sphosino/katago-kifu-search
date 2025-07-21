@@ -1,129 +1,54 @@
-#ifndef search2
+#ifndef search_main2
 #include "basic.hsp"
 #include "modules/bitboard.hsp"
-#module
+#module 厳密検索
 
-#defcfunc search2 var SGF_list, array 探したい局面, array result, int max_depth,int colorFlip, str mask, int kifu_update, var loadmax, int inverse, var h
-
-	dim patterns, 23,16
-	dim pattern_masks, 23, 8
-	init_ringbuffer 64, 128
-
-	sdim node_data
-	rn = 0
-	prexy = -1,-1
-
-	最大の深さ = 50
-	if max_depth{
-		最大の深さ = max_depth
-	}
-	titlestr = ""
-	notesel SGF_list
-
-		titlestr = ""
-		starttime = keyfpstime
-
-		
-		検索棋譜数 = notemax * loadmax / 100
-		logmes "検索棋譜数 = " + 検索棋譜数　+ "loadmax = " + loadmax
-		
-		if kifu_update{
-
-			repeat 検索棋譜数, get_entry_count(h)
-				noteget sgf_filename, cnt
-				next_kifuload_index++
-				if sgf_filename == "": break
-				if get_value(h, sgf_filename) == NOT_DEFINED_HASH{
-					notesel sgf
-						noteload sgf_filename
-					noteunsel
-					topnode = load_sgf(sgf)
-					new_value h, sgf_filename, str(topnode)
-					await
-					titlestr = "棋譜読み込み中 -> "+ (cnt+1) * 100 / notemax + "%"
-					getkey key, 27
-					if key: break
-					title titlestr + "... 【ESC】-> 読み込み済み棋譜をすぐに検索"
-				}
-			loop
-		}
-
-
-		titlestr += strf("(%dms) -> 厳密検索開始 -> ", keyfpstime - starttime)
-		title titlestr
-		repeat notemax
-			noteget sgf_filename, cnt
-
-			if get_value(h, sgf_filename) == NOT_DEFINED_HASH: continue
-
-			topnode = int(refstr)
-
-			get_board_size_from_SGF topnode, xy
+#deffunc search2_init
+	init_ringbuffer 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
+	sdim node_data, 1024 + 64   　   //データを纏めてキューに出し入れするための媒介変数
 	
-			//前回検索した棋譜とボードサイズが違う場合
-			if prexy != xy || prexy.1 != xy.1{
-				create_mask 探したい局面, mask, patterns, pattern_masks, xy, xy.1 //patternに16種類, maskに８種類格納する
-				prexy = xy,xy.1
-				get_pattern rotated_color, rotated_group, rotated_tejun
+	return
 
-				//サーチメイン関数用の変数設定
-				int_count = calc_int_count(xy, xy.1)
-				r_pattern_num = 4 << (xy == xy.1)
-				
-			}
-	　
-			//検索実行
-			match_node = search_main2(topnode, patterns, pattern_masks, 1 + colorflip)
-			if (inverse == 0 && match_node >= 0) || (inverse != 0 && match_node < 0){
-				result(0, rn) = sgf_filename //一致したSGFを結果に追加
-				if inverse{
-					result(1, rn) = str(topnode)
-				}else{
-					result(1, rn) = str(stat)
-				}
-				rn++
-			}
-			await
-		loop
-	noteunsel
-	title titlestr + strf("厳密検索完了 %d件 (%dms)", rn, keyfpstime - starttime)
-	return rn
+#deffunc search_main2 int t, int max_depth, int colorflip, int r_pattern_num, array pattern_mask, array rotated_color, array pattern, array path
 
+  dim path, 256
+  path(0) = -1 //先頭はヒットした深さを返す
 
-#defcfunc search_main2 int t, array pattern, array pattern_mask, int colorflip
-
-  lpoke node_data, , 0         //現在の深さ(手数)
+  lpoke node_data,  , 0        //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
+  memcpy node_data, path, 1024, 8
   r_push node_data
+
+
   
   while ringbuffer_count
 
     r_shift node_data //キューからノードデータを復元
 
     //ノードデータ展開
-    depth = lpeek(node_data) 
-    if depth > 最大の深さ: return -1
-    
+    depth = lpeek(node_data) : if depth > max_depth: return
     node = lpeek(node_data, 4)
-    turn = get_property_coordinate_cash(node,x,y)　//ノードの手番と着手座標を取得
+    memcpy path, node_data, 1024, , 8
     
+    turn = get_property_coordinate_cash(node, x, y)　//ノードの手番と着手座標を取得
 
     if x >= 0{
 	    copy_bitboard_data get_bitboard(node), board
 	   	for j,,r_pattern_num //回転
-	   		if rotated_color(x, y, j){ //ノードの着手がmaskにない場合、このノードでは一致しない。
+	   		if rotated_color(x, y, j) > PATTERN_NONE{ //ノードの着手がmaskにない場合、このノードでは一致しない。
 	   			dup mk, pattern_mask(0, j)
-		   		for i,,colorflip //色反転
+		   		for i,,colorflip + 1 //色反転
 		   			dup pt, pattern(0, j + i * 8)
 		    		OK = 1
-		    		repeat int_count
+		    		repeat 23
 		    			if ((board(cnt) ^ pt(cnt)) & mk(cnt)) != 0{
 		    				OK = 0
 			    			break
 			    		}
 		    		loop
 		    		if OK{ //盤面が一致した
-			    		return node
+		    			path(0) = depth
+			    		return
 			    	}
 		    	next
 		    }
@@ -132,11 +57,15 @@
     repeat get_SGF_childs(node, child)
       lpoke node_data,  , depth + 1
       lpoke node_data, 4, lpeek(child, cnt * 4)
+      path(depth + 1) = cnt
+      memcpy node_data, path, 1024, 8
       r_push node_data
     loop
   wend
   
-  return -1
+  return
 
 #global
 #endif
+
+search2_init

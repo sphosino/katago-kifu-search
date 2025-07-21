@@ -9,10 +9,14 @@
 #include "../hsp_common/set.hsp"
 #include "modules/search/pattern.hsp"
 #include "modules/search/Search_pattern.hsp"
+#include "modules/search/Search_pattern2.hsp"
 #include "メッセージ定数.hsp"
 
+#bootopt notimer 1
 
-screen 0,640,480
+
+
+screen 0,640,480,2
 gsel 0,-1
 view_window = 0
 
@@ -85,21 +89,21 @@ loop
 	    switch param
 	
 		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
-		
-		notesel received_data
-			repeat notemax
-				noteget a, cnt
-				push_data kifulist, a
-			loop
-		noteunsel
+			notesel received_data
+				repeat notemax
+					noteget a, cnt
+					push_data kifulist, a
+				loop
+			noteunsel
 		swbreak
 	
-	    case 検索実行		
+	    case 検索実行
+	    search_init
 		
 		//検索条件を取り出す
 		max_depth = lpeek(received_data)
 		colorflip = lpeek(received_data, 4)
-		inverse   = lpeek(received_data, 8)
+		inverse   = lpeek(received_data, 8) : mes ":inverse -> " + inverse
 		set_base_from_binary received_data, 12
 	
 		mes "受信した検索命令のサイズ -> " + stat
@@ -141,7 +145,7 @@ loop
 			
 			//検索実行
 			search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
-	
+			
 			if (path(0) >= 0) ^ inverse{
 				
 				nowpointer = (1024 + 64) * result_num
@@ -154,23 +158,99 @@ loop
 			}
 		loop
 		noteunsel
-	
 	    mes "検索結果の数 -> " + result_num
 	
 		nocoSendCopyData parent_hwnd, result, 検索結果, (1024 + 64) * result_num //親プロセスに結果を送信
 	    
+	    swbreak
+
+	    case 検索実行2:
+			search2_init
+			mes "厳密検索開始"
+	    	//検索条件を取り出す
+			max_depth = lpeek(received_data)
+			colorflip = lpeek(received_data, 4)
+			inverse   = lpeek(received_data, 8): mes ":inverse -> " + inverse
+			set_base_from_binary received_data, 12
+			mes "受信した検索命令のサイズ -> " + stat
+
+			prexy = -1, -1
+			result_num = 0
+			
+			notesel sgf_data
+	     	repeat set_to_array(kifulist, kifu)
+				if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
+					noteload kifu(cnt)
+					topnode = load_sgf(sgf_data) //棋譜読み込み
+					new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+				}else{
+					topnode = int(refstr)
+				}
+		
+				get_board_size_from_SGF topnode, xy
+		
+		
+				//前回検索した棋譜とボードサイズが違う場合
+				if prexy != xy || prexy.1 != xy.1{
+					prexy = xy,xy.1
+
+					//新たなパターンを生成
+					get_pattern rotated_color, rotated_group, rotated_tejun
+					dim tmp_board, xy, xy.1
+					get_base_board tmp_board
+					make_pattern tmp_board, pt //回転も含めたビットボード作成
+					//回転パターン数
+					r_pattern_num = 4 << (xy == xy.1)
+
+					dim mask, 23, 8
+					for i,, xy //ボードx方向
+					for j,, xy.1 //ボードy方向
+						if tmp_board(i,j) != PATTERN_ZERO{
+							for k,, r_pattern_num
+								rotate_coordinate coord, i, j, k, xy, xy.1 //i,jをkによる回転を加え配列coordに格納 (coord.0 = x, coord.1 = y)
+								index = (coord.1 * xy + coord.0) * 2
+							    int_index = index / 32
+							    bit_offset = index \ 32
+							    mask(int_index, k) |= 3 << bit_offset
+							next
+						}
+					next
+					next
+
+				}
+				
+
+				search_main2 topnode, max_depth, colorflip, r_pattern_num, mask, rotated_color, pt , path
+
+				if (path(0) >= 0) ^ inverse{
+				
+					nowpointer = (1024 + 64) * result_num
+					result_num++
+					memexpand result, (1024 + 64) * result_num
+					
+					memcpy result, kifu(cnt),   64, nowpointer
+					memcpy result, path     , 1024, nowpointer + 64
+					
+				}
+			loop
+			noteunsel
+
+			mes "検索結果の数 -> " + result_num
+	
+			nocoSendCopyData parent_hwnd, result, 検索結果, (1024 + 64) * result_num //親プロセスに結果を送信
+
 	    swbreak
 	 
 	    case 終了指示:
 	        // 親プロセスからの終了指示
 	        mes "親プロセスから終了指示を受信しました"
 	        end  // プロセス終了
-	        swbreak
+	    swbreak
 	
 	    case 接続拒否:
 			mes "親プロセスに接続できませんでした"
 	    	end
-	    	swbreak
+	    swbreak
 	        
 	    default:
 	        mes "未知のデータタイプ: " + param

@@ -1,9 +1,9 @@
-#ifndef search
+#ifndef search_init
 #include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, r_push, r_shift ) //ハッシュ関連-> ( get_value, new_value, NOT_DEFINED_HASH )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_board_size_from_SGF, get_property_coordinate_cash)
 #include "modules/search/pattern.hsp" //パターン関連-> (get_pattern_all_groups_num, make_rotate_patterns, PATTERN_BLACK, PATTERN_WHITE, PATTERN_ZERO)
 
-#module 検索
+#module 通常検索
 
 //探索時、キューに入れるノードの情報を定義
 //ノード固有情報
