@@ -73,7 +73,7 @@ repeat
 				new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
 			noteunsel
 			
-			if cnt \ 50 == 49:mes "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)-1) + "件)"
+			if cnt \ 50 == 49: title "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)-1) + "件)"
 		} else {
 			; 念のため、既に読み込み済みだった場合はログに表示
 			mes "棋譜は既に読み込み済みでした: " + temp_kifu_name
@@ -154,10 +154,11 @@ loop
 	    search_init
 		
 		//検索条件を取り出す
-		max_depth = lpeek(received_data)
-		colorflip = lpeek(received_data, 4)
-		inverse   = lpeek(received_data, 8) 
-		set_base_from_binary received_data, 12
+		search_id = lpeek(received_data, 0)
+		max_depth = lpeek(received_data, 4)
+		colorflip = lpeek(received_data, 8)
+		inverse   = lpeek(received_data, 12) 
+		set_base_from_binary received_data, 16
 	
 		mes strf("通常検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
 		
@@ -200,9 +201,9 @@ loop
 			
 			if (path(0) >= 0) ^ inverse{
 				
-				nowpointer = (1024 + 64) * result_num
+				nowpointer = 4 + (1024 + 64) * result_num
 				result_num++
-				memexpand result, (1024 + 64) * result_num
+				memexpand result, 4 + (1024 + 64) * result_num
 				
 				memcpy result, kifu(cnt),   64, nowpointer
 				memcpy result, path     , 1024, nowpointer + 64
@@ -211,8 +212,9 @@ loop
 		loop
 		noteunsel
 	    mes "検索結果の数 -> " + result_num
-	
-		nocoSendCopyData parent_hwnd, result, 検索結果, (1024 + 64) * result_num //親プロセスに結果を送信
+
+		lpoke result, 0, search_id
+		nocoSendCopyData parent_hwnd, result, 検索結果, 4 + (1024 + 64) * result_num //親プロセスに結果を送信
 	    
 	    swbreak
 
@@ -220,10 +222,11 @@ loop
 			search2_init
 			mes "厳密検索開始"
 	    	//検索条件を取り出す
-			max_depth = lpeek(received_data)
-			colorflip = lpeek(received_data, 4)
-			inverse   = lpeek(received_data, 8)
-			set_base_from_binary received_data, 12
+			search_id = lpeek(received_data, 0)
+			max_depth = lpeek(received_data, 4)
+			colorflip = lpeek(received_data, 8)
+			inverse   = lpeek(received_data, 12) 
+			set_base_from_binary received_data, 16
 			mes strf("厳密検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
 
 			prexy = -1, -1
@@ -276,9 +279,9 @@ loop
 
 				if (path(0) >= 0) ^ inverse{
 				
-					nowpointer = (1024 + 64) * result_num
+					nowpointer = 4 + (1024 + 64) * result_num
 					result_num++
-					memexpand result, (1024 + 64) * result_num
+					memexpand result, 4 + (1024 + 64) * result_num
 					
 					memcpy result, kifu(cnt),   64, nowpointer
 					memcpy result, path     , 1024, nowpointer + 64
@@ -288,8 +291,10 @@ loop
 			noteunsel
 
 			mes "検索結果の数 -> " + result_num
+
+			lpoke result, 0, search_id
 	
-			nocoSendCopyData parent_hwnd, result, 検索結果, (1024 + 64) * result_num //親プロセスに結果を送信
+			nocoSendCopyData parent_hwnd, result, 検索結果, 4 + (1024 + 64) * result_num //親プロセスに結果を送信
 
 	    swbreak
 	 

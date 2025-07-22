@@ -46,6 +46,8 @@ MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数 (25%ぐらいまで使う)
 sdim tmp_filename, 64
 dim tmp_path, 256 ; ヒット位置
 
+newmod search_id_manager, id_manager
+
 //前回起動時の情報があれば復元
 
 chdir dirname
@@ -1068,12 +1070,13 @@ gosub*loadsgf
 	if use_bitboard{ ;厳密検索
 		
 		logmes "厳密検索"
-		
+		search_id = get_new_id(search_id_manager)
 		sdim params
-		lpoke  params           , 0 , max_depth
-		lpoke  params           , 4 , enableColorFlip
-		lpoke  params           , 8 , inverse
-		get_base_binary params  , 12
+		lpoke  params           , 0 , search_id
+		lpoke  params           , 4 , max_depth
+		lpoke  params           , 8 , enableColorFlip
+		lpoke  params           , 12 , inverse
+		get_base_binary params  , 16
 		psize = stat
 
 		repeat child_count_current
@@ -1085,11 +1088,13 @@ gosub*loadsgf
 
 		logmes "通常検索"
 		//検索条件作成
+		search_id = get_new_id(search_id_manager)
 		sdim params
-		lpoke params, , max_depth
-		lpoke params,4, enableColorFlip
-		lpoke params,8, inverse
-		get_base_binary params, 12
+		lpoke params,0, search_id
+		lpoke params,4, max_depth
+		lpoke params,8, enableColorFlip
+		lpoke params,12, inverse
+		get_base_binary params, 16
 
 		psize = stat
 		logmes "命令実行-send -> "+psize
@@ -1345,7 +1350,7 @@ gosub*loadsgf
 	child_count_current = 0                   // 現在起動中の子プロセス数
 	dim prekeys, 9                        // キー入力の状態を保持
     // ユニークなアプリ名を作成
-    app_name = "MyApp_" + str(rnd(32768))
+    app_name = str(rnd(32768)) + "_myApp"
    	nocoConnectAccept app_name
     // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
     
@@ -1464,7 +1469,7 @@ gosub*loadsgf
 		
 			result_size = 64 + 1024
 			result_num = data_size / result_size
-			nowpointer = 0
+			nowpointer = 4
 			
 			repeat result_num
 			
