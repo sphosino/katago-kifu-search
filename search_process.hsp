@@ -12,20 +12,21 @@
 #include "modules/search/Search_pattern2.hsp"
 #include "メッセージ定数.hsp"
 
-#bootopt notimer 1
-
-
+#bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
 screen 0,640,480,2
-gsel 0,-1
+
+
 view_window = 0
 
-init_sgf_module 10000
 
-enable_auto_adjust
-set_target_wait 30
-delkey_all
-addkey 27, 1 //ESCをバックグラウンドでも受け付け
+
+enable_auto_adjust //target_wait基準でFPSを自動調整
+set_target_wait 20 //１フレーム当たりOSに返す時間(ms)
+
+
+delkey_all //キー監視をすべてクリア
+addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 
 
 #ifdef _debug
@@ -35,20 +36,13 @@ addkey 27, 1 //ESCをバックグラウンドでも受け付け
 #endif
 chdir dirname
 
-sdim kifulist //担当する棋譜のリスト
 sdim result
-newmod filename_to_topnode, hash_manager //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
-
-dim board, 26, 26
-sdim v, 26 * 26 * 5
-sdim group, , 4
-sdim tejun, , 9
 
 ///////////////////////通信設定
 // 設定読み込み
 notesel s
 	noteload "app_name.txt"
-	// なごコネに参加。参加しなくても読み書きは可能だが、(親が離脱を感知できるようにするため）
+	// なごコネに参加。(親の離脱を感知できるようにするため）
 	noteget app_name, 0
 	nocoConnectAccept app_name  // グローバルアクセス空間に
 	noteget h, 1
@@ -56,15 +50,38 @@ notesel s
 noteunsel
 chdir "棋譜"
 
-nocoClearCopyDataQueue (1024 + 64) * 10000 //キューのスロットサイズ設定
-nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内部で受信内容が保存される
 
-kifulist = make_new_set()
+nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される
+
+担当棋譜変更による初期化 64, 1
+
 
 // メッセージ待機
 repeat
 	manage_keyfps
 	gosub *on_copydata
+	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
+		temp_kifu_name = get_one_data(kifu_unloaded) ; 未読み込みリストから1つ取り出す
+		
+		; 棋譜を読み込み、キャッシュに登録
+		; (get_valueのチェックは、万が一の重複防止のために残しても良いですが、
+		;  kifu_unloadedから削除するロジックが正しければ基本不要になります)
+		if get_value(filename_to_topnode, temp_kifu_name) == NOT_DEFINED_HASH {
+			notesel sgf_data
+				noteload temp_kifu_name
+				topnode = load_sgf(sgf_data) ; 棋譜読み込み
+				new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
+			noteunsel
+			
+			if cnt \ 50 == 49:mes "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)-1) + "件)"
+		} else {
+			; 念のため、既に読み込み済みだった場合はログに表示
+			mes "棋譜は既に読み込み済みでした: " + temp_kifu_name
+		}
+		
+		; 読み込みが完了したら、未読み込みリストから削除
+		del_data kifu_unloaded, temp_kifu_name
+	}
 	exist_parent = 0
 	repeat nocoConnectInfo(0)
 		if nocoConnectInfo(1, cnt) == parent_hwnd{
@@ -76,6 +93,26 @@ repeat
 	if _getkey(27) == 1: view_window ^= 1: gsel 0, view_window*2-1
 	
 loop
+
+#deffunc 担当棋譜変更による初期化 int p1, int 新規
+	if 新規{
+		nocoClearCopyDataQueue (1024 + 64) * 10000 //モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
+	}else{
+		delmod filename_to_topnode
+		del_set kifu_all_assigned
+	    del_set kifu_unloaded
+	    del_set search_target_kifus
+	    nocoClearCopyDataQueue (1024 + 64) * p1 //モジュール内のキューのスロットサイズ設定
+    }
+    init_sgf_module p1
+	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
+	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
+	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット
+	search_target_kifus = make_new_set(p1) //　検索対象棋譜を扱うセット
+	
+	return
+
+
 *on_copydata
     repeat nocoCopyDataQueueCount()
 
@@ -89,10 +126,26 @@ loop
 	    switch param
 	
 		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
+			
+			notesel received_data
+				担当棋譜変更による初期化 notemax
+				repeat notemax
+					noteget a, cnt
+					push_data kifu_all_assigned, a
+					push_data kifu_unloaded, a
+				loop
+			noteunsel
+		swbreak
+
+		case 検索棋譜
+			del_set search_target_kifus
+			search_target_kifus = make_new_set()
 			notesel received_data
 				repeat notemax
 					noteget a, cnt
-					push_data kifulist, a
+					if is_inset(kifu_all_assigned, a){
+						push_data search_target_kifus, a// 検索対象リストに格納
+					}
 				loop
 			noteunsel
 		swbreak
@@ -103,10 +156,10 @@ loop
 		//検索条件を取り出す
 		max_depth = lpeek(received_data)
 		colorflip = lpeek(received_data, 4)
-		inverse   = lpeek(received_data, 8) : mes ":inverse -> " + inverse
+		inverse   = lpeek(received_data, 8) 
 		set_base_from_binary received_data, 12
 	
-		mes "受信した検索命令のサイズ -> " + stat
+		mes strf("通常検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
 		
 		
 		prexy = -1, -1
@@ -114,9 +167,8 @@ loop
 		result_num = 0
 		nowpointer = 0
 	
-		mes "検索の最大深さ -> " + max_depth
 		notesel sgf_data
-	    repeat set_to_array(kifulist, kifu)
+	    repeat set_to_array(search_target_kifus, kifu)
 			if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
 				noteload kifu(cnt)
 				topnode = load_sgf(sgf_data) //棋譜読み込み
@@ -170,15 +222,15 @@ loop
 	    	//検索条件を取り出す
 			max_depth = lpeek(received_data)
 			colorflip = lpeek(received_data, 4)
-			inverse   = lpeek(received_data, 8): mes ":inverse -> " + inverse
+			inverse   = lpeek(received_data, 8)
 			set_base_from_binary received_data, 12
-			mes "受信した検索命令のサイズ -> " + stat
+			mes strf("厳密検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
 
 			prexy = -1, -1
 			result_num = 0
 			
 			notesel sgf_data
-	     	repeat set_to_array(kifulist, kifu)
+	     	repeat set_to_array(search_target_kifus, kifu)
 				if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
 					noteload kifu(cnt)
 					topnode = load_sgf(sgf_data) //棋譜読み込み
@@ -244,16 +296,18 @@ loop
 	    case 終了指示:
 	        // 親プロセスからの終了指示
 	        mes "親プロセスから終了指示を受信しました"
-	        end  // プロセス終了
+	        wait 1000
+	        end // プロセス終了
 	    swbreak
 	
 	    case 接続拒否:
 			mes "親プロセスに接続できませんでした"
-	    	end
+	    	stop
 	    swbreak
 	        
 	    default:
 	        mes "未知のデータタイプ: " + param
+	        stop
 	        swbreak
 	    swend
 	loop
