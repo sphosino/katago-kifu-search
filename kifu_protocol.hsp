@@ -1,0 +1,21 @@
+//プロセス間メッセージ定数定義
+
+#const 接続拒否 54321
+#const 担当棋譜 200
+#const 検索結果 300
+#const 検索実行 400
+#const 検索実行2 410
+
+
+
+//検索結果データの構造定義
+
+#const HEADER_SIZE 4
+
+#const OFFSET_KIFU      0
+#const OFFSET_PATH      (OFFSET_KIFU + 64)
+#const OFFSET_PB        (OFFSET_PATH + 1024)
+#const OFFSET_PW        (OFFSET_PB + 64)
+
+#const INFO_SIZE             (1024 + 64 * 2) ; 棋譜名以外のサイズ
+#const RECORD_SIZE      (64 + 1024 + 64 * 2) ; 全体のサイズ1216バイト

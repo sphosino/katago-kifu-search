@@ -10,7 +10,8 @@
 #include "modules/search/pattern.hsp"
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
-#include "メッセージ定数.hsp"
+#include "kifu_protocol.hsp"
+
 
 #bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
@@ -73,7 +74,11 @@ repeat
 	
 	if ginfo_act >= 0{
 		if (cnt \ 100 == 99){
-			title "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)) + "件)"
+			if get_cardinality(kifu_unloaded){
+				title "棋譜読み込み中 ... (残り " + stat + "件)"
+			}else{
+				title "読み込み完了"
+			}
 		}
 	}
 	
@@ -202,21 +207,14 @@ loop
 			search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
 			
 			if (path(0) >= 0) ^ inverse{
-				
-				nowpointer = 4 + (1024 + 64) * result_num
-				result_num++
-				memexpand result, 4 + (1024 + 64) * result_num
-				
-				memcpy result, kifu(cnt),   64, nowpointer
-				memcpy result, path     , 1024, nowpointer + 64
-				
+				gosub*add_result
 			}
 		loop
 		noteunsel
 	    mes "検索結果の数 -> " + result_num
 
 		lpoke result, 0, search_id
-		nocoSendCopyData parent_hwnd, result, 検索結果, 4 + (1024 + 64) * result_num //親プロセスに結果を送信
+		nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
 	    
 	    swbreak
 
@@ -281,14 +279,7 @@ loop
 				search_main2 topnode, max_depth, colorflip, r_pattern_num, mask, rotated_color, pt , path
 
 				if (path(0) >= 0) ^ inverse{
-				
-					nowpointer = 4 + (1024 + 64) * result_num
-					result_num++
-					memexpand result, 4 + (1024 + 64) * result_num
-					
-					memcpy result, kifu(cnt),   64, nowpointer
-					memcpy result, path     , 1024, nowpointer + 64
-					
+					gosub*add_result
 				}
 			loop
 			noteunsel
@@ -297,7 +288,7 @@ loop
 
 			lpoke result, 0, search_id
 	
-			nocoSendCopyData parent_hwnd, result, 検索結果, 4 + (1024 + 64) * result_num //親プロセスに結果を送信
+			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
 
 	    swbreak
 	 
@@ -322,3 +313,18 @@ loop
 
 	nocoClearQueue
     return
+
+*add_result
+	対局者名黒 = get_property_data(topnode, "PB")
+	対局者名白 = get_property_data(topnode, "PW")
+	
+	nowpointer = HEADER_SIZE + RECORD_SIZE * result_num
+	result_num++
+	memexpand result, nowpointer + RECORD_SIZE
+	
+	memcpy result, kifu(cnt),   64, nowpointer + OFFSET_KIFU
+	memcpy result, path     , 1024, nowpointer + OFFSET_PATH
+	
+	memcpy result, 対局者名黒, 64, nowpointer + OFFSET_PB
+	memcpy result, 対局者名白, 64, nowpointer + OFFSET_PW
+	return

@@ -14,7 +14,7 @@
 #include "modules/search/pattern.hsp"
 #include "modules/search/draw_pattern.hsp"
 #include "nodmod/ProcLinkModule.hsp"
-#include "メッセージ定数.hsp"
+#include "kifu_protocol.hsp"
 #include "div_notepad.hsp"
 
 #include "tooltip.hsp"
@@ -44,7 +44,7 @@ MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数 (25%ぐらいまで使う)
 
 //子プロセスからの結果を格納する
 sdim tmp_filename, 64
-dim tmp_path, 256 ; ヒット位置
+sdim tmp_path, INFO_SIZE ; ヒット位置
 
 newmod search_id_manager, id_manager
 
@@ -430,7 +430,26 @@ gosub*loadsgf
 	manage_keyfps
 	notify_dt_draw_object frametime()
 
+	
 	update_child_list //子プロセス監視
+
+	deficit = MAX_CHILDREN - child_count_current
+    if deficit >= 1{
+	    tmp = dir_cur
+   		chdir dirname
+	    repeat deficit
+	    	exec "search_process"
+	    	await 33
+	    loop
+	    chdir tmp
+	    //全て起動するまで待つ
+	    waitstarttime = keyfpstime
+	    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
+	    	await 16
+	    wend
+	    棋譜リスト送信
+	}
+    
 	gosub*on_copydata
 	
 	計測 "前フレームからの状態変化取得"
@@ -1057,6 +1076,8 @@ gosub*loadsgf
 	}
 	//以下検索
 
+	complete_count = 0
+
 	//ui状態からベースパターンを作る
 	get_board_data board.ui_mode, m
 	set_board_pattern m
@@ -1119,77 +1140,8 @@ gosub*loadsgf
 	return
 	
 *filtering_and_make_listbox
-
-	//フィルタリング処理
-	//search_resultに結果を保持している
-	if rn <= 0: return
-	logmes "filtering_start!!!"
 	
-	sdim filtered_result_filename , 64, 10000　//フィルター後の結果を入れる変数(ファイル名)
-	sdim filtered_path, 1024, 10000　//(パス)
-	
-
-	if filter_on{
-		//モデルでのフィルター
-		notesel model_list
-			noteget selected_model, get_value_g_combox(g_combox)
-		noteunsel
-		repeat result_num
-		
-			tn = int(get_value(filename_to_topnode, search_result_filename(cnt))) //topnodeからプレイヤー情報取得
-			blackplayer = get_property_data(tn, "PB")
-			split blackplayer,"-",bp
-			whiteplayer = get_property_data(tn, "PW")
-			split whiteplayer,"-",wp
-			modelnames = strmid(bp.1, 0, 3), strmid(wp.1, 0, 3) //モデル名取得！
-	
-			if get_value_g_combox(g_combox) == 0 || modelnames.0 == selected_model || modelnames.1 == selected_model {
-				filtered_result(fn) = search_result_filename(cnt)
-				filtered_path(fn) = search_result_path(cnt)
-				fn++
-			}
-		loop
-		//その他のフィルター
-
-	}else{
-		//フィルターなし
-		repeat rn
-			filtered_result_filename(cnt) = search_result_filename(cnt)
-			filtered_result_path(cnt) = search_result_path(cnt)
-			fn++
-		loop
-	}
-
-	
-	//最終結果を文字列化
-	search_result_sgflist = ""
-	repeat fn
-		if cnt{
-			search_result_sgflist += "\n"
-		}
-		search_result_sgflist += filtered_result_filename(cnt)
-	loop
-		
-	if search_result_sgflist != ""{
-
-		sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
-		current_kifulist = matchlist
-	}
-	
-	//リストボックスに流し込む
-	del_item_all kifulist.matchlist
-	add_item kifulist.matchlist, search_result_sgflist
-	
-	repeat fn
-		sortget idx, cnt
-		push_item_data kifulist.matchlist, cnt, filtered_result_path(idx)
-	loop
-
-	set_g_label g_label.1, "検索結果(" + fn + ")件" //ラベル更新
-
 	return
-	
-
 
 #deffunc move_next_int int p1
 	if nownode < 0: return 0
@@ -1372,7 +1324,6 @@ gosub*loadsgf
     repeat MAX_CHILDREN
     	await 16
     	exec "search_process"
-    	
     loop
     chdir tmp
     //全て起動するまで待つ
@@ -1469,22 +1420,27 @@ gosub*loadsgf
 		switch param
 		case 検索結果
 		
-			result_size = 64 + 1024
-			result_num = (data_size - 4) / result_size
+			result_num = (data_size - 4) / RECORD_SIZE
 			nowpointer = 4
 
 			logmes "result_num = " + result_num
 			repeat result_num
 			
-				memcpy tmp_filename, received_data,  64, 0, nowpointer
-				memcpy tmp_path, received_data,1024, 0, nowpointer + 64
+				memcpy tmp_filename, received_data,  64, 0, nowpointer + OFFSET_KIFU
+				memcpy tmp_path, received_data, INFO_SIZE, 0, nowpointer + OFFSET_PATH
 				add_item kifulist.matchlist, tmp_filename
 				push_item_data_by_id kifulist.matchlist, stat, tmp_path
-				nowpointer += result_size
+				nowpointer += RECORD_SIZE
 				
 			loop
 	
 			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
+
+			complate_count++
+			if complate_count == MAX_CHILDREN{
+				logmes "検索完了"
+				gosub　*filtering_and_make_listbox
+			}
 
 		swbreak
 		swend
