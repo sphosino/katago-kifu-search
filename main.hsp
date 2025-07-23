@@ -1036,33 +1036,37 @@ gosub*loadsgf
 	return
 *create_pattern2
 	time = keyfpstime
-	kl = notepad_minus_notepad(kifulist_notepad, search_result_sgflist)
+	
+	kl = notepad_minus_notepad(kifulist_notepad, get_name_all_items(kifulist.matchlist))
 	gosub*create_pattern_main
 	return
 *create_pattern3
 	time = keyfpstime
-	kl = search_result_sgflist
+	kl = get_name_all_items(kifulist.matchlist)
 	gosub*create_pattern_main
 	return
 	
 *create_pattern_main
 	logmes "検索開始"
 
+	if pre_kl != kl{
+		pre_kl = kl
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), kl, 検索棋譜, strlen(kl)
+	    loop
+	}
+	//以下検索
 
-	 repeat child_count_current
-	 	nocoSendCopyData child_hwnd_list(cnt), kl, 検索棋譜, strlen(kl)
-     loop
-    
+	//ui状態からベースパターンを作る
 	get_board_data board.ui_mode, m
 	set_board_pattern m
 	set_coordinate_pattern v
 	set_base
-	save_history
-	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
+	save_history //履歴に追加
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 
 	del_item_all kifulist.matchlist
 
-	rn = 0
 
 	set_g_label g_label.1, "検索結果(" + 0 + ")件" //ラベル更新
 	
@@ -1287,8 +1291,6 @@ gosub*loadsgf
 	kifu_update = 1
 	kifulist_notepad = filelist
 
-	
-
 	//担当棋譜リストをを作る
 	
 	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
@@ -1468,22 +1470,19 @@ gosub*loadsgf
 		case 検索結果
 		
 			result_size = 64 + 1024
-			result_num = data_size / result_size
+			result_num = (data_size - 4) / result_size
 			nowpointer = 4
-			
+
+			logmes "result_num = " + result_num
 			repeat result_num
 			
 				memcpy tmp_filename, received_data,  64, 0, nowpointer
 				memcpy tmp_path, received_data,1024, 0, nowpointer + 64
 				add_item kifulist.matchlist, tmp_filename
 				push_item_data_by_id kifulist.matchlist, stat, tmp_path
-				;memcpy search_result_filename(rn), received_data,  64, 0, nowpointer
-				;memcpy search_result_path(rn)    , received_data,1024, 0, nowpointer + 64
-				;rn++
-				
 				nowpointer += result_size
+				
 			loop
-			//gosub *filtering_and_make_listbox
 	
 			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
 

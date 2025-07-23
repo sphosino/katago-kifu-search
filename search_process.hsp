@@ -17,16 +17,15 @@
 screen 0,640,480,2
 
 
-view_window = 0
-
-
+view_window = 0 //画面を表示するかしないか
 
 enable_auto_adjust //target_wait基準でFPSを自動調整
-set_target_wait 20 //１フレーム当たりOSに返す時間(ms)
+set_target_wait 25 //１フレーム当たりOSに返す時間(ms)
 
 
 delkey_all //キー監視をすべてクリア
 addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
+addkey 'C' //長押しで画面クリア
 
 
 #ifdef _debug
@@ -63,25 +62,21 @@ repeat
 	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
 		temp_kifu_name = get_one_data(kifu_unloaded) ; 未読み込みリストから1つ取り出す
 		
-		; 棋譜を読み込み、キャッシュに登録
-		; (get_valueのチェックは、万が一の重複防止のために残しても良いですが、
-		;  kifu_unloadedから削除するロジックが正しければ基本不要になります)
-		if get_value(filename_to_topnode, temp_kifu_name) == NOT_DEFINED_HASH {
-			notesel sgf_data
-				noteload temp_kifu_name
-				topnode = load_sgf(sgf_data) ; 棋譜読み込み
-				new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
-			noteunsel
-			
-			if cnt \ 50 == 49: title "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)-1) + "件)"
-		} else {
-			; 念のため、既に読み込み済みだった場合はログに表示
-			mes "棋譜は既に読み込み済みでした: " + temp_kifu_name
-		}
-		
+		notesel sgf_data
+			noteload temp_kifu_name
+			topnode = load_sgf(sgf_data) ; 棋譜読み込み
+			new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
+		noteunsel
 		; 読み込みが完了したら、未読み込みリストから削除
 		del_data kifu_unloaded, temp_kifu_name
 	}
+	
+	if ginfo_act >= 0{
+		if (cnt \ 100 == 99){
+			title "棋譜読み込み完了: " + temp_kifu_name + " (残り " + (get_cardinality(kifu_unloaded)) + "件)"
+		}
+	}
+	
 	exist_parent = 0
 	repeat nocoConnectInfo(0)
 		if nocoConnectInfo(1, cnt) == parent_hwnd{
@@ -91,18 +86,19 @@ repeat
 	loop
 	if exist_parent = 0: end
 	if _getkey(27) == 1: view_window ^= 1: gsel 0, view_window*2-1
+	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
 	
 loop
 
 #deffunc 担当棋譜変更による初期化 int p1, int 新規
 	if 新規{
-		nocoClearCopyDataQueue (1024 + 64) * 10000 //モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
+		nocoClearCopyDataQueue 4 + (1024 + 64) * 10000 //受信用モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
 	}else{
 		delmod filename_to_topnode
 		del_set kifu_all_assigned
 	    del_set kifu_unloaded
 	    del_set search_target_kifus
-	    nocoClearCopyDataQueue (1024 + 64) * p1 //モジュール内のキューのスロットサイズ設定
+	    nocoClearCopyDataQueue 4 + (1024 + 64) * p1
     }
     init_sgf_module p1
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
@@ -112,21 +108,22 @@ loop
 	
 	return
 
-
 *on_copydata
     repeat nocoCopyDataQueueCount()
 
-		nocoGetCopyDataQueue received_data, cnt
+		
 		sender_hwnd = nocoCopyDataQueueInfo(2, cnt)
 		param = nocoCopyDataQueueInfo(3, cnt)
 		data_size = nocoCopyDataQueueInfo(4, cnt)
 
-    
+		sdim received_data, data_size
+		nocoGetCopyDataQueue received_data, cnt
+
 	    // パラメータで処理を分岐
 	    switch param
 	
 		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
-			
+			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
 			notesel received_data
 				担当棋譜変更による初期化 notemax
 				repeat notemax
@@ -138,16 +135,19 @@ loop
 		swbreak
 
 		case 検索棋譜
-			del_set search_target_kifus
-			search_target_kifus = make_new_set()
+			mes "検索棋譜受信 ->" + strmid(received_data,0,50)
 			notesel received_data
+				del_set search_target_kifus //既存setを破棄
+				search_target_kifus = make_new_set(notemax)
 				repeat notemax
 					noteget a, cnt
 					if is_inset(kifu_all_assigned, a){
-						push_data search_target_kifus, a// 検索対象リストに格納
+						push_data search_target_kifus, a// 検索対象setに格納
 					}
 				loop
+				mes "検索棋譜 = " + notemax + " : " + get_cardinality(search_target_kifus)
 			noteunsel
+			
 		swbreak
 	
 	    case 検索実行
@@ -174,6 +174,8 @@ loop
 				noteload kifu(cnt)
 				topnode = load_sgf(sgf_data) //棋譜読み込み
 				new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+						; 読み込みが完了したら、未読み込みリストから削除
+				del_data kifu_unloaded, kifu(cnt)
 			}else{
 				topnode = int(refstr)
 			}
@@ -238,6 +240,7 @@ loop
 					noteload kifu(cnt)
 					topnode = load_sgf(sgf_data) //棋譜読み込み
 					new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+					del_data kifu_unloaded, kifu(cnt)
 				}else{
 					topnode = int(refstr)
 				}
@@ -306,13 +309,13 @@ loop
 	    swbreak
 	
 	    case 接続拒否:
-			mes "親プロセスに接続できませんでした"
-	    	stop
+			dialog "親プロセスに接続できませんでした"
+			end
 	    swbreak
 	        
 	    default:
-	        mes "未知のデータタイプ: " + param
-	        stop
+	        dialog "未知のデータタイプ: " + param
+	        end
 	        swbreak
 	    swend
 	loop

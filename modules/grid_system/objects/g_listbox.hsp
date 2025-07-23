@@ -342,14 +342,13 @@
 
 //---util functions
 
-#modcfunc get_name_all_items //”ñ„§Bd‚·‚¬
+#modcfunc get_name_all_items
 	s = ""
 	repeat get_listbox_ids(id_man, ids)
-		id = ids(cnt)
-		if s!=""{
-			s+= "\n"+ item_names(ids)
+		if cnt{
+			s += "\n"+ item_names(ids(cnt))
 		}else{
-			s+= item_names(ids)
+			s += item_names(ids(cnt))
 		}
 	loop
 	return s
