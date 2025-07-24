@@ -4,8 +4,8 @@
 
 #define KEY_VALUE_SEP "|||"
 
-#define TOPNODE_SIZE 250   ; katago_rating_gamesの棋譜では(241) 
-#define NORMALNODE_SIZE 29 ; katago_rating_gamesの棋譜では(27)
+#define TOPNODE_SIZE 243   ; katago_rating_gamesの棋譜では(241) 
+#define NORMALNODE_SIZE 28 ; katago_rating_gamesの棋譜では(27)
 
 #deffunc init_sgf_module int 棋譜数
 
@@ -16,14 +16,17 @@
 	//ビットボードIDの発行・管理用
 	dim bitboard_id, MAX_NODE	
 	dim node_to_bitboard_used_list, MAX_NODE
-	dimtype bitboard_id_manager, 5
+	dim bitboard_id_manager
 	newmod bitboard_id_manager, id_manager, MAX_NODE
 
 	dim parent, MAX_NODE //親ノード
+	
 	dim using, MAX_NODE //使用中かフラグ
+	
 	dim sgf_node_turn, MAX_NODE //ノードの手番
 	dim sgf_node_x, MAX_NODE //ノードの座標ｘ
 	dim sgf_node_y, MAX_NODE //ノードの座標ｙ
+	
 	dim sgf_properties_data, MAX_NODE //メモリブロック番号
     dim sgf_properties_num, MAX_NODE //その他のプロパティの数
     dim sgf_node_childs, MAX_NODE //メモリブロック番号
@@ -585,7 +588,6 @@
 #module
 #define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1, %2)
 #defcfunc _load_sgf str ss, int node
-	
 	sss = ss
 	sgflen = strlen(sss)
 	if sgflen < 3{

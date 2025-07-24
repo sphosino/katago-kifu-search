@@ -1,5 +1,6 @@
 #ifndef init_bitboard
 #include "coordinate_set.hsp"
+#include "modules/search/pattern.hsp"
 #module
 
 #deffunc init_bitboard int 棋譜数
@@ -302,15 +303,17 @@
 		for j,,4 << (length(a) == length2(a)) //回転
 			repeat length(a): x = cnt
 				repeat length2(a): y = cnt
-					col = a(x,y) & 3
+					col = 0
+					if a(x,y) & PATTERN_BLACK: col |= 1
+					if a(x,y) & PATTERN_WHITE: col |= 2
 					if i{
 						if (col == 1) || (col == 2){
 							col = 3 - col
 						}
 					}
 
-					//xyに結果を受け取る, x座標,y座標, 回転パターン, 盤サイズx,盤サイズy
-					rotate_coordinate xy, x    ,y    , j           , length(a),length2(a)
+					//xyに結果を受け取る, x座標,y座標, 回転パターン, 盤サイズx, 盤サイズy
+					rotate_coordinate xy, x    ,y    , j           , length(a), length2(a)
 					
 					bit = (xy.1 * length(a) + xy.0 ) * 2
 					int_index = bit / 32
@@ -323,6 +326,8 @@
 	next
 	
 	return
+
+	
 #deffunc create_mask array a, str mask, array pattern, array pattern_mask, int board_size_x, int board_size_y
 	make_pattern a, pattern
 	make_new_mask mask, pattern_mask, board_size_x, board_size_y

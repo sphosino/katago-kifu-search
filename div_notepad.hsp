@@ -1,0 +1,55 @@
+#module
+#deffunc div_notepad str s1, int array_count, array a
+	s = s1
+
+	notesel s
+	
+		if notemax <= 0 : noteunsel : return  // 空文字列の場合は何もしない
+		sdim a, (strlen(s) + notemax) / notemax, array_count
+
+		base_lines = notemax / array_count        // 基本的な行数
+		extra_lines = notemax \ array_count       // 余りの行数
+		
+		current_idx = 0
+		for i,, array_count
+			// 残りの行がない場合は処理を終了
+			if current_idx >= notemax : _break
+			
+			// 最初のextra_lines個の配列には1行多く割り当て
+			lines_for_this_array = base_lines + (i < extra_lines)
+
+			// この配列に割り当てる行を処理
+			repeat lines_for_this_array
+				if current_idx < notemax {
+					noteget tmp, current_idx
+					if cnt = 0{
+						a(i) = tmp
+					}else{
+						a(i) += "\n" + tmp
+					}
+					current_idx++
+				}
+			loop
+		next
+	noteunsel
+	return
+#global
+
+//テストー
+#if 0
+#undef mes
+#define mes(%1="") mes@hsp %1:logmes %1
+
+sdim a
+repeat 30000
+a += "\n" + cnt
+loop
+
+div_notepad a,4,b
+
+
+repeat length(b)
+mes b.cnt
+mes
+loop
+#endif

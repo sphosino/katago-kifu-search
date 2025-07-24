@@ -2,7 +2,7 @@
 #packopt hide 1
 #bootopt notimer 1 //ツールなので、高精度タイマーを使用しない
 
-;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重くなるので謎バグ特定専用
+;#addition "WrapCall.as" ;knowbugが使うコールスタック監査、重バグ特定専用
 
 #include "basic.hsp" //hsp_commonから利用するファイルを列挙
 
@@ -12,9 +12,10 @@
 #include "modules/katago_sqr.hsp"
 
 #include "modules/search/pattern.hsp"
-#include "modules/search/Search_pattern.hsp"
-#include "modules/search/Search_pattern2.hsp"
 #include "modules/search/draw_pattern.hsp"
+#include "nodmod/ProcLinkModule.hsp"
+#include "kifu_protocol.hsp"
+#include "div_notepad.hsp"
 
 #include "tooltip.hsp"
 
@@ -28,6 +29,10 @@
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 
+#const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
+
+MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数 (25%ぐらいまで使う)
+
 
 #const BG_COLOR $808080 // 128,128,128
 
@@ -37,19 +42,26 @@
 	dirname = dir_exe
 #endif
 
-log_init dirname, 4098
+//子プロセスからの結果を格納する
+sdim tmp_filename, 64
+sdim tmp_path, INFO_SIZE ; ヒット位置
+
+newmod search_id_manager, id_manager
 
 //前回起動時の情報があれば復元
+
 chdir dirname
+#if 0
+exec "download_sgf.exe"
+#endif
+
 exist window_file_name
 
 if strsize == -1{
-	x = 1140
-	y = 855
-	sx = x
-	sy = y
-	wx = (ginfo(20) - x) / 2
-	wy = (ginfo(21) - y) / 2
+	sx = ginfo(20) * 2 / 3
+	sy = ginfo(21) * 2 / 3
+	wx = (ginfo(20) - sx) / 2
+	wy = (ginfo(21) - sy) / 2
 	//探索の最大深さ
 	max_depth = 70
 	
@@ -65,9 +77,6 @@ if strsize == -1{
 	//棋譜を何手目から表示するか
 	kifu_start_num = 10
 
-	//１回の検索でどれぐらい読み込むか（％）
-	loadmax = 10
-
 	//棋譜再生速度(ms)
 	auto_interval = 1000
 	alpha_interval = 10000
@@ -78,8 +87,6 @@ if strsize == -1{
 	chdir dirname
 	noteload window_file_name
 	noteget_start
-	noteget_ x
-	noteget_ y
 	noteget_ wx
 	noteget_ wy
 	noteget_ sx
@@ -89,7 +96,6 @@ if strsize == -1{
 	noteget_ view_hosi
 	noteget_ last_move_mark
 	noteget_ kifu_start_num
-	noteget_ loadmax
 	noteget_ auto_interval
 	noteget_ alpha_interval
 	noteget_ m_interval
@@ -120,6 +126,8 @@ screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 
+;dialog strf("%d,%d,%d,%d",wx,wy,sx,sy)
+
 dim save_window_size, 2
 dim save_window_position, 2
 if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
@@ -135,7 +143,7 @@ centering_mes "システム起動中・・・", tmp, "メイリオ"
 redraw
 
 //初期化開始
-
+nocoClearCopyDataQueue (1024 + 64 * 3) * 10000
 
 kifu_dirname = dirname + "/棋譜"
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -198,10 +206,10 @@ randomize
 chdir dirname + "/save"
 dirlist filelist, "*.sgf"
 notesel filelist
-	repeat notemax
-		noteget tmp, cnt
-		delete tmp
-	loop
+repeat notemax
+	noteget tmp, cnt
+	delete tmp
+loop
 noteunsel
 
 //エリア作成
@@ -249,12 +257,11 @@ root = make_area_child(1,1)
 					go_end = make_area_child()
 					button_clearboard = make_area_child()
 					
-		goban_tool_area = make_area_child(1,7,body_area)
+		goban_tool_area = make_area_child(1,6,body_area)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
 			
-			goban_loadmax_area = make_area_child(,,goban_tool_area)
 			combox_history = make_area_child(,,goban_tool_area)
 
 			goban_search_area = make_area_child(3,2,goban_tool_area)
@@ -287,6 +294,7 @@ root = make_area_child(1,1)
 chdir dirname
 exist "area.var" 
 if strsize >= 0{
+	
 	save_load_manager_load
 }
 
@@ -307,7 +315,6 @@ set_margin sidebar_kifulist2, 0,5
 
 set_padding goban_area, , 0
 
-add_tooltip goban_loadmax_area, "検索時追加で読み込む量"
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
@@ -318,7 +325,6 @@ add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
 set_tooltip_color 0x333333, 0xFFFFFF
 
 //実体作成
-newmod g_buttons, grid_button, "最新棋譜取得", *loadfile, button_download_file
 newmod g_buttons, grid_button, "保存",*save_file,button_save_file
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
@@ -356,7 +362,6 @@ newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_ste
 newmod g_slider, grid_slider, auto_interval , 1, slider, 100, 10000, 14 , 16
 newmod g_slider, grid_slider, alpha_interval, 1, slider, 0  , 10000, 14 , 16, , 25
 newmod g_slider, grid_slider, m_interval    , 1, slider, 0  , 10000, 14 , 16, , 50
-newmod g_slider, grid_slider, loadmax, 1, goban_loadmax_area, 0, 100, 14 , 16
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
@@ -397,15 +402,6 @@ foreach g_label
 loop
 
 
-gosub*load_kifu_folder
-
-
-foreach kifulist
-	set_listbox_item_ysize kifulist.cnt, 25
-	set_listbox_scollbar_width kifulist.cnt, 16
-loop
-gosub*loadsgf
-
 set_max_centering_mes 33
 
 bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF_FAST", LIFE_FOREVER, 0,0, ginfo(12), ginfo(13), strf("%d",BG_COLOR))
@@ -415,49 +411,48 @@ pretime = keyfpstime
 
 onexit *save_info //終了時に*save_infoにジャンプ
 
+//子プロセス管理初期化
+
+gosub *init_parent_process
+
+gosub*load_kifu_folder
+
+
+foreach kifulist
+	set_listbox_item_ysize kifulist.cnt, 25
+	set_listbox_scollbar_width kifulist.cnt, 16
+loop
+gosub*loadsgf
+
+
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
 	notify_dt_draw_object frametime()
 
-	計測 "kifuload"
+	
+	update_child_list //子プロセス監視
 
-	if kifu_update & waitedtime() > get_target_wait(){//棋譜がアップデートされたとき且つ、十分な余裕時間があったときのみ走る
-		new_ = get_in_area()
-		//マウスがエリア間を移動したか、プログラム上で左クリックされているか
-		if (pre_ != new_) || ((_getkey(1) >= 1) && (ginfo_act != -1)){
-			pat = keyfpstime
-			pre_ = new_
-		}
-		//ユーザーがアクティブでない時
-		if keyfpstime - pat >= INACTIVITY_TIMEOUT{
-			
-			//毎フレーム１棋譜読み込む
-			
-			notesel filelist
-				
-				noteget sgf_file_name, get_entry_count(filename_to_topnode)
-				if sgf_file_name == ""{
-					//全て読み込んだ
-					kifu_update = 0
-				}else{
-					if get_value(filename_to_topnode, sgf_file_name) == NOT_DEFINED_HASH{
-						notesel sgf
-							chdir kifu_dirname
-							noteload sgf_file_name
-							new_value filename_to_topnode, sgf_file_name, str(load_sgf(sgf)) //ファイル名とトップノードの番号を紐づける
-						noteunsel
-					}
-				}
-			noteunsel
-		}
+	deficit = MAX_CHILDREN - child_count_current
+    if deficit >= 1{
+	    tmp = dir_cur
+   		chdir dirname
+	    repeat deficit
+	    	exec "search_process"
+	    	await 33
+	    loop
+	    chdir tmp
+	    //全て起動するまで待つ
+	    waitstarttime = keyfpstime
+	    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
+	    	await 16
+	    wend
+	    棋譜リスト送信
 	}
-
+    
+	gosub*on_copydata
 	
 	計測 "前フレームからの状態変化取得"
-	if pre_kifu_update != kifu_update{
-		pre_kifu_update = kifu_update
-	}
 
 	//マウスのエリア間移動チェック
 	if now_area != get_in_area() || _getkey(1) >= 1{
@@ -540,12 +535,19 @@ onexit *save_info //終了時に*save_infoにジャンプ
 			swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット
 		}
 	}
-	if filter_on{
-		if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
-			pre_filter = stat
-			pre_filter_on = filter_on
+	
+	if pre_filter_on != filter_on{
+		pre_filter_on = filter_on
+		if filter_on{
 			gosub *filtering_and_make_listbox
+		}else{
+			g_filter_off kifulist.matchlist
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"　
 		}
+	}
+	if pre_combox_idx != get_value_g_combox(g_combox){
+		pre_combox_idx = stat
+		if filter_on: gosub *filtering_and_make_listbox
 	}
 	
 	計測 "入力処理"
@@ -769,7 +771,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	}
 	
 	//CTRLダブルクリックでデバッグモード切替
-	if getdbl_ms(17, 250) == 1{
+	if getdbl_ms(17, DBL_INTERVAL) == 1{
 		debugmode ^ 1
 		logmes "switched debugmode ->" +debugmode
 	}
@@ -826,6 +828,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	foreach kifulist
 		listbox_manager kifulist.cnt, current_kifulist = cnt
 	loop
+	
 	foreach g_label
 		draw_g_label g_label.cnt
 	loop
@@ -853,11 +856,10 @@ onexit *save_info //終了時に*save_infoにジャンプ
 
 
 *save_window_size_main
-	await
 	IsZoomed hwnd :最大化 = stat
 	IsIconic hwnd :最小化 = stat
 	if (最大化 | 最小化) == 0{
-		save_window_size = window_size, window_size.1
+		save_window_size = ginfo(12), ginfo(13)
 		save_window_position = ginfo(4), ginfo(5)
 	}
 	return
@@ -865,6 +867,8 @@ onexit *save_info //終了時に*save_infoにジャンプ
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
+
+		if topnode != -1: del_sgf_node topnode, 1
 
 		current_kifulist = kifulist_id
 		ui_mode = MODE_KIFU_VIEW
@@ -877,7 +881,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		rn = 0
 
 
-		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board, filename_to_topnode)
+		topnode = change_sgf(get_item_name(kifulist.kifulist_id, itemid), t, board)
 
 		clear_graph l_graph
 
@@ -892,15 +896,19 @@ onexit *save_info //終了時に*save_infoにジャンプ
 		
 		手数 = 0
 
-		if get_item_data(kifulist.kifulist_id, itemid) != ""{ //アイテムデータが設定されていたら、それは検索結果。
-			nstat = int(refstr) //検索結果のSGFノード
-			
+		dim path, 1024 / 4 + 32
+		path = -1
+
+		dup_item_data kifulist.kifulist_id, itemid, path
+		
+		if path >= 0{
 			//それが格納されているツリーIDを探してカレントノードに設定、手数も合わせる
-			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), nstat, 手数)
+			set_current_node t, search_tree_by_item_id(get_root_tree_node(t), path)
+			手数 = path
 
 			move_next_int kifu_start_num_result
 
-			logmes "検索結果を発見 -> " + nstat
+			logmes "検索結果を発見 -> " + path
 
 		}else{
 			nownode = get_root_tree_node(t)
@@ -921,7 +929,7 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	a = select_kifulist_item(stat, current_kifulist,1)
 	return
 *back_kifu
-	move_listbox_index kifulist(current_kifulist),-1
+	move_listbox_index kifulist(current_kifulist), -1
 	a = select_kifulist_item(stat, current_kifulist)
 
 	return
@@ -971,13 +979,27 @@ onexit *save_info //終了時に*save_infoにジャンプ
 *getsgf
 
 	dim nodelist
+	original_directory = dir_cur
+	chdir kifu_dirname
+	notesel sgf
+		repeat get_selected_item_indices(kifulist.current_kifulist, selected_index) //sにリストボックスの何番目が選択されているかが代入される
+			filename = get_item_name(kifulist.current_kifulist, selected_index) //ファイル名を取得
+			noteload filename //ファイルをロード	
+			nodelist(cnt) = load_sgf(sgf) //展開してトップノードの番号を取得
+		loop
+	noteunsel
+
+	chdir original_directory
 	
-	repeat get_selected_item_indices(kifulist.current_kifulist, s)
-		nodelist(cnt) = int(get_value(filename_to_topnode,get_item_name(kifulist.current_kifulist, s(cnt))))
+	new_node = merge_node(nodelist) //選択された棋譜をマージ
+	clipset get_node_sgf(new_node) //それをクリップボードにセット
+
+	//削除して完了
+	repeat length(nodelist)
+		del_sgf_node nodelist(cnt), 1
 	loop
-	new_node = merge_node(nodelist)
-	clipset get_node_sgf(new_node)
-	del_sgf_node new_node, 1 //削除して完了
+	del_sgf_node new_node, 1
+	
 	title "棋譜をクリップボードにコピーしました"
 	return
 *loadsgf
@@ -985,11 +1007,14 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	newmod t, treebox, treebox_area
 	sdim s, $FFFF
 	clipget s, varsize(s)
+
+	del_sgf_node sgf_topnode, 1
+	sgf_topnode = load_sgf(s)
 	
-	if load_sgf(s) < 0: return
+	if sgf_topnode < 0: return
 
 	
-	topnode = load_sgf_set_board(t, stat, board)
+	topnode = load_sgf_set_board(t, sgf_topnode, board)
 	
 	blackplayer = get_property_data(topnode, "PB")
 	whiteplayer = get_property_data(topnode, "PW")
@@ -1037,138 +1062,133 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	gosub*create_pattern_main
 	return
 *create_pattern2
-	add_log "除外検索が呼ばれた"
 	time = keyfpstime
-	add_log "セットの引き算開始"
-	kl = notepad_minus_notepad(kifulist_notepad, search_result_sgflist)
-	add_log "セットの引き算完了"
-	add_log "検索実行"
+	
+	kl = notepad_minus_notepad(kifulist_notepad, get_name_all_items(kifulist.matchlist))
 	gosub*create_pattern_main
-	add_log "除外検索完了"
 	return
 *create_pattern3
 	time = keyfpstime
-	kl = search_result_sgflist
+	kl = get_name_all_items(kifulist.matchlist)
 	gosub*create_pattern_main
 	return
 	
 *create_pattern_main
 	logmes "検索開始"
-	
+
+	if pre_kl != kl{
+		pre_kl = kl
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), kl, 検索棋譜, strlen(kl)
+	    loop
+	}
+	//以下検索
+
+	complate_count = 0
+
+	//ui状態からベースパターンを作る
 	get_board_data board.ui_mode, m
 	set_board_pattern m
 	set_coordinate_pattern v
 	set_base
+	save_history //履歴に追加
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
+
+	del_item_all kifulist.matchlist
+
+
+	set_g_label g_label.1, "検索結果(" + 0 + ")件" //ラベル更新
 	
-	
+
 	if use_bitboard{ ;厳密検索
 		
-		result_num = search2(kl, m, search_result, max_depth, enableColorFlip, v, kifu_update, loadmax, inverse, filename_to_topnode)
+		logmes "厳密検索"
+		search_id = get_new_id(search_id_manager)
+		sdim params
+		lpoke  params           , 0 , search_id
+		lpoke  params           , 4 , max_depth
+		lpoke  params           , 8 , enableColorFlip
+		lpoke  params           , 12 , inverse
+		get_base_binary params  , 16
+		psize = stat
+
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), params, 検索実行2, psize
+		loop
+		
 		
 	}else{ ;通常検索
 
-		result_num = search(kl, search_result, max_depth, enableColorFlip, kifu_update, loadmax, inverse, filename_to_topnode)
+		logmes "通常検索"
+		//検索条件作成
+		search_id = get_new_id(search_id_manager)
+		sdim params
+		lpoke params,0, search_id
+		lpoke params,4, max_depth
+		lpoke params,8, enableColorFlip
+		lpoke params,12, inverse
+		get_base_binary params, 16
+
+		psize = stat
+		logmes "命令実行-send -> "+psize
+
+		//検索実行させる
+		repeat child_count_current
+			nocoSendCopyData child_hwnd_list(cnt), params, 検索実行, psize
+		loop
 	}
-
-	if result_num < 0{
-		//早期リターンなら何もせず終わる。
-		logmes "検索早期リターン！当然０件だよ" + result_num
-		return
-	}
-
-	save_history
-	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox()
-
-	search_result_sgflist = ""
 	
-	repeat result_num
-		search_result_sgflist += search_result(0, cnt) + "\n"
+	return
+#deffunc 棋譜リスト送信
+
+	//棋譜リスト送信
+	repeat child_count_current
+		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
 	loop
-
-	//search_result_sgflistに結果リスト、result_numに結果の数が入っている。
-
-	gosub *filtering_and_make_listbox
-
-
-	logmes "検索終了 -> " +(keyfpstime - time) + "ms  " + fn + "件の検索結果"
-
 	return
 	
 *filtering_and_make_listbox
+	
+	sdim a, INFO_SIZE
+	listcount = g_get_listbox_ids(kifulist.matchlist, newids, 1) //オリジナルに対して常に行う
 
-	//フィルタリング処理
-	//search_resultに結果を保持している
-	if result_num = -1: return
-	logmes "filtering_start!!!"
-	dim filtered_result, 2, result_num　//フィルター後の結果を入れる変数
-	dim fn //フィルター後の結果の数
+	ln = 0
+	dim new_indices
 
-	if filter_on{
-		//モデルでのフィルター
+	if get_value_g_combox(g_combox){
+
+		logmes "選択されたアイテム" + get_value_g_combox(g_combox)
 		notesel model_list
-			noteget selected_model, get_value_g_combox(g_combox)
+			noteget modelname,get_value_g_combox(g_combox)
 		noteunsel
-		repeat result_num
+		logmes modelname
 		
-			tn = int(get_value(filename_to_topnode, search_result(0, cnt))) //topnodeからプレイヤー情報取得
-			blackplayer = get_property_data(tn, "PB")
-			split blackplayer,"-",bp
-			whiteplayer = get_property_data(tn, "PW")
-			split whiteplayer,"-",wp
-			modelnames = strmid(bp.1, 0, 3), strmid(wp.1, 0, 3) //モデル名取得！
+
+		repeat listcount
+			dup_item_data_by_id kifulist.matchlist, newids(cnt), a
+			dupptr black_player_name, varptr(a) + 1024     , 64, 2
+			dupptr white_player_name, varptr(a) + 1024 + 64, 64, 2
 	
-			if get_value_g_combox(g_combox) == 0 || modelnames.0 == selected_model || modelnames.1 == selected_model {
-				filtered_result(0,fn) = search_result(0,cnt)
-				filtered_result(1,fn) = search_result(1,cnt)
-				fn++
+			split black_player_name,"-",bn
+			split white_player_name,"-",wn
+			if strmid(wn(1),0,3) == modelname || strmid(bn(1),0,3) == modelname{
+				new_indices(ln) = newids(cnt)
+				ln++
 			}
+			if cnt \ 200 == 0: logmes ""+wn(1) + " : "+bn(1)
 		loop
-		//その他のフィルター
-
+	
+		
 	}else{
-		//フィルターなし
-		repeat result_num
-			filtered_result(0,cnt) = search_result(0,cnt)
-			filtered_result(1,cnt) = search_result(1,cnt)
-			fn++
+		repeat listcount
+			new_indices(ln) = newids(cnt)
+			ln++
 		loop
 	}
-	
-	//最終結果を文字列化
-	search_result_sgflist = ""
-	repeat fn
-		if cnt{
-			search_result_sgflist += "\n"
-		}
-		search_result_sgflist += filtered_result(0,cnt)
-	loop
-		
-	if search_result_sgflist != ""{
 
-		sortnote search_result_sgflist, 1 //結果を最新棋譜順にソート
-		current_kifulist = matchlist
-	}
-	
-	//リストボックスに流し込む
-	del_item_all kifulist.matchlist
-	add_item kifulist.matchlist, search_result_sgflist
-	
-	repeat fn
-		sortget n, cnt
-		add_item_data kifulist.matchlist, cnt, filtered_result(1,n)
-	loop
+	g_filter_on kifulist.matchlist, new_indices
 
-	set_g_label g_label.1, "検索結果(" + fn + ")件" //ラベル更新
-
-	return
-	
-*loadfile
-	
-	棋譜取得 kifu_dirname, 100, 3000, 1000 * 60 * 3 // katagoホームページから最新棋譜を追加ダウンロード
-		
-	chdir dirname
-
-	gosub*load_kifu_folder
+	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 	
 	return
 
@@ -1233,36 +1253,51 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	return
 	
 *load_kifu_folder
+	
 	treebox_clear t
 	chdir kifu_dirname
 	dirlist files,"*.sgf"
 	notesel ss
+	
 	ss = shuffle_notepad(files)
+	
+	
 		棋譜数 = notemax
-				
-		//SGFモジュール初期化
-		init_sgf_module 棋譜数
 		
+		//SGFモジュール初期化
+		init_sgf_module 100
 		
 		//ハッシュ初期化
-		dimtype filename_to_topnode, 5
+		dim filename_to_topnode
 		newmod filename_to_topnode, hash_manager, 棋譜数
 
+		sdim search_result_filename, 64, 棋譜数
+		sdim search_result_path, 1024, 棋譜数
+
 		//棋譜リスト初期化
-		dimtype kifulist, 5, 2
+		dim kifulist
+		
 		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
 		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
+		
 		sdim filelist
 		repeat 棋譜数
 			noteget tmp, cnt
 			filelist += tmp + "\n"
 		loop
-		set_g_label g_label, "棋譜リスト("+ 棋譜数 +")件"
+		
 		
 	noteunsel
 	add_item kifulist, filelist
-	kifu_update = 1
 	kifulist_notepad = filelist
+
+	set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
+
+	//担当棋譜リストをを作る
+	
+	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
+
+	棋譜リスト送信
 
 	return
 	
@@ -1290,11 +1325,10 @@ onexit *save_info //終了時に*save_infoにジャンプ
 */
 	
 *save_info //終了処理
+	
 	chdir dirname
 	sdim s,1024
 	notesel s
-	noteadd str(ginfo(10)) //ウィンドウサイズ
-	noteadd str(ginfo(11))
 	noteadd str(save_window_position) //ウィンドウ位置
 	noteadd str(save_window_position.1)
 	noteadd str(save_window_size) //描画領域サイズ
@@ -1304,7 +1338,6 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	noteadd str(view_hosi)
 	noteadd str(last_move_mark)
 	noteadd str(kifu_start_num)
-	noteadd str(loadmax)
 	noteadd str(auto_interval)
 	noteadd str(alpha_interval)
 	noteadd str(m_interval)
@@ -1313,3 +1346,172 @@ onexit *save_info //終了時に*save_infoにジャンプ
 	notesave window_file_name
 	save_load_manager_save //グリッド情報保存
 	end
+
+
+*init_parent_process
+	dim child_hwnd_current, MAX_CHILDREN      // 子プロセスのウィンドウハンドル配列
+	sdim child_status_current, 64, MAX_CHILDREN // 子プロセスの状態配列
+	child_count_current = 0                   // 現在起動中の子プロセス数
+	dim prekeys, 9                        // キー入力の状態を保持
+    // ユニークなアプリ名を作成
+    app_name = str(rnd(32768)) + "_myApp"
+   	nocoConnectAccept app_name
+    // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
+    
+    sdim s
+    notesel s
+	    noteadd app_name
+	    noteadd str(hwnd)
+	    tmp = dir_cur
+		chdir dirname
+	    	notesave "app_name.txt"
+		chdir tmp
+	noteunsel
+	await 50
+
+	tmp = dir_cur
+    chdir dirname
+    repeat MAX_CHILDREN
+    	await 16
+    	exec "search_process"
+    loop
+    chdir tmp
+    //全て起動するまで待つ
+    waitstarttime = keyfpstime
+    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
+    	title "サブプロセス起動待機中" + MAX_CHILDREN + " -> " + nocoConnectInfo()
+    	await 16
+    wend
+    title "サブプロセス起動完了"
+    update_child_list
+
+    
+    // 自動受信設定と受信コールバック関数の設定
+    nocoAutoCopyData
+
+	return
+
+
+#deffunc update_child_list
+    new_child_count = 0
+    dim temp_child_hwnd, MAX_CHILDREN
+    sdim temp_child_status, 64, MAX_CHILDREN
+
+    // なごコネに参加している全てのアプリ数を取得
+    total_connected_apps = nocoConnectInfo(0, 0)
+
+	//終了された子プロセスをリストから除外
+    for i,, new_child_count
+		this = child_hwnd_list(i)
+		exist_hwnd = 0
+		repeat total_connected_apps
+			if nocoConnectInfo(1, cnt) == this{
+				exist_hwnd = 1
+				break
+			}
+		loop
+		if exist_hwnd == 0{
+			new_child_count--
+			child_hwnd(i) = child_hwnd(new_child_count)
+			i--
+		}
+    next
+
+    //新たに生成されたプロセスを登録
+    repeat total_connected_apps
+        connected_hwnd = nocoConnectInfo(1, cnt)
+        if connected_hwnd == hwnd: continue
+        
+        // 新しいリストに追加
+        if (new_child_count <= MAX_CHILDREN) {
+
+            
+			found_index = find_child_by_hwnd(child_hwnd_list, connected_hwnd) //このhwndが既存のリストのどこにあるか？
+			if found_index == -1{
+            	temp_child_status(new_child_count) = "初期状態"
+            	
+            }else{
+				temp_child_status(new_child_count) = child_status_list(found_index)
+           	}
+           	
+            temp_child_hwnd(new_child_count) = connected_hwnd
+            
+            new_child_count++
+            
+        } else {
+            logmes "警告: 検出された子プロセスがMAX_CHILDRENを超えました。一部を無視します。"
+            break // 配列の容量を超えたらループを抜ける
+        }
+        
+    loop
+
+    // 新しいリストを現在のリストにコピー
+    
+    dim child_hwnd_list, new_child_count
+    dim child_status_list, new_child_count
+    repeat new_child_count
+        child_hwnd_list(cnt) = temp_child_hwnd(cnt)
+        child_status_list(cnt) = temp_child_status(cnt)
+    loop
+
+    child_count_current = new_child_count
+    
+    return
+
+*on_copydata //毎フレーム呼び出す
+
+    repeat nocoCopyDataQueueCount()
+    
+    	nocoGetCopyDataQueue received_data, cnt
+    	sender_hwnd = nocoCopyDataQueueInfo(2, cnt)
+		param = nocoCopyDataQueueInfo(3, cnt)
+		data_size = nocoCopyDataQueueInfo(4, cnt)
+
+		switch param
+		case 検索結果
+		
+			result_num = (data_size - HEADER_SIZE) / RECORD_SIZE
+			nowpointer = HEADER_SIZE
+
+			
+			repeat result_num
+			
+				memcpy tmp_filename, received_data,  64, 0, nowpointer + OFFSET_KIFU
+				memcpy tmp_path, received_data, INFO_SIZE, 0, nowpointer + OFFSET_PATH
+				add_item kifulist.matchlist, tmp_filename
+				push_item_data kifulist.matchlist, stat, tmp_path
+				nowpointer += RECORD_SIZE
+				
+			loop
+	
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
+
+			complate_count++
+			logmes "result_num = " + result_num + " : " + complate_count
+			if complate_count == MAX_CHILDREN{
+				logmes "検索完了"
+				if filter_on: gosub　*filtering_and_make_listbox
+			}
+
+		swbreak
+		swend
+   	loop
+   	
+    nocoClearQueue
+    return
+
+
+#module
+// 子プロセスのハンドルを検索し、そのインデックスを返す
+// 見つからない場合は -1 を返す
+#defcfunc find_child_by_hwnd array h_array, int search_hwnd
+    result = -1
+    repeat length(h_array)
+        if (h_array(cnt) == search_hwnd) {
+            result = cnt
+            break
+        }
+    loop
+    return result
+
+#global

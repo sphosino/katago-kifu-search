@@ -5,7 +5,7 @@
 
 #const global LISTBOX_DEFAULT_MAX 300
 
-#module grid_listbox id_man, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status
+#module grid_listbox id_man, item_names, item_datas, scrollbar, area_number, item_y, listbox_item_select_status, res
 
 #modinit int p1, int p2, local thismod_ID
 
@@ -16,7 +16,7 @@
 	if p2 = 0: size = LISTBOX_DEFAULT_MAX
 
 	sdim item_names,, size
-	sdim item_datas,, size
+	sdim item_datas,1024 + 64 * 2, size
 	dim listbox_item_select_status, size
 	
 	newmod id_man, listbox_id_manager, size
@@ -50,8 +50,10 @@
         noteget tmp_str, cnt
         id = get_new_listbox_id(id_man)
         item_names(id) = tmp_str
+        lpoke item_datas(id), 0, -1
     loop
     noteunsel
+  
     return id
 
 //リスト番号ベースで操作
@@ -62,6 +64,13 @@
     return item_names(get_listbox_id(id_man, index))
 #modcfunc get_item_data int index
     return item_datas(get_listbox_id(id_man, index))
+    
+#modfunc push_item_data int index, array a
+	memcpy   item_datas(get_listbox_id(id_man, index)), a, 1024 + 64 * 2
+#modfunc dup_item_data int index, array a
+	memcpy a,item_datas(get_listbox_id(id_man, index)),    1024 + 64 * 2
+	return
+	
 #modfunc remove_item int index
 	delete_listbox_num id_man, index
 	fix_scroll_after_remove thismod
@@ -75,10 +84,20 @@
     return item_names(_id)
 #modcfunc get_item_data_by_id int _id
     return item_datas(_id)
+
+#modfunc push_item_data_by_id int _id, var a
+	memcpy   item_datas(_id), a, 1024 + 64 * 2
+#modfunc dup_item_data_by_id int _id, var a
+	memcpy a,item_datas(_id),    1024 + 64 * 2
+	return
+
 #modfunc remove_item_by_id int _id
 	delete_listbox_id id_man, _id
 	fix_scroll_after_remove thismod
 	return
+
+
+
 	
 #modfunc remove_selected_items
 	// 選択中のやつを全部削除
@@ -278,7 +297,7 @@
 
 //x,yがリストボックスのどこにあるか？
 #modcfunc listbox_on_id int x, int y, local i
-	get_rect area_number,rect
+	get_rect area_number, rect
 
 	if rect.0 > x || rect.1 > y || rect.2 < x || rect.3 < y {
 		//リストボックス外
@@ -325,17 +344,34 @@
 
 //---util functions
 
-#modcfunc get_name_all_items //非推奨。重すぎ
+#modcfunc get_name_all_items
 	s = ""
 	repeat get_listbox_ids(id_man, ids)
-		id = ids(cnt)
-		if s!=""{
-			s+= "\n"+ item_names(ids)
+		if cnt{
+			s += "\n"+ item_names(ids(cnt))
 		}else{
-			s+= item_names(ids)
+			s += item_names(ids(cnt))
 		}
 	loop
 	return s
 
+// フィルター機能
+#modcfunc g_get_listbox_ids array a, int original
+	return get_listbox_ids(id_man, a, original)
+
+
+#modfunc g_filter_on array id_array
+    listbox_filter_on id_man, id_array
+    return
+#modfunc g_filter_off
+    listbox_filter_off id_man
+    return
+    
+#modcfunc g_get_listbox_count
+    return get_listbox_count(id_man)
+#modcfunc g_get_listbox_id int listnum
+    return get_listbox_id(id_man, listnum)
+#modcfunc g_get_listbox_num int _id
+    return get_listbox_num(id_man, _id)
 	
 #global
