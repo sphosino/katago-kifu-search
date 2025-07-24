@@ -16,7 +16,7 @@
 	if p2 = 0: size = LISTBOX_DEFAULT_MAX
 
 	sdim item_names,, size
-	sdim item_datas,1024, size
+	sdim item_datas,1024 + 64 * 2, size
 	dim listbox_item_select_status, size
 	
 	newmod id_man, listbox_id_manager, size
@@ -66,9 +66,9 @@
     return item_datas(get_listbox_id(id_man, index))
     
 #modfunc push_item_data int index, array a
-	memcpy   item_datas(get_listbox_id(id_man, index)), a, 1024
+	memcpy   item_datas(get_listbox_id(id_man, index)), a, 1024 + 64 * 2
 #modfunc dup_item_data int index, array a
-	memcpy a,item_datas(get_listbox_id(id_man, index)),    1024
+	memcpy a,item_datas(get_listbox_id(id_man, index)),    1024 + 64 * 2
 	return
 	
 #modfunc remove_item int index
@@ -85,16 +85,18 @@
 #modcfunc get_item_data_by_id int _id
     return item_datas(_id)
 
-#modfunc push_item_data_by_id int _id, array a
-	memcpy   item_datas(_id), a, 1024
-#modfunc dup_item_data_by_id int _id, array a
-	memcpy a,item_datas(_id),    1024
+#modfunc push_item_data_by_id int _id, var a
+	memcpy   item_datas(_id), a, 1024 + 64 * 2
+#modfunc dup_item_data_by_id int _id, var a
+	memcpy a,item_datas(_id),    1024 + 64 * 2
 	return
 
 #modfunc remove_item_by_id int _id
 	delete_listbox_id id_man, _id
 	fix_scroll_after_remove thismod
 	return
+
+
 
 	
 #modfunc remove_selected_items
@@ -353,5 +355,23 @@
 	loop
 	return s
 
+// フィルター機能
+#modcfunc g_get_listbox_ids array a, int original
+	return get_listbox_ids(id_man, a, original)
+
+
+#modfunc g_filter_on array id_array
+    listbox_filter_on id_man, id_array
+    return
+#modfunc g_filter_off
+    listbox_filter_off id_man
+    return
+    
+#modcfunc g_get_listbox_count
+    return get_listbox_count(id_man)
+#modcfunc g_get_listbox_id int listnum
+    return get_listbox_id(id_man, listnum)
+#modcfunc g_get_listbox_num int _id
+    return get_listbox_num(id_man, _id)
 	
 #global

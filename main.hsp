@@ -143,7 +143,7 @@ centering_mes "システム起動中・・・", tmp, "メイリオ"
 redraw
 
 //初期化開始
-nocoClearCopyDataQueue (1024 + 64) * 10000
+nocoClearCopyDataQueue (1024 + 64 * 3) * 10000
 
 kifu_dirname = dirname + "/棋譜"
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -535,12 +535,19 @@ gosub*loadsgf
 			swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット
 		}
 	}
-	if filter_on{
-		if pre_filter != get_value_g_combox(g_combox) || pre_filter_on != filter_on{
-			pre_filter = stat
-			pre_filter_on = filter_on
+	
+	if pre_filter_on != filter_on{
+		pre_filter_on = filter_on
+		if filter_on{
 			gosub *filtering_and_make_listbox
+		}else{
+			g_filter_off kifulist.matchlist
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"　//ここにいい関数ありましたっけ？
 		}
+	}
+	if pre_combox_idx != get_value_g_combox(g_combox){
+		pre_combox_idx = stat
+		if filter_on: gosub *filtering_and_make_listbox
 	}
 	
 	計測 "入力処理"
@@ -821,6 +828,7 @@ gosub*loadsgf
 	foreach kifulist
 		listbox_manager kifulist.cnt, current_kifulist = cnt
 	loop
+	
 	foreach g_label
 		draw_g_label g_label.cnt
 	loop
@@ -888,7 +896,7 @@ gosub*loadsgf
 		
 		手数 = 0
 
-		dim path, 1024 / 4
+		dim path, 1024 / 4 + 32
 		path = -1
 
 		dup_item_data kifulist.kifulist_id, itemid, path
@@ -1076,7 +1084,7 @@ gosub*loadsgf
 	}
 	//以下検索
 
-	complete_count = 0
+	complate_count = 0
 
 	//ui状態からベースパターンを作る
 	get_board_data board.ui_mode, m
@@ -1140,6 +1148,47 @@ gosub*loadsgf
 	return
 	
 *filtering_and_make_listbox
+	
+	sdim a, INFO_SIZE
+	listcount = g_get_listbox_ids(kifulist.matchlist, newids, 1) //オリジナルに対して常に行う
+
+	ln = 0
+	dim new_indices
+
+	if get_value_g_combox(g_combox){
+
+		logmes "選択されたアイテム" + get_value_g_combox(g_combox)
+		notesel model_list
+			noteget modelname,get_value_g_combox(g_combox)
+		noteunsel
+		logmes modelname
+		
+
+		repeat listcount
+			dup_item_data_by_id kifulist.matchlist, newids(cnt), a
+			dupptr black_player_name, varptr(a) + 1024     , 64, 2
+			dupptr white_player_name, varptr(a) + 1024 + 64, 64, 2
+	
+			split black_player_name,"-",bn
+			split white_player_name,"-",wn
+			if strmid(wn(1),0,3) == modelname || strmid(bn(1),0,3) == modelname{
+				new_indices(ln) = newids(cnt)
+				ln++
+			}
+			if cnt \ 200 == 0: logmes ""+wn(1) + " : "+bn(1)
+		loop
+	
+		
+	}else{
+		repeat listcount
+			new_indices(ln) = newids(cnt)
+			ln++
+		loop
+	}
+
+	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+
+	g_filter_on kifulist.matchlist, new_indices
 	
 	return
 
@@ -1420,16 +1469,16 @@ gosub*loadsgf
 		switch param
 		case 検索結果
 		
-			result_num = (data_size - 4) / RECORD_SIZE
-			nowpointer = 4
+			result_num = (data_size - HEADER_SIZE) / RECORD_SIZE
+			nowpointer = HEADER_SIZE
 
-			logmes "result_num = " + result_num
+			
 			repeat result_num
 			
 				memcpy tmp_filename, received_data,  64, 0, nowpointer + OFFSET_KIFU
 				memcpy tmp_path, received_data, INFO_SIZE, 0, nowpointer + OFFSET_PATH
 				add_item kifulist.matchlist, tmp_filename
-				push_item_data_by_id kifulist.matchlist, stat, tmp_path
+				push_item_data kifulist.matchlist, stat, tmp_path
 				nowpointer += RECORD_SIZE
 				
 			loop
@@ -1437,9 +1486,10 @@ gosub*loadsgf
 			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
 
 			complate_count++
+			logmes "result_num = " + result_num + " : " + complate_count
 			if complate_count == MAX_CHILDREN{
 				logmes "検索完了"
-				gosub　*filtering_and_make_listbox
+				if filter_on: gosub　*filtering_and_make_listbox
 			}
 
 		swbreak
