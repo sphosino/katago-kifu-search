@@ -542,7 +542,7 @@ gosub*loadsgf
 			gosub *filtering_and_make_listbox
 		}else{
 			g_filter_off kifulist.matchlist
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"　//ここにいい関数ありましたっけ？
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"　
 		}
 	}
 	if pre_combox_idx != get_value_g_combox(g_combox){
@@ -1186,9 +1186,9 @@ gosub*loadsgf
 		loop
 	}
 
-	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
-
 	g_filter_on kifulist.matchlist, new_indices
+
+	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 	
 	return
 
@@ -1285,12 +1285,13 @@ gosub*loadsgf
 			noteget tmp, cnt
 			filelist += tmp + "\n"
 		loop
-		set_g_label g_label, "棋譜リスト("+ 棋譜数 +")件"
+		
 		
 	noteunsel
 	add_item kifulist, filelist
-	kifu_update = 1
 	kifulist_notepad = filelist
+
+	set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
 
 	//担当棋譜リストをを作る
 	
