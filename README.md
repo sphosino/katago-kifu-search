@@ -2,9 +2,9 @@
 
 HSP3で開発されたKataGo-rating-gamesの棋譜閲覧ツール。KataGoの自己対戦棋譜の棋譜を検索、閲覧できます。
 
-ダウンロードはこちらから→[https://github.com/sphosino/katago-kifu-search/releases]
+ダウンロードはこちらから→[KataGo棋譜検索システム](https://github.com/sphosino/katago-kifu-search/releases)
 
-[KataGo棋譜検索システム(操作ガイド)](https://sphosino.github.io/katago-kifu-search/readme.html)
+[(操作ガイド)](https://sphosino.github.io/katago-kifu-search/readme.html)
 
 [![GitHub license](https://img.shields.io/github/license/sphosino/katago-kifu-search)](LICENSE)
 [![HSP3](https://img.shields.io/badge/HSP-3.6+-brightgreen)](https://hsp.tv/)
