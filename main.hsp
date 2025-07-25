@@ -51,7 +51,7 @@ newmod search_id_manager, id_manager
 //‘O‰ñ‹N“®‚Ìî•ñ‚ª‚ ‚ê‚Î•œŒ³
 
 chdir dirname
-#if 0
+#if 1
 exec "download_sgf.exe"
 #endif
 
