@@ -1523,6 +1523,7 @@ gosub*loadsgf
 			complate_count++
 			logmes "result_num = " + result_num + " : " + complate_count
 			if complate_count == MAX_CHILDREN{
+				release_id search_id_manager, lpeek(received_data)
 				logmes "ŒŸõŠ®—¹"
 				if filter_on: gosub@*filtering_and_make_listbox
 			}
