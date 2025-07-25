@@ -1206,7 +1206,7 @@ gosub*loadsgf
 		loop
 	}
 
-	g_filter_on kifulist.matchlist, new_indices
+	g_filter_on kifulist.matchlist, new_indices, ln
 
 	//‘I‘ð
 	repeat ln

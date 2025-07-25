@@ -363,8 +363,8 @@
 	return get_listbox_ids(id_man, a, original)
 
 
-#modfunc g_filter_on array id_array
-    listbox_filter_on id_man, id_array
+#modfunc g_filter_on array id_array, int filtered_count
+    listbox_filter_on id_man, id_array, filtered_count
     fix_scroll_after_remove thismod
     return
 #modfunc g_filter_off
