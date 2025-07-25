@@ -41,7 +41,8 @@ root/
 3.hsp_commonの中にあるgenerate_headers.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
-katago-kifu-searchフォルダのmain.hspがエラーなく実行できるようになっていればOKです。
+4.search_process.hsp, sub.hspをexe化して、適切なフォルダにいれたあと、main.hspが実行できるようになればOKです
+
 ```
 
 
