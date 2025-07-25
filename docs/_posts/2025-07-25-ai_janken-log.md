@@ -5,7 +5,7 @@ layout: post
 ---
 
 claudeに作ってもらった。
-たった三回のやり取り。
+たった三回のプロンプトのやり取り。
 
 [AIと特殊じゃんけん](https://claude.ai/public/artifacts/d50c6de2-4702-481b-b652-400587fe313a)
 
