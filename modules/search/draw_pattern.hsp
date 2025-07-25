@@ -59,18 +59,18 @@
 		x = t(0, cnt)
 		y = t(1, cnt)
 		text_color = select_group_color(get_goban_position_color(board,x,y))
-		sx = goban_mas_size
+		sx = goban_mas_size  
 		sy = goban_mas_size.1
 		cx = goban_position   + x * sx
 		cy = goban_position.1 + y * sy
 		if tmp_board(x,y) >= 2 {
-			sx /= 2
-			sy /= 2
-			cx += (i \ 2) * (sx + 1)/2 + (sx + 1) / 2
-			cy += (i / 2) * (sy + 1)/2 + (sy + 1) / 2
+			sx = (sx + 1) / 2
+			sy = (sy + 1) / 2
+			cx += (i \ 2) * sx + (sx + 1)/2
+			cy += (i / 2) * sy + (sy + 1)/2
 		}else{
-			cx += sx / 2
-			cy += sy / 2
+			cx += (sx + 1) / 2
+			cy += (sy + 1) / 2
 		}
 		make_instant_draw_object "STR", cx, cy, sx, sy, strf("%s,%d", group_str(i), text_color)
 	loop
