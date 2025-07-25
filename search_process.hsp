@@ -12,10 +12,9 @@
 #include "modules/search/Search_pattern2.hsp"
 #include "kifu_protocol.hsp"
 
-
 #bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
-screen 0,640,480,2
+gsel 0,-1
 
 
 view_window = 0 //画面を表示するかしないか
@@ -90,7 +89,7 @@ repeat
 		}
 	loop
 	if exist_parent = 0: end
-	if _getkey(27) == 1: view_window ^= 1: gsel 0, view_window*2-1
+	if getdbl_ms(27, 250): view_window ^= 1: gsel 0, view_window*2-1 //ESC連打で切り替え
 	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
 	
 loop

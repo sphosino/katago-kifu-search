@@ -1,26 +1,24 @@
 #module
-#deffunc div_notepad str s1, int array_count, array a
-	s = s1
-
+#deffunc div_notepad var s, int array_count, array a
 	notesel s
-	
-		if notemax <= 0 : noteunsel : return  // 空文字列の場合は何もしない
-		sdim a, (strlen(s) + notemax) / notemax, array_count
+		max = notemax
+		if max <= 0 : noteunsel : return  // 空文字列の場合は何もしない
+		sdim a, (strlen(s) + max) / max, array_count
 
-		base_lines = notemax / array_count        // 基本的な行数
-		extra_lines = notemax \ array_count       // 余りの行数
+		base_lines = max / array_count        // 基本的な行数
+		extra_lines = max \ array_count       // 余りの行数
 		
 		current_idx = 0
 		for i,, array_count
 			// 残りの行がない場合は処理を終了
-			if current_idx >= notemax : _break
+			if current_idx >= max : _break
 			
 			// 最初のextra_lines個の配列には1行多く割り当て
 			lines_for_this_array = base_lines + (i < extra_lines)
 
 			// この配列に割り当てる行を処理
 			repeat lines_for_this_array
-				if current_idx < notemax {
+				if current_idx < max {
 					noteget tmp, current_idx
 					if cnt = 0{
 						a(i) = tmp

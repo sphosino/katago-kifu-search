@@ -19,8 +19,8 @@
 	dim prerect, 4
 	dim r, 4
 	tmp = ginfo_sel
-	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1000
-	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1000
+	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1100
+	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1100
 	gsel tmp
 	mref thismod_ID,2
 	return thismod_ID
@@ -142,16 +142,14 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 4, sizey )
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 4, sizey)
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 5, sizey ) //xに謎補正が必要・・・　AIに聞きまくってもなぜか分からない
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 5 , sizey) //同様
 	
 	return
 *get_goban_info
-
 	areasizex = r.2-r.0+1
 	areasizey = r.3-r.1+1
 	
-	//現在のエリア状態でのマスを計算(margin=最小限取りたい量)
 	masx = limit((areasizex - margin * 2) / length(board),1)
 	masy = limit((areasizey - margin * 2) / length2(board),1)
 	
@@ -162,14 +160,14 @@
 			masx = masy
 		}
 	}
+	
+	// 実際の碁盤描画サイズ
 	sizex = length(board)  * masx
 	sizey = length2(board) * masy 
-	marginx = (areasizex - sizex) / 2 //計算後のｘマージン
-	marginy = (areasizey - sizey) / 2 //計算後のｙマージン
-	sizex = areasizex - marginx * 2 - (areasizex - sizex) \ 2
-	sizey = areasizey - marginy * 2
+	marginx = (areasizex - sizex) / 2
+	marginy = (areasizey - sizey) / 2
 
-	//エリアの中心
+	//碁盤の中心を求める。marginx や marginy は両側に適用するのでエリアの中央と同じ。
 	px = (r.0 + r.2 + 1) / 2
 	py = (r.1 + r.3 + 1) / 2
 	return

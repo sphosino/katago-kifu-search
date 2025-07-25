@@ -420,10 +420,10 @@ loop
 gosub*loadsgf
 
 
-#if 1
+#if 01
 	tmp = dir_cur
 	chdir dirname
-	exec "download_sgf.exe"
+	exec "download_sgf.exe",2
 	chdir tmp
 #endif
 
@@ -440,7 +440,7 @@ gosub*loadsgf
 	    tmp = dir_cur
    		chdir dirname
 	    repeat deficit
-	    	exec "search_process"
+	    	exec "search_process",2
 	    	await 33
 	    loop
 	    chdir tmp
@@ -1114,7 +1114,7 @@ gosub*loadsgf
 	del_item_all kifulist.matchlist
 
 
-	set_g_label g_label.1, "検索結果(" + 0 + ")件" //ラベル更新
+	set_g_label g_label.1, "検索中 -> (" + 0 + ")件" //ラベル更新
 	
 
 	if use_bitboard{ ;厳密検索
@@ -1147,7 +1147,7 @@ gosub*loadsgf
 		get_base_binary params, 16
 
 		psize = stat
-		logmes "命令実行-send -> "+psize
+		logmes "命令実行-send -> "+psize + " process -> " + MAX_CHILDREN
 
 		//検索実行させる
 		repeat child_count_current
@@ -1292,13 +1292,11 @@ gosub*loadsgf
 	treebox_clear t
 	chdir kifu_dirname
 	dirlist files,"*.sgf"
-	notesel ss
+	棋譜数 = stat
+	notesel files
 	
-	ss = shuffle_notepad(files)
-	
-	
-		棋譜数 = notemax
-		
+		;files = shuffle_notepad(files)
+			
 		//SGFモジュール初期化
 		init_sgf_module 100
 		
@@ -1315,22 +1313,16 @@ gosub*loadsgf
 		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
 		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
 		
-		sdim filelist
-		repeat 棋譜数
-			noteget tmp, cnt
-			filelist += tmp + "\n"
-		loop
+		add_item kifulist, files
+		kifulist_notepad = files
+	
+		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
+	
+		//担当棋譜リストを作る
 		
+		div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 		
 	noteunsel
-	add_item kifulist, filelist
-	kifulist_notepad = filelist
-
-	set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
-
-	//担当棋譜リストをを作る
-	
-	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 
 	棋譜リスト送信
 
@@ -1389,7 +1381,7 @@ gosub*loadsgf
 	child_count_current = 0                   // 現在起動中の子プロセス数
 	dim prekeys, 9                        // キー入力の状態を保持
     // ユニークなアプリ名を作成
-    app_name = str(rnd(32768)) + "_myApp"
+    app_name = strf("%05d_myApp",rnd(32768))
    	nocoConnectAccept app_name
     // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
     
@@ -1519,14 +1511,18 @@ gosub*loadsgf
 				
 			loop
 	
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件" //ラベル更新
+			set_g_label g_label.1, "検索中 -> (" + get_list_item_num(kifulist.matchlist) + ")件"//ラベル更新
 
 			complate_count++
 			logmes "result_num = " + result_num + " : " + complate_count
 			if complate_count == MAX_CHILDREN{
 				release_id search_id_manager, lpeek(received_data)
 				logmes "検索完了"
-				if filter_on: gosub　*filtering_and_make_listbox
+				if filter_on{
+					gosub　*filtering_and_make_listbox
+				}else{
+					set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+				}
 			}
 
 		swbreak
