@@ -143,7 +143,7 @@ centering_mes "システム起動中・・・", tmp, "メイリオ"
 redraw
 
 //初期化開始
-nocoClearCopyDataQueue (1024 + 64 * 3) * 10000
+nocoClearCopyDataQueue RECORD_SIZE * 10000
 
 kifu_dirname = dirname + "/棋譜"
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -185,6 +185,7 @@ pre_filter = -1
 //FPS設定
 setfps 30 //目標FPSセット(初期値)
 enable_auto_adjust //目標FPS自動調整有効化
+set_target_wait 10
 
 //使用キーの宣言
 delkey_all
@@ -541,11 +542,26 @@ gosub*loadsgf
 		if filter_on{
 			gosub *filtering_and_make_listbox
 		}else{
+			
+			selected_num = get_selected_item_ids(kifulist.matchlist, select_items)
+			
 			g_filter_off kifulist.matchlist
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"　
+			
+				//選択
+			repeat get_selected_item_ids(kifulist.matchlist , new_indices)
+				current_id = new_indices(cnt)
+				g_select_id kifulist.matchlist, current_id, 0 //全部クリア
+				repeat selected_num
+					if current_id == select_items(cnt){ //前のに存在してたら選択
+						g_select_id kifulist.matchlist, current_id, 1
+						break
+					}
+				loop
+			loop
+
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 		}
-	}
-	if pre_combox_idx != get_value_g_combox(g_combox){
+	}else: if pre_combox_idx != get_value_g_combox(g_combox){
 		pre_combox_idx = stat
 		if filter_on: gosub *filtering_and_make_listbox
 	}
@@ -1152,6 +1168,10 @@ gosub*loadsgf
 	sdim a, INFO_SIZE
 	listcount = g_get_listbox_ids(kifulist.matchlist, newids, 1) //オリジナルに対して常に行う
 
+	//選択中の要素取得
+    selected_num = get_selected_item_ids(kifulist.matchlist, select_items)
+
+
 	ln = 0
 	dim new_indices
 
@@ -1187,6 +1207,20 @@ gosub*loadsgf
 	}
 
 	g_filter_on kifulist.matchlist, new_indices
+
+	//選択
+	repeat ln
+		current_id = new_indices(cnt)
+		g_select_id kifulist.matchlist, current_id, 0 //全部クリア
+		repeat selected_num
+			if current_id == select_items(cnt){ //前のに存在してたら選択
+				g_select_id kifulist.matchlist, current_id, 1
+				break
+			}
+		loop
+	loop
+
+
 
 	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 	

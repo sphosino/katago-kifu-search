@@ -206,6 +206,9 @@
 	loop
 
 	return
+#modfunc g_select_id int _id, int p1
+	listbox_item_select_status(_id) = p1
+	return
 #modfunc move_listbox_index int move_value
 	
 	clicked_index = limit(get_single_selected_index(thismod) + move_value, 0, get_listbox_count(id_man)-1)
@@ -362,9 +365,11 @@
 
 #modfunc g_filter_on array id_array
     listbox_filter_on id_man, id_array
+    fix_scroll_after_remove thismod
     return
 #modfunc g_filter_off
     listbox_filter_off id_man
+    fix_scroll_after_remove thismod
     return
     
 #modcfunc g_get_listbox_count

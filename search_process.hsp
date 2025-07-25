@@ -97,13 +97,13 @@ loop
 
 #deffunc 担当棋譜変更による初期化 int p1, int 新規
 	if 新規{
-		nocoClearCopyDataQueue 4 + (1024 + 64) * 10000 //受信用モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
+		nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * 10000 //受信用モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
 	}else{
 		delmod filename_to_topnode
 		del_set kifu_all_assigned
 	    del_set kifu_unloaded
 	    del_set search_target_kifus
-	    nocoClearCopyDataQueue 4 + (1024 + 64) * p1
+	    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
     }
     init_sgf_module p1
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
@@ -323,7 +323,7 @@ loop
 	memexpand result, nowpointer + RECORD_SIZE
 	
 	memcpy result, kifu(cnt),   64, nowpointer + OFFSET_KIFU
-	memcpy result, path     , 1024, nowpointer + OFFSET_PATH
+	memcpy result, path     , PATH_SIZE, nowpointer + OFFSET_PATH
 	
 	memcpy result, 対局者名黒, 64, nowpointer + OFFSET_PB
 	memcpy result, 対局者名白, 64, nowpointer + OFFSET_PW
