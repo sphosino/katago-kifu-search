@@ -367,7 +367,7 @@ add_item_radiobox g_radiobox, "●"
 add_item_radiobox g_radiobox, "〇"
 add_item_radiobox g_radiobox, "●〇"
 add_item_radiobox g_radiobox, "削除"
-g_edit = 2
+
 
 newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
 add_item_radiobox g_radiobox.tmp, "A"
@@ -1291,6 +1291,7 @@ gosub*loadsgf
 	
 	treebox_clear t
 	chdir kifu_dirname
+	st = keyfpstime
 	dirlist files,"*.sgf"
 	棋譜数 = stat
 	notesel files
@@ -1298,14 +1299,12 @@ gosub*loadsgf
 		;files = shuffle_notepad(files)
 			
 		//SGFモジュール初期化
-		init_sgf_module 100
+		init_sgf_module 10
 		
 		//ハッシュ初期化
 		dim filename_to_topnode
 		newmod filename_to_topnode, hash_manager, 棋譜数
 
-		sdim search_result_filename, 64, 棋譜数
-		sdim search_result_path, 1024, 棋譜数
 
 		//棋譜リスト初期化
 		dim kifulist

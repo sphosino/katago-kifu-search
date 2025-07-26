@@ -1,9 +1,20 @@
-#packopt hide 1
+#packopt hide 1 //exe化したらwindowを表示しない
 #packopt name "download_sgf"
 #include "../hsp_common/keyfps.hsp"
 #include "modules/katago_sqr.hsp"
+#include "../hsp_common/log_to_file.hsp"
 
-#if 00
+
+#if 01
+
+	#ifdef _debug
+		dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
+	#else
+		dirname = dir_exe
+	#endif
+	log_init dirname
+
+	onerror *end_label
 
 	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
 	chdir a
@@ -12,4 +23,9 @@
 	棋譜取得 a        , 10000     , 3000            , 1000 * 60 * 1
 
 	end
+
+*end_label
+	add_log "【エラーコード】 ->" + err
+	end
+	
 #endif
