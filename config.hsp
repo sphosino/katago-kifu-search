@@ -28,6 +28,7 @@ dim max_depth, 2
 
 max_child = sysinfo(17) - 1
 noteget_ a, LINE_PROCESS_COUNT
+a--
 if a <= 0 || a > max_child{
 	a = limit(max_child / 4, 1, max_child)
 }
@@ -83,7 +84,7 @@ stop
 	}
 *view
 	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
-	b = a+ 1
+	b = a + 1
 	pos 0, objysize * 0: mes strf("検索プロセス数 -> %d", b)
 	pos 0, objysize * 1: mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
 	pos 0, objysize * 2: mes strf("検索の深さ (%d手)", max_depth.1)
@@ -94,6 +95,7 @@ stop
 	notesel setting_str
 	noteadd_ max_depth.1         , LINE_MAX_DEPTH
 	noteadd_ auto_download_time.1, LINE_AUTO_DOWNLOAD_TIME
+	a++
 	noteadd_ a               , LINE_PROCESS_COUNT
 	chdir subdir
 	notesave SETTING_FILE_NAME
