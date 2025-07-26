@@ -3,25 +3,36 @@
 #include "../hsp_common/keyfps.hsp"
 #include "modules/katago_sqr.hsp"
 #include "../hsp_common/log_to_file.hsp"
-
+#include "setting_defines.hsp"
 
 #if 01
 
 	#ifdef _debug
 		dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 	#else
-		dirname = dir_exe
+		chdir dir_exe
+		chdir ".."
+		dirname = dir_cur
 	#endif
-	log_init dirname
+	subdir = dirname + "\\sub"
+	kifudir = dirname + "\\棋譜"
+	log_init subdir
+
 
 	onerror *end_label
 
-	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
-	chdir a
+	chdir kifudir
 
-	//保存先フォルダ名, 最大取得数, アクセス頻度(ms), 最大実行時間(ms)  
-	棋譜取得 a        , 10000     , 3000            , 1000 * 60 * 1
-
+	exist SETTING_FILE_NAME
+	if strsize == -1{
+		//保存先フォルダ名, 最大取得数, アクセス頻度(ms), 最大実行時間(ms)  
+		棋譜取得 kifudir  , 10000     , 3000            , 1000 * 60
+	}else{
+		notesel s
+		noteload SETTING_FILE_NAME
+		noteget tmp, LINE_AUTO_DOWNLOAD_TIME
+		棋譜取得 kifudir  , 10000     , 3000            , 1000 * limit(int(tmp),30,90)
+	}
 	end
 
 *end_label

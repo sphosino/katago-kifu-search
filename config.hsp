@@ -1,0 +1,76 @@
+#packopt name "config"
+#include "nodmod/ScrollbarModule.hsp"
+#include "setting_defines.hsp"
+screen 0
+#ifdef _debug
+	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
+#else
+	dirname = dir_exe
+#endif
+subdir = dirname + "\\sub"
+chdir subdir
+notesel setting_str
+noteload SETTING_FILE_NAME
+
+
+dim auto_download_time, 2
+dim max_depth, 2
+
+max_child = sysinfo(17) - 1
+noteget_ a, LINE_PROCESS_COUNT
+if a <= 0 || a > max_child{
+	a = limit(max_child / 4, 1, max_child)
+}
+
+s = ""
+repeat max_child
+	if cnt: s+="\n"
+	s += str(cnt + 1)
+loop
+
+
+pos 0: mes "検索プロセス数 -> ",1: combox a,,s
+
+
+scbaOnScroll *scc　//動かすたびにジャンプするラベル
+
+pos 0: mes "起動時スクレイピング(秒)", 1: scbaScrollbar 0, 200,30: auto_download_time = stat
+pos 0: mes "検索の深さ",1: scbaScrollbar 0, 200,30:  max_depth = stat
+
+
+scbaSetrange auto_download_time, 30, 90
+scbaSetrange max_depth, 10, 254
+
+noteget tmp, LINE_AUTO_DOWNLOAD_TIME
+scbaSetPos auto_download_time,int(tmp)
+noteget tmp, LINE_MAX_DEPTH
+scbaSetPos max_depth, int(tmp)
+
+button gosub "保存", *save
+
+stop
+
+
+*scc
+	type = wparam
+	value = lparam
+	logmes strf("%d,%d,%d,%d",type,value,auto_download_time,max_depth)
+	if type == auto_download_time(0){
+		auto_download_time.1 = value
+	}else:if type == max_depth(0){
+		max_depth.1 = value
+		
+	}else{
+		
+	}
+	return
+
+*save
+	//一部項目を書き換え
+	notesel setting_str
+	noteadd_ max_depth.1         , LINE_MAX_DEPTH
+	noteadd_ auto_download_time.1, LINE_AUTO_DOWNLOAD_TIME
+	noteadd_ a                   , LINE_PROCESS_COUNT
+	chdir subdir
+	notesave SETTING_FILE_NAME
+	return

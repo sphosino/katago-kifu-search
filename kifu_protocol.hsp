@@ -2,13 +2,11 @@
 #define kifu_protocol
 //プロセス間メッセージ定数定義
 
-#const 接続拒否 54321
-#const 担当棋譜 200
-#const 検索結果 300
-#const 検索実行 400
-#const 検索実行2 410
-
-
+#enum 接続拒否  = 1
+#enum 担当棋譜
+#enum 検索結果
+#enum 検索実行
+#enum 検索実行2
 
 //検索結果データの構造定義
 

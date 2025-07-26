@@ -31,23 +31,27 @@ addkey 'C' //長押しで画面クリア
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
-	dirname = dir_exe
+	chdir dir_exe
+	chdir ".."
+	dirname = dir_cur
 #endif
-chdir dirname
+subdir = dirname + "\\sub"
+kifudir = dirname + "\\棋譜"
 
-sdim result
+sdim result //親に結果を送る用のバッファ
 
 ///////////////////////通信設定
 // 設定読み込み
-notesel s
+chdir subdir
+notesel setting_str
 	noteload "app_name.txt"
-	// なごコネに参加。(親の離脱を感知できるようにするため）
 	noteget app_name, 0
 	nocoConnectAccept app_name  // グローバルアクセス空間に
 	noteget h, 1
 	parent_hwnd = int(h)
 noteunsel
-chdir "棋譜"
+
+chdir kifudir
 
 
 nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される

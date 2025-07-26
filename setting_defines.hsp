@@ -1,0 +1,28 @@
+//保存ファイル名
+#define SETTING_FILE_NAME "window.txt"
+//設定ファイルの意味と行番号
+#enum LINE_WINDOW_POSITION_X = 0
+#enum LINE_WINDOW_POSITION_Y
+#enum LINE_WINDOW_SIZE_X
+#enum LINE_WINDOW_SIZE_Y
+#enum LINE_MAX_DEPTH
+#enum LINE_COLORFLIP
+#enum LINE_VIEW_HOSI
+#enum LINE_LAST_MOVE_MARK
+#enum LINE_KIFU_START_NUM
+#enum LINE_AUTO_INTERVAL
+#enum LINE_ALPHA_INTERVAL
+#enum LINE_M_INTERVAL
+#enum LINE_MAXIMIZED
+#enum LINE_AUTO_DOWNLOAD_TIME
+#enum LINE_PROCESS_COUNT
+
+#module
+#deffunc noteget_ var a, int line_num
+	noteget tmp, line_num
+	a = int(tmp)
+	return
+#deffunc noteadd_ var a, int line_num
+	noteadd str(a), line_num, 1
+	return
+#global
