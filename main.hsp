@@ -23,18 +23,6 @@
 #include "hspext.as"
 #include "user32.as"
 
-
-#const INACTIVITY_TIMEOUT 1800
-#const MODE_KIFU_VIEW 0
-#const MODE_BOARD_EDIT 1
-
-#const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
-
-
-
-
-#const BG_COLOR $808080 // 128,128,128
-
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
@@ -43,6 +31,13 @@
 subdir = dirname + "\\sub"
 kifudir = dirname + "\\棋譜"
 savedir = dirname + "\\save"
+
+#const MODE_KIFU_VIEW 0
+#const MODE_BOARD_EDIT 1
+
+#const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
+
+#const BG_COLOR $808080 // 128,128,128
 
 //子プロセスからの結果を格納する
 sdim tmp_filename, 64
@@ -80,7 +75,7 @@ if strsize == -1{
 	alpha_interval = 10000
 	m_interval = 10000
 
-	MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数 (25%ぐらいまで使う)
+	MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
 	
 }else{
 	notesel setting_str
@@ -97,7 +92,7 @@ if strsize == -1{
 		noteget_ auto_interval, LINE_AUTO_INTERVAL
 		noteget_ alpha_interval, LINE_ALPHA_INTERVAL
 		noteget_ m_interval, LINE_M_INTERVAL
-		noteget_ 最大化, LINE_ZOOMED
+		noteget_ 最大化, LINE_MAXIMIZED
 		noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
 	
 		if wx < 0{

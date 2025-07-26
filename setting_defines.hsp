@@ -13,9 +13,9 @@
 #enum LINE_AUTO_INTERVAL
 #enum LINE_ALPHA_INTERVAL
 #enum LINE_M_INTERVAL
-#enum LINE_MAXIMIZED
 #enum LINE_AUTO_DOWNLOAD_TIME
 #enum LINE_PROCESS_COUNT
+#enum LINE_MAXIMIZED
 
 #module
 #deffunc noteget_ var a, int line_num

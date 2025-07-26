@@ -1,7 +1,17 @@
 #packopt name "config"
 #include "nodmod/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
+#define CBN_SELCHANGE 1
+
+
 screen 0
+title "棋譜検索システム設定"
+
+left_size = ginfo_sx * 2 / 5
+right_size = ginfo_sy * 3 / 5
+
+objysize = 40
+
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
@@ -9,9 +19,9 @@ screen 0
 #endif
 subdir = dirname + "\\sub"
 chdir subdir
+sdim setting_str
 notesel setting_str
 noteload SETTING_FILE_NAME
-
 
 dim auto_download_time, 2
 dim max_depth, 2
@@ -29,25 +39,33 @@ repeat max_child
 loop
 
 
-pos 0: mes "検索プロセス数 -> ",1: combox a,,s
+objsize ,objysize
+pos left_size, 0
+
+combox a,,s
+
+
+cb_hwnd = objinfo(stat, 2)  // ハンドル取得
+// 親ウィンドウのサブクラス化で変更を検出
+oncmd gosub *on_command, $111  // WM_COMMAND
 
 
 scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
-pos 0: mes "起動時スクレイピング(秒)", 1: scbaScrollbar 0, 200,30: auto_download_time = stat
-pos 0: mes "検索の深さ",1: scbaScrollbar 0, 200,30:  max_depth = stat
-
+pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: auto_download_time = stat
+pos left_size, objysize * 2: scbaScrollbar 0, right_size,30:          max_depth = stat
 
 scbaSetrange auto_download_time, 30, 90
 scbaSetrange max_depth, 10, 254
-
-noteget tmp, LINE_AUTO_DOWNLOAD_TIME
-scbaSetPos auto_download_time,int(tmp)
 noteget tmp, LINE_MAX_DEPTH
-scbaSetPos max_depth, int(tmp)
+max_depth.1 = int(tmp)
+scbaSetPos max_depth, max_depth.1
+noteget tmp, LINE_AUTO_DOWNLOAD_TIME
+auto_download_time.1 = int(tmp)
+scbaSetPos auto_download_time, auto_download_time.1
 
 button gosub "保存", *save
-
+gosub*view
 stop
 
 
@@ -63,6 +81,12 @@ stop
 	}else{
 		
 	}
+*view
+	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
+	b = a+ 1
+	pos 0, objysize * 0: mes strf("検索プロセス数 -> %d", b)
+	pos 0, objysize * 1: mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
+	pos 0, objysize * 2: mes strf("検索の深さ (%d手)", max_depth.1)
 	return
 
 *save
@@ -70,7 +94,16 @@ stop
 	notesel setting_str
 	noteadd_ max_depth.1         , LINE_MAX_DEPTH
 	noteadd_ auto_download_time.1, LINE_AUTO_DOWNLOAD_TIME
-	noteadd_ a                   , LINE_PROCESS_COUNT
+	noteadd_ a               , LINE_PROCESS_COUNT
 	chdir subdir
 	notesave SETTING_FILE_NAME
 	return
+*on_command
+    // ComboBoxからの通知かチェック
+    if lparam = cb_hwnd {
+        notification = (wparam >> 16) & $FFFF
+        if notification = CBN_SELCHANGE {
+            gosub*view
+        }
+    }
+return
