@@ -21,6 +21,8 @@ font "", 22
 subdir = dirname + "\\sub"
 chdir subdir
 
+max_child = sysinfo(17) - 1
+
 notesel setting_str
 exist SETTING_FILE_NAME
 if strsize == -1{
@@ -39,51 +41,27 @@ if strsize == -1{
 	noteload SETTING_FILE_NAME
 }
 
+dim process_num, 2
 dim auto_download_time, 2
 dim max_depth, 2
 dim max_kifu, 2
 dim tw,2
 
-max_child = sysinfo(17) - 1
-noteget_ a, LINE_PROCESS_COUNT
-a--
-if a <= 0 || a > max_child{
-	a = limit(max_child / 4, 1, max_child)
-}
-noteget_ tmp, LINE_TARGET_WAIT
-tw.1 = limit(tmp,20,60)
-
-s = ""
-repeat max_child
-	if cnt: s+="\n"
-	s += str(cnt + 1)
-loop
-
-
-pos left_size, 0
-objsize right_size, objysize, objysize
-combox a, objysize, s
-
-
-cb_hwnd = objinfo(stat, 2)  // ハンドル取得
-// 親ウィンドウのサブクラス化で変更を検出
-oncmd gosub *on_command, $111  // WM_COMMAND
-
-sendmsg cb_hwnd
-
-
-scbaOnScroll *scc　//動かすたびにジャンプするラベル
-
+pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: process_num = stat
 pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: tw = stat
 pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
 pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: max_depth = stat
 pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: max_kifu = stat
 
+scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, 19, 90,,,1
 scbaSetrange max_depth, 10, 254,,,1
 scbaSetrange max_kifu, 3000, 100000,,,1
 scbaSetrange tw, 20,60,,,1
 
+noteget tmp, LINE_PROCESS_COUNT
+process_num.1 = limit(int(tmp), 1, max_child)
+scbaSetPos procces_num, process_num.1
 noteget tmp, LINE_MAX_DEPTH
 max_depth.1 = int(tmp)
 scbaSetPos max_depth, max_depth.1
@@ -96,6 +74,8 @@ scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
 tw.1 = int(tmp)
 scbaSetPos tw,tw.1
+
+scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
 pos 0
 objsize ginfo(12), objysize
@@ -121,6 +101,9 @@ stop
 	case tw(0)
 		tw.1 = value
 	swbreak
+	case process_num
+		process_num.1 = value
+	swbreak
 	default 
 		dialog "想定外の値",,__FILE__
 		end
@@ -128,8 +111,7 @@ stop
 	swend
 *view
 	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
-	b = a + 1
-	pos 0, objysize * 0: mes strf("子プロセス数 -> %d", b)
+	pos 0, objysize * 0: mes strf("子プロセス数 -> %d", process_num.1)
 	pos 0, objysize * 1: mes strf("子プロセス余裕時間(%dms)", tw.1)
 	pos 0, objysize * 2
 		if auto_download_time.1 < 20{
@@ -146,20 +128,12 @@ stop
 	notesel setting_str
 	noteadd_ max_depth.1         , LINE_MAX_DEPTH
 	noteadd_ auto_download_time.1, LINE_AUTO_DOWNLOAD_TIME
-	a++
-	noteadd_ a               , LINE_PROCESS_COUNT
+	noteadd_ process_num.1       , LINE_PROCESS_COUNT
 	noteadd_ max_kifu.1, LINE_LOAD_LIMIT
 	noteadd_ tw.1, LINE_TARGET_WAIT
 	chdir subdir
 	notesave SETTING_FILE_NAME
 	return
-*on_command
-    // ComboBoxからの通知かチェック
-    if lparam = cb_hwnd {
-        notification = (wparam >> 16) & $FFFF
-        if notification = CBN_SELCHANGE {
-            gosub*view
-        }
-    }
+
 return
 
