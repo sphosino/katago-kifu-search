@@ -81,6 +81,7 @@ if strsize == -1{
 	m_interval = 10000
 
 	load_limit = 100000 //１０万件
+
 	
 }else{
 	noteload SETTING_FILE_NAME
@@ -435,9 +436,10 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
     if deficit >= 1{
 	    tmp = dir_cur
    		chdir subdir
+   		await 50
 	    repeat deficit
-	    	exec "search_process",2
 	    	await 33
+	    	exec "search_process",2
 	    loop
 	    chdir tmp
 	    //全て起動するまで待つ

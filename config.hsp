@@ -39,6 +39,7 @@ if strsize == -1{
 dim auto_download_time, 2
 dim max_depth, 2
 dim max_kifu, 2
+dim tw,2
 
 max_child = sysinfo(17) - 1
 noteget_ a, LINE_PROCESS_COUNT
@@ -46,6 +47,8 @@ a--
 if a <= 0 || a > max_child{
 	a = limit(max_child / 4, 1, max_child)
 }
+noteget_ tmp, LINE_TARGET_WAIT
+tw.1 = limit(tmp,20,60)
 
 s = ""
 repeat max_child
@@ -67,13 +70,15 @@ oncmd gosub *on_command, $111  // WM_COMMAND
 
 scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
-pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: auto_download_time = stat
-pos left_size, objysize * 2: scbaScrollbar 0, right_size,30: max_depth = stat
-pos left_size, objysize * 3: scbaScrollbar 0, right_size,30: max_kifu = stat
+pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: tw = stat
+pos left_size, objysize * 2: scbaScrollbar 0, right_size,30: auto_download_time = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size,30: max_depth = stat
+pos left_size, objysize * 4: scbaScrollbar 0, right_size,30: max_kifu = stat
 
-scbaSetrange auto_download_time, 30, 90
+scbaSetrange auto_download_time, 19, 90
 scbaSetrange max_depth, 10, 254
 scbaSetrange max_kifu, 3000, 100000
+scbaSetrange tw, 20,60
 
 noteget tmp, LINE_MAX_DEPTH
 max_depth.1 = int(tmp)
@@ -94,21 +99,37 @@ stop
 	type = wparam
 	value = lparam
 	logmes strf("%d,%d,%d,%d",type,value,auto_download_time,max_depth)
-	if type == auto_download_time(0){
+	switch type
+	case auto_download_time(0)
 		auto_download_time.1 = value
-	}else:if type == max_depth(0){
+	swbreak
+	case max_depth(0)
 		max_depth.1 = value
-		
-	}else:if type == max_kifu(0){
+	swbreak
+	case max_kifu(0)
 		max_kifu.1 = value
-	}
+	swbreak
+	case tw(0)
+		tw.1 = value
+	swbreak
+	default 
+		dialog "想定外の値",,__FILE__
+		end
+	swbreak
+	swend
 *view
 	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
 	b = a + 1
-	pos 0, objysize * 0: mes strf("検索プロセス数 -> %d", b)
-	pos 0, objysize * 1: mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
-	pos 0, objysize * 2: mes strf("検索の深さ (%d手)", max_depth.1)
-	pos 0, objysize * 3: mes strf("最大読み込み制限 (%d棋譜)", max_kifu.1)
+	pos 0, objysize * 0: mes strf("子プロセス数 -> %d", b)
+	pos 0, objysize * 1: mes strf("子プロセス余裕時間(%dms)", tw.1)
+	pos 0, objysize * 2
+		if auto_download_time.1 < 20{
+			mes "起動時スクレイピング(なし)"
+		}else{
+			mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
+		}
+	pos 0, objysize * 3: mes strf("検索の深さ (%d手)", max_depth.1)
+	pos 0, objysize * 4: mes strf("最大読み込み制限 (%d棋譜)", max_kifu.1)
 	return
 
 *save
@@ -119,6 +140,7 @@ stop
 	a++
 	noteadd_ a               , LINE_PROCESS_COUNT
 	noteadd_ max_kifu.1, LINE_LOAD_LIMIT
+	noteadd_ tw.1, LINE_TARGET_WAIT
 	chdir subdir
 	notesave SETTING_FILE_NAME
 	return

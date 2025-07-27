@@ -17,6 +17,7 @@
 #enum global LINE_PROCESS_COUNT
 #enum global LINE_MAXIMIZED
 #enum global LINE_LOAD_LIMIT
+#enum global LINE_TARGET_WAIT //子プロセス用
 
 #enum global SETTING_MAX_LINE
 

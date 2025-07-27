@@ -19,9 +19,6 @@ gsel 0,-1
 
 view_window = 0 //画面を表示するかしないか
 
-enable_auto_adjust //target_wait基準でFPSを自動調整
-set_target_wait 25 //１フレーム当たりOSに返す時間(ms)
-
 
 delkey_all //キー監視をすべてクリア
 addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
@@ -42,14 +39,34 @@ sdim result //親に結果を送る用のバッファ
 
 ///////////////////////通信設定
 // 設定読み込み
+await 10
 chdir subdir
 notesel setting_str
-	noteload "app_name.txt"
+	exist "app_name.txt"
+	if strsize == -1{
+		dialog "app_nameファイル見つかりません
+		end
+	}else{
+		noteload "app_name.txt"
+	}
 	noteget app_name, 0
 	nocoConnectAccept app_name  // グローバルアクセス空間に
 	noteget h, 1
 	parent_hwnd = int(h)
+
+	exist "window.txt"
+	if strsize == -1{
+		dialog "window.txt見つかりません
+		end
+	}else{
+		noteload "window.txt"
+	}
+	noteget tmp, LINE_TARGET_WAIT
+	tw = limit(int(tmp), 20, 60)
 noteunsel
+
+enable_auto_adjust //target_wait基準でFPSを自動調整
+set_target_wait tw //１フレーム当たりOSに返す時間(ms)
 
 chdir kifudir
 
