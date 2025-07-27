@@ -39,6 +39,9 @@ savedir = dirname + "\\save"
 
 #const BG_COLOR $808080 // 128,128,128
 
+dim scba_effect_stack
+scba_effect_num = 0
+
 //子プロセスからの結果を格納する
 sdim tmp_filename, 64
 sdim tmp_path, INFO_SIZE ; ヒット位置
@@ -1111,7 +1114,11 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
 
 	set_g_label g_label.1, "検索中 -> (" + 0 + ")件" //ラベル更新
+	set_g_label_bc g_label.1, $80DFFF
+	get_rect sidebar_kifulist_label2, eff_rect
 	
+	scba_effect_stack(scba_effect_num) = spawn_search_bar_effect(eff_rect + eff_rect.2 >> 1, eff_rect.3 + 5, 50, 8, 80,PRIORITY_FRONT)
+	scba_effect_num++
 
 	if use_bitboard{ ;厳密検索
 		
@@ -1219,8 +1226,17 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
 
 
-	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+
+	gosub*label_update
+	return
 	
+*label_update
+	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+	set_g_label_bc g_label.1, $F5F5DC
+	repeat scba_effect_num
+		destroy_draw_object scba_effect_stack(cnt)
+	loop
+	scba_effect_num = 0
 	return
 
 #deffunc move_next_int int p1
@@ -1514,7 +1530,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 				if filter_on{
 					gosub　*filtering_and_make_listbox
 				}else{
-					set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+					gosub*label_update
 				}
 			}
 

@@ -23,6 +23,9 @@
 	string = s1
 	set_extra_param str_id, 0, string
 	return
+#modfunc set_g_label_bc int p1
+	set_extra_param bg_id, 0, str(p1)
+	return
 
 #modfunc set_g_label_r int p1, int p2
 	r = p1
