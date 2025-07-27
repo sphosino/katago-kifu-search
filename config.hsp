@@ -7,10 +7,11 @@
 screen 0
 title "棋譜検索システム設定"
 
-left_size = ginfo_sx * 2 / 5
-right_size = ginfo_sy * 3 / 5
+left_size = ginfo_sx * 3 / 6
+right_size = ginfo_sx * 3 / 6
 
 objysize = 40
+font "", 22
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
@@ -57,28 +58,29 @@ repeat max_child
 loop
 
 
-objsize ,objysize
 pos left_size, 0
-
-combox a,,s
+objsize right_size, objysize, objysize
+combox a, objysize, s
 
 
 cb_hwnd = objinfo(stat, 2)  // ハンドル取得
 // 親ウィンドウのサブクラス化で変更を検出
 oncmd gosub *on_command, $111  // WM_COMMAND
 
+sendmsg cb_hwnd
+
 
 scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
-pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: tw = stat
-pos left_size, objysize * 2: scbaScrollbar 0, right_size,30: auto_download_time = stat
-pos left_size, objysize * 3: scbaScrollbar 0, right_size,30: max_depth = stat
-pos left_size, objysize * 4: scbaScrollbar 0, right_size,30: max_kifu = stat
+pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: tw = stat
+pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: max_depth = stat
+pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: max_kifu = stat
 
-scbaSetrange auto_download_time, 19, 90
-scbaSetrange max_depth, 10, 254
-scbaSetrange max_kifu, 3000, 100000
-scbaSetrange tw, 20,60
+scbaSetrange auto_download_time, 19, 90,,,1
+scbaSetrange max_depth, 10, 254,,,1
+scbaSetrange max_kifu, 3000, 100000,,,1
+scbaSetrange tw, 20,60,,,1
 
 noteget tmp, LINE_MAX_DEPTH
 max_depth.1 = int(tmp)
@@ -90,6 +92,8 @@ noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
 scbaSetPos max_kifu, max_kifu.1
 
+pos 0
+objsize ginfo(12), objysize
 button gosub "保存", *save
 gosub*view
 stop
