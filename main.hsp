@@ -80,7 +80,7 @@ if strsize == -1{
 	alpha_interval = 10000
 	m_interval = 10000
 
-	
+	load_limit = 100000 //１０万件
 	
 }else{
 	noteload SETTING_FILE_NAME
@@ -99,6 +99,7 @@ if strsize == -1{
 	noteget_ m_interval, LINE_M_INTERVAL
 	noteget_ 最大化, LINE_MAXIMIZED
 	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
+	noteget_ load_limit, LINE_LOAD_LIMIT
 
 	if wx < 0{
 		wx = (ginfo(20) - x) / 2
@@ -114,6 +115,7 @@ if strsize == -1{
 noteunsel
 
 if MAX_CHILDREN <=  0: MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
+if load_limit <= 3000: load_limit = 3000 //３０００件は読み込もうぜ。
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
@@ -1284,7 +1286,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 	chdir kifudir
 	st = keyfpstime
 	dirlist files,"*.sgf"
-	棋譜数 = stat
+	棋譜数 = limit(stat,,load_limit)
 	notesel files
 	
 		;files = shuffle_notepad(files)
@@ -1302,9 +1304,23 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		
 		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
 		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
-		
-		add_item kifulist, files
-		kifulist_notepad = files
+
+		if 棋譜数 != notemax{
+			sdim ss
+			repeat 棋譜数
+				noteget tmp, cnt
+				if cnt{
+					ss += "\n" + tmp
+				}else{
+					ss += tmp
+				}
+			loop
+			add_item kifulist, ss
+			kifulist_notepad = ss
+		}else{
+			add_item kifulist, files
+			kifulist_notepad = files
+		}
 	
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
 	

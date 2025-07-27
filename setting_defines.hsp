@@ -16,6 +16,7 @@
 #enum global LINE_AUTO_DOWNLOAD_TIME
 #enum global LINE_PROCESS_COUNT
 #enum global LINE_MAXIMIZED
+#enum global LINE_LOAD_LIMIT
 
 #enum global SETTING_MAX_LINE
 

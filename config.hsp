@@ -38,6 +38,7 @@ if strsize == -1{
 
 dim auto_download_time, 2
 dim max_depth, 2
+dim max_kifu, 2
 
 max_child = sysinfo(17) - 1
 noteget_ a, LINE_PROCESS_COUNT
@@ -68,15 +69,21 @@ scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
 pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: auto_download_time = stat
 pos left_size, objysize * 2: scbaScrollbar 0, right_size,30:          max_depth = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size,30: max_kifu = stat
 
 scbaSetrange auto_download_time, 30, 90
 scbaSetrange max_depth, 10, 254
+scbaSetrange max_kifu, 3000, 100000
+
 noteget tmp, LINE_MAX_DEPTH
 max_depth.1 = int(tmp)
 scbaSetPos max_depth, max_depth.1
 noteget tmp, LINE_AUTO_DOWNLOAD_TIME
 auto_download_time.1 = int(tmp)
 scbaSetPos auto_download_time, auto_download_time.1
+noteget tmp, LINE_LOAD_LIMIT
+max_kifu.1 = int(tmp)
+scbaSetPos max_kifu,max_kifu.1
 
 button gosub "保存", *save
 gosub*view
@@ -92,8 +99,8 @@ stop
 	}else:if type == max_depth(0){
 		max_depth.1 = value
 		
-	}else{
-		
+	}else:if type == max_kifu(0){
+		max_kifu.1 = value
 	}
 *view
 	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
@@ -101,6 +108,7 @@ stop
 	pos 0, objysize * 0: mes strf("検索プロセス数 -> %d", b)
 	pos 0, objysize * 1: mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
 	pos 0, objysize * 2: mes strf("検索の深さ (%d手)", max_depth.1)
+	pos 0, objysize * 3: mes strf("最大読み込み制限 (%d棋譜)", max_kifu.1)
 	return
 
 *save
@@ -110,6 +118,7 @@ stop
 	noteadd_ auto_download_time.1, LINE_AUTO_DOWNLOAD_TIME
 	a++
 	noteadd_ a               , LINE_PROCESS_COUNT
+	noteadd_ max_kifu.1, LINE_LOAD_LIMIT
 	chdir subdir
 	notesave SETTING_FILE_NAME
 	return
