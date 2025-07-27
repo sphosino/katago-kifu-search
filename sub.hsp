@@ -21,19 +21,20 @@
 
 	onerror *end_label
 
-	chdir kifudir
+	chdir subdir
 
 	exist SETTING_FILE_NAME
-	if strsize >= 0{
 
+	if strsize >= 0{
+		
 		notesel s
 		noteload SETTING_FILE_NAME
 		noteget tmp, LINE_AUTO_DOWNLOAD_TIME
-		
-		time = limit(int(tmp), 20, 90)
+		time = int(tmp)
 	}
-	if time < 20: end //‚Q‚O•bˆÈ‰º‚È‚ç‚»‚à‚»‚às‚í‚È‚¢
-	Šû•ˆŽæ“¾ kifudir  , 10000     , 3000            , 1000 * time
+	if time >= 20{
+		Šû•ˆŽæ“¾ kifudir  , 10000     , 3000            , 1000 * time
+	}
 	end
 
 *end_label

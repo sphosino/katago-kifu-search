@@ -420,6 +420,7 @@ gosub*loadsgf
 	chdir subdir
 	exec "download_sgf",2
 	chdir tmp
+	await 50
 #endif
 
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
@@ -1327,11 +1328,12 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
 	
 		//担当棋譜リストを作る
-		
-		div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
-		
 	noteunsel
+		
+	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 
+
+	
 	棋譜リスト送信
 
 	return

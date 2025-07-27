@@ -32,6 +32,8 @@ if strsize == -1{
 	noteadd_ limit(max_child / 4, 1, max_child), LINE_PROCESS_COUNT
 	noteadd_ 70, LINE_MAX_DEPTH
 	noteadd_ 40, LINE_AUTO_DOWNLOAD_TIME
+	noteadd_ 30, LINE_TARGET_WAIT
+	noteadd_ 100000, LINE_LOAD_LIMIT
 	
 }else{
 	noteload SETTING_FILE_NAME
@@ -91,6 +93,9 @@ scbaSetPos auto_download_time, auto_download_time.1
 noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
 scbaSetPos max_kifu, max_kifu.1
+noteget tmp, LINE_TARGET_WAIT
+tw.1 = int(tmp)
+scbaSetPos tw,tw.1
 
 pos 0
 objsize ginfo(12), objysize

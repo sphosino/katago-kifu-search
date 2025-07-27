@@ -39,8 +39,8 @@ sdim result //e‚ÉŒ‹‰Ê‚ğ‘—‚é—p‚Ìƒoƒbƒtƒ@
 
 ///////////////////////’ÊMİ’è
 // İ’è“Ç‚İ‚İ
-await 10
 chdir subdir
+await 10
 notesel setting_str
 	exist "app_name.txt"
 	if strsize == -1{
@@ -56,13 +56,13 @@ notesel setting_str
 
 	exist "window.txt"
 	if strsize == -1{
-		dialog "window.txtŒ©‚Â‚©‚è‚Ü‚¹‚ñ
-		end
+		tw = 30
 	}else{
 		noteload "window.txt"
+		noteget tmp, LINE_TARGET_WAIT
+		tw = limit(int(tmp), 20, 60)
 	}
-	noteget tmp, LINE_TARGET_WAIT
-	tw = limit(int(tmp), 20, 60)
+
 noteunsel
 
 enable_auto_adjust //target_waitŠî€‚ÅFPS‚ğ©“®’²®
@@ -75,7 +75,9 @@ nocoAutoCopyData //©“®ƒWƒƒƒ“ƒv‚ğİ’èiƒWƒƒƒ“ƒv‚Ìƒ^ƒCƒ~ƒ“ƒO‚Åƒ‚ƒWƒ…[ƒ‹“à‚ÌƒLƒ…
 
 ’S“–Šû•ˆ•ÏX‚É‚æ‚é‰Šú‰» 64, 1
 
+onerror *error_label
 
+debug_line = ""
 // ƒƒbƒZ[ƒW‘Ò‹@
 repeat
 	manage_keyfps
@@ -84,6 +86,7 @@ repeat
 		temp_kifu_name = get_one_data(kifu_unloaded) ; –¢“Ç‚İ‚İƒŠƒXƒg‚©‚ç1‚Âæ‚èo‚·
 		
 		notesel sgf_data
+			debug_line = "SGF“Ç‚İ‚İ"
 			noteload temp_kifu_name
 			topnode = load_sgf(sgf_data) ; Šû•ˆ“Ç‚İ‚İ
 			new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ƒnƒbƒVƒ…“o˜^
@@ -91,7 +94,7 @@ repeat
 		; “Ç‚İ‚İ‚ªŠ®—¹‚µ‚½‚çA–¢“Ç‚İ‚İƒŠƒXƒg‚©‚çíœ
 		del_data kifu_unloaded, temp_kifu_name
 	}
-	
+	debug_line = "SGF“Ç‚İ‚İ‚Å‚Í‚È‚¢"
 	if ginfo_act >= 0{
 		if (cnt \ 100 == 99){
 			if get_cardinality(kifu_unloaded){
@@ -347,3 +350,8 @@ loop
 	memcpy result, ‘Î‹ÇÒ–¼•, 64, nowpointer + OFFSET_PB
 	memcpy result, ‘Î‹ÇÒ–¼”’, 64, nowpointer + OFFSET_PW
 	return
+
+*error_label
+	dialog debug_line
+	dialog "err" + err +" : " + temp_kifu_name //‚±‚±‚Å•¶š‰»‚¯‚ğŠm”F(ƒGƒ‰[”Ô†‚Íƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ‚É¸”s(152345.sgfÎ¹Î¹@‚İ‚½‚¢‚ÈŠ´‚¶)
+	end
