@@ -70,9 +70,10 @@ auto_download_time.1 = int(tmp)
 scbaSetPos auto_download_time, auto_download_time.1
 noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
+if max_kifu.1 < 3000{ max_kifu.1 = 100000}
 scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
-tw.1 = int(tmp)
+tw.1 = limit(int(tmp), 20, 60)
 scbaSetPos tw,tw.1
 
 scbaOnScroll *scc　//動かすたびにジャンプするラベル
