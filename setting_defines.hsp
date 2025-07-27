@@ -1,28 +1,32 @@
 //保存ファイル名
-#define SETTING_FILE_NAME "window.txt"
+#define global SETTING_FILE_NAME "window.txt"
 //設定ファイルの意味と行番号
-#enum LINE_WINDOW_POSITION_X = 0
-#enum LINE_WINDOW_POSITION_Y
-#enum LINE_WINDOW_SIZE_X
-#enum LINE_WINDOW_SIZE_Y
-#enum LINE_MAX_DEPTH
-#enum LINE_COLORFLIP
-#enum LINE_VIEW_HOSI
-#enum LINE_LAST_MOVE_MARK
-#enum LINE_KIFU_START_NUM
-#enum LINE_AUTO_INTERVAL
-#enum LINE_ALPHA_INTERVAL
-#enum LINE_M_INTERVAL
-#enum LINE_AUTO_DOWNLOAD_TIME
-#enum LINE_PROCESS_COUNT
-#enum LINE_MAXIMIZED
+#enum global LINE_WINDOW_POSITION_X = 0
+#enum global LINE_WINDOW_POSITION_Y
+#enum global LINE_WINDOW_SIZE_X
+#enum global LINE_WINDOW_SIZE_Y
+#enum global LINE_MAX_DEPTH
+#enum global LINE_COLORFLIP
+#enum global LINE_VIEW_HOSI
+#enum global LINE_LAST_MOVE_MARK
+#enum global LINE_KIFU_START_NUM
+#enum global LINE_AUTO_INTERVAL
+#enum global LINE_ALPHA_INTERVAL
+#enum global LINE_M_INTERVAL
+#enum global LINE_AUTO_DOWNLOAD_TIME
+#enum global LINE_PROCESS_COUNT
+#enum global LINE_MAXIMIZED
+
+#enum global SETTING_MAX_LINE
+
+
 
 #module
-#deffunc noteget_ var a, int line_num
+#deffunc noteget_ var ngt, int line_num
 	noteget tmp, line_num
-	a = int(tmp)
+	ngt = int(tmp)
 	return
-#deffunc noteadd_ var a, int line_num
-	noteadd str(a), line_num, 1
+#deffunc noteadd_ int p1, int line_num
+	noteadd str(p1), line_num, 1
 	return
 #global

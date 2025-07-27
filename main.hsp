@@ -50,7 +50,12 @@ newmod search_id_manager, id_manager
 chdir subdir
 exist SETTING_FILE_NAME
 
+notesel setting_str
 if strsize == -1{
+	repeat SETTING_MAX_LINE
+		noteadd ""
+	loop
+	
 	sx = ginfo(20) * 2 / 3
 	sy = ginfo(21) * 2 / 3
 	wx = (ginfo(20) - sx) / 2
@@ -62,7 +67,7 @@ if strsize == -1{
 	enableColorFlip = 1
 	
 	//星を表示するか
-	view_hosi = 0
+	view_hosi = 1
 
 	//最終手表示
 	last_move_mark = 1
@@ -75,35 +80,40 @@ if strsize == -1{
 	alpha_interval = 10000
 	m_interval = 10000
 
-	MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
+	
 	
 }else{
-	notesel setting_str
-		noteload SETTING_FILE_NAME
-		noteget_ wx, LINE_WINDOW_POSITION_X
-		noteget_ wy, LINE_WINDOW_POSITION_Y
-		noteget_ sx, LINE_WINDOW_SIZE_X
-		noteget_ sy, LINE_WINDOW_SIZE_Y
-		noteget_ max_depth, LINE_MAX_DEPTH
-		noteget_ enableColorFlip, LINE_COLORFLIP
-		noteget_ view_hosi, LINE_VIEW_HOSI
-		noteget_ last_move_mark, LINE_LAST_MOVE_MARK
-		noteget_ kifu_start_num, LINE_KIFU_START_NUM
-		noteget_ auto_interval, LINE_AUTO_INTERVAL
-		noteget_ alpha_interval, LINE_ALPHA_INTERVAL
-		noteget_ m_interval, LINE_M_INTERVAL
-		noteget_ 最大化, LINE_MAXIMIZED
-		noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
-	
-		if wx < 0{
-			wx = (ginfo(20) - x) / 2
-			wy = (ginfo(21) - y) / 2
-		}
+	noteload SETTING_FILE_NAME
 
-	noteunsel
+	noteget_ wx, LINE_WINDOW_POSITION_X
+	noteget_ wy, LINE_WINDOW_POSITION_Y
+	noteget_ sx, LINE_WINDOW_SIZE_X
+	noteget_ sy, LINE_WINDOW_SIZE_Y
+	noteget_ max_depth, LINE_MAX_DEPTH
+	noteget_ enableColorFlip, LINE_COLORFLIP
+	noteget_ view_hosi, LINE_VIEW_HOSI
+	noteget_ last_move_mark, LINE_LAST_MOVE_MARK
+	noteget_ kifu_start_num, LINE_KIFU_START_NUM
+	noteget_ auto_interval, LINE_AUTO_INTERVAL
+	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
+	noteget_ m_interval, LINE_M_INTERVAL
+	noteget_ 最大化, LINE_MAXIMIZED
+	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
+
+	if wx < 0{
+		wx = (ginfo(20) - x) / 2
+		wy = (ginfo(21) - y) / 2
+	}
+
+	sx = limit(sx, 460)
+	sy = limit(sy, 345)
+
+	
 }
 
+noteunsel
 
+if MAX_CHILDREN <=  0: MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
@@ -111,11 +121,8 @@ screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
 GetWindowLong hwnd, -16
 SetWindowLong hwnd, -16, stat | $10000 | $40000
 
+save_window_status = ginfo(4), ginfo(5), ginfo(12), ginfo(13)
 
-dim save_window_size, 2
-dim save_window_position, 2
-if ginfo(12) >= 0: save_window_size = ginfo(12), ginfo(13)
-if ginfo(4) >= 0: save_window_position = ginfo(4), ginfo(5)
 if 最大化: sendmsg hwnd, $112, $F030
 
 redraw 2
@@ -388,6 +395,7 @@ update_priority_draw_object bg_id, PRIORITY_BACK
 //最初の時刻
 pretime = keyfpstime
 
+
 onexit *save_info //終了時に*save_infoにジャンプ
 
 //子プロセス管理初期化
@@ -411,6 +419,8 @@ gosub*loadsgf
 	chdir tmp
 #endif
 
+window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
+
 *main
 	計測 "manage_keyfps"
 	manage_keyfps
@@ -430,7 +440,11 @@ gosub*loadsgf
 	    chdir tmp
 	    //全て起動するまで待つ
 	    waitstarttime = keyfpstime
-	    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
+	    while nocoConnectInfo(0) <= MAX_CHILDREN 
+	    	if keyfpstime - waitstarttime >= 10000{
+		    	dialog "子プロセス起動失敗"
+		    	end
+		    }
 	    	await 16
 	    wend
 	    棋譜リスト送信
@@ -451,10 +465,14 @@ gosub*loadsgf
 	}
 
 	//window状態変化
-	window_size = ginfo(12), ginfo(13)
-	if pre_window_size != window_size || pre_window_size.1 != window_size.1{
-		pre_window_size = window_size, window_size.1
-		gosub *save_window_size_main
+	
+	if window_status != ginfo(4) || window_status.1 != ginfo(5) || window_status.2 != ginfo(12) || window_status.3 != ginfo(13){
+		window_status = ginfo(4),ginfo(5),ginfo(12),ginfo(13)
+		IsZoomed hwnd :最大化 = stat
+		IsIconic hwnd :最小化 = stat
+		if (最大化 | 最小化) == 0{
+			save_window_status = ginfo(4),ginfo(5), ginfo(12), ginfo(13)
+		}
 		if 最小化 == 0{
 			set_static_sizex get_entity_id(bg_id), ginfo(12)
 			set_static_sizey get_entity_id(bg_id), ginfo(13)
@@ -854,16 +872,6 @@ gosub*loadsgf
 	loop
 	return
 
-
-
-*save_window_size_main
-	IsZoomed hwnd :最大化 = stat
-	IsIconic hwnd :最小化 = stat
-	if (最大化 | 最小化) == 0{
-		save_window_size = ginfo(12), ginfo(13)
-		save_window_position = ginfo(4), ginfo(5)
-	}
-	return
 	
 #defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
 
@@ -1333,28 +1341,7 @@ gosub*loadsgf
 #deffunc get_tejun array a
 */
 	
-*save_info //終了処理
-	notesel setting_str
-	noteadd_ save_window_position, LINE_WINDOW_POSITION_X //ウィンドウ位置
-	noteadd_ save_window_position.1, LINE_WINDOW_POSITION_Y
-	noteadd_ save_window_size, LINE_WINDOW_SIZE_X //ウィンドウサイズ
-	noteadd_ save_window_size.1, LINE_WINDOW_SIZE_Y
-	noteadd_ max_depth, LINE_MAX_DEPTH //最大探索深度
-	noteadd_ enableColorFlip, LINE_ENABLE_COLOR_FLIP //色反転を有効にするか
-	noteadd_ view_hosi, LINE_VIEW_HOSI //星表示
-	noteadd_ last_move_mark, LINE_LAST_MOVE_MARK //最終手表示
-	noteadd_ kifu_start_num, LINE_KIFU_START_NUM //棋譜開始番号
-	noteadd_ auto_interval, LINE_AUTO_INTERVAL //自動再生間隔
-	noteadd_ alpha_interval, LINE_ALPHA_INTERVAL //形勢変化率による自動再生間隔の変化
-	noteadd_ m_interval, LINE_M_INTERVAL //マンハッタン距離による自動再生間隔の変化
-	noteadd_ auto_download, LINE_AUTO_DOWNLOAD //自動ダウンロード
-	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
-	IsZoomed hwnd: 最大化 = stat
-	noteadd_ 最大化, LINE_MAXIMIZED //ウィンドウ最大化状態
-	chdir subdir
-	notesave SETTING_FILE_NAME
-	save_load_manager_save //グリッド情報保存
-	end
+
 
 
 *init_parent_process
@@ -1366,8 +1353,7 @@ gosub*loadsgf
     app_name = strf("%05d_myApp",rnd(32768))
    	nocoConnectAccept app_name
     // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
-    
-    sdim s
+
     notesel s
 	    noteadd app_name
 	    noteadd str(hwnd)
@@ -1387,11 +1373,16 @@ gosub*loadsgf
     chdir tmp
     //全て起動するまで待つ
     waitstarttime = keyfpstime
-    while nocoConnectInfo(0) <= MAX_CHILDREN && keyfpstime - waitstarttime < 10000
+    while nocoConnectInfo(0) <= MAX_CHILDREN 
+	    if keyfpstime - waitstarttime >= 10000{
+	    	dialog "子プロセス起動失敗"
+	    	end
+	    }
     	title "サブプロセス起動待機中" + MAX_CHILDREN + " -> " + nocoConnectInfo()
     	await 16
     wend
     title "サブプロセス起動完了"
+    
     update_child_list
 
     
@@ -1529,3 +1520,27 @@ gosub*loadsgf
     return result
 
 #global
+
+*save_info //終了処理
+	notesel setting_str
+
+	noteadd_ save_window_status.0, LINE_WINDOW_POSITION_X //ウィンドウ位置
+	noteadd_ save_window_status.1, LINE_WINDOW_POSITION_Y
+	noteadd_ save_window_status.2, LINE_WINDOW_SIZE_X //ウィンドウサイズ
+	noteadd_ save_window_status.3, LINE_WINDOW_SIZE_Y
+	noteadd_ max_depth, LINE_MAX_DEPTH //最大探索深度
+	noteadd_ enableColorFlip, LINE_COLORFLIP //色反転を有効にするか
+	noteadd_ view_hosi, LINE_VIEW_HOSI //星表示
+	noteadd_ last_move_mark, LINE_LAST_MOVE_MARK //最終手表示
+	noteadd_ kifu_start_num, LINE_KIFU_START_NUM //棋譜開始手数
+	noteadd_ auto_interval, LINE_AUTO_INTERVAL //自動再生間隔
+	noteadd_ alpha_interval, LINE_ALPHA_INTERVAL //形勢変化率による自動再生間隔の変化
+	noteadd_ m_interval, LINE_M_INTERVAL //マンハッタン距離による自動再生間隔の変化
+	noteadd_ auto_download, LINE_AUTO_DOWNLOAD_TIME //自動ダウンロード
+	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
+	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
+	chdir subdir
+	notesave SETTING_FILE_NAME
+	save_load_manager_save //グリッド情報保存
+	end
+

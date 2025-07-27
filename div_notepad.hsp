@@ -1,5 +1,6 @@
 #module
-#deffunc div_notepad var s, int array_count, array a
+#deffunc div_notepad var s1, int array_count, array a
+	s = s1
 	notesel s
 		max = notemax
 		if max <= 0 : noteunsel : return  // ‹ó•¶Žš—ñ‚Ìê‡‚Í‰½‚à‚µ‚È‚¢

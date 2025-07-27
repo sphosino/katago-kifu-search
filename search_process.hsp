@@ -119,7 +119,6 @@ loop
 *on_copydata
     repeat nocoCopyDataQueueCount()
 
-		
 		sender_hwnd = nocoCopyDataQueueInfo(2, cnt)
 		param = nocoCopyDataQueueInfo(3, cnt)
 		data_size = nocoCopyDataQueueInfo(4, cnt)

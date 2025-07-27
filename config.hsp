@@ -19,9 +19,22 @@ objysize = 40
 #endif
 subdir = dirname + "\\sub"
 chdir subdir
-sdim setting_str
+
 notesel setting_str
-noteload SETTING_FILE_NAME
+exist SETTING_FILE_NAME
+if strsize == -1{
+	repeat SETTING_MAX_LINE
+		noteadd "0"
+	loop
+	noteadd_ 640, LINE_WINDOW_SIZE_X
+	noteadd_ 480, LINE_WINDOW_SIZE_Y
+	noteadd_ limit(max_child / 4, 1, max_child), LINE_PROCESS_COUNT
+	noteadd_ 70, LINE_MAX_DEPTH
+	noteadd_ 40, LINE_AUTO_DOWNLOAD_TIME
+	
+}else{
+	noteload SETTING_FILE_NAME
+}
 
 dim auto_download_time, 2
 dim max_depth, 2
@@ -109,3 +122,4 @@ stop
         }
     }
 return
+
