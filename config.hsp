@@ -68,7 +68,7 @@ oncmd gosub *on_command, $111  // WM_COMMAND
 scbaOnScroll *scc　//動かすたびにジャンプするラベル
 
 pos left_size, objysize * 1: scbaScrollbar 0, right_size,30: auto_download_time = stat
-pos left_size, objysize * 2: scbaScrollbar 0, right_size,30:          max_depth = stat
+pos left_size, objysize * 2: scbaScrollbar 0, right_size,30: max_depth = stat
 pos left_size, objysize * 3: scbaScrollbar 0, right_size,30: max_kifu = stat
 
 scbaSetrange auto_download_time, 30, 90
@@ -83,7 +83,7 @@ auto_download_time.1 = int(tmp)
 scbaSetPos auto_download_time, auto_download_time.1
 noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
-scbaSetPos max_kifu,max_kifu.1
+scbaSetPos max_kifu, max_kifu.1
 
 button gosub "保存", *save
 gosub*view
