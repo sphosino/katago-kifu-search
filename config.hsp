@@ -45,7 +45,7 @@ dim process_num, 2
 dim auto_download_time, 2
 dim max_depth, 2
 dim max_kifu, 2
-dim tw,2
+dim tw, 2
 
 pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: process_num = stat
 pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: tw = stat
