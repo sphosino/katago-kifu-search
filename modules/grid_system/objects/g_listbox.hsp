@@ -408,6 +408,34 @@
     listbox_sort_on id_man, sort_values, flag
     fix_scroll_after_remove thismod
     return
+#modfunc g_listbox_sort_by_text_str int flag
+    lb_max_id_capacity = get_max_id(id_man) + 1
+    sdim sort_values,, lb_max_id_capacity
+    // 初期値を設定 (ソート順序に応じて、存在しないIDが最後尾に来るようにする)
+    // 例えば、昇順ソートなら大きな値を、降順ソートなら小さな値を設定
+    STR_MIN = ""
+	STR_MAX = ""
+	lpoke STR_MAX,,0xEFFC
+    if flag { // flag=0が昇順、1が降順
+         repeat lb_max_id_capacity
+            sort_values(cnt) = STR_MAX // 昇順ソートなら大きい値
+         loop
+    } else {
+         repeat lb_max_id_capacity
+            sort_values(cnt) = STR_MIN // 降順ソートなら小さい値
+         loop
+    }
+    // 現在表示されているアイテムのIDとキーを取得して設定
+    current_display_count = get_listbox_ids(id_man, ids, 0) ; 現在の表示IDを取得 
+    repeat current_display_count
+        id = ids(cnt)
+        sort_values(id) = item_names(id) ; ID位置にキーを設定
+    loop
+    
+    listbox_sort_on id_man, sort_values, flag
+    fix_scroll_after_remove thismod
+    return
+
 
 #modfunc g_listbox_shuffle
 	listbox_shuffle id_man
