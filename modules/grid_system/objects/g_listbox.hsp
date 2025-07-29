@@ -137,7 +137,6 @@
 #modfunc listbox_manager int current_flag
 	get_rect area_number, rect
 
-	moved = 0
 	// 現在のスクロール位置
 	scroll_value = get_value_scroll_bar(scrollbar)
 
@@ -147,28 +146,6 @@
 	set_position_scroll_bar scrollbar, rect.2, rect.1
 	set_value_minmax scrollbar, 0, limit(max_num - (rect.3 - rect.1) / item_y, 0)
 	set_size_scroll_bar scrollbar, rect.3 - rect.1
-
-	
-	// --- クリック検出 ---
-	mouse_index = (mousey - rect.1) / item_y
-	if g_getkey(1) == 1 {
-		if mousex >= rect.0 & mousex < rect.2 & mousey >= rect.1 & mousey < rect.3 {
-			clicked_index = mouse_index + scroll_value
-			if clicked_index < max_num {
-				clicked_id = get_listbox_id(id_man, clicked_index)
-
-				if g_getkey(17) >=1 { // Ctrl押しながら
-					listbox_item_select_status(clicked_id) = 1 - listbox_item_select_status(clicked_id)
-				}else{
-					// Ctrl押してないなら単独選択
-					repeat get_listbox_ids(id_man,ids)
-						listbox_item_select_status(ids.cnt) = 0
-					loop
-					listbox_item_select_status(clicked_id) = 1
-				}
-			}
-		}
-	}
 
 	if current_flag{
 		if g_getkey(38) ==  1 || g_getkey(40) == 1{
@@ -203,10 +180,31 @@
 		make_instant_draw_object "STR",(rect.0 + rect. 2- swidth ) / 2,rect.1 + cnt * item_y + item_y/2,rect.2-rect.0-swidth,item_y, strf("%s,%d,,0,0,%d", item_names(id),$FFFFFF,strbackcolor)
 	loop
 
-	if mousex >= rect.0 && mousey >= rect.1 && mousex <= rect.2-swidth && mousey <= rect.3{
-		make_instant_draw_object "BOXF", (rect.0 + rect.2 - swidth) / 2, rect.1 + mouse_index * item_y + item_y / 2 , rect.2 - rect.0 - swidth, item_y, "$FFFFFF"
-		eid = get_entity_id(stat)
-		set_static_alpha eid, 75
+	if mousex >= rect.0 && mousey >= rect.1 && mousex <= rect.2-swidth && mousey <= rect.3{　//アイテムエリア内
+		mouse_index = (mousey - rect.1) / item_y //マウスオーバー番号（見た目上の）
+		mouse_item_index = mouse_index + scroll_value //マウスオーバー番号（リストの何番目か）
+
+		if mouse_item_index < max_num{ //実アイテム上にオーバー
+		
+			make_instant_draw_object "BOXF", (rect.0 + rect.2 - swidth) / 2, rect.1 + mouse_index * item_y + item_y / 2 , rect.2 - rect.0 - swidth, item_y, "$FFFFFF"
+			eid = get_entity_id(stat)
+			set_static_alpha eid, 75
+
+			if g_getkey(1) == 1 {　//アイテムがクリックされたら
+			
+				clicked_id = get_listbox_id(id_man, mouse_item_index)
+	
+				if g_getkey(17) >=1 { // Ctrl押しながら
+					listbox_item_select_status(clicked_id) = 1 - listbox_item_select_status(clicked_id)
+				}else{
+					// Ctrl押してないなら単独選択
+					repeat get_listbox_ids(id_man,ids)
+						listbox_item_select_status(ids.cnt) = 0
+					loop
+					listbox_item_select_status(clicked_id) = 1
+				}
+			}
+		}
 	}
 
 	return
@@ -384,14 +382,29 @@
     return get_listbox_num(id_man, _id)
 
 
-#modfunc g_listbox_sort_by_text_simple int flag
-
-    count = get_listbox_ids(id_man, ids, 0)  ; 現在の表示IDを取得
-    dim sort_values, count
-    repeat count
+#const INT_MAX  2147483647
+#const INT_MIN -2147483648
+#modfunc g_listbox_sort_by_text int flag
+    lb_max_id_capacity = get_max_id(id_man) + 1
+    dim sort_values, lb_max_id_capacity
+    // 初期値を設定 (ソート順序に応じて、存在しないIDが最後尾に来るようにする)
+    // 例えば、昇順ソートなら大きな値を、降順ソートなら小さな値を設定
+    if flag { // flag=0が昇順、1が降順
+         repeat lb_max_id_capacity
+            sort_values(cnt) = INT_MAX // 昇順ソートなら大きい値
+         loop
+    } else {
+         repeat lb_max_id_capacity
+            sort_values(cnt) = INT_MIN // 降順ソートなら小さい値
+         loop
+    }
+    // 現在表示されているアイテムのIDとキーを取得して設定
+    current_display_count = get_listbox_ids(id_man, ids, 0) ; 現在の表示IDを取得 
+    repeat current_display_count
         id = ids(cnt)
-        sort_values(id) = int(item_names(id))  ; リスト順序で値を設定
+        sort_values(id) = int(item_names(id)) ; ID位置にキーを設定
     loop
+    
     listbox_sort_on id_man, sort_values, flag
     fix_scroll_after_remove thismod
     return

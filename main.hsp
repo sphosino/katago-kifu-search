@@ -315,6 +315,11 @@ set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
 
+set_padding sidebar_sort1, 0,2
+set_padding sidebar_sort2, 0,2
+set_margin sidebar_sort1, 0,0
+set_margin sidebar_sort2, 0,0
+
 set_padding goban_area, , 0
 
 add_tooltip combox_history, "検索パターン履歴"
@@ -1247,9 +1252,6 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		loop
 	loop
 
-
-
-
 	gosub*label_update
 	return
 	
@@ -1260,7 +1262,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		destroy_draw_object scba_effect_stack(cnt)
 	loop
 	scba_effect_num = 0
-	g_listbox_sort_by_text_simple kifulist.matchlist, LISTBOX_SORT_DESC //新しい棋譜順
+	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_DESC //新しい棋譜順
 	return
 
 #deffunc move_next_int int p1
@@ -1373,7 +1375,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 
 	
-	g_listbox_sort_by_text_simple kifulist, LISTBOX_SORT_DESC
+	g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
 	棋譜リスト送信
 
 	return
@@ -1581,19 +1583,19 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
 #global
 *lab_sort1_asc
-	g_listbox_sort_by_text_simple kifulist, LISTBOX_SORT_ASC
+	g_listbox_sort_by_text kifulist, LISTBOX_SORT_ASC
 	return
 *lab_sort1_desc
-	g_listbox_sort_by_text_simple kifulist, LISTBOX_SORT_DESC
+	g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
 	return
 *lab_sort1_shuffle
 	g_listbox_shuffle kifulist
 	return
 *lab_sort2_asc
-	g_listbox_sort_by_text_simple kifulist.matchlist, LISTBOX_SORT_ASC
+	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_ASC
 	return
 *lab_sort2_desc
-	g_listbox_sort_by_text_simple kifulist.matchlist, LISTBOX_SORT_DESC
+	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_DESC
 	return
 *lab_sort2_shuffle
 	g_listbox_shuffle kifulist.matchlist

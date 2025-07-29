@@ -89,13 +89,16 @@
 
 	//線描画
 	color 0,0,0
-	// 縦線（左右に走る線群）
+	
+		// 縦線
 	repeat length(board)
-	    line masx/2 + masx * cnt, masy/2, masx/2 + masx * cnt, sizey - masy/2 - 1
+		x = masx/2 + masx * cnt
+	    line x, masy/2, x, sizey - masy/2 - 1
 	loop
-	// 横線（上下に走る線群）  
+// 横線
 	repeat length2(board)
-	    line masx/2, masy/2 + masy * cnt, sizex - masx/2 - 1, masy/2 + masy * cnt
+		y = masy/2 + masy * cnt
+	    line masx/2, y, sizex - masx/2 - 1, y
 	loop
 
 	//星描画
@@ -142,8 +145,10 @@
 		}
 	}
 
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizex + 5, sizey ) //xに謎補正が必要・・・　AIに聞きまくってもなぜか分からない
-	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizex + 5 , sizey) //同様
+	sizexx = 1.007 * sizex //これぐらいでちょうどいい（コピー元サイズに謎補正）AIに全体のコードを聞きまくってもわからない
+
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizexx, sizey )
+	make_instant_draw_object "SPRITE", px, py, sizex , sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizexx, sizey)
 	
 	return
 *get_goban_info
@@ -168,8 +173,8 @@
 	marginy = (areasizey - sizey) / 2
 
 	//碁盤の中心を求める。marginx や marginy は両側に適用するのでエリアの中央と同じ。
-	px = (r.0 + r.2 + 1) / 2
-	py = (r.1 + r.3 + 1) / 2
+	px = (r.0 + r.2) / 2
+	py = (r.1 + r.3) / 2 
 	return
 	
 #modfunc redraw_stones
