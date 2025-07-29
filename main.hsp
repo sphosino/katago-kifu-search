@@ -315,8 +315,8 @@ set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
 
-set_padding sidebar_sort1, 0,2
-set_padding sidebar_sort2, 0,2
+set_padding sidebar_sort1, 0, 0
+set_padding sidebar_sort2, 0, 0
 set_margin sidebar_sort1, 0,0
 set_margin sidebar_sort2, 0,0
 
@@ -331,6 +331,10 @@ add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
 add_tooltip slider_1, "基本待ち時間"
 add_tooltip slider_2, "形勢判断の差による待ち時間"
 add_tooltip slider_3, "直前の手との距離による待ち時間"
+add_tooltip sort2_asc, "古い棋譜順"
+add_tooltip sort2_desc,"新しい棋譜順"
+add_tooltip sort1_asc, "古い棋譜順"
+add_tooltip sort1_desc, "新しい棋譜順"
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
