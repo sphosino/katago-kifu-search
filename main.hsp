@@ -325,6 +325,7 @@ set_padding goban_area, , 0
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
+add_tooltip button_save_file, "選択中の棋譜をSGF形式で一時フォルダに保存"
 add_tooltip kifustart, "何手目から表示するかを設定"
 add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
 add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
@@ -335,6 +336,8 @@ add_tooltip sort2_asc, "古い棋譜順"
 add_tooltip sort2_desc,"新しい棋譜順"
 add_tooltip sort1_asc, "古い棋譜順"
 add_tooltip sort1_desc, "新しい棋譜順"
+
+
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
@@ -456,6 +459,7 @@ gosub*loadsgf
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
 *main
+	;title ""+ginfo(10) + " : " + ginfo(11)
 	計測 "manage_keyfps"
 	manage_keyfps
 	notify_dt_draw_object frametime()
@@ -607,7 +611,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 	計測 "入力処理"
 	
 	nownode = get_current_node(t)
-	getBoardCoordinates board, point
+	getBoardCoordinates board.ui_mode, point
 
 	in_board = 0
 	if 0 <= point && point < 19{
@@ -828,11 +832,6 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 	if getdbl_ms(17, DBL_INTERVAL){
 		debugmode ^ 1
 		logmes "switched debugmode ->" +debugmode
-	}
-
-	if getdbl_ms(2,DBL_INTERVAL){
-		g_listbox_shuffle kifulist
-		logmes "listbox->shuffle"
 	}
 
 
