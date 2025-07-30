@@ -113,13 +113,12 @@ if strsize == -1{
 	sx = limit(sx, 460)
 	sy = limit(sy, 345)
 
-	
 }
 
 noteunsel
 
 if MAX_CHILDREN <=  0: MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
-if load_limit <= 3000: load_limit = 100000 //３０００件は読み込もうぜ。
+if load_limit < 3000: load_limit = 100000 //３０００件は読み込もうぜ。
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
@@ -460,6 +459,8 @@ gosub*loadsgf
 #endif
 
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
+
+title "KataGo自己対戦棋譜-検索システム"
 
 *main
 	;title ""+ginfo(10) + " : " + ginfo(11)
@@ -1366,7 +1367,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		if 棋譜数 != notemax{
 			sdim ss
 			repeat 棋譜数
-				noteget tmp, cnt
+				noteget tmp, 棋譜数-cnt-1 //最新棋譜順に読み込む
 				if cnt{
 					ss += "\n" + tmp
 				}else{
@@ -1375,9 +1376,11 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 			loop
 			add_item kifulist, ss
 			kifulist_notepad = ss
+			
 		}else{
 			add_item kifulist, files
 			kifulist_notepad = files
+			g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
 		}
 	
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
@@ -1387,8 +1390,6 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		
 	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 
-	
-	g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
 	棋譜リスト送信
 
 	return
