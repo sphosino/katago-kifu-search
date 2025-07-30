@@ -302,7 +302,6 @@
 	result = -1, -1
 	if mousex > (r.0 + marginx): result   = (mousex - (r.0 + marginx)) / masx
 	if mousey > (r.1 + marginy): result.1 = (mousey - (r.1 + marginy)) / masy
-	title ""+r.0+" : " + r.1 + " : " + masx + " : " + masy + " : " + mousex + " : "  + mousey
 	return
 
 #modfunc get_board_data array a

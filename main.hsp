@@ -169,10 +169,13 @@ dim rect_stack, 4
 //検索結果受け取り用
 dim matchlist                ; 検索結果用リストボックスIDを格納
 
+
 sdim kifulist_notepad
 
 pre_filter_on = -1
 pre_filter = -1
+
+
 
 //FPS設定
 setfps 30 //目標FPSセット(初期値)
@@ -601,11 +604,15 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 				loop
 			loop
 
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+			
 		}
+		set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 	}else: if pre_combox_idx != get_value_g_combox(g_combox){
 		pre_combox_idx = stat
-		if filter_on: gosub *filtering_and_make_listbox
+		if filter_on{
+			gosub *filtering_and_make_listbox
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+		}
 	}
 	
 	計測 "入力処理"
@@ -1202,6 +1209,7 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 	
 	sdim a, INFO_SIZE
 	listcount = g_get_listbox_ids(kifulist.matchlist, newids, 1) //オリジナルに対して常に行う
+	if listcount = 0: return
 
 	//選択中の要素取得
     selected_num = get_selected_item_ids(kifulist.matchlist, select_items)
@@ -1255,10 +1263,12 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 		loop
 	loop
 
-	gosub*label_update
-	return
 	
+	return
 *label_update
+
+	return
+*search_finish
 	set_g_label g_label.1, "検索完了(" + get_list_item_num(kifulist.matchlist) + ")件"
 	set_g_label_bc g_label.1, $F5F5DC
 	repeat scba_effect_num
@@ -1554,13 +1564,13 @@ window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 			complate_count++
 			logmes "result_num = " + result_num + " : " + complate_count
 			if complate_count == MAX_CHILDREN{
+				complate_count = -1
 				release_id search_id_manager, lpeek(received_data)
 				logmes "検索完了"
 				if filter_on{
 					gosub　*filtering_and_make_listbox
-				}else{
-					gosub*label_update
 				}
+				gosub*search_finish
 			}
 
 		swbreak
