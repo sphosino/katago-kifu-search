@@ -2,16 +2,16 @@
 #include "nodmod/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
 #define CBN_SELCHANGE 1
-
-
 screen 0
 title "棋譜検索システム設定"
-
 left_size = ginfo_sx * 3 / 6
 right_size = ginfo_sx * 3 / 6
-
 objysize = 40
 font "", 22
+
+// 追加：状態表示用の変数
+adjustment_message = ""
+safety_status = 0  // 0:安全, 1:注意, 2:危険
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
@@ -19,10 +19,9 @@ font "", 22
 	dirname = dir_exe
 #endif
 subdir = dirname + "\\sub"
+
 chdir subdir
-
 max_child = sysinfo(17) - 1
-
 notesel setting_str
 exist SETTING_FILE_NAME
 if strsize == -1{
@@ -40,28 +39,24 @@ if strsize == -1{
 }else{
 	noteload SETTING_FILE_NAME
 }
-
 dim process_num, 2
 dim auto_download_time, 2
 dim max_depth, 2
 dim max_kifu, 2
 dim tw, 2
-
-pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: process_num = stat
-pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: tw = stat
-pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
-pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: max_depth = stat
-pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: max_kifu = stat
-
+pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: max_kifu = stat
+pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: process_num = stat
+pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: tw = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
+pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: max_depth = stat
+scbaSetrange max_kifu, 1, 100000,,,1
 scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, 19, 90,,,1
 scbaSetrange max_depth, 10, 254,,,1
-scbaSetrange max_kifu, 3000, 100000,,,1
 scbaSetrange tw, 20,60,,,1
-
 noteget tmp, LINE_PROCESS_COUNT
 process_num.1 = limit(int(tmp), 1, max_child)
-scbaSetPos procces_num, process_num.1
+scbaSetPos process_num, process_num.1
 noteget tmp, LINE_MAX_DEPTH
 max_depth.1 = int(tmp)
 scbaSetPos max_depth, max_depth.1
@@ -70,25 +65,37 @@ auto_download_time.1 = int(tmp)
 scbaSetPos auto_download_time, auto_download_time.1
 noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
-if max_kifu.1 < 3000{ max_kifu.1 = 100000}
+if max_kifu.1 < 1 { max_kifu.1 = 100000}  // 修正：上限チェックも追加すべき？
+if max_kifu.1 > 100000 { max_kifu.1 = 100000}  // 上限チェック追加
 scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
 tw.1 = limit(int(tmp), 20, 60)
 scbaSetPos tw,tw.1
 
-scbaOnScroll *scc　//動かすたびにジャンプするラベル
+// 初期状態の安全性判定
+kifu_per_process = max_kifu.1 / process_num.1
+if kifu_per_process <= 19000 {
+	safety_status = 0  // 安全
+} else : if kifu_per_process <= 25000 {
+	safety_status = 1  // 注意
+} else {
+	safety_status = 2  // 危険
+}
 
-pos 0
+scbaOnScroll *scc
+pos 0, objysize * 7
 objsize ginfo(12), objysize
 button gosub "保存", *save
 gosub*view
 stop
 
-
 *scc
 	type = wparam
 	value = lparam
-	logmes strf("%d,%d,%d,%d",type,value,auto_download_time,max_depth)
+	old_process = process_num.1
+	old_kifu = max_kifu.1
+	adjustment_message = ""
+	
 	switch type
 	case auto_download_time(0)
 		auto_download_time.1 = value
@@ -98,30 +105,89 @@ stop
 	swbreak
 	case max_kifu(0)
 		max_kifu.1 = value
+		if max_kifu.1 / process_num.1 > 19000 {
+			process_num.1 = (max_kifu.1 + 18999) / 19000  // 切り上げ計算
+			if process_num.1 > max_child : process_num.1 = max_child
+			ScbaSetPos process_num, process_num.1
+			adjustment_message = "?? 自動調整: プロセス数を" + process_num.1 + "に変更"
+		}
 	swbreak
 	case tw(0)
 		tw.1 = value
 	swbreak
-	case process_num
+	case process_num(0)
 		process_num.1 = value
+		if max_kifu.1 / process_num.1 > 19000 {
+			max_kifu.1 = process_num.1 * 19000
+			if max_kifu.1 > 100000 : max_kifu.1 = 100000  // 上限チェック追加
+			ScbaSetPos max_kifu, max_kifu.1
+			adjustment_message = "?? 自動調整: 棋譜数を" + max_kifu.1 + "に制限"
+		}
 	swbreak
 	default 
 		dialog "想定外の値",,__FILE__
 		end
 	swbreak
 	swend
+	
+	// 安全性判定
+	kifu_per_process = max_kifu.1 / process_num.1
+	if kifu_per_process <= 19000 {
+		safety_status = 0  // 安全
+	} else : if kifu_per_process <= 25000 {
+		safety_status = 1  // 注意
+	} else {
+		safety_status = 2  // 危険
+	}
+	
+	gosub *view
+	return
+
 *view
 	color 255,255,255:boxf 0,0,ginfo_sx,ginfo_sy:color
-	pos 0, objysize * 0: mes strf("子プロセス数 -> %d", process_num.1)
-	pos 0, objysize * 1: mes strf("子プロセス余裕時間(%dms)", tw.1)
-	pos 0, objysize * 2
+	
+	// 基本設定表示
+	pos 0, objysize * 0: mes strf("最大読み込み制限 (%d棋譜)", max_kifu.1)
+	pos 0, objysize * 1: mes strf("子プロセス数 -> %d", process_num.1)
+	pos 0, objysize * 2: mes strf("子プロセス余裕時間(%dms)", tw.1)
+	pos 0, objysize * 3
 		if auto_download_time.1 < 20{
 			mes "起動時スクレイピング(なし)"
 		}else{
 			mes strf("起動時スクレイピング(%d秒)",auto_download_time.1)
 		}
-	pos 0, objysize * 3: mes strf("検索の深さ (%d手)", max_depth.1)
-	pos 0, objysize * 4: mes strf("最大読み込み制限 (%d棋譜)", max_kifu.1)
+	pos 0, objysize * 4: mes strf("検索の深さ (%d手)", max_depth.1)
+	
+	// 新規追加：安全性表示
+	pos 0, objysize * 5
+	kifu_per_process = max_kifu.1 / process_num.1
+	
+	switch safety_status
+	case 0  // 安全
+		color 0, 180, 0  // 緑
+		mes strf("?? 安全: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+	swbreak
+	case 1  // 注意
+		color 255, 165, 0  // オレンジ
+		mes strf("?? 注意: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+	swbreak
+	case 2  // 危険
+		color 255, 0, 0  // 赤
+		mes strf("?? 危険: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		pos 0, objysize * 5 + 25
+		color 255, 0, 0  // 赤を維持
+		mes "    メモリ不足により動作しない可能性があります"
+	swbreak
+	swend
+	
+	// 自動調整メッセージ表示
+	if adjustment_message != "" {
+		color 0, 100, 200  // 青
+		pos 0, objysize * 6
+		mes adjustment_message
+	}
+	
+	color 0,0,0  // 色をリセット
 	return
 
 *save
@@ -135,6 +201,4 @@ stop
 	chdir subdir
 	notesave SETTING_FILE_NAME
 	return
-
 return
-

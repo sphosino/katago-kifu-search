@@ -1199,10 +1199,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	return
 #deffunc 棋譜リスト送信
-
 	//棋譜リスト送信
 	repeat child_count_current
 		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
+
 	loop
 	return
 	

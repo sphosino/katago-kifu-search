@@ -75,7 +75,7 @@ nocoAutoCopyData //©“®ƒWƒƒƒ“ƒv‚ğİ’èiƒWƒƒƒ“ƒv‚Ìƒ^ƒCƒ~ƒ“ƒO‚Åƒ‚ƒWƒ…[ƒ‹“à‚ÌƒLƒ…
 
 ’S“–Šû•ˆ•ÏX‚É‚æ‚é‰Šú‰» 64, 1
 
-onerror *error_label
+
 
 debug_line = ""
 // ƒƒbƒZ[ƒW‘Ò‹@
@@ -133,7 +133,7 @@ loop
 	kifu_all_assigned = make_new_set(p1) //’S“–Šû•ˆ‚ğˆµ‚¤ƒZƒbƒg
 	kifu_unloaded = make_new_set(p1)//’S“–Šû•ˆ‚Ì’†‚Å‚Ü‚¾“Ç‚İ‚İÏ‚İ‚Å‚È‚¢Šû•ˆ‚ÌƒZƒbƒg
 	search_target_kifus = make_new_set(p1) //@ŒŸõ‘ÎÛŠû•ˆ‚ğˆµ‚¤ƒZƒbƒg
-	
+	mes "’S“–Šû•ˆ” -> " + p1
 	return
 
 *on_copydata
@@ -350,8 +350,3 @@ loop
 	memcpy result, ‘Î‹ÇÒ–¼•, 64, nowpointer + OFFSET_PB
 	memcpy result, ‘Î‹ÇÒ–¼”’, 64, nowpointer + OFFSET_PW
 	return
-
-*error_label
-	dialog debug_line
-	dialog "err" + err +" : " + temp_kifu_name //‚±‚±‚Å•¶š‰»‚¯‚ğŠm”F(ƒGƒ‰[”Ô†‚Íƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ‚É¸”s(152345.sgfÎ¹Î¹@‚İ‚½‚¢‚ÈŠ´‚¶)
-	end
