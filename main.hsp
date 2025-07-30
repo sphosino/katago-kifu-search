@@ -117,7 +117,7 @@ if strsize == -1{
 
 noteunsel
 
-if MAX_CHILDREN <=  0: MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
+
 if load_limit < 3000: load_limit = 100000 //３０００件は読み込もうぜ。
 
 //ウィンドウ作成
@@ -436,9 +436,7 @@ pretime = keyfpstime
 
 onexit *save_info //終了時に*save_infoにジャンプ
 
-//子プロセス管理初期化
-
-gosub *init_parent_process
+//棋譜読み込み
 
 gosub*load_kifu_folder
 
@@ -1156,7 +1154,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	set_g_label_bc g_label.1, $80DFFF
 	get_rect sidebar_kifulist_label2, eff_rect
 	
-	scba_effect_stack(scba_effect_num) = spawn_search_bar_effect(eff_rect + eff_rect.2 >> 1, eff_rect.3 + 5, 50, 8, 80,PRIORITY_FRONT)
+	scba_effect_stack(scba_effect_num) = spawn_search_bar_effect(eff_rect + eff_rect.2 >> 1, eff_rect.3 + 5, 0.8 * (eff_rect.2-eff_rect.1), 8, 80,PRIORITY_FRONT)
 	scba_effect_num++
 
 	if use_bitboard{ ;厳密検索
@@ -1266,9 +1264,6 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	
 	return
-*label_update
-
-	return
 *search_finish
 	set_g_label g_label.1, "検索完了(" + get_list_item_num(kifulist.matchlist) + ")件"
 	set_g_label_bc g_label.1, $F5F5DC
@@ -1346,6 +1341,17 @@ title "KataGo自己対戦棋譜-検索システム"
 	st = keyfpstime
 	dirlist files,"*.sgf"
 	棋譜数 = limit(stat,,load_limit)
+
+		
+	if MAX_CHILDREN <=  0{
+		MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
+	}
+	if 棋譜数 / MAX_CHILDREN >= 19000{
+		棋譜数 = limit(MAX_CHILDREN * 19000,,load_limit)
+	}
+
+	gosub *init_parent_process
+	
 	notesel files
 	
 		;files = shuffle_notepad(files)
@@ -1390,6 +1396,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		
 	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
 
+	
 	棋譜リスト送信
 
 	return
