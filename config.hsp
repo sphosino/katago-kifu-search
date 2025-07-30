@@ -165,15 +165,16 @@ stop
 	switch safety_status
 	case 0  // 安全
 		color 0, 180, 0  // 緑
-		mes strf("?? 安全: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		mes strf("[安全] %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
 	swbreak
 	case 1  // 注意
 		color 255, 165, 0  // オレンジ
-		mes strf("?? 注意: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		mes strf("[注意] %d棋譜/プロセス (推奨19000以下)", kifu_per_process) 
+		mes "    メモリ不足により動作しない可能性があります"
 	swbreak
 	case 2  // 危険
 		color 255, 0, 0  // 赤
-		mes strf("?? 危険: %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		mes strf("[危険] %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
 		pos 0, objysize * 5 + 25
 		color 255, 0, 0  // 赤を維持
 		mes "    メモリ不足により動作しない可能性があります"
