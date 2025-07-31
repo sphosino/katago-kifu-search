@@ -117,7 +117,7 @@ if strsize == -1{
 	//Šû•ˆÄ¶‘¬“x(ms)
 	auto_interval = 1000
 	alpha_interval = 10000
-	m_interval = 10000
+	m_interval = 5000
 
 	load_limit = 100000 //‚P‚O–œŒ
 
