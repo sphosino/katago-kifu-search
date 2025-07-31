@@ -39,6 +39,42 @@ savedir = dirname + "\\save"
 
 #const BG_COLOR $808080 // 128,128,128
 
+; --- 簡易二重起動防止 ---
+ APP_IDENTIFIER_KEY = "MyUniqueAppKey_20250731" ; アプリケーションごとにユニークなキーを設定
+#define MM_KEY_OFFSET    0   ; アプリケーションキーを格納するオフセット (64バイト)
+#define MM_HWND_OFFSET   64  ; ウィンドウハンドルを格納するオフセット (4バイト)
+#define MM_FILE_SIZE     (MM_KEY_OFFSET + 64 + MM_HWND_OFFSET + 4) ; ファイル全体のサイズ (十分なサイズを確保)
+
+; --- 起動チェックとアクティブ化 ---
+sdim read_key, 64  ; app_keyを読み込むためのバッファ
+sdim read_hwnd, 64 ; hwndを読み込むためのバッファ
+
+; キーの読み込み
+nocoMemomapRead read_key, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+
+; 既存のキーと一致するかチェック
+if read_key == APP_IDENTIFIER_KEY {
+    ; 既に起動している
+    ; 既存のウィンドウハンドルを読み込む
+    nocoMemomapRead read_hwnd, APP_IDENTIFIER_KEY, 4, 0, MM_HWND_OFFSET
+    
+    if lpeek(read_hwnd){ ; 有効なハンドルが取得できた場合
+
+        FlashWindow lpeek(read_hwnd), 0
+		ShowWindow lpeek(read_hwnd), 1
+        SetForegroundWindow lpeek(read_hwnd)
+    }
+    
+    end ; 現在のプロセスは終了
+}
+//起動中の証を書き込む
+nocoMemoryMapping APP_IDENTIFIER_KEY, MM_FILE_SIZE
+nocoMemomapWrite APP_IDENTIFIER_KEY, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+this_hwnd = hwnd
+nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
+//-----------------------------------------------------------------------------
+
+
 dim scba_effect_stack
 scba_effect_num = 0
 
