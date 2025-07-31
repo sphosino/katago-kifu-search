@@ -137,6 +137,7 @@ if strsize == -1{
 	noteget_ auto_interval, LINE_AUTO_INTERVAL
 	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
 	noteget_ m_interval, LINE_M_INTERVAL
+	noteget_ auto_download, LINE_AUTO_DOWNLOAD_TIME
 	noteget_ �ő剻, LINE_MAXIMIZED
 	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
 	noteget_ load_limit, LINE_LOAD_LIMIT
@@ -487,7 +488,7 @@ gosub*loadsgf
 #if 01
 	tmp = dir_cur
 	chdir subdir
-	exec "download_sgf",2
+	exec "download_sgf"
 	chdir tmp
 	await 50
 #endif

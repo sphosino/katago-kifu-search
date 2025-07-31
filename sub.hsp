@@ -18,7 +18,7 @@
 	kifudir = dirname + "\\Šû•ˆ"
 	log_init subdir
 
-
+	onkey gosub *input_key
 	onerror *end_label
 
 	chdir subdir
@@ -31,12 +31,15 @@
 		noteload SETTING_FILE_NAME
 		noteget tmp, LINE_AUTO_DOWNLOAD_TIME
 		time = int(tmp)
+		dialog time
 	}
 	if time >= 20{
-		Šû•ˆæ“¾ kifudir  , 10000     , 3000            , 1000 * time
+		Šû•ˆæ“¾ kifudir  , 10000     , 3000            , 1000 * limit(time, 0, 90) //‚X‚O•b‚ğÅ‘å‚Éİ’è
 	}
 	end
-
+*input_key
+	if iparam == 27: Šû•ˆæ“¾’â~
+	return
 *end_label
 	add_log "yƒGƒ‰[ƒR[ƒhz ->" + err
 	end
