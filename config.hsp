@@ -1,7 +1,7 @@
 #packopt name "config"
 #include "nodmod/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
-#define CBN_SELCHANGE 1
+#include "modules/katago_sqr.hsp"
 screen 0
 title "棋譜検索システム設定"
 left_size = ginfo_sx * 3 / 6
@@ -19,7 +19,7 @@ safety_status = 0  // 0:安全, 1:注意, 2:危険
 	dirname = dir_exe
 #endif
 subdir = dirname + "\\sub"
-
+kifudir = dirname + "\\棋譜"
 chdir subdir
 max_child = sysinfo(17) - 1
 notesel setting_str
@@ -83,12 +83,25 @@ if kifu_per_process <= 19000 {
 }
 
 scbaOnScroll *scc
-pos 0, objysize * 7
+
+
 objsize ginfo(12), objysize
-button gosub "保存", *save
+pos 0, objysize * 7: button gosub "設定保存", *save
+
+pos 0, objysize * 9: button gosub  "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
+pos 0, objysize * 10: button gosub "スクレイピング停止", *sqr_stop
 gosub*view
 stop
-
+*sqr
+	objprm sq_id, "棋譜収集中..."
+	棋譜取得 kifudir  , 10000     , 3000            , 1000 * 60 * 30 //３０分
+	
+	return
+*sqr_stop
+	objprm sq_id, "スクレイピング（棋譜収集）　-- 最大３０分"
+	棋譜取得停止
+	
+	return
 *scc
 	type = wparam
 	value = lparam

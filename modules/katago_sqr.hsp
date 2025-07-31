@@ -9,10 +9,9 @@ netinit
 #const MIN_WAIT_TIME 1000
 
 #deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
-	
+	stopflag = 0
 	endflag = 0
 	starttime = keyfpstime
-	mes "starttime =" + starttime
 	get_count = 0
 	dim result
 	now_dir = dir_cur
@@ -63,16 +62,13 @@ netinit
 		find_tags_bytag buf, "tr", data // テーブルの要素
 		
 		repeat limit(max,,length(data)-1)
-
-			stick key, 128
-
-			if key&128{ endflag = 1: break} //ESCで終了
+			if endflag: break
 		
 			find_tags_bytag data(cnt + 1), "td", target_infos
 	
 			game_id = int(get_content_tag(target_infos(0)))
 	
-			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / lt,,100)+"%完了  ESC長押しで終了"
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((keyfpstime - starttime) * 100 / lt,,100)+"%完了"
 			if keyfpstime - starttime >= lt: break
 			if check_exist_sgf(files, game_id){
 				await 4
@@ -101,7 +97,7 @@ netinit
 			}
 			
 			get_count++
-			
+			await
 		loop
 		if endflag:break
 		if keyfpstime - starttime >= lt: break
@@ -140,7 +136,9 @@ netinit
 	dialog "ERROR -> " +res,,__FILE__
 
 	end
-
+#deffunc 棋譜取得停止
+	endflag = 1
+	return 
 #defcfunc check_exist_sgf str s1, int p1
 
 	k = s1
@@ -200,6 +198,6 @@ netinit
 	chdir a
 
 	//保存先フォルダ名, 最大取得数, アクセス頻度(ms), 最大実行時間(ms)  
-	棋譜取得 a        , 10000     , 3000            , 1000 * 60 *1
+	棋譜取得 a        , 10000     , 3000            , 1000 * 60 * 1
 
 #endif 
