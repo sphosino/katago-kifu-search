@@ -33,7 +33,7 @@ if strsize == -1{
 	noteadd_ 480, LINE_WINDOW_SIZE_Y
 	noteadd_ get_auto_cores(), LINE_PROCESS_COUNT
 	noteadd_ 70, LINE_MAX_DEPTH
-	noteadd_ 40, LINE_AUTO_DOWNLOAD_TIME
+	noteadd_ 0, LINE_AUTO_DOWNLOAD_TIME
 	noteadd_ 30, LINE_TARGET_WAIT
 	noteadd_ 100000, LINE_LOAD_LIMIT
 	

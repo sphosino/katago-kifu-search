@@ -96,8 +96,8 @@ if strsize == -1{
 		noteadd ""
 	loop
 	
-	sx = ginfo(20) * 2 / 3
-	sy = ginfo(21) * 2 / 3
+	sx = ginfo(20) * 3 / 4
+	sy = ginfo(21) * 3 / 4
 	wx = (ginfo(20) - sx) / 2
 	wy = (ginfo(21) - sy) / 2
 	//探索の最大深さ
@@ -121,8 +121,8 @@ if strsize == -1{
 	m_interval = 5000
 
 	load_limit = 100000 //１０万件
+	child_target_wait = 30 //子プロセス達がOSに返す時間
 
-	
 }else{
 	noteload SETTING_FILE_NAME
 
@@ -142,6 +142,7 @@ if strsize == -1{
 	noteget_ 最大化, LINE_MAXIMIZED
 	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
 	noteget_ load_limit, LINE_LOAD_LIMIT
+	noteadd_ child_target_wait, LINE_TARGET_WAIT
 
 	if wx < 0{
 		wx = (ginfo(20) - x) / 2
@@ -1683,6 +1684,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	noteadd_ m_interval, LINE_M_INTERVAL //マンハッタン距離による自動再生間隔の変化
 	noteadd_ auto_download, LINE_AUTO_DOWNLOAD_TIME //自動ダウンロード
 	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
+	noteadd_ child_target_wait, LINE_TARGET_WAIT
 	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
 	chdir subdir
 	notesave SETTING_FILE_NAME
