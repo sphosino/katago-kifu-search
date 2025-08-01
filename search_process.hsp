@@ -129,6 +129,7 @@ loop
 	    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
     }
     init_sgf_module p1
+    dim filename_to_topnode
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
 	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
 	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット

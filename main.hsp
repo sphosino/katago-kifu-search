@@ -101,7 +101,7 @@ if strsize == -1{
 	wx = (ginfo(20) - sx) / 2
 	wy = (ginfo(21) - sy) / 2
 	//探索の最大深さ
-	max_depth = 70
+	max_depth = DEFAULT_MAX_DEPTH
 	
 	//色反転を含めるか
 	enableColorFlip = 1
@@ -121,7 +121,7 @@ if strsize == -1{
 	m_interval = 5000
 
 	load_limit = 100000 //１０万件
-	child_target_wait = 30 //子プロセス達がOSに返す時間
+	child_target_wait = DEFAULT_TARGET_WAIT //子プロセス達がOSに返す時間
 
 }else{
 	noteload SETTING_FILE_NAME

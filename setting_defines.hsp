@@ -21,7 +21,8 @@
 
 #enum global SETTING_MAX_LINE
 
-
+#const global DEFAULT_TARGET_WAIT 30
+#const global DEFAULT_MAX_DEPTH 100
 
 #module
 #deffunc noteget_ var ngt, int line_num
