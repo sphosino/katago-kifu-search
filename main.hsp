@@ -1521,6 +1521,7 @@ title "KataGo自己対戦棋譜-検索システム"
     // なごコネに参加している全てのアプリ数を取得
     total_connected_apps = nocoConnectInfo(0, 0)
 
+
 	//終了された子プロセスをリストから除外
     for i,, new_child_count
 		this = child_hwnd_list(i)
@@ -1575,8 +1576,14 @@ title "KataGo自己対戦棋譜-検索システム"
         child_status_list(cnt) = temp_child_status(cnt)
     loop
 
-    child_count_current = new_child_count
-    
+	if child_count_current != new_child_count{
+		  child_count_current = new_child_count
+		  //変更通知
+		  repeat child_count_current
+		  	nocoSendCopyData child_hwnd_list(cnt), child_count_current, 子プロセス数, 4
+		  loop
+	}
+
     return
 
 *on_copydata //毎フレーム呼び出す

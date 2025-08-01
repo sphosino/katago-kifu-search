@@ -313,6 +313,11 @@ loop
 			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
 
 	    swbreak
+
+	    case 子プロセス数:
+	    	child_count = lpeek(received_data)
+			set_target_wait limit(tw / child_count, 1, 100)
+	    swbreak
 	 
 	    case 終了指示:
 	        // 親プロセスからの終了指示
