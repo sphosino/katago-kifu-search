@@ -2,6 +2,7 @@
 #include "nodmod/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
 #include "modules/katago_sqr.hsp"
+#include "calc_cores.hsp"
 screen 0
 title "ä˚ïàåüçıÉVÉXÉeÉÄê›íË"
 left_size = ginfo_sx * 3 / 6
@@ -30,7 +31,7 @@ if strsize == -1{
 	loop
 	noteadd_ 640, LINE_WINDOW_SIZE_X
 	noteadd_ 480, LINE_WINDOW_SIZE_Y
-	noteadd_ limit(max_child / 4, 1, max_child), LINE_PROCESS_COUNT
+	noteadd_ get_child_core_num(), LINE_PROCESS_COUNT
 	noteadd_ 70, LINE_MAX_DEPTH
 	noteadd_ 40, LINE_AUTO_DOWNLOAD_TIME
 	noteadd_ 30, LINE_TARGET_WAIT

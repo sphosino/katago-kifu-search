@@ -19,6 +19,7 @@
 #include "tooltip.hsp"
 
 #include "go_game_manager.hsp"
+#include "calc_cores.hsp"
 
 #include "hspext.as"
 #include "user32.as"
@@ -1381,7 +1382,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 		
 	if MAX_CHILDREN <=  0{
-		MAX_CHILDREN = limit((sysinfo(17)-1) / 4, 1) //子プロセス数
+		MAX_CHILDREN =  get_child_core_num() //子プロセス数
 	}
 	if 棋譜数 / MAX_CHILDREN >= 19000{
 		棋譜数 = limit(MAX_CHILDREN * 19000,,load_limit)

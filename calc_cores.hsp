@@ -1,0 +1,10 @@
+#module
+#defcfunc get_child_core_num
+	tmp = sysinfo(17)
+	if tmp <= 2: return tmp
+	if tmp <= 4: return tmp - 1
+	if tmp <= 6: return tmp - 2
+	if tmp <= 8: return tmp - 3
+	if tmp <= 16: return tmp / 2
+	return tmp / 3
+#global
