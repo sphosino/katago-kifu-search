@@ -60,7 +60,7 @@ notesel setting_str
 	}else{
 		noteload "window.txt"
 		noteget tmp, LINE_TARGET_WAIT
-		tw = limit(int(tmp), 20, 60)
+		tw = limit(int(tmp), 20, 70)
 	}
 
 noteunsel
@@ -75,7 +75,6 @@ nocoAutoCopyData //©“®ƒWƒƒƒ“ƒv‚ğİ’èiƒWƒƒƒ“ƒv‚Ìƒ^ƒCƒ~ƒ“ƒO‚Åƒ‚ƒWƒ…[ƒ‹“à‚ÌƒLƒ…
 ’S“–Šû•ˆ•ÏX‚É‚æ‚é‰Šú‰» 64, 1
 
 
-debug_line = ""
 // ƒƒbƒZ[ƒW‘Ò‹@
 repeat
 	manage_keyfps
@@ -93,7 +92,7 @@ repeat
 		del_data kifu_unloaded, temp_kifu_name
 		if get_cardinality(kifu_unloaded) == 0{
 			enable_auto_adjust 0 //©“®FPS’²®OFF
-			setfps 30
+			setfps 24
 		}
 	}
 	

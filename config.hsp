@@ -54,7 +54,7 @@ scbaSetrange max_kifu, 1, 100000,,,1
 scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, 19, 90,,,1
 scbaSetrange max_depth, 10, 254,,,1
-scbaSetrange tw, 20,60,,,1
+scbaSetrange tw, 20,70,,,1
 noteget tmp, LINE_PROCESS_COUNT
 process_num.1 = limit(int(tmp), 1, max_child)
 scbaSetPos process_num, process_num.1
@@ -70,7 +70,7 @@ if max_kifu.1 < 1 { max_kifu.1 = 100000}  // 修正：上限チェックも追加すべき？
 if max_kifu.1 > 100000 { max_kifu.1 = 100000}  // 上限チェック追加
 scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
-tw.1 = limit(int(tmp), 20, 60)
+tw.1 = limit(int(tmp), 20, 70)
 scbaSetPos tw,tw.1
 
 // 初期状態の安全性判定
