@@ -1102,11 +1102,20 @@ title "KataGo自己対戦棋譜-検索システム"
 	tmpdir = dir_cur
 	chdir kifudir
 	dim nodelist
+	
 	notesel sgf
-		repeat get_selected_item_ids(kifulist.current_kifulist, ids)
+		selected_num = get_selected_item_ids(kifulist.current_kifulist, ids)
+		repeat selected_num
 			filename = get_item_name_by_id(kifulist.current_kifulist, ids(cnt)) //ファイル名を取得
 			noteload filename //ファイルをロード
 			nodelist(cnt) = load_sgf(sgf) //展開してトップノードの番号を取得
+			
+			if cnt \ 10 == 9{
+				title "選択された棋譜を読み込み中・・・" +(cnt * 100/ selected_num)  + "% ESCで中断--> "
+			}
+			getkey a, 27
+			if a: break
+			await 16
 		loop
 	noteunsel
 	new_node = merge_node(nodelist) //選択された棋譜をマージ

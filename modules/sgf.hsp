@@ -41,6 +41,7 @@
 
     list_props = ",AB,AW,AE,TR,SQ,CR,LB,TB,TW,MA,SL,"
     text_props = ",C,N,GC,DM,GB,GW,HO,US,VW,"
+    sdim kv,,2 //プロパティ名、値の一時変数
 
 	return
 
@@ -523,12 +524,13 @@
 		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
 		merge_node_main new, copied_node //マージ実行
 		
-		if length(node_list) >= 10{//１０棋譜以上であればフィードバックつける。
-			title "マージ実行中 " + cnt * 100 / length(node_list) + "右クリック長押しで中断"
-			if gethold_ms(2, 1000): break
-			
-			manage_keyfps
-			await 5
+		if cnt \ 10 == 9{//１０棋譜以上であればフィードバックつける。
+			title "マージ実行中 " + cnt * 100 / length(node_list) + "ESCで中断"
+
+			getkey a, 27
+			if a: break
+		
+			await 16
 		}
 	loop
 	return new
