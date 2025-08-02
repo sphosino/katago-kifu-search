@@ -70,11 +70,9 @@ set_target_wait tw //１フレーム当たりOSに返す時間(ms)
 
 chdir kifudir
 
-
 nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される
 
 担当棋譜変更による初期化 64, 1
-
 
 
 debug_line = ""
@@ -93,8 +91,12 @@ repeat
 		noteunsel
 		; 読み込みが完了したら、未読み込みリストから削除
 		del_data kifu_unloaded, temp_kifu_name
+		if get_cardinality(kifu_unloaded) == 0{
+			enable_auto_adjust 0 //自動FPS調整OFF
+			setfps 30
+		}
 	}
-	debug_line = "SGF読み込みではない"
+	
 	if ginfo_act >= 0{
 		if (cnt \ 100 == 99){
 			if get_cardinality(kifu_unloaded){
@@ -160,6 +162,8 @@ loop
 					push_data kifu_unloaded, a
 				loop
 			noteunsel
+			enable_auto_adjust
+			set_target_wait limit(tw / child_count, 1, 100)
 		swbreak
 
 		case 検索棋譜
