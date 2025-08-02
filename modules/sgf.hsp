@@ -518,21 +518,27 @@
 	loop
 	return result
 
-#defcfunc merge_node array node_list
+#defcfunc merge_node array node_list, array topnode_list
 	new = make_new_SGFnode(-1,TOPNODE_SIZE) //新たなトップノードを作成する
-	repeat length(node_list)
-		copied_node = deep_copy_sgf_node(node_list(cnt)) //ディープコピーしてそのノード番号を得る
-		merge_node_main new, copied_node //マージ実行
-		
-		if cnt \ 10 == 9{//１０棋譜以上であればフィードバックつける。
-			title "マージ実行中 " + cnt * 100 / length(node_list) + "ESCで中断"
-
-			getkey a, 27
-			if a: break
-		
-			await 16
-		}
-	loop
+	dim topnode_list
+	notesel s
+		repeat length(node_list)
+			noteload node_list(cnt)
+			topnode_list(cnt) = _load_sgf(s, -1)
+			merge_node_main new, topnode_list(cnt) //マージ実行
+			
+			if cnt \ 10 == 9{//１０棋譜以上であればフィードバックつける。
+				await 16
+				title "マージ実行中 " + cnt * 100 / length(node_list) + "ESCで中断"
+	
+				getkey a, 27
+				if a: break
+			
+				
+			}
+			await 1
+		loop
+	noteunsel
 	return new
 
 #deffunc merge_node_main int topnode1, int topnode2, local i, local c, local sn
