@@ -1405,11 +1405,6 @@ title "KataGo自己対戦棋譜-検索システム"
 			
 		//SGFモジュール初期化
 		init_sgf_module 10
-		
-		//ハッシュ初期化
-		dim filename_to_topnode
-		newmod filename_to_topnode, hash_manager, 棋譜数
-
 
 		//棋譜リスト初期化
 		dim kifulist
