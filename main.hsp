@@ -76,6 +76,7 @@ nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
 //-----------------------------------------------------------------------------
 
 
+//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。
 dim scba_effect_stack
 scba_effect_num = 0
 
@@ -1071,37 +1072,63 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 *getsgf
 
-	dim nodelist
-	original_directory = dir_cur
+	gosub*kifu_merge
+
+	//new_nodeにマージされたノードidが入っている
+
+	clipset get_node_sgf(new_node) ; SGF文字列に変換し、クリップボードにセット
+
+	gosub*kifu_merge_after
+	
+	title "棋譜をクリップボードにコピーしました"
+	return
+*save_file
+	
+	gosub*kifu_merge
+
+	s = get_node_sgf(new_node) ; マージされたノードをSGFに変換
+	
+	notesel s
+		//node_idsには選択されたアイテム名のリストが入ってる
+		  logmes savedir + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
+		notesave savedir + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
+	noteunsel
+
+	gosub*kifu_merge_after
+
+	title "棋譜をSGF形式で保存しました"
+	return
+*kifu_merge
+	tmpdir = dir_cur
 	chdir kifudir
+	dim nodelist
 	notesel sgf
-		repeat get_selected_item_indices(kifulist.current_kifulist, selected_index) //sにリストボックスの何番目が選択されているかが代入される
-			filename = get_item_name(kifulist.current_kifulist, selected_index) //ファイル名を取得
-			noteload filename //ファイルをロード	
+		repeat get_selected_item_ids(kifulist.current_kifulist, ids)
+			filename = get_item_name_by_id(kifulist.current_kifulist, ids(cnt)) //ファイル名を取得
+			noteload filename //ファイルをロード
 			nodelist(cnt) = load_sgf(sgf) //展開してトップノードの番号を取得
 		loop
 	noteunsel
-
-	chdir original_directory
-	
 	new_node = merge_node(nodelist) //選択された棋譜をマージ
-	clipset get_node_sgf(new_node) //それをクリップボードにセット
-
+	return
+*kifu_merge_after
 	//削除して完了
 	repeat length(nodelist)
 		del_sgf_node nodelist(cnt), 1
 	loop
 	del_sgf_node new_node, 1
-	
-	title "棋譜をクリップボードにコピーしました"
+
+	chdir tmpdir
 	return
+	
 *loadsgf
 	dim t
 	newmod t, treebox, treebox_area
 	sdim s, $FFFF
 	clipget s, varsize(s)
-
-	del_sgf_node sgf_topnode, 1
+	if sgf_topnode >= 0{
+		del_sgf_node sgf_topnode, 1
+	}
 	sgf_topnode = load_sgf(s)
 	
 	if sgf_topnode < 0: return
@@ -1128,26 +1155,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		clear_tejun te
 	}
 	return
-*save_file
-	tmpdir = dir_cur
 
-	dim nodelist
-	repeat get_selected_item_indices(kifulist.current_kifulist, node_ids)
-		nodelist(cnt) = int(get_value(filename_to_topnode,get_item_name(kifulist.current_kifulist, node_ids(cnt))))
-	loop
-	new_node = merge_node(nodelist)
-	s = get_node_sgf(new_node)
-	notesel s
-		logmes savedir + "/" + get_item_name(kifulist.current_kifulist, node_ids(0))
-		notesave savedir + "/" + get_item_name(kifulist.current_kifulist, node_ids(0))
-	noteunsel
-
-	del_sgf_node new_node, 1 //削除して完了
-	
-	chdir tmpdir
-
-	title "棋譜をSGF形式で保存しました"
-	return
 *create_pattern
 	time = keyfpstime
 	kl = kifulist_notepad
