@@ -511,7 +511,6 @@ title "KataGo自己対戦棋譜-検索システム"
 	deficit = MAX_CHILDREN - child_count_current
     if deficit >= 1{
    		gosub*init_sub_process
-	    棋譜リスト送信
 	}
     
 	gosub*on_copydata
@@ -1476,8 +1475,7 @@ title "KataGo自己対戦棋譜-検索システム"
     
     title "サブプロセス起動完了"
     
-    update_child_list
-
+    
     // 自動受信設定と受信コールバック関数の設定
     nocoAutoCopyData
 
@@ -1502,6 +1500,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	    precount = nocoConnectInfo(0)
     loop
     chdir tmp
+    update_child_list
+    棋譜リスト送信
 	return
 
 #deffunc update_child_list
