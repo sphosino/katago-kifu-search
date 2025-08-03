@@ -511,9 +511,9 @@ title "KataGo©ŒÈ‘ÎíŠû•ˆ-ŒŸõƒVƒXƒeƒ€"
 
 	deficit = MAX_CHILDREN - (nocoConnectInfo(0) - 1)
     if deficit >= 1{
-
    		gosub*init_sub_process //“à•”‚ÌÅŒã‚Åupdate_child_list‚ªŒÄ‚Î‚ê‚é
-   		
+	}else{
+		update_child_list
 	}
     
 	gosub*on_copydata
