@@ -74,7 +74,7 @@ chdir kifudir
 
 nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される
 
-担当棋譜変更による初期化 64, 1
+担当棋譜変更による初期化 64
 
 
 // メッセージ待機
@@ -83,9 +83,9 @@ repeat
 	gosub *on_copydata
 	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
 		temp_kifu_name = get_one_data(kifu_unloaded) ; 未読み込みリストから1つ取り出す
-		
 		notesel sgf_data
-			debug_line = "SGF読み込み"
+				exist temp_kifu_name
+				if strsize == -1:dialog "error 棋譜名 -> " + temp_kifu_name:end //ココ！！！
 			noteload temp_kifu_name
 			topnode = load_sgf(sgf_data) ; 棋譜読み込み
 			new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
@@ -121,8 +121,10 @@ repeat
 	
 loop
 
-#deffunc 担当棋譜変更による初期化 int p1, int 新規
-	if 新規{
+#deffunc 担当棋譜変更による初期化 int p1
+
+	if vartype(filename_to_topnode) != 5{
+		//モジュール型変数になっていなければ初回
 		nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * 10000 //受信用モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
 	}else{
 		delmod filename_to_topnode
@@ -132,7 +134,6 @@ loop
 	    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
     }
     init_sgf_module p1
-    dim filename_to_topnode
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
 	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
 	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット
@@ -156,8 +157,9 @@ loop
 		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
 			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
 			notesel received_data
-				担当棋譜変更による初期化 notemax
-				repeat notemax
+				棋譜数 = notemax
+				担当棋譜変更による初期化 棋譜数
+				repeat 棋譜数
 					noteget a, cnt
 					push_data kifu_all_assigned, a
 					push_data kifu_unloaded, a
@@ -170,15 +172,16 @@ loop
 		case 検索棋譜
 			mes "検索棋譜受信 ->" + strmid(received_data,0,50)
 			notesel received_data
+				棋譜数 = notemax
 				del_set search_target_kifus //既存setを破棄
-				search_target_kifus = make_new_set(notemax)
-				repeat notemax
+				search_target_kifus = make_new_set(棋譜数)
+				repeat 棋譜数
 					noteget a, cnt
 					if is_inset(kifu_all_assigned, a){
 						push_data search_target_kifus, a// 検索対象setに格納
 					}
 				loop
-				mes "検索棋譜 = " + notemax + " : " + get_cardinality(search_target_kifus)
+				mes "検索棋譜 = " + 棋譜数 + " : " + get_cardinality(search_target_kifus)
 			noteunsel
 			
 		swbreak
