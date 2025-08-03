@@ -14,6 +14,8 @@
 
 #bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
+#const FPS_AFTER_LOADING 24
+
 gsel 0,-1
 
 
@@ -92,7 +94,7 @@ repeat
 		del_data kifu_unloaded, temp_kifu_name
 		if get_cardinality(kifu_unloaded) == 0{
 			enable_auto_adjust 0 //自動FPS調整OFF
-			setfps 24
+			setfps FPS_AFTER_LOADING
 		}
 	}
 	
@@ -237,10 +239,15 @@ loop
 			}
 		loop
 		noteunsel
-	    mes "検索結果の数 -> " + result_num
+	    
 
 		lpoke result, 0, search_id
 		nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
+
+		mes "検索結果の数 -> " + result_num
+
+		enable_auto_adjust 0 //自動FPS調整OFF
+		setfps FPS_AFTER_LOADING
 	    
 	    swbreak
 
@@ -310,11 +317,15 @@ loop
 			loop
 			noteunsel
 
-			mes "検索結果の数 -> " + result_num
+			
 
 			lpoke result, 0, search_id
-	
 			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
+
+			mes "検索結果の数 -> " + result_num
+
+			enable_auto_adjust 0 //自動FPS調整OFF
+			setfps FPS_AFTER_LOADING
 
 	    swbreak
 

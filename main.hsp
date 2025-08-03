@@ -505,29 +505,12 @@ title "KataGo自己対戦棋譜-検索システム"
 	計測 "manage_keyfps"
 	manage_keyfps
 	notify_dt_draw_object frametime()
-
 	
 	update_child_list //子プロセス監視
 
 	deficit = MAX_CHILDREN - child_count_current
     if deficit >= 1{
-	    tmp = dir_cur
-   		chdir subdir
-   		await 50
-	    repeat deficit
-	    	await 33
-	    	exec "search_process",2
-	    loop
-	    chdir tmp
-	    //全て起動するまで待つ
-	    waitstarttime = keyfpstime
-	    while nocoConnectInfo(0) <= MAX_CHILDREN 
-	    	if keyfpstime - waitstarttime >= 10000{
-		    	dialog "子プロセス起動失敗"
-		    	end
-		    }
-	    	await 16
-	    wend
+   		gosub*init_sub_process
 	    棋譜リスト送信
 	}
     
@@ -1478,7 +1461,6 @@ title "KataGo自己対戦棋譜-検索システム"
     app_name = strf("%05d_myApp",rnd(32768))
    	nocoConnectAccept app_name
     // 設定ファイルを作成し、アプリ名と親のウィンドウハンドルを保存
-
     notesel s
 	    noteadd app_name
 	    noteadd str(hwnd)
@@ -1487,35 +1469,40 @@ title "KataGo自己対戦棋譜-検索システム"
 	    	notesave "app_name.txt"
 		chdir tmp
 	noteunsel
-	await 50
 
-	tmp = dir_cur
-    chdir subdir
-    repeat MAX_CHILDREN
-    	await 16
-    	exec "search_process"
-    loop
-    chdir tmp
-    //全て起動するまで待つ
-    waitstarttime = keyfpstime
-    while nocoConnectInfo(0) <= MAX_CHILDREN 
-	    if keyfpstime - waitstarttime >= 10000{
-	    	dialog "子プロセス起動失敗"
-	    	end
-	    }
-    	title "サブプロセス起動待機中" + MAX_CHILDREN + " -> " + nocoConnectInfo()
-    	await 16
-    wend
+	title "サブプロセス起動待機中"
+
+    gosub *init_sub_process
+    
     title "サブプロセス起動完了"
     
     update_child_list
 
-    
     // 自動受信設定と受信コールバック関数の設定
     nocoAutoCopyData
 
 	return
 
+*init_sub_process
+	await 50
+	precount = nocoConnectInfo(0) - 1 //親プロセス分の-1 
+	tmp = dir_cur
+    chdir subdir
+    repeat MAX_CHILDREN - precount
+    	await 20
+    	exec "search_process",2
+    	waitstarttime = keyfpstime
+    	while precount == nocoConnectInfo(0)
+    		if keyfpstime - waitstarttime >= 10000{
+		    	dialog "子プロセス起動失敗: max = " + MAX_CHILDREN + " actual = " + nocoConnectInfo(0) + " : " + (cnt + 1) + "個目の起動中"
+		    	end
+		    }
+	    	await 20
+	    wend
+	    precount = nocoConnectInfo(0)
+    loop
+    chdir tmp
+	return
 
 #deffunc update_child_list
     new_child_count = 0
