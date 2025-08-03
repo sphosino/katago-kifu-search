@@ -477,9 +477,10 @@ pretime = keyfpstime
 onexit *save_info //終了時に*save_infoにジャンプ
 
 //棋譜読み込み
-
 gosub*load_kifu_folder
 
+//子プロセス起動＆プロセス関係構築
+gosub *init_parent_process
 
 foreach kifulist
 	set_listbox_item_ysize kifulist.cnt, 25
@@ -489,6 +490,7 @@ gosub*loadsgf
 
 
 #if 01
+	//スクレイピング(棋譜収集)プロセス実行
 	tmp = dir_cur
 	chdir subdir
 	exec "download_sgf"
@@ -505,12 +507,13 @@ title "KataGo自己対戦棋譜-検索システム"
 	計測 "manage_keyfps"
 	manage_keyfps
 	notify_dt_draw_object frametime()
-	
-	update_child_list //子プロセス監視
 
-	deficit = MAX_CHILDREN - child_count_current
+
+	deficit = MAX_CHILDREN - (nocoConnectInfo(0) - 1)
     if deficit >= 1{
-   		gosub*init_sub_process
+
+   		gosub*init_sub_process //内部の最後でupdate_child_listが呼ばれる
+   		
 	}
     
 	gosub*on_copydata
@@ -1226,10 +1229,9 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	return
 #deffunc 棋譜リスト送信
-	//棋譜リスト送信
+
 	repeat child_count_current
 		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
-
 	loop
 	return
 	
@@ -1367,10 +1369,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	treebox_clear t
 	chdir kifudir
-	st = keyfpstime
 	dirlist files,"*.sgf"
 	棋譜数 = limit(stat,,load_limit)
-
 		
 	if MAX_CHILDREN <=  0{
 		MAX_CHILDREN =  get_auto_cores() //子プロセス数
@@ -1379,8 +1379,6 @@ title "KataGo自己対戦棋譜-検索システム"
 		棋譜数 = limit(MAX_CHILDREN * 19000,,load_limit)
 	}
 
-	gosub *init_parent_process
-	
 	notesel files
 	
 		;files = shuffle_notepad(files)
@@ -1415,14 +1413,12 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
 	
-		//担当棋譜リストを作る
 	noteunsel
-		
-	div_notepad kifulist_notepad, child_count_current, b //棋譜リストを各プロセス用に分割
-
 	
-	棋譜リスト送信
-
+	if kifulist_notepad != ""{
+		if vartype(b) != 2: b = "" //型合わせ
+		div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
+	}
 	return
 	
 
@@ -1448,14 +1444,11 @@ title "KataGo自己対戦棋譜-検索システム"
 #deffunc get_tejun array a
 */
 	
-
-
-
 *init_parent_process
 	dim child_hwnd_current, MAX_CHILDREN      // 子プロセスのウィンドウハンドル配列
 	sdim child_status_current, 64, MAX_CHILDREN // 子プロセスの状態配列
 	child_count_current = 0                   // 現在起動中の子プロセス数
-	dim prekeys, 9                        // キー入力の状態を保持
+
     // ユニークなアプリ名を作成
     app_name = strf("%05d_myApp",rnd(32768))
    	nocoConnectAccept app_name
@@ -1482,14 +1475,14 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 
 *init_sub_process
-	await 50
-	precount = nocoConnectInfo(0) - 1 //親プロセス分の-1 
+	await 20
+	precount = nocoConnectInfo(0)
 	tmp = dir_cur
     chdir subdir
-    repeat MAX_CHILDREN - precount
-    	await 20
-    	exec "search_process",2
+    repeat MAX_CHILDREN - (precount - 1) //親プロセス分の1 
+    	await 50
     	waitstarttime = keyfpstime
+    	exec "search_process"
     	while precount == nocoConnectInfo(0)
     		if keyfpstime - waitstarttime >= 10000{
 		    	dialog "子プロセス起動失敗: max = " + MAX_CHILDREN + " actual = " + nocoConnectInfo(0) + " : " + (cnt + 1) + "個目の起動中"
@@ -1501,81 +1494,91 @@ title "KataGo自己対戦棋譜-検索システム"
     loop
     chdir tmp
     update_child_list
-    棋譜リスト送信
+
+    if b != ""{
+	    //プロセスごとの棋譜分割が完了していたら
+	    await 20
+	    棋譜リスト送信
+	}
 	return
-
 #deffunc update_child_list
-    new_child_count = 0
-    dim temp_child_hwnd, MAX_CHILDREN
-    sdim temp_child_status, 64, MAX_CHILDREN
 
-    // なごコネに参加している全てのアプリ数を取得
-    total_connected_apps = nocoConnectInfo(0, 0)
+    total_connected_apps = nocoConnectInfo(0)
 
+    deleted_flag = 0
 
-	//終了された子プロセスをリストから除外
-    for i,, new_child_count
-		this = child_hwnd_list(i)
-		exist_hwnd = 0
-		repeat total_connected_apps
-			if nocoConnectInfo(1, cnt) == this{
-				exist_hwnd = 1
-				break
-			}
-		loop
-		if exist_hwnd == 0{
-			new_child_count--
-			child_hwnd(i) = child_hwnd(new_child_count)
-			i--
-		}
+    ; 終了された子プロセスを除外
+    
+    for i, 0, child_count_current
+
+        this = child_hwnd_list(i)
+        exist_hwnd = 0
+        repeat total_connected_apps
+            if nocoConnectInfo(1, cnt) == this {
+                exist_hwnd = 1
+                break
+            }
+        loop
+        if exist_hwnd == 0 {
+            deleted_flag++
+           _break
+        }
     next
 
-    //新たに生成されたプロセスを登録
+
+    new_child_count = 0
+
+    ; 新規プロセスを登録
     repeat total_connected_apps
         connected_hwnd = nocoConnectInfo(1, cnt)
-        if connected_hwnd == hwnd: continue
-        
-        // 新しいリストに追加
-        if (new_child_count <= MAX_CHILDREN) {
-
-            
-			found_index = find_child_by_hwnd(child_hwnd_list, connected_hwnd) //このhwndが既存のリストのどこにあるか？
-			if found_index == -1{
-            	temp_child_status(new_child_count) = "初期状態"
-            	
-            }else{
-				temp_child_status(new_child_count) = child_status_list(found_index)
-           	}
-           	
-            temp_child_hwnd(new_child_count) = connected_hwnd
-            
-            new_child_count++
-            
-        } else {
-            logmes "警告: 検出された子プロセスがMAX_CHILDRENを超えました。一部を無視します。"
-            break // 配列の容量を超えたらループを抜ける
-        }
-        
+        if connected_hwnd == hwnd : continue
+        child_hwnd_list(new_child_count) = connected_hwnd
+        new_child_count++
     loop
 
-    // 新しいリストを現在のリストにコピー
-    
-    dim child_hwnd_list, new_child_count
-    dim child_status_list, new_child_count
-    repeat new_child_count
-        child_hwnd_list(cnt) = temp_child_hwnd(cnt)
-        child_status_list(cnt) = temp_child_status(cnt)
-    loop
-
-	if child_count_current != new_child_count{
-		  child_count_current = new_child_count
-		  //変更通知
-		  repeat child_count_current
-		  	nocoSendCopyData child_hwnd_list(cnt), child_count_current, 子プロセス数, 4
-		  loop
-	}
+    ; 変更通知
+    if deleted_flag || (new_child_count != child_count_current){
+        child_count_current = new_child_count
+        repeat child_count_current
+            nocoSendCopyData child_hwnd_list(cnt), child_count_current, 子プロセス数, 4
+        loop
+    }
 
     return
+
+#deffunc close_child_hwnd int _hwnd
+	total_connected_apps = nocoConnectInfo(0)
+    for i, 0, child_count_current
+
+        this = child_hwnd_list(i)
+        exist_hwnd = 0
+        repeat total_connected_apps
+            if nocoConnectInfo(1, cnt) == _hwnd {
+                exist_hwnd = 1
+                break
+            }
+        loop
+        if exist_hwnd == 1 {
+	       nocoSendCopyData _hwnd, any, 終了指示
+			starttime = keyfpstime
+			while total_connected_apps == nocoConnectInfo(0)
+				if keyfpstime - starttime >= 500{
+					logmes "終了に時間がかかっています"
+					if keyfpstime - starttime >= 1000{
+						dialog "エラータイムアウト"
+						end
+					}
+				}
+				await 50
+			wend
+           child_count_current--
+           child_hwnd_list(i) = child_hwnd_list(child_count_current)
+           i--
+           _break
+        }
+    next
+    
+	return
 
 *on_copydata //毎フレーム呼び出す
 
@@ -1623,22 +1626,7 @@ title "KataGo自己対戦棋譜-検索システム"
    	
     nocoClearQueue
     return
-
-
-#module
-// 子プロセスのハンドルを検索し、そのインデックスを返す
-// 見つからない場合は -1 を返す
-#defcfunc find_child_by_hwnd array h_array, int search_hwnd
-    result = -1
-    repeat length(h_array)
-        if (h_array(cnt) == search_hwnd) {
-            result = cnt
-            break
-        }
-    loop
-    return result
-
-#global
+    
 *lab_sort1_asc
 	g_listbox_sort_by_text kifulist, LISTBOX_SORT_ASC
 	return
