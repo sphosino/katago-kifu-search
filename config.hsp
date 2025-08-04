@@ -1,8 +1,10 @@
 #packopt name "config"
 #include "nodmod/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
+
 #include "modules/katago_sqr.hsp"
 #include "calc_cores.hsp"
+
 screen 0
 title "Šû•ˆŒŸõƒVƒXƒeƒ€İ’è"
 left_size = ginfo_sx * 3 / 6
