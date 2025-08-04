@@ -1,5 +1,5 @@
 #packopt name "search_process"
-#include "nodmod/ProcLinkModule.hsp"
+#include "ProcLinkModuleQueue.hsp"
 #include "modules/rotate_coordinate.hsp"
 #include "../hsp_common/id_manager.hsp"
 #include "modules/bitboard.hsp"
@@ -84,8 +84,9 @@ repeat
 	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
 		temp_kifu_name = get_one_data(kifu_unloaded) ; 未読み込みリストから1つ取り出す
 		notesel sgf_data
-				exist temp_kifu_name
-				if strsize == -1:dialog "error 棋譜名 -> " + temp_kifu_name:end //ココ！！！
+			exist temp_kifu_name
+			if strsize == -1:dialog "error 棋譜名 -> " + temp_kifu_name:end
+
 			noteload temp_kifu_name
 			topnode = load_sgf(sgf_data) ; 棋譜読み込み
 			new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録

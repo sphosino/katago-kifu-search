@@ -16,5 +16,6 @@ packfile
 *.log
 *.bat
 *.sh
+*.png
 window.txt
 test/
