@@ -11,7 +11,7 @@ netinit
 #deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
 	stopflag = 0
 	endflag = 0
-	starttime = d3timer()
+	START_TIME = d3timer()
 	get_count = 0
 	dim result
 	now_dir = dir_cur
@@ -68,8 +68,8 @@ netinit
 	
 			game_id = int(get_content_tag(target_infos(0)))
 	
-			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((d3timer() - starttime) * 100 / lt,,100)+"%完了"
-			if d3timer() - starttime >= lt: break
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((d3timer() - START_TIME) * 100 / lt,,100)+"%完了"
+			if d3timer() - START_TIME >= lt: break
 			if check_exist_sgf(files, game_id){
 				await 4
 				continue
@@ -100,7 +100,7 @@ netinit
 			await
 		loop
 		if endflag:break
-		if d3timer() - starttime >= lt: break
+		if d3timer() - STRAT_TIME >= lt: break
 		await wt
 
 		if get_count < max{

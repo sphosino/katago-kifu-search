@@ -547,7 +547,7 @@ gosub*loadsgf
 	chdir subdir
 	exec "download_sgf"
 	chdir tmp
-	await 50
+	await 40
 #endif
 
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
