@@ -77,9 +77,9 @@ scbaSetPos tw,tw.1
 
 // 初期状態の安全性判定
 kifu_per_process = max_kifu.1 / process_num.1
-if kifu_per_process <= 19000 {
+if kifu_per_process <= LIMIT_PER_PROCESS {
 	safety_status = 0  // 安全
-} else : if kifu_per_process <= 20000 {
+} else : if kifu_per_process <= 90000 {
 	safety_status = 1  // 注意
 } else {
 	safety_status = 2  // 危険
@@ -121,8 +121,8 @@ stop
 	swbreak
 	case max_kifu(0)
 		max_kifu.1 = value
-		if max_kifu.1 / process_num.1 > 19000 {
-			process_num.1 = (max_kifu.1 + 18999) / 19000  // 切り上げ計算
+		if max_kifu.1 / process_num.1 > LIMIT_PER_PROCESS {
+			process_num.1 = (max_kifu.1 + 17999) / LIMIT_PER_PROCESS  // 切り上げ計算
 			if process_num.1 > max_child : process_num.1 = max_child
 			ScbaSetPos process_num, process_num.1
 			adjustment_message = "?? 自動調整: プロセス数を" + process_num.1 + "に変更"
@@ -133,8 +133,8 @@ stop
 	swbreak
 	case process_num(0)
 		process_num.1 = value
-		if max_kifu.1 / process_num.1 > 19000 {
-			max_kifu.1 = process_num.1 * 19000
+		if max_kifu.1 / process_num.1 > LIMIT_PER_PROCESS {
+			max_kifu.1 = process_num.1 * LIMIT_PER_PROCESS
 			if max_kifu.1 > 100000 : max_kifu.1 = 100000  // 上限チェック追加
 			ScbaSetPos max_kifu, max_kifu.1
 			adjustment_message = "?? 自動調整: 棋譜数を" + max_kifu.1 + "に制限"
@@ -148,9 +148,9 @@ stop
 	
 	// 安全性判定
 	kifu_per_process = max_kifu.1 / process_num.1
-	if kifu_per_process <= 19000 {
+	if kifu_per_process <= LIMIT_PER_PROCESS {
 		safety_status = 0  // 安全
-	} else : if kifu_per_process <= 25000 {
+	} else : if kifu_per_process <= LIMIT_PER_PROCESS + 10000 {
 		safety_status = 1  // 注意
 	} else {
 		safety_status = 2  // 危険
@@ -181,16 +181,16 @@ stop
 	switch safety_status
 	case 0  // 安全
 		color 0, 180, 0  // 緑
-		mes strf("[安全] %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		mes strf("[安全] %d棋譜/プロセス (推奨" + LIMIT_PER_PROCESS + "以下)", kifu_per_process)
 	swbreak
 	case 1  // 注意
 		color 255, 165, 0  // オレンジ
-		mes strf("[注意] %d棋譜/プロセス (推奨19000以下)", kifu_per_process) 
+		mes strf("[注意] %d棋譜/プロセス (推奨" + LIMIT_PER_PROCESS + "以下)", kifu_per_process) 
 		mes "    メモリ不足により動作しない可能性があります"
 	swbreak
 	case 2  // 危険
 		color 255, 0, 0  // 赤
-		mes strf("[危険] %d棋譜/プロセス (推奨19000以下)", kifu_per_process)
+		mes strf("[危険] %d棋譜/プロセス (推奨" + LIMIT_PER_PROCESS + "以下)", kifu_per_process)
 		pos 0, objysize * 5 + 25
 		color 255, 0, 0  // 赤を維持
 		mes "    メモリ不足により動作しない可能性があります"

@@ -11,6 +11,8 @@
 #enum 終了指示
 #enum 棋譜フォルダ変更
 
+
+
 //検索結果データの構造定義
 
 #const HEADER_SIZE 4

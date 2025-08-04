@@ -1462,8 +1462,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	if MAX_CHILDREN <=  0{
 		MAX_CHILDREN =  get_auto_cores() //子プロセス数
 	}
-	if 棋譜数 / MAX_CHILDREN >= 19000{
-		棋譜数 = limit(MAX_CHILDREN * 19000,,load_limit)
+	if 棋譜数 / MAX_CHILDREN >= LIMIT_PER_PROCESS{
+		棋譜数 = limit(MAX_CHILDREN * LIMIT_PER_PROCESS,,load_limit)
 	}
 	notesel files
 	

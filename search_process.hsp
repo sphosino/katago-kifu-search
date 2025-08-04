@@ -11,6 +11,7 @@
 #include "modules/search/Search_pattern.hsp"
 #include "modules/search/Search_pattern2.hsp"
 #include "kifu_protocol.hsp"
+#include "setting_defines.hsp"
 
 #bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
@@ -76,7 +77,7 @@ chdir kifudir
 
 await 50
 
-担当棋譜変更による初期化 19000
+担当棋譜変更による初期化 LIMIT_PER_PROCESS
 
 
 //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
