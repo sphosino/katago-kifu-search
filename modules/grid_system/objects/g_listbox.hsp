@@ -436,7 +436,18 @@
     fix_scroll_after_remove thismod
     return
 
-
+#modfunc g_listbox_sort int sort_flag, int sort_type
+    // sort_flag: 0=昇順, 1=降順
+    // sort_type: 0=数値ソート, 1=文字列ソート
+    
+    if sort_type {
+        // 数値ソート
+        g_listbox_sort_by_text thismod, sort_flag
+    } else {
+	    // 文字列ソート
+        g_listbox_sort_by_text_str thismod, sort_flag
+    }
+    return
 #modfunc g_listbox_shuffle
 	listbox_shuffle id_man
 	return

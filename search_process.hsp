@@ -35,7 +35,8 @@ addkey 'C' //長押しで画面クリア
 	dirname = dir_cur
 #endif
 subdir = dirname + "\\sub"
-kifudir = dirname + "\\棋譜"
+DEFAULT_KIFUDIR = dirname + "\\棋譜"
+kifudir = DEFAULT_KIFUDIR
 
 sdim result //親に結果を送る用のバッファ
 
@@ -134,7 +135,11 @@ loop
 	    del_set search_target_kifus
 	    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
     }
-    init_sgf_module p1
+    if DEFAULT_KIFUDIR == kifudir{
+   		init_sgf_module p1 //初期値(３８）
+    }else{
+		init_sgf_module p1, 200　//かなり大きめに確保
+	}
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
 	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
 	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット
@@ -168,6 +173,7 @@ loop
 			noteunsel
 			enable_auto_adjust
 			set_target_wait limit(tw / child_count, 1, 100)
+			chdir kifudir
 		swbreak
 
 		case 検索棋譜
@@ -336,6 +342,13 @@ loop
 	    case 子プロセス数:
 	    	child_count = lpeek(received_data)
 			set_target_wait limit(tw / child_count, 1, 100)
+	    swbreak
+
+	    case 棋譜フォルダ変更:
+	    	mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
+			kifudir = strmid(received_data,0,data_size)
+			
+			
 	    swbreak
 	 
 	    case 終了指示:

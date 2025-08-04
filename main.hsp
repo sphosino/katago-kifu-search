@@ -29,9 +29,12 @@
 	dirname = dir_exe
 #endif
 subdir = dirname + "\\sub"
-kifudir = dirname + "\\棋譜"
+DEFAULT_KIFUDIR = dirname + "\\棋譜"
+kifudir = DEFAULT_KIFUDIR
 savedir = dirname + "\\save"
 titledir = dirname + "\\title"
+
+pre_send_folder = "" //子プロセスに送信した棋譜フォルダ名
 
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
@@ -1284,10 +1287,20 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	return
 #deffunc 棋譜リスト送信
-
+	if pre_send_folder != kifudir{
+		sdim pre_send_folder
+		pre_send_folder = kifudir
+		logmes kifudir
+		repeat child_count_current
+			await 16
+			nocoSendCopyData child_hwnd_list(cnt), pre_send_folder, 棋譜フォルダ変更, strlen(pre_send_folder)
+		loop
+		await 100
+	}
 	repeat child_count_current
 		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
 	loop
+	
 	return
 	
 *filtering_and_make_listbox
@@ -1357,7 +1370,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		destroy_draw_object scba_effect_stack(cnt)
 	loop
 	scba_effect_num = 0
-	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_DESC //新しい棋譜順
+	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_DESC, is_original_folder//新しい棋譜順
 	return
 
 #deffunc move_next_int int p1
@@ -1430,16 +1443,22 @@ title "KataGo自己対戦棋譜-検索システム"
 			棋譜リスト送信
 		}else{
 			kifudir = prekifudir
+			chdir kifudir
 			dialog "棋譜が見つかりませんでした"
 		}
 	}
 	return
 *load_kifu_folder
 	
-	treebox_clear t
+	
 	chdir kifudir
 	dirlist files,"*.sgf"
 	棋譜数 = limit(stat,,load_limit)
+	if 棋譜数 == 0: return
+
+	is_original_folder = ( kifudir == DEFAULT_KIFUDIR )
+
+	treebox_clear t
 		
 	if MAX_CHILDREN <=  0{
 		MAX_CHILDREN =  get_auto_cores() //子プロセス数
@@ -1477,7 +1496,9 @@ title "KataGo自己対戦棋譜-検索システム"
 		}else{
 			add_item kifulist, files
 			kifulist_notepad = files
-			g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
+
+			g_listbox_sort kifulist, LISTBOX_SORT_DESC, is_original_folder
+
 		}
 	
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
@@ -1697,19 +1718,19 @@ title "KataGo自己対戦棋譜-検索システム"
     return
     
 *lab_sort1_asc
-	g_listbox_sort_by_text kifulist, LISTBOX_SORT_ASC
+	g_listbox_sort kifulist, LISTBOX_SORT_ASC, is_original_folder
 	return
 *lab_sort1_desc
-	g_listbox_sort_by_text kifulist, LISTBOX_SORT_DESC
+	g_listbox_sort kifulist, LISTBOX_SORT_DESC, is_original_folder
 	return
 *lab_sort1_shuffle
 	g_listbox_shuffle kifulist
 	return
 *lab_sort2_asc
-	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_ASC
+	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_ASC, is_original_folder
 	return
 *lab_sort2_desc
-	g_listbox_sort_by_text kifulist.matchlist, LISTBOX_SORT_DESC
+	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_DESC, is_original_folder
 	return
 *lab_sort2_shuffle
 	g_listbox_shuffle kifulist.matchlist

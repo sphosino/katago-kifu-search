@@ -7,10 +7,14 @@
 #define TOPNODE_SIZE 243   ; katago_rating_gamesの棋譜では(241) 
 #define NORMALNODE_SIZE 28 ; katago_rating_gamesの棋譜では(27)
 
-#deffunc init_sgf_module int 棋譜数
+#deffunc init_sgf_module int 棋譜数, int node_size
 
 	MAX_NODE = 棋譜数 * 210 //棋譜当たりの大体の平均手数(実測208)ぐらい
-	init_memory_pool MAX_NODE * 38, MAX_NODE * 2 //ノード当たりの大体のバイト数　、　ノード当たり２ブロック利用
+	if node_size == 0{
+		init_memory_pool MAX_NODE * 38, MAX_NODE * 2 //ノード当たりの大体のバイト数　、　ノード当たり２ブロック利用
+	}else{
+		init_memory_pool MAX_NODE * node_size, MAX_NODE * 2
+	}
 	init_bitboard MAX_NODE //ビットボードモジュールの初期化
 
 	//ビットボードIDの発行・管理用
