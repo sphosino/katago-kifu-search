@@ -1292,15 +1292,12 @@ title "KataGo自己対戦棋譜-検索システム"
 		pre_send_folder = kifudir
 		logmes kifudir
 		repeat child_count_current
-			await 16
 			nocoSendCopyData child_hwnd_list(cnt), pre_send_folder, 棋譜フォルダ変更, strlen(pre_send_folder)
 		loop
-		await 100
 	}
 	repeat child_count_current
 		nocoSendCopyData child_hwnd_list(cnt), b(cnt), 担当棋譜, strlen(b(cnt))
 	loop
-	
 	return
 	
 *filtering_and_make_listbox
@@ -1458,6 +1455,10 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	is_original_folder = ( kifudir == DEFAULT_KIFUDIR )
 
+	if sgf_topnode >= 0{
+		logmes "cleared 【sgf_topnode】"
+		del_sgf_node sgf_topnode, 1
+	}
 	treebox_clear t
 		
 	if MAX_CHILDREN <=  0{
@@ -1466,7 +1467,6 @@ title "KataGo自己対戦棋譜-検索システム"
 	if 棋譜数 / MAX_CHILDREN >= 19000{
 		棋譜数 = limit(MAX_CHILDREN * 19000,,load_limit)
 	}
-
 	notesel files
 	
 		;files = shuffle_notepad(files)
@@ -1509,6 +1509,8 @@ title "KataGo自己対戦棋譜-検索システム"
 		if vartype(b) != 2: b = "" //型合わせ
 		div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
 	}
+
+	
 	return
 	
 
@@ -1584,7 +1586,6 @@ title "KataGo自己対戦棋譜-検索システム"
     loop
     chdir tmp
     update_child_list
-
     if b != ""{
 	    //プロセスごとの棋譜分割が完了していたら
 	    await 20
@@ -1628,6 +1629,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
     ; 変更通知
     if deleted_flag || (new_child_count != child_count_current){
+	    
         child_count_current = new_child_count
         repeat child_count_current
             nocoSendCopyData child_hwnd_list(cnt), child_count_current, 子プロセス数, 4

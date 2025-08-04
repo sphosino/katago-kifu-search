@@ -26,6 +26,8 @@ delkey_all //キー監視をすべてクリア
 addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 addkey 'C' //長押しで画面クリア
 
+最大棋譜数 = 10000
+
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
@@ -39,6 +41,7 @@ DEFAULT_KIFUDIR = dirname + "\\棋譜"
 kifudir = DEFAULT_KIFUDIR
 
 sdim result //親に結果を送る用のバッファ
+
 
 ///////////////////////通信設定
 // 設定読み込み
@@ -73,13 +76,13 @@ set_target_wait tw //１フレーム当たりOSに返す時間(ms)
 
 chdir kifudir
 
-nocoAutoCopyData //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される
+await 50
 
-担当棋譜変更による初期化 64
+担当棋譜変更による初期化 10000
 
 
-// メッセージ待機
-repeat
+//自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
+nocoAutoCopyData :repeat
 	manage_keyfps
 	gosub *on_copydata
 	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
@@ -117,7 +120,7 @@ repeat
 			break
 		}
 	loop
-	if exist_parent = 0: end
+	if exist_parent = 0:end
 	if getdbl_ms(27, 250): view_window ^= 1: gsel 0, view_window*2-1 //ESC連打で切り替え
 	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
 	
@@ -127,19 +130,21 @@ loop
 
 	if vartype(filename_to_topnode) != 5{
 		//モジュール型変数になっていなければ初回
-		nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * 10000 //受信用モジュール内のキューのスロットサイズ設定(最初は余裕をもって確保
 	}else{
 		delmod filename_to_topnode
 		del_set kifu_all_assigned
 	    del_set kifu_unloaded
 	    del_set search_target_kifus
-	    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
+	    
     }
+    if 最大棋譜数 < p1: 最大棋譜数 = p1
+    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * 最大棋譜数
     if DEFAULT_KIFUDIR == kifudir{
-   		init_sgf_module p1 //初期値(３８）
+	    mes "デフォルトフォルダに変更"
     }else{
-		init_sgf_module p1, 200　//かなり大きめに確保
+	    mes "カスタムフォルダに変更"
 	}
+	init_sgf_module p1 //初期値(３８）
 	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
 	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
 	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット
@@ -160,21 +165,7 @@ loop
 	    // パラメータで処理を分岐
 	    switch param
 	
-		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
-			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
-			notesel received_data
-				棋譜数 = notemax
-				担当棋譜変更による初期化 棋譜数
-				repeat 棋譜数
-					noteget a, cnt
-					push_data kifu_all_assigned, a
-					push_data kifu_unloaded, a
-				loop
-			noteunsel
-			enable_auto_adjust
-			set_target_wait limit(tw / child_count, 1, 100)
-			chdir kifudir
-		swbreak
+
 
 		case 検索棋譜
 			mes "検索棋譜受信 ->" + strmid(received_data,0,50)
@@ -194,70 +185,70 @@ loop
 		swbreak
 	
 	    case 検索実行
-	    search_init
-		
-		//検索条件を取り出す
-		search_id = lpeek(received_data, 0)
-		max_depth = lpeek(received_data, 4)
-		colorflip = lpeek(received_data, 8)
-		inverse   = lpeek(received_data, 12) 
-		set_base_from_binary received_data, 16
-	
-		mes strf("通常検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
-		
-		
-		prexy = -1, -1
-	
-		result_num = 0
-		nowpointer = 0
-	
-		notesel sgf_data
-	    repeat set_to_array(search_target_kifus, kifu)
-			if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
-				noteload kifu(cnt)
-				topnode = load_sgf(sgf_data) //棋譜読み込み
-				new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
-						; 読み込みが完了したら、未読み込みリストから削除
-				del_data kifu_unloaded, kifu(cnt)
-			}else{
-				topnode = int(refstr)
-			}
-	
-			get_board_size_from_SGF topnode, xy
-	
-	
-			//前回検索した棋譜とボードサイズが違う場合
-			if prexy != xy || prexy.1 != xy.1{
-				prexy = xy,xy.1
-				//新たなパターンを生成
-				make_rotate_patterns xy, xy.1
-				get_pattern rotated_color, rotated_group, rotated_tejun
+		    search_init
 			
-				//回転パターン数
-				r_pattern_num = 4 << (xy == xy.1)
-	
-				//ヒットと判定するために必要な数
-				group_num = get_pattern_all_groups_num()
+			//検索条件を取り出す
+			search_id = lpeek(received_data, 0)
+			max_depth = lpeek(received_data, 4)
+			colorflip = lpeek(received_data, 8)
+			inverse   = lpeek(received_data, 12) 
+			set_base_from_binary received_data, 16
+		
+			mes strf("通常検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
+			
+			
+			prexy = -1, -1
+		
+			result_num = 0
+			nowpointer = 0
+		
+			notesel sgf_data
+		    repeat set_to_array(search_target_kifus, kifu)
+				if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
+					noteload kifu(cnt)
+					topnode = load_sgf(sgf_data) //棋譜読み込み
+					new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+							; 読み込みが完了したら、未読み込みリストから削除
+					del_data kifu_unloaded, kifu(cnt)
+				}else{
+					topnode = int(refstr)
+				}
+		
+				get_board_size_from_SGF topnode, xy
+		
+		
+				//前回検索した棋譜とボードサイズが違う場合
+				if prexy != xy || prexy.1 != xy.1{
+					prexy = xy,xy.1
+					//新たなパターンを生成
+					make_rotate_patterns xy, xy.1
+					get_pattern rotated_color, rotated_group, rotated_tejun
 				
-			}
-			
-			//検索実行
-			search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
-			
-			if (path(0) >= 0) ^ inverse{
-				gosub*add_result
-			}
-		loop
-		noteunsel
-	    
-
-		lpoke result, 0, search_id
-		nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
-
-		mes "検索結果の数 -> " + result_num
-
-		enable_auto_adjust 0 //自動FPS調整OFF
-		setfps FPS_AFTER_LOADING
+					//回転パターン数
+					r_pattern_num = 4 << (xy == xy.1)
+		
+					//ヒットと判定するために必要な数
+					group_num = get_pattern_all_groups_num()
+					
+				}
+				
+				//検索実行
+				search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
+				
+				if (path(0) >= 0) ^ inverse{
+					gosub*add_result
+				}
+			loop
+			noteunsel
+		    
+	
+			lpoke result, 0, search_id
+			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
+	
+			mes "検索結果の数 -> " + result_num
+	
+			enable_auto_adjust 0 //自動FPS調整OFF
+			setfps FPS_AFTER_LOADING
 	    
 	    swbreak
 
@@ -339,15 +330,32 @@ loop
 
 	    swbreak
 
-	    case 子プロセス数:
+	    case 子プロセス数
 	    	child_count = lpeek(received_data)
 			set_target_wait limit(tw / child_count, 1, 100)
 	    swbreak
-
-	    case 棋譜フォルダ変更:
-	    	mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
+	    
+		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
+			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
+			notesel received_data
+				棋譜数 = notemax
+				担当棋譜変更による初期化 棋譜数
+				repeat 棋譜数
+					noteget a, cnt
+					push_data kifu_all_assigned, a
+					push_data kifu_unloaded, a
+				loop
+			noteunsel
+			enable_auto_adjust
+			set_target_wait limit(tw / child_count, 1, 100)
+			chdir kifudir
+		swbreak
+		
+	    case 棋譜フォルダ変更
+	    	
+	    	
 			kifudir = strmid(received_data,0,data_size)
-			
+			mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
 			
 	    swbreak
 	 
