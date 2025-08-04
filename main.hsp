@@ -422,7 +422,7 @@ set_padding goban_area, , 0
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
-add_tooltip button_save_file, "選択中の棋譜をSGF形式で一時フォルダに保存"
+add_tooltip button_save_file, "次回起動時までsaveフォルダに保存"
 add_tooltip kifustart, "何手目から表示するかを設定"
 add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
 add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
@@ -434,12 +434,10 @@ add_tooltip sort2_desc,"新しい棋譜順"
 add_tooltip sort1_asc, "古い棋譜順"
 add_tooltip sort1_desc, "新しい棋譜順"
 
-
-
 set_tooltip_color 0x333333, 0xFFFFFF
 
 //実体作成
-newmod g_buttons, grid_button, "保存",*save_file,button_save_file
+newmod g_buttons, grid_button, "一時保存",*save_file,button_save_file
 newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
 newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
 newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
