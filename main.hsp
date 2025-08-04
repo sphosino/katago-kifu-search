@@ -340,7 +340,7 @@ root = make_area_child(1,1)
 			chkbox_view_hosi = make_area_child()
 			button_getsgf = make_area_child()
 			button_getsgf_nowpoint = make_area_child()
-			button_download_file = make_area_child()
+			button_select_folder = make_area_child()
 			button_save_file = make_area_child()
 			
 		goban_area = make_area_child(1,2,body_area)
@@ -459,6 +459,7 @@ newmod g_buttons, grid_button, "混",*lab_sort1_shuffle, sort1_shuffle
 newmod g_buttons, grid_button, "昇",*lab_sort2_asc, sort2_asc
 newmod g_buttons, grid_button, "降",*lab_sort2_desc, sort2_desc
 newmod g_buttons, grid_button, "混",*lab_sort2_shuffle, sort2_shuffle
+newmod g_buttons, grid_button, "フォルダ選択",*select_folder,button_select_folder
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
@@ -914,8 +915,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	//CTRLダブルクリックでデバッグモード切替
 	if getdbl_ms(17, DBL_INTERVAL){
 		debugmode ^ 1
-		logmes "switched debugmode ->" +debugmode
+		logmes "switched debugmode ->" + debugmode
 	}
+
+
 
 
 	計測 "object_managers"
@@ -1416,7 +1419,21 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	redraw_stones board
 	return
-	
+*select_folder
+	sdim tmp
+	selfolder tmp, "棋譜の入ったフォルダを選択"
+	if stat = 0{
+		prekifudir = kifudir
+		kifudir = tmp
+		gosub*load_kifu_folder
+		if 棋譜数 >= 1{
+			棋譜リスト送信
+		}else{
+			kifudir = prekifudir
+			dialog "棋譜が見つかりませんでした"
+		}
+	}
+	return
 *load_kifu_folder
 	
 	treebox_clear t
