@@ -26,8 +26,6 @@ delkey_all //キー監視をすべてクリア
 addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 addkey 'C' //長押しで画面クリア
 
-最大棋譜数 = 10000
-
 
 #ifdef _debug
 	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
@@ -78,7 +76,7 @@ chdir kifudir
 
 await 50
 
-担当棋譜変更による初期化 10000
+担当棋譜変更による初期化 19000
 
 
 //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
