@@ -9,6 +9,9 @@
 
 #include "modules/sgf.hsp"
 #include "setting_defines.hsp"
+#include "user32.as"
+#include "hspext.as"
+
 #include "modules/search/pattern.hsp"
 #include "modules/search/draw_pattern.hsp"
 #include "ProcLinkModuleQueue.hsp"
@@ -19,225 +22,26 @@
 
 #include "go_game_manager.hsp"
 #include "calc_cores.hsp"
+//new
+#include "config_path.hsp"
+#include "startup.hsp" //(*init_window)
+#include "clear_save_folder.hsp"
 
-#include "hspext.as"
-#include "user32.as"
 
-#ifdef _debug
-	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
-#else
-	dirname = dir_exe
-#endif
-subdir = dirname + "\\sub"
-DEFAULT_KIFUDIR = dirname + "\\棋譜"
-kifudir = DEFAULT_KIFUDIR
-savedir = dirname + "\\save"
-titledir = dirname + "\\title"
-
-pre_send_folder = "" //子プロセスに送信した棋譜フォルダ名
 
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
-
 #const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
-
 #const BG_COLOR $808080 // 128,128,128
 
-; --- 簡易二重起動防止 ---
- APP_IDENTIFIER_KEY = "MyUniqueAppKey_20250731" ; アプリケーションごとにユニークなキーを設定
-#define MM_KEY_OFFSET    0   ; アプリケーションキーを格納するオフセット (64バイト)
-#define MM_HWND_OFFSET   64  ; ウィンドウハンドルを格納するオフセット (4バイト)
-#define MM_FILE_SIZE     (MM_KEY_OFFSET + 64 + MM_HWND_OFFSET + 4) ; ファイル全体のサイズ (十分なサイズを確保)
+gosub *init_window
 
-; --- 起動チェックとアクティブ化 ---
-sdim read_key, 64  ; app_keyを読み込むためのバッファ
-sdim read_hwnd, 64 ; hwndを読み込むためのバッファ
-
-; キーの読み込み
-nocoMemomapRead read_key, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
-
-; 既存のキーと一致するかチェック
-if read_key == APP_IDENTIFIER_KEY {
-    ; 既に起動している
-    ; 既存のウィンドウハンドルを読み込む
-    nocoMemomapRead read_hwnd, APP_IDENTIFIER_KEY, 4, 0, MM_HWND_OFFSET
-    
-    if lpeek(read_hwnd){ ; 有効なハンドルが取得できた場合
-
-        FlashWindow lpeek(read_hwnd), 0
-		ShowWindow lpeek(read_hwnd), 1
-        SetForegroundWindow lpeek(read_hwnd)
-    }
-    
-    end ; 現在のプロセスは終了
-}
-//起動中の証を書き込む
-nocoMemoryMapping APP_IDENTIFIER_KEY, MM_FILE_SIZE
-nocoMemomapWrite APP_IDENTIFIER_KEY, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
-this_hwnd = hwnd
-nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
-//-----------------------------------------------------------------------------
-
-//乱数を初期化
-randomize
-
-//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
-dim scba_effect_stack
-scba_effect_num = 0
-
-//子プロセスからの結果を格納する
-sdim tmp_filename, 64
-sdim tmp_path, INFO_SIZE ; ヒット位置
-
-newmod search_id_manager, id_manager
-search_id = -1
-last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
-//前回起動時の情報があれば復元
-
-chdir subdir
-exist SETTING_FILE_NAME
-
-notesel setting_str
-if strsize == -1{
-	repeat SETTING_MAX_LINE
-		noteadd ""
-	loop
-	
-	sx = ginfo(20) * 3 / 4
-	sy = ginfo(21) * 3 / 4
-	wx = (ginfo(20) - sx) / 2
-	wy = (ginfo(21) - sy) / 2
-	//探索の最大深さ
-	max_depth = DEFAULT_MAX_DEPTH
-	
-	//色反転を含めるか
-	enableColorFlip = 1
-	
-	//星を表示するか
-	view_hosi = 1
-
-	//最終手表示
-	last_move_mark = 1
-	
-	//棋譜を何手目から表示するか
-	kifu_start_num = 10
-
-	//棋譜再生速度(ms)
-	auto_interval = 500
-	alpha_interval = 10000
-	m_interval = 5000
-
-	load_limit = 100000 //１０万件
-	child_target_wait = DEFAULT_TARGET_WAIT //子プロセス達がOSに返す時間
-
-}else{
-	noteload SETTING_FILE_NAME
-
-	noteget_ wx, LINE_WINDOW_POSITION_X
-	noteget_ wy, LINE_WINDOW_POSITION_Y
-	noteget_ sx, LINE_WINDOW_SIZE_X
-	noteget_ sy, LINE_WINDOW_SIZE_Y
-	noteget_ max_depth, LINE_MAX_DEPTH
-	noteget_ enableColorFlip, LINE_COLORFLIP
-	noteget_ view_hosi, LINE_VIEW_HOSI
-	noteget_ last_move_mark, LINE_LAST_MOVE_MARK
-	noteget_ kifu_start_num, LINE_KIFU_START_NUM
-	noteget_ auto_interval, LINE_AUTO_INTERVAL
-	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
-	noteget_ m_interval, LINE_M_INTERVAL
-	noteget_ auto_download, LINE_AUTO_DOWNLOAD_TIME
-	noteget_ 最大化, LINE_MAXIMIZED
-	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
-	noteget_ load_limit, LINE_LOAD_LIMIT
-	noteadd_ child_target_wait, LINE_TARGET_WAIT
-
-	if wx < 0{
-		wx = (ginfo(20) - x) / 2
-		wy = (ginfo(21) - y) / 2
-	}
-
-	sx = limit(sx, 460)
-	sy = limit(sy, 345)
-
-}
-
-noteunsel
-
-
-if load_limit < 3000: load_limit = 100000 //３０００件は読み込もうぜ。
-
-//ウィンドウ作成
-screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
-
-GetWindowLong hwnd, -16
-SetWindowLong hwnd, -16, stat | $10000 | $40000
-
-save_window_status = ginfo(4), ginfo(5), ginfo(12), ginfo(13)
-
-if 最大化: sendmsg hwnd, $112, $F030
-
-redraw 2
-boxf
-
-//遊び心(gemini生成画像)
-chdir titledir
-dirlist files, "*", 2
-if stat{
-	notesel files
-	noteget title_picture, rnd(stat)
-	
-	exist title_picture
-	
-	if strsize >= 0{
-		//画像読み込み
-		celload title_picture
-		buf = stat
-		gsel buf
-		picxy = 0. + ginfo_sx, 0. + ginfo_sy //画像サイズ
-		gsel 0
-		
-		screen_width = 0. + ginfo(12)
-		screen_height = 0. + ginfo(13)
-		screen_aspect_ratio = screen_width / screen_height
-		image_aspect_ratio = picxy/picxy.1
-		//スケールの小さいほうに合わせる
-		display_width = 0
-		display_height = 0
-		remaining_width = 0
-
-		if image_aspect_ratio >= screen_aspect_ratio{
-
-       		display_width = screen_width
-        	display_height = int(screen_width / image_aspect_ratio)
-        	remaining_height = 0.
-    		remaining_height = screen_height - display_height
-	    }else{
-	        display_height = screen_height
-	        display_width = int(screen_height * image_aspect_ratio)
-			remaining_width = screen_width - display_width
-        	remaining_height = 0.
-		}
-		gzoom display_width,display_height, buf,0,0,picxy, picxy.1
-
-		//メモリ縮小
-		buffer buf,1,1
-		gsel 0
-	}
-	
-	if remaining_width >= 200{
-		left_margin = display_width
-	}
-}
-tmp = left_margin, 0, ginfo(12), ginfo(13)
-set_max_centering_mes limit(ginfo(12)-left_margin,,ginfo(13))
-
-color 255, 255, 255
-centering_mes "システム起動中", tmp, "メイリオ", 4
-redraw
 
 //初期化開始
 nocoClearCopyDataQueue HEADER_SIZE + RECORD_SIZE * 40000
 
+
+pre_send_folder = "" //子プロセスに送信した棋譜フォルダ名
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
 search_result_sgflist = ""
 jidou = 0
@@ -266,7 +70,7 @@ dim rect_stack, 4
 dim matchlist                ; 検索結果用リストボックスIDを格納
 
 
-sdim kifulist_notepad
+sdim kifulist_notepad ; 棋譜リストボックス内にあるアイテム名をnotepad形式で保持
 
 pre_filter_on = -1
 pre_filter = -1
@@ -289,17 +93,6 @@ repeat 4
 	addkey 37+cnt //カーソルキー
 loop
 
-
-
-//saveフォルダを空にする
-chdir savedir
-dirlist filelist, "*.sgf"
-notesel filelist
-repeat notemax
-	noteget tmp, cnt
-	delete tmp
-loop
-noteunsel
 
 //エリア作成
 root = make_area_child(1,1)
@@ -390,7 +183,7 @@ root = make_area_child(1,1)
 					radiobox_grouping = make_area_child()
 
 //グリッド情報をロード（エリアを作成してからでないと復元できない）
-chdir subdir
+chdir SUBDIR
 exist "area.var" 
 if strsize >= 0{
 	save_load_manager_load
@@ -407,7 +200,7 @@ set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
-set_padding sidebar_kifulist_area_background, 7
+set_padding sidebar_kifulist_area_background, 5,5,5,5
 
 set_margin sidebar_kifulist_area, 5,3
 
@@ -559,7 +352,7 @@ gosub*loadsgf
 #if 01
 	//スクレイピング(棋譜収集)プロセス実行
 	tmp = dir_cur
-	chdir subdir
+	chdir SUBDIR
 	exec "download_sgf"
 	chdir tmp
 	await 40
@@ -1149,8 +942,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	notesel s
 		//node_idsには選択されたアイテム名のリストが入ってる
-		  logmes savedir + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
-		notesave savedir + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
+		  logmes SAVEDIR + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
+		notesave SAVEDIR + "/" + get_item_name_by_id(kifulist.current_kifulist, node_ids(0))
 	noteunsel
 
 	gosub*kifu_merge_after
@@ -1570,7 +1363,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	    noteadd app_name
 	    noteadd str(hwnd)
 	    tmp = dir_cur
-		chdir subdir
+		chdir SUBDIR
 	    	notesave "app_name.txt"
 		chdir tmp
 	noteunsel
@@ -1591,7 +1384,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	await 20
 	precount = nocoConnectInfo(0)
 	tmp = dir_cur
-    chdir subdir
+    chdir SUBDIR
     repeat MAX_CHILDREN - (precount - 1) //親プロセス分の1 
     	await 50
     	waitstarttime = keyfpstime
@@ -1778,7 +1571,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
 	noteadd_ child_target_wait, LINE_TARGET_WAIT
 	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
-	chdir subdir
+	chdir SUBDIR
 	notesave SETTING_FILE_NAME
 	save_load_manager_save //グリッド情報保存
 	end

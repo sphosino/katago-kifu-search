@@ -1,0 +1,196 @@
+
+goto*@f //読み込まれた時点ではスキップ
+*init_window
+; --- 簡易二重起動防止 ---
+ APP_IDENTIFIER_KEY = "MyUniqueAppKey_20250731" ; アプリケーションごとにユニークなキーを設定
+#define MM_KEY_OFFSET    0   ; アプリケーションキーを格納するオフセット (64バイト)
+#define MM_HWND_OFFSET   64  ; ウィンドウハンドルを格納するオフセット (4バイト)
+#define MM_FILE_SIZE     (MM_KEY_OFFSET + 64 + MM_HWND_OFFSET + 4) ; ファイル全体のサイズ (十分なサイズを確保)
+
+; --- 起動チェックとアクティブ化 ---
+sdim read_key, 64  ; app_keyを読み込むためのバッファ
+sdim read_hwnd, 64 ; hwndを読み込むためのバッファ
+
+; キーの読み込み
+nocoMemomapRead read_key, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+
+; 既存のキーと一致するかチェック
+if read_key == APP_IDENTIFIER_KEY {
+    ; 既に起動している
+    ; 既存のウィンドウハンドルを読み込む
+    nocoMemomapRead read_hwnd, APP_IDENTIFIER_KEY, 4, 0, MM_HWND_OFFSET
+    
+    if lpeek(read_hwnd){ ; 有効なハンドルが取得できた場合
+
+        FlashWindow lpeek(read_hwnd), 0
+		ShowWindow lpeek(read_hwnd), 1
+        SetForegroundWindow lpeek(read_hwnd)
+    }
+    
+    end ; 現在のプロセスは終了
+}
+//起動中の証を書き込む
+nocoMemoryMapping APP_IDENTIFIER_KEY, MM_FILE_SIZE
+nocoMemomapWrite APP_IDENTIFIER_KEY, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+this_hwnd = hwnd
+nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
+//-----------------------------------------------------------------------------
+
+//乱数を初期化
+randomize
+
+//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
+dim scba_effect_stack
+scba_effect_num = 0
+
+//子プロセスからの結果を格納する
+sdim tmp_filename, 64
+sdim tmp_path, INFO_SIZE ; ヒット位置
+
+newmod search_id_manager, id_manager
+search_id = -1
+last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
+//前回起動時の情報があれば復元
+
+chdir SUBDIR
+exist SETTING_FILE_NAME
+
+notesel setting_str
+if strsize == -1{
+	repeat SETTING_MAX_LINE
+		noteadd ""
+	loop
+	
+	sx = ginfo(20) * 3 / 4
+	sy = ginfo(21) * 3 / 4
+	wx = (ginfo(20) - sx) / 2
+	wy = (ginfo(21) - sy) / 2
+	//探索の最大深さ
+	max_depth = DEFAULT_MAX_DEPTH
+	
+	//色反転を含めるか
+	enableColorFlip = 1
+	
+	//星を表示するか
+	view_hosi = 1
+
+	//最終手表示
+	last_move_mark = 1
+	
+	//棋譜を何手目から表示するか
+	kifu_start_num = 10
+
+	//棋譜再生速度(ms)
+	auto_interval = 500
+	alpha_interval = 10000
+	m_interval = 5000
+
+	load_limit = 100000 //１０万件
+	child_target_wait = DEFAULT_TARGET_WAIT //子プロセス達がOSに返す時間
+
+}else{
+	noteload SETTING_FILE_NAME
+
+	noteget_ wx, LINE_WINDOW_POSITION_X
+	noteget_ wy, LINE_WINDOW_POSITION_Y
+	noteget_ sx, LINE_WINDOW_SIZE_X
+	noteget_ sy, LINE_WINDOW_SIZE_Y
+	noteget_ max_depth, LINE_MAX_DEPTH
+	noteget_ enableColorFlip, LINE_COLORFLIP
+	noteget_ view_hosi, LINE_VIEW_HOSI
+	noteget_ last_move_mark, LINE_LAST_MOVE_MARK
+	noteget_ kifu_start_num, LINE_KIFU_START_NUM
+	noteget_ auto_interval, LINE_AUTO_INTERVAL
+	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
+	noteget_ m_interval, LINE_M_INTERVAL
+	noteget_ auto_download, LINE_AUTO_DOWNLOAD_TIME
+	noteget_ 最大化, LINE_MAXIMIZED
+	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
+	noteget_ load_limit, LINE_LOAD_LIMIT
+	noteadd_ child_target_wait, LINE_TARGET_WAIT
+
+	if wx < 0{
+		wx = (ginfo(20) - x) / 2
+		wy = (ginfo(21) - y) / 2
+	}
+
+	sx = limit(sx, 460)
+	sy = limit(sy, 345)
+
+}
+
+noteunsel
+
+
+if load_limit < 3000: load_limit = 100000 //３０００件は読み込もうぜ。
+
+//ウィンドウ作成
+screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
+
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
+
+save_window_status = ginfo(4), ginfo(5), ginfo(12), ginfo(13)
+
+if 最大化: sendmsg hwnd, $112, $F030
+
+redraw 2
+boxf
+
+//遊び心(gemini生成画像)
+chdir TITLEDIR
+dirlist files, "*", 2
+if stat{
+	notesel files
+	noteget title_picture, rnd(stat)
+	
+	exist title_picture
+	
+	if strsize >= 0{
+		//画像読み込み
+		celload title_picture
+		buf = stat
+		gsel buf
+		picxy = 0. + ginfo_sx, 0. + ginfo_sy //画像サイズ
+		gsel 0
+		
+		screen_width = 0. + ginfo(12)
+		screen_height = 0. + ginfo(13)
+		screen_aspect_ratio = screen_width / screen_height
+		image_aspect_ratio = picxy/picxy.1
+		//スケールの小さいほうに合わせる
+		display_width = 0
+		display_height = 0
+		remaining_width = 0
+
+		if image_aspect_ratio >= screen_aspect_ratio{
+
+       		display_width = screen_width
+        	display_height = int(screen_width / image_aspect_ratio)
+        	remaining_height = 0.
+    		remaining_height = screen_height - display_height
+	    }else{
+	        display_height = screen_height
+	        display_width = int(screen_height * image_aspect_ratio)
+			remaining_width = screen_width - display_width
+        	remaining_height = 0.
+		}
+		gzoom display_width,display_height, buf,0,0,picxy, picxy.1
+
+		//メモリ縮小
+		buffer buf,1,1
+		gsel 0
+	}
+	
+	if remaining_width >= 200{
+		left_margin = display_width
+	}
+}
+tmp = left_margin, 0, ginfo(12), ginfo(13)
+set_max_centering_mes limit(ginfo(12)-left_margin,,ginfo(13))
+
+color 255, 255, 255
+centering_mes "システム起動中", tmp, "メイリオ", 4
+redraw
+	return
+*@ //スキップここまで
