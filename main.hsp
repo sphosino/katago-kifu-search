@@ -413,10 +413,16 @@ set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
+set_margin slider_area, 0, 0
+set_padding slider_1, 0,0,0,0
+set_padding slider_2, 0,0,0,0
+set_padding slider_3, 0,0,0,0
+
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
 set_margin sidebar_kifulist1, 0,5
 set_margin sidebar_kifulist2, 0,5
+
 
 set_padding sidebar_sort1, 0, 0
 set_padding sidebar_sort2, 0, 0
