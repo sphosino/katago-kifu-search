@@ -1,4 +1,8 @@
-
+#include "user32.as"
+#include "kifu_protocol.hsp"
+#include "ProcLinkModuleQueue.hsp"
+#include "setting_defines.hsp"
+#addition "../hsp_common/centering_mes.hsp"
 goto*@f //読み込まれた時点ではスキップ
 *init_window
 ; --- 簡易二重起動防止 ---
