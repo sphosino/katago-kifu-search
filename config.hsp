@@ -4,7 +4,7 @@
 
 #include "modules/katago_sqr.hsp"
 #include "calc_cores.hsp"
-
+#include "config_path.hsp"
 screen 0
 title "Šû•ˆŒŸõƒVƒXƒeƒ€İ’è"
 left_size = ginfo_sx * 3 / 6
@@ -16,14 +16,8 @@ font "", 22
 adjustment_message = ""
 safety_status = 0  // 0:ˆÀ‘S, 1:’ˆÓ, 2:ŠëŒ¯
 
-#ifdef _debug
-	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
-#else
-	dirname = dir_exe
-#endif
-subdir = dirname + "\\sub"
-kifudir = dirname + "\\Šû•ˆ"
-chdir subdir
+
+chdir SUBDIR
 max_child = sysinfo(17) - 1
 notesel setting_str
 exist SETTING_FILE_NAME
@@ -97,7 +91,7 @@ gosub*view
 stop
 *sqr
 	objprm sq_id, "Šû•ˆûW’†..."
-	Šû•ˆæ“¾ kifudir  , 10000     , 3000            , 1000 * 60 * 30 //‚R‚O•ª
+	Šû•ˆæ“¾ DEFAULT_KIFUDIR  , 10000     , 3000            , 1000 * 60 * 30 //‚R‚O•ª
 	
 	return
 *sqr_stop
@@ -215,7 +209,7 @@ stop
 	noteadd_ process_num.1       , LINE_PROCESS_COUNT
 	noteadd_ max_kifu.1, LINE_LOAD_LIMIT
 	noteadd_ tw.1, LINE_TARGET_WAIT
-	chdir subdir
+	chdir SUBDIR
 	notesave SETTING_FILE_NAME
 	return
 return

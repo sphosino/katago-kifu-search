@@ -2,7 +2,13 @@
 #ifdef _debug
 	DIRNAME = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
-	DIRNAME = dir_exe
+	#ifdef SUB_EXE
+		chdir dir_exe
+		chdir ".."
+		DIRNAME = dir_cur
+	#else
+		DIRNAME = dir_exe
+	#endif
 #endif
 SUBDIR = DIRNAME + "\\sub"
 DEFAULT_KIFUDIR = DIRNAME + "\\Šû•ˆ"
@@ -17,3 +23,4 @@ kifudir = DEFAULT_KIFUDIR
 #global
 
 #endif
+

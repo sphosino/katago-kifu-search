@@ -13,6 +13,9 @@
 #include "kifu_protocol.hsp"
 #include "setting_defines.hsp"
 
+#define SUB_EXE
+#include "config_path.hsp"
+
 #bootopt notimer 1 //ツールなので高精度タイマーを利用しない
 
 #const FPS_AFTER_LOADING 24
@@ -28,16 +31,7 @@ addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 addkey 'C' //長押しで画面クリア
 
 
-#ifdef _debug
-	dirname = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
-#else
-	chdir dir_exe
-	chdir ".."
-	dirname = dir_cur
-#endif
-subdir = dirname + "\\sub"
-DEFAULT_KIFUDIR = dirname + "\\棋譜"
-kifudir = DEFAULT_KIFUDIR
+
 
 sdim result //親に結果を送る用のバッファ
 
