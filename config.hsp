@@ -68,8 +68,8 @@ auto_download_time.1 = int(tmp)
 scbaSetPos auto_download_time, auto_download_time.1
 noteget tmp, LINE_LOAD_LIMIT
 max_kifu.1 = int(tmp)
-if max_kifu.1 < 1 { max_kifu.1 = 100000}  // 修正：上限チェックも追加すべき？
-if max_kifu.1 > 100000 { max_kifu.1 = 100000}  // 上限チェック追加
+if max_kifu.1 < 1 { max_kifu.1 = 100000}
+if max_kifu.1 > 100000 { max_kifu.1 = 100000}
 scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
 tw.1 = limit(int(tmp), 20, 70)
