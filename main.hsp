@@ -271,8 +271,6 @@ sdim kifulist_notepad
 pre_filter_on = -1
 pre_filter = -1
 
-
-
 //FPS設定
 setfps 30 //目標FPSセット(初期値)
 enable_auto_adjust //目標FPS自動調整有効化(target_wait基準)
@@ -310,26 +308,24 @@ root = make_area_child(1,1)
 		sidebar_area = make_area_child(1,2,body_area)
 		sidebar_buttons = make_area_child(2,3,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
-			sidebar_kifulist_area = make_area_child(2,4,sidebar_kifu_area)
-			sidebar_kifulist_buttons = make_area_child(1,2)
+			sidebar_kifulist_area_background = make_area_child(,,sidebar_kifu_area)
+				sidebar_kifulist_area = make_area_child(2,4,sidebar_kifulist_area_background)
+					sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
+					sidebar_kifulist_label2 = make_area_child()
+					sidebar_sort1 = make_area_child(3)
+					sidebar_sort2 = make_area_child(3)
+					sidebar_kifulist = make_area_child()
+					sidebar_kifulist_match = make_area_child()
+					kifustart = make_area_child()
+					kifustart_result = make_area_child()
+						sort1_asc = make_area_child(,,sidebar_sort1)
+						sort1_desc = make_area_child()
+						sort1_shuffle = make_area_child()
+						sort2_asc = make_area_child(,,sidebar_sort2)
+						sort2_desc = make_area_child()
+						sort2_shuffle = make_area_child()
 
-				sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
-				sidebar_kifulist_label2 = make_area_child()
-				sidebar_sort1 = make_area_child(3)
-				sidebar_sort2 = make_area_child(3)
-				sidebar_kifulist = make_area_child()
-				sidebar_kifulist_match = make_area_child()
-				
-				kifustart = make_area_child()
-				kifustart_result = make_area_child()
-				
-					sort1_asc = make_area_child(,,sidebar_sort1)
-					sort1_desc = make_area_child()
-					sort1_shuffle = make_area_child()
-					sort2_asc = make_area_child(,,sidebar_sort2)
-					sort2_desc = make_area_child()
-					sort2_shuffle = make_area_child()
-
+			sidebar_kifulist_buttons = make_area_child(1,2, sidebar_kifu_area)
 				sidebar_kifulist_buttons_back_next = make_area_child(2,,sidebar_kifulist_buttons)
 				sidebar_kifulist_buttons_auto_play = make_area_child(2)
 					
@@ -401,7 +397,7 @@ if strsize >= 0{
 }
 
 //各エリアの設定
-set_grid_area_back_color sidebar_kifulist_area, $333333
+set_grid_area_back_color sidebar_kifulist_area_background, $333333
 set_grid_area_back_color goban_search_area,$333333
 set_grid_area_back_color goban_edit_stone,$333333
 set_grid_area_back_color goban_edit_group,$333333
@@ -411,21 +407,28 @@ set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
+set_padding sidebar_kifulist_area_background, 7
+
+set_margin sidebar_kifulist_area, 5,3
+
 set_margin slider_area, 0, 0
 set_padding slider_1, 0,0,0,0
 set_padding slider_2, 0,0,0,0
 set_padding slider_3, 0,0,0,0
 
-set_padding sidebar_kifulist1, 0,0,0,0
-set_padding sidebar_kifulist2, 0,0,0,0
-set_margin sidebar_kifulist1, 0,5
-set_margin sidebar_kifulist2, 0,5
-
-
 set_padding sidebar_sort1, 0, 0
 set_padding sidebar_sort2, 0, 0
 set_margin sidebar_sort1, 0,0
 set_margin sidebar_sort2, 0,0
+
+
+set_padding sort1_asc    , 0, 0, 0, 0
+set_padding sort1_desc   , 0, 0, 0, 0
+set_padding sort1_shuffle, 0, 0, 0, 0
+set_padding sort2_asc    , 0, 0, 0, 0
+set_padding sort2_desc   , 0, 0, 0, 0
+set_padding sort2_shuffle, 0, 0, 0, 0
+
 
 set_padding goban_area, , 0
 
