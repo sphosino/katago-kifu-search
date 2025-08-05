@@ -81,7 +81,7 @@ nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
 //乱数を初期化
 randomize
 
-//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。
+//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
 dim scba_effect_stack
 scba_effect_num = 0
 
@@ -90,7 +90,8 @@ sdim tmp_filename, 64
 sdim tmp_path, INFO_SIZE ; ヒット位置
 
 newmod search_id_manager, id_manager
-
+search_id = -1
+last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
 //前回起動時の情報があれば復元
 
 chdir subdir
@@ -275,7 +276,7 @@ pre_filter = -1
 //FPS設定
 setfps 30 //目標FPSセット(初期値)
 enable_auto_adjust //目標FPS自動調整有効化(target_wait基準)
-set_target_wait 10
+set_target_wait 11
 
 //使用キーの宣言
 delkey_all
@@ -691,6 +692,11 @@ title "KataGo自己対戦棋譜-検索システム"
 			gosub *filtering_and_make_listbox
 			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 		}
+	}
+
+	if last_result_time != -1 && keyfpstime - last_result_time > 100000{
+		//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす
+		gosub*search_finish
 	}
 	
 	計測 "入力処理"
@@ -1217,6 +1223,9 @@ title "KataGo自己対戦棋譜-検索システム"
 *create_pattern_main
 	logmes "検索開始"
 
+	if search_id != -1: return
+	last_result_time = -1
+
 	if pre_kl != kl{
 		pre_kl = kl
 		repeat child_count_current
@@ -1366,6 +1375,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	loop
 	scba_effect_num = 0
 	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_DESC, is_original_folder//新しい棋譜順
+	search_id = -1
+	last_result_time = -1
 	return
 
 #deffunc move_next_int int p1
@@ -1700,6 +1711,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 			complate_count++
 			logmes "result_num = " + result_num + " : " + complate_count
+			last_result_time = keyfpstime
 			if complate_count == MAX_CHILDREN{
 				complate_count = -1
 				release_id search_id_manager, lpeek(received_data)
