@@ -79,7 +79,7 @@ scbaSetPos tw,tw.1
 kifu_per_process = max_kifu.1 / process_num.1
 if kifu_per_process <= LIMIT_PER_PROCESS {
 	safety_status = 0  // ˆÀ‘S
-} else : if kifu_per_process <= 90000 {
+} else : if kifu_per_process <= LIMIT_PER_PROCESS + 10000 {
 	safety_status = 1  // ’ˆÓ
 } else {
 	safety_status = 2  // ŠëŒ¯
