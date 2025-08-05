@@ -1023,7 +1023,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		current_kifulist = kifulist_id
 		ui_mode = MODE_KIFU_VIEW
 		if get_root_tree_node(t) >= 0{
-			del_treenode(get_root_tree_node(t))
+			del_treenode get_root_tree_node(t)
 		}
 		set_treeview_scroll
 		//範囲指定を初期化
