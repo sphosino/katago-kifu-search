@@ -54,9 +54,11 @@
 	}
 
 	if horizontal = 1{
-		bar_rect = oya + x, oya.1 + y, limit(oya + x + len    ,, oya.2),  limit(oya.1 + y + tickness,,oya.3)
+		ç∂è„ = oya + x, oya.1 + (oya.3-oya.1-tickness) / 2 + y
+		bar_rect = ç∂è„,ç∂è„.1, limit(ç∂è„ + len    ,, oya.2),  limit(ç∂è„.1 + tickness,,oya.3)
 	}else{
-		bar_rect = oya + x, oya.1 + y, limit(oya + x + tickness,, oya.2),  limit(oya.1 + y + len    ,,oya.3)
+		ç∂è„ = oya + (oya.2-oya-tickness) / 2 + x, oya. 1 + y
+		bar_rect = ç∂è„,ç∂è„.1, limit(ç∂è„ + tickness,, oya.2),  limit(ç∂è„.1 + len    ,,oya.3)
 	}
 	
 	if g_getkey(1) == 1{

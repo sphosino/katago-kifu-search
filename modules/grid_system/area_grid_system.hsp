@@ -86,7 +86,7 @@ dimtype areagrid@global, 5, 400
 	if p4 = -1{	padding_bottom = padding_top	}else{	padding_bottom = p4	}
 	
 	return
-
+	
 #deffunc set_margin int p1, int p2, int p3
 	_set_margin areagrid@global(p1), p2, p3
 	return
@@ -94,7 +94,7 @@ dimtype areagrid@global, 5, 400
 	margin_x = x
 	margin_y = y
 	return
-
+	
 //グリッド形状変更
 #deffunc set_grid_shape int p1, int p2, int p3
 	_set_grid_shape areagrid@global(p1), p2, p3

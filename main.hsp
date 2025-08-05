@@ -27,8 +27,6 @@
 #include "startup.hsp" //(*init_window)
 #include "clear_save_folder.hsp"
 
-
-
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 #const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
@@ -200,28 +198,22 @@ set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
-set_padding sidebar_kifulist_area_background, 5,5,5,5
 
-set_margin sidebar_kifulist_area, 5,3
+set_padding sidebar_kifulist_area_background, 5,5,5,5
+set_margin  sidebar_kifulist_area, 5,3
+set_padding sidebar_kifulist_area, 0,0,0,0
 
 set_margin slider_area, 0, 0
-set_padding slider_1, 0,0,0,0
-set_padding slider_2, 0,0,0,0
-set_padding slider_3, 0,0,0,0
+set_padding slider_area, 0, 0, 0, 0
+
 
 set_padding sidebar_sort1, 0, 0
 set_padding sidebar_sort2, 0, 0
 set_margin sidebar_sort1, 0,0
 set_margin sidebar_sort2, 0,0
 
-
-set_padding sort1_asc    , 0, 0, 0, 0
-set_padding sort1_desc   , 0, 0, 0, 0
-set_padding sort1_shuffle, 0, 0, 0, 0
-set_padding sort2_asc    , 0, 0, 0, 0
-set_padding sort2_desc   , 0, 0, 0, 0
-set_padding sort2_shuffle, 0, 0, 0, 0
-
+set_padding goban_filter_area_header, 0,0,0,0
+set_padding goban_filter_area_body  , 2,2,2,2
 
 set_padding goban_area, , 0
 
