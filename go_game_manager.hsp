@@ -78,10 +78,11 @@
 	}
 	
 	blackplayer = get_property_data(new_topnode, "PB")
-	split blackplayer,"-",bp
 	whiteplayer = get_property_data(new_topnode, "PW")
-	split whiteplayer,"-",wp
-
+	sdim bp,, 3
+	sdim wp,, 3
+	split blackplayer,"-", bp
+	split whiteplayer,"-", wp
 	title" • " + bp.1 + bp.2 + "   ”’ " + wp.1 + wp.2
 	
 	return new_topnode
