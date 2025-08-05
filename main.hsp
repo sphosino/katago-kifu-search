@@ -310,32 +310,36 @@ root = make_area_child(1,1)
 		sidebar_area = make_area_child(1,2,body_area)
 		sidebar_buttons = make_area_child(2,3,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
-			sidebar_kifulist_area = make_area_child(2,,sidebar_kifu_area)
+			sidebar_kifulist_area = make_area_child(2,4,sidebar_kifu_area)
 			
-			sidebar_kifulist_buttons = make_area_child(2,2)
+			sidebar_kifulist_buttons = make_area_child(1,2)
 
-				sidebar_kifulist1 = make_area_child(,4,sidebar_kifulist_area)
-				sidebar_kifulist2 = make_area_child(,4,sidebar_kifulist_area)
+				;sidebar_kifulist1 = make_area_child(,4,sidebar_kifulist_area)
+				;sidebar_kifulist2 = make_area_child(,4,sidebar_kifulist_area)
 
-					sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist1)
+					sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
+					sidebar_kifulist_label2 = make_area_child()
 					sidebar_sort1 = make_area_child(3)
+					sidebar_sort2 = make_area_child(3)
 					sidebar_kifulist = make_area_child()
+					sidebar_kifulist_match = make_area_child()
+					
 					kifustart = make_area_child()
+					kifustart_result = make_area_child()
+					
 						sort1_asc = make_area_child(,,sidebar_sort1)
 						sort1_desc = make_area_child()
 						sort1_shuffle = make_area_child()
-
-					sidebar_kifulist_label2 = make_area_child(,,sidebar_kifulist2)
-					sidebar_sort2 = make_area_child(3)
-					sidebar_kifulist_match = make_area_child()
-					kifustart_result = make_area_child()
 						sort2_asc = make_area_child(,,sidebar_sort2)
 						sort2_desc = make_area_child()
 						sort2_shuffle = make_area_child()
+
+				sidebar_kifulist_buttons_back_next = make_area_child(2,,sidebar_kifulist_buttons)
+				sidebar_kifulist_buttons_auto_play = make_area_child(2)
 					
-				sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons)
+				sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons_back_next)
 				sidebar_kifulist_match_next = make_area_child()
-				chkbox_autoplay = make_area_child()
+				chkbox_autoplay = make_area_child(,,sidebar_kifulist_buttons_auto_play)
 				slider_area = make_area_child(,3)
 					slider_1 = make_area_child(,,slider_area)
 					slider_2 = make_area_child()
@@ -407,6 +411,7 @@ set_grid_area_back_color goban_footer,$333333
 set_grid_area_back_color treebox_area ,$333333
 set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
+set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
 set_padding sidebar_kifulist1, 0,0,0,0
 set_padding sidebar_kifulist2, 0,0,0,0
