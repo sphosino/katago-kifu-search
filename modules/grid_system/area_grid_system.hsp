@@ -11,7 +11,7 @@
 
 dimtype areagrid@global, 5, 400
 
-#module area grid, 列数, 行数, grid_x, grid_y, padding_left, padding_right, padding_top, padding_bottom, margin_x, margin_y, parentid, draginfo, childlist,cn, back_color
+#module area grid, 列数, 行数, grid_x, grid_y, padding_left, padding_right, padding_top, padding_bottom, gap_x, gap_y, parentid, draginfo, childlist,cn, back_color
 
 #defcfunc make_area int x, int y
 	newmod areagrid@global, area, x, y
@@ -23,12 +23,12 @@ dimtype areagrid@global, 5, 400
 	行数 = limit(y,1) ;(y)
 
 	parentid = -1
-	padding_left = 6
-	padding_right = 6
-	padding_top = 6
-	padding_bottom = 6
-	margin_x = 5
-	margin_y = 5
+	padding_left = 0
+	padding_right = 0
+	padding_top = 0
+	padding_bottom = 0
+	gap_x = 6
+	gap_y = 6
 	back_color = -1
 	
 	
@@ -38,6 +38,9 @@ dimtype areagrid@global, 5, 400
 	
 	
 	return thismod_ID
+#modfunc get_padding array a
+	a = padding_left,padding_top,padding_right,padding_bottom
+	return
 
 //グリッドに子を追加する
 #deffunc add_grid_child int id, int child_id, int x, int y
@@ -79,22 +82,58 @@ dimtype areagrid@global, 5, 400
 
 #define global set_padding(%1,%2 = -1,%3 = -1,%4 = -1,%5 = -1) _set_padding areagrid@global(%1), %2, %3, %4, %5
 #modfunc _set_padding int p1, int p2, int p3, int p4
-
 	if p1 = -1{ padding_left = padding_right	}else{	padding_left = p1 	}
 	if p2 = -1{ padding_top = padding_bottom	}else{	padding_top = p2  	}
-	if p3 = -1{	paddig_right = padding_left 	}else{	padding_right = p3	}
+	if p3 = -1{	padding_right = padding_left 	}else{	padding_right = p3	}
 	if p4 = -1{	padding_bottom = padding_top	}else{	padding_bottom = p4	}
-	
 	return
-	
-#deffunc set_margin int p1, int p2, int p3
-	_set_margin areagrid@global(p1), p2, p3
+#define global set_padding_recursive(%1, %2 = -1,%3 = -1,%4 = -1,%5 = -1, %6 = 0) __set_padding_recursive %1,%2,%3,%4,%5,%6
+#deffunc __set_padding_recursive int parent_id, int pl , int pt, int pr , int pb, int recursive
+	_set_padding_recursive_children areagrid@global(parent_id), pl, pt, pr, pb, recursive
 	return
-#modfunc _set_margin int x, int y
-	margin_x = x
-	margin_y = y
+#modfunc _set_padding_recursive_children int pl, int pt, int pr, int pb, int recursive, local i
+
+	// 子要素に対してのみ再帰的にパディング適用
+	repeat 行数
+		for i,, 列数
+			cid = grid(i, cnt)
+			if cid != -1 {
+				_set_padding areagrid@global(cid), pl, pt, pr, pb
+				if recursive{
+					__set_padding_recursive cid, pl, pt, pr, pb, 1
+				}
+			}
+		next
+	loop
 	return
-	
+
+#deffunc set_gap int p1, int p2, int p3
+	_set_gap areagrid@global(p1), p2, p3
+	return
+#modfunc _set_gap int x, int y
+	gap_x = x
+	gap_y = y
+	return
+
+#define global set_gap_recursive(%1, %2 = -1,%3 = -1, %4 = 0) __set_gap_recursive %1,%2,%3,%4
+#deffunc __set_gap_recursive int parent_id, int px, int py, int recursive
+	_set_gap_recursive_children areagrid@global(parent_id), px, py, recursive
+	return
+#modfunc _set_gap_recursive_children int px, int py, int recursive, local i
+
+	// 子要素に対してのみ再帰的にパディング適用
+	repeat 行数
+		for i,, 列数
+			cid = grid(i, cnt)
+			if cid != -1 {
+				_set_gap areagrid@global(cid), px, py 
+				if recursive{
+					__set_gap_recursive cid, px, py, 1
+				}
+			}
+		next
+	loop
+	return
 //グリッド形状変更
 #deffunc set_grid_shape int p1, int p2, int p3
 	_set_grid_shape areagrid@global(p1), p2, p3
@@ -106,8 +145,8 @@ dimtype areagrid@global, 5, 400
 	grid_dim grid_x, 列数
 	grid_dim grid_y, 行数
 	//グリッドサイズを等幅で初期化
-	repeat 列数: grid_x(cnt) = (ginfo_sx - margin_x *( 列数 - 1)) / 列数: loop
-	repeat 行数: grid_y(cnt) = (ginfo_sy - margin_y *( 行数 - 1)) / 行数: loop
+	repeat 列数: grid_x(cnt) = (ginfo_sx - gap_x *( 列数 - 1)) / 列数: loop
+	repeat 行数: grid_y(cnt) = (ginfo_sy - gap_y *( 行数 - 1)) / 行数: loop
 	return
 
 //親を設定する。親に子を設定する時の内部利用
@@ -146,8 +185,8 @@ dimtype areagrid@global, 5, 400
 	}
 
 	//親レクトに合わせてグリッドをスケーリング
-	scale_grid grid_x , margin_x, rect(2) - rect(0)
-	scale_grid grid_y , margin_y, rect(3) - rect(1)
+	scale_grid grid_x , gap_x, rect(2) - rect(0)
+	scale_grid grid_y , gap_y, rect(3) - rect(1)
 
 	//子IDが指定されてれば探して、そのレクトに変更
 	if child_id >= 0{
@@ -155,7 +194,7 @@ dimtype areagrid@global, 5, 400
 		repeat 行数
 			for i,, 列数
 				if grid(i, cnt) == child_id{
-					get_grid_rect grid_x, grid_y, margin_x, margin_y, i, cnt, g_rect
+					get_grid_rect grid_x, grid_y, gap_x, gap_y, i, cnt, g_rect
 					find++
 					break
 				}
@@ -163,10 +202,11 @@ dimtype areagrid@global, 5, 400
 		loop
 		if find{
 			rp = rect(0),rect(1)
-			rect(0) = g_rect(0) + rp(0) + padding_left
-			rect(1) = g_rect(1) + rp(1) + padding_top
-			rect(2) = g_rect(2) + rp(0) - padding_right
-			rect(3) = g_rect(3) + rp(1) - padding_bottom
+			get_padding areagrid@global(child_id), p
+			rect(0) = g_rect(0) + rp(0) + p
+			rect(1) = g_rect(1) + rp(1) + p.1
+			rect(2) = g_rect(2) + rp(0) - p.2
+			rect(3) = g_rect(3) + rp(1) - p.3
 		}
 	}
 	return
@@ -240,7 +280,7 @@ dimtype areagrid@global, 5, 400
 	return
 
 #modfunc get_grid_area int x, int y, array rect
-	get_grid_rect grid_x, grid_y, margin_x, margin_y, x, y, _rect
+	get_grid_rect grid_x, grid_y, gap_x, gap_y, x, y, _rect
 	rect(2) = rect(0) + _rect(2)
 	rect(3) = rect(1) + _rect(3)
 	rect(0) = rect(0) + _rect(0) + padding_left
@@ -263,13 +303,14 @@ dimtype areagrid@global, 5, 400
 		aid = thismod_ID
 	}
 	if back_color >= 0{
-		make_instant_draw_object "RBOXF_FAST",(result+result.2)/2,(result.1 + result.3) / 2, result.2-result,result.3-result.1,strf("%d",back_color)
+		r = result - padding_left,result.1 - padding_top,result.2 + padding_right, result.3 + padding_bottom
+		make_instant_draw_object "RBOXF_FAST",(r+r.2)/2,(r.1+r.3) / 2, r.2-r,r.3-r.1,strf("%d",back_color)
 		update_priority_draw_object stat, PRIORITY_BACK
 	}
 	if debug_mode{ 
-		margin = margin_x, margin_y
+		gap = gap_x, gap_y
 		//グリッド移動処理
-		grid_manager grid_x, grid_y, result, margin, draginfo
+		grid_manager grid_x, grid_y, result, gap, draginfo
 		
 		/*draginfoに処理した情報が入る
 		draginfo(0) -> 最後につかんだ場所x
@@ -307,19 +348,19 @@ dimtype areagrid@global, 5, 400
 	if debug_mode{
 		//グリッド描画
 		ex = 0
-		xsize =  get_gridSize(grid_x,margin_x)
-		ysize =  get_gridSize(grid_y,margin_y)
+		xsize =  get_gridSize(grid_x,gap_x)
+		ysize =  get_gridSize(grid_y,gap_y)
 		repeat length(grid_x) - 1
 			ex += grid_x(cnt)
-			make_instant_draw_object "BOXF_FAST",result + ex ,result.1     , result + ex + margin_x, result.1  + ysize,"$00EB00"
+			make_instant_draw_object "BOXF_FAST",result + ex ,result.1     , result + ex + gap_x, result.1  + ysize,"$00EB00"
 			
-			ex += margin_x
+			ex += gap_x
 		loop
 		ey = 0
 		repeat length(grid_y) - 1
 			ey += grid_y(cnt)
-			make_instant_draw_object "BOXF_FAST",result      ,result.1 + ey, result + xsize , result.1 + ey + margin_y,"$00EB00"
-			ey += margin_y
+			make_instant_draw_object "BOXF_FAST",result      ,result.1 + ey, result + xsize , result.1 + ey + gap_y,"$00EB00"
+			ey += gap_y
 		loop
 	}
 	

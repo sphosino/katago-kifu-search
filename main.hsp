@@ -98,22 +98,21 @@ root = make_area_child(1,1)
 		sidebar_area = make_area_child(1,2,body_area)
 		sidebar_buttons = make_area_child(2,3,sidebar_area)
 		sidebar_kifu_area = make_area_child(1,2)
-			sidebar_kifulist_area_background = make_area_child(,,sidebar_kifu_area)
-				sidebar_kifulist_area = make_area_child(2,4,sidebar_kifulist_area_background)
-					sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
-					sidebar_kifulist_label2 = make_area_child()
-					sidebar_sort1 = make_area_child(3)
-					sidebar_sort2 = make_area_child(3)
-					sidebar_kifulist = make_area_child()
-					sidebar_kifulist_match = make_area_child()
-					kifustart = make_area_child()
-					kifustart_result = make_area_child()
-						sort1_asc = make_area_child(,,sidebar_sort1)
-						sort1_desc = make_area_child()
-						sort1_shuffle = make_area_child()
-						sort2_asc = make_area_child(,,sidebar_sort2)
-						sort2_desc = make_area_child()
-						sort2_shuffle = make_area_child()
+			sidebar_kifulist_area = make_area_child(2,4,sidebar_kifu_area)
+				sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
+				sidebar_kifulist_label2 = make_area_child()
+				sidebar_sort1 = make_area_child(3)
+				sidebar_sort2 = make_area_child(3)
+				sidebar_kifulist = make_area_child()
+				sidebar_kifulist_match = make_area_child()
+				kifustart = make_area_child()
+				kifustart_result = make_area_child()
+					sort1_asc = make_area_child(,,sidebar_sort1)
+					sort1_desc = make_area_child()
+					sort1_shuffle = make_area_child()
+					sort2_asc = make_area_child(,,sidebar_sort2)
+					sort2_desc = make_area_child()
+					sort2_shuffle = make_area_child()
 
 			sidebar_kifulist_buttons = make_area_child(1,2, sidebar_kifu_area)
 				sidebar_kifulist_buttons_back_next = make_area_child(2,,sidebar_kifulist_buttons)
@@ -186,8 +185,8 @@ if strsize >= 0{
 	save_load_manager_load
 }
 
-//各エリアの設定
-set_grid_area_back_color sidebar_kifulist_area_background, $333333
+//エリア背景色
+set_grid_area_back_color sidebar_kifulist_area, $333333
 set_grid_area_back_color goban_search_area,$333333
 set_grid_area_back_color goban_edit_stone,$333333
 set_grid_area_back_color goban_edit_group,$333333
@@ -197,33 +196,25 @@ set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
 
+///////////////////////////////////////////
+/////////余白設定//////////////////////////
+///////////////////////////////////////////
+//全体設定
+set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
+set_gap_recursive root, 3,3,1
 
-set_padding sidebar_kifulist_area_background, 5,5,5,5
-set_margin  sidebar_kifulist_area, 5,3
-set_padding sidebar_kifulist_area, 0,0,0,0
+//棋譜リストエリア
+set_padding sidebar_kifulist_area, 10, 10, 10, 10 //自分自身のパディングサイズ設定
+set_padding_recursive sidebar_kifulist_area, 0,0,0,0, 1 //子要素パディング設定
+set_gap sidebar_sort1, 0,0 //リボンボタン -> マージンなし
+set_gap sidebar_sort2, 0,0 //リボンボタン -> マージンなし
 
-set_margin slider_area, 0, 0
-set_padding slider_area, 0, 0, 0, 0
 
-
-set_padding sidebar_sort1, 0, 0
-set_padding sidebar_sort2, 0, 0
-set_margin sidebar_sort1, 0,0
-set_margin sidebar_sort2, 0,0
-
-set_padding goban_filter_area_header, 0,0,0,0
-set_padding goban_filter_area_body  , 2,2,2,2
-
-set_padding goban_area, , 0
-set_padding goban_edit_area, 0,0,0,0
-
-set_padding goban_tool, 0,0,0,0
-
-set_padding tejun_area, 5,5,5,5
-set_padding radiobox_tejun, 2,2,2,2
-set_padding goban_tool_area , 2,2,2,2
+//スライダーエリア
+set_gap slider_area
 
 ///////////////////////////////////////////////////////////
+
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
@@ -283,9 +274,9 @@ newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$3333
 newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
 newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
 
-newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000, 14 , 16
-newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000, 14 , 16
-newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000, 14 , 16
+newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000
+newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000
+newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname

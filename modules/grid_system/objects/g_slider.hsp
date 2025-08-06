@@ -1,6 +1,6 @@
-#module grid_slider v, min, max, horizontal, x, y, tickness,長さ, dragging, area, r
+#module grid_slider v, min, max, horizontal, x, y, tickness,長さ,太さ,つまみサイズ, dragging, area
 
-#modinit var a, int _horizontal, int area_number, int _min, int _max, int 太さ, int つまみサイズ, int _x, int _y, local thismod_ID
+#modinit var a, int _horizontal, int area_number, int _min, int _max, int _x, int _y, local thismod_ID
 
     dup v, a
 
@@ -12,16 +12,16 @@
     //値の変化範囲
     min = _min
     max = _max
-    //バーのサイズ情報
-    tickness = 太さ
-    r = つまみサイズ
-    
+
 	set_position_g_slider thismod, _x, _y
 
 	//エリア番号から親レクト取得
 	get_rect area,oya
 
+	//バーのサイズ情報 -1 == 自動
 	長さ = -1
+	太さ = -1
+    つまみサイズ = -1
     mref thismod_ID, 2
     return thismod_ID
 
@@ -44,6 +44,7 @@
 
 	get_rect area, oya
 
+	//--------------------------
 	len = 長さ
 	if 長さ < 0{
 		if horizontal{
@@ -52,6 +53,22 @@
 			len = oya.3-oya.1
 		}
 	}
+
+	tickness = 太さ
+	if 太さ < 0{
+		if horizontal{
+			tickness = oya.3-oya.1
+		}else{
+			tickness = oya.2-oya.0
+		}
+	}
+
+	r = つまみサイズ
+	if つまみサイズ < 0{
+		r = tickness
+	}
+
+	////////////////////////////////////////
 
 	if horizontal = 1{
 		左上 = oya + x, oya.1 + (oya.3-oya.1-tickness) / 2 + y
