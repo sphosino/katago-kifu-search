@@ -22,7 +22,7 @@
 
 #enum global SETTING_MAX_LINE
 
-#const global DEFAULT_TARGET_WAIT 30
+#const global DEFAULT_TARGET_WAIT 40
 #const global DEFAULT_MAX_DEPTH 100
 #const global LIMIT_PER_PROCESS 18000
 

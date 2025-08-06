@@ -118,7 +118,7 @@
 
 
 #deffunc init_g_radio_button_colorlist
-	backcolors = $00d49d,$fedf03,$e08e9f,$da85af,$f1eef7,$ae8fb1,$262626, $183883,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6
+	backcolors = $00d49d,$fedf03,$e39ecf,$da85af,$f1eef7,$ae8fb1,$262626, $285cc9,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6
 	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9
 	return
 

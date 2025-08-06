@@ -9,7 +9,6 @@
 
 #include "modules/sgf.hsp"
 #include "setting_defines.hsp"
-#include "user32.as"
 #include "hspext.as"
 
 #include "modules/search/pattern.hsp"
@@ -216,7 +215,15 @@ set_padding goban_filter_area_header, 0,0,0,0
 set_padding goban_filter_area_body  , 2,2,2,2
 
 set_padding goban_area, , 0
+set_padding goban_edit_area, 0,0,0,0
 
+set_padding goban_tool, 0,0,0,0
+
+set_padding tejun_area, 5,5,5,5
+set_padding radiobox_tejun, 2,2,2,2
+set_padding goban_tool_area , 2,2,2,2
+
+///////////////////////////////////////////////////////////
 add_tooltip combox_history, "検索パターン履歴"
 add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
 add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
