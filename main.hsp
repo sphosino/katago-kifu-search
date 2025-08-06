@@ -149,8 +149,10 @@ root = make_area_child(1,1)
 			goban_graph_area = make_area_child(1,2,goban_tool_area)
 				treebox_area = make_area_child(,,goban_graph_area)
 				line_graph_area = make_area_child()
-			
-			combox_history = make_area_child(,,goban_tool_area)
+
+			history_area = make_area_child(2,,goban_tool_area)
+				combox_history = make_area_child(,,history_area)
+				button_clear_history = make_area_child()
 
 			goban_search_area = make_area_child(3,2,goban_tool_area)
 				button_search = make_area_child(,,goban_search_area)
@@ -195,13 +197,14 @@ set_grid_area_back_color treebox_area ,$333333
 set_grid_area_back_color goban_filter_area , $333333
 set_grid_area_back_color tejun_area, $333333
 set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
+set_grid_area_back_color history_area, $333333
 
 ///////////////////////////////////////////
 /////////余白設定//////////////////////////
 ///////////////////////////////////////////
 //全体設定
 set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
-set_gap_recursive root, 3,3,1
+set_gap_recursive root, 4,4,1
 
 //棋譜リストエリア
 ;set_padding sidebar_kifulist_area, 7, 7, 7, 7 //自分自身のパディングサイズ設定
@@ -258,6 +261,7 @@ newmod g_buttons, grid_button, "昇",*lab_sort2_asc, sort2_asc
 newmod g_buttons, grid_button, "降",*lab_sort2_desc, sort2_desc
 newmod g_buttons, grid_button, "混",*lab_sort2_shuffle, sort2_shuffle
 newmod g_buttons, grid_button, "フォルダ選択",*select_folder,button_select_folder
+newmod g_buttons, grid_button, "履歴クリア", *clear_history,button_clear_history
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
 newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
@@ -1539,6 +1543,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 *lab_sort2_shuffle
 	g_listbox_shuffle kifulist.matchlist
+	return
+*clear_history
+	clear_pattern_history
+	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 	return
 *save_info //終了処理
 	notesel setting_str

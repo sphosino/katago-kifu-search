@@ -39,17 +39,18 @@
 	dim rotated_tejun, BOARD_X_MAX, BOARD_Y_MAX, 8 //手順
 
 	//-------------------------------------------------------
+	//履歴ハッシュ計算用の一時変数
+	sdim hash_tmp_data, MAX_PATTERN_SIZE
 
+	clear_pattern_history
+	return
+#deffunc clear_pattern_history
 	//パターンの履歴用
 	dim board_history, BOARD_X_MAX, BOARD_Y_MAX, HISTORY_MAX
 	sdim v_history,, HISTORY_MAX
 	sdim group_history,, 4, HISTORY_MAX
 	sdim tejun_history,, 9, HISTORY_MAX
-	
 	dim hash_value, HISTORY_MAX //保存時、ハッシュを計算して保存
-
-	//履歴ハッシュ計算用の一時変数
-	sdim hash_tmp_data, MAX_PATTERN_SIZE
 
 	history_num = -1 //最新履歴の番号
 	_history_max = 0 //保存されている履歴の数
