@@ -204,7 +204,7 @@ set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
 set_gap_recursive root, 3,3,1
 
 //棋譜リストエリア
-set_padding sidebar_kifulist_area, 10, 10, 10, 10 //自分自身のパディングサイズ設定
+;set_padding sidebar_kifulist_area, 7, 7, 7, 7 //自分自身のパディングサイズ設定
 set_padding_recursive sidebar_kifulist_area, 0,0,0,0, 1 //子要素パディング設定
 set_gap sidebar_sort1, 0,0 //リボンボタン -> マージンなし
 set_gap sidebar_sort2, 0,0 //リボンボタン -> マージンなし
@@ -229,6 +229,7 @@ add_tooltip sort2_asc, "古い棋譜順"
 add_tooltip sort2_desc,"新しい棋譜順"
 add_tooltip sort1_asc, "古い棋譜順"
 add_tooltip sort1_desc, "新しい棋譜順"
+add_tooltip chkbox_colorflip, "白黒が逆でも結果に含める"
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
@@ -492,6 +493,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	if last_result_time != -1 && keyfpstime - last_result_time > 100000{
 		//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす
 		gosub*search_finish
+		//ここでピンポン処理を発信すると堅牢か。
 	}
 	
 	計測 "入力処理"

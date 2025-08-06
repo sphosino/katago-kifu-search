@@ -5,7 +5,7 @@
 
 	tmp = ginfo_sel
 	buf = ginfo_newid
-	buffer buf, 640, 480
+	buffer buf, 320, 240
 	gsel tmp
 	
 	return

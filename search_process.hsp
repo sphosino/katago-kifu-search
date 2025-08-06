@@ -30,11 +30,7 @@ delkey_all //キー監視をすべてクリア
 addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 addkey 'C' //長押しで画面クリア
 
-
-
-
 sdim result //親に結果を送る用のバッファ
-
 
 ///////////////////////通信設定
 // 設定読み込み
@@ -59,7 +55,7 @@ notesel setting_str
 	}else{
 		noteload "window.txt"
 		noteget tmp, LINE_TARGET_WAIT
-		tw = limit(int(tmp), 20, 70)
+		tw = limit(int(tmp), MIN_TARGET_WAIT, MAX_TARGET_WAIT)
 	}
 
 noteunsel

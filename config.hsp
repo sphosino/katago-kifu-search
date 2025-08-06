@@ -1,5 +1,5 @@
 #packopt name "config"
-#include "nodmod/ScrollbarModule.hsp"
+#include "ScrollbarModule.hsp"
 #include "setting_defines.hsp"
 
 #include "modules/katago_sqr.hsp"
@@ -48,9 +48,9 @@ pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: auto_downloa
 pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: max_depth = stat
 scbaSetrange max_kifu, 1, 100000,,,1
 scbaSetrange process_num, 1, max_child,,,1
-scbaSetrange auto_download_time, 19, 90,,,1
+scbaSetrange auto_download_time, MIN_TARGET_WAIT - 1, MAX_TARGET_WAIT,,,1
 scbaSetrange max_depth, 10, 254,,,1
-scbaSetrange tw, 20,70,,,1
+scbaSetrange tw, MIN_TARGET_WAIT, MAX_TARGET_WAIT,,,1
 noteget tmp, LINE_PROCESS_COUNT
 process_num.1 = limit(int(tmp), 1, max_child)
 scbaSetPos process_num, process_num.1
@@ -66,7 +66,7 @@ if max_kifu.1 < 1 { max_kifu.1 = 100000}
 if max_kifu.1 > 100000 { max_kifu.1 = 100000}
 scbaSetPos max_kifu, max_kifu.1
 noteget tmp, LINE_TARGET_WAIT
-tw.1 = limit(int(tmp), 20, 70)
+tw.1 = limit(int(tmp), MIN_TARGET_WAIT, MAX_TARGET_WAIT)
 scbaSetPos tw,tw.1
 
 // èâä˙èÛë‘ÇÃà¿ëSê´îªíË

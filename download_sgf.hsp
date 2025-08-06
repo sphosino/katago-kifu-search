@@ -3,10 +3,13 @@
 #include "modules/katago_sqr.hsp"
 #include "../hsp_common/log_to_file.hsp"
 #include "setting_defines.hsp"
+
+#const AUTO_SQR_MAX_TIME 90 //‚X‚O•b‚ğÅ‘å‚Éİ’è
+
 screen 0,,,2
 
 #define SUB_EXE
-#include "config_path.hsp
+#include "config_path.hsp"
 log_init SUBDIR
 
 onkey gosub *input_key
@@ -26,7 +29,7 @@ if strsize >= 0{
 }
 if time >= 20{
 	logmes "B" + time
-	Šû•ˆæ“¾ DEFAULT_KIFUDIR  , 10000     , 3000            , 1000 * limit(time, 0, 90) //‚X‚O•b‚ğÅ‘å‚Éİ’è
+	Šû•ˆæ“¾ DEFAULT_KIFUDIR  , 10000     , 3000            , 1000 * limit(time, 0, AUTO_SQR_MAX_TIME) 
 }
 end
 *input_key
