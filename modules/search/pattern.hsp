@@ -56,6 +56,15 @@
 
 	return
 
+/* memo
+history_num@pattern_module
+_history_max@pattern_module
+board_history@pattern_module
+v_history@pattern_module
+group_history@pattern_module
+tejun_history@pattern_module
+*/
+
 #deffunc init_edit_pattern
 
 	init_board

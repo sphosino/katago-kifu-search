@@ -6,11 +6,23 @@
 #deffunc save_load_manager_save
 	vsave_start
 	vsave_put areagrid@global
+	vsave_put history_num@pattern_module
+	vsave_put _history_max@pattern_module
+	vsave_put board_history@pattern_module
+	vsave_put v_history@pattern_module
+	vsave_put group_history@pattern_module
+	vsave_put tejun_history@pattern_module
 	vsave_end varfile
 	return
 #deffunc save_load_manager_load
 	vload_start varfile
 	vload_get areagrid@global
+	vload_get history_num@pattern_module
+	vload_get _history_max@pattern_module
+	vload_get board_history@pattern_module
+	vload_get v_history@pattern_module
+	vload_get group_history@pattern_module
+	vload_get tejun_history@pattern_module
 	vload_end
 	return
 #global

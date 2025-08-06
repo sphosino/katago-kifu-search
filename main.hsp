@@ -339,7 +339,7 @@ foreach kifulist
 loop
 gosub*loadsgf
 
-
+combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 #if 01
 	//スクレイピング(棋譜収集)プロセス実行
 	tmp = dir_cur
