@@ -69,18 +69,13 @@
 			rect_y1 = oya.3 + cnt * item_ysize
 			rect_x2 = oya.2
 			rect_y2 = oya.3 + (cnt + 1) * item_ysize
-
-			center_x = (rect_x1 + rect_x2) / 2
-			center_y = (rect_y1 + rect_y2) / 2
-			_width = rect_x2 - rect_x1
-			height = rect_y2 - rect_y1
-
-			tmprect = rect_x1,rect_y1,rect_x2,rect_y2
+			
+			tmprect = rect_x1,rect_y1,rect_x2, rect_y2
 			
 			if in_rect(tmprect){
 				cursor_item = cnt
 			}
-			update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d",t,tmpcol(stat))
+			update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d", t, tmpcol(stat))
 		loop
 
 		if _getkey(1) == 1{

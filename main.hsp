@@ -180,7 +180,7 @@ root = make_area_child(1,1)
 					button_group_clear = make_area_child(,,goban_edit_group)
 					radiobox_grouping = make_area_child()
 
-//グリッド情報をロード（エリアを作成してからでないと復元できない）
+//グリッド情報と検索履歴をロード（エリアを作成してからでないと復元できない）
 chdir SUBDIR
 exist "area.var" 
 if strsize >= 0{
