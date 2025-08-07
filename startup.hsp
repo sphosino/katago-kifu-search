@@ -1,7 +1,8 @@
-#include "user32.as"
+
 #include "kifu_protocol.hsp"
 #include "ProcLinkModuleQueue.hsp"
 #include "setting_defines.hsp"
+#include "load_setting.hsp"
 #addition "../hsp_common/centering_mes.hsp"
 goto*@f //読み込まれた時点ではスキップ
 *init_window
@@ -39,94 +40,8 @@ nocoMemomapWrite APP_IDENTIFIER_KEY, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
 this_hwnd = hwnd
 nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
 //-----------------------------------------------------------------------------
-
-//乱数を初期化
-randomize
-
-//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
-dim scba_effect_stack
-scba_effect_num = 0
-
-//子プロセスからの結果を格納する
-sdim tmp_filename, 64
-sdim tmp_path, INFO_SIZE ; ヒット位置
-
-newmod search_id_manager, id_manager
-search_id = -1
-last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
-//前回起動時の情報があれば復元
-
-chdir SUBDIR
-exist SETTING_FILE_NAME
-
-notesel setting_str
-if strsize == -1{
-	repeat SETTING_MAX_LINE
-		noteadd ""
-	loop
-	
-	sx = ginfo(20) * 3 / 4
-	sy = ginfo(21) * 3 / 4
-	wx = (ginfo(20) - sx) / 2
-	wy = (ginfo(21) - sy) / 2
-	//探索の最大深さ
-	max_depth = DEFAULT_MAX_DEPTH
-	
-	//色反転を含めるか
-	enableColorFlip = 1
-	
-	//星を表示するか
-	view_hosi = 1
-
-	//最終手表示
-	last_move_mark = 1
-	
-	//棋譜を何手目から表示するか
-	kifu_start_num = 10
-
-	//棋譜再生速度(ms)
-	auto_interval = 500
-	alpha_interval = 10000
-	m_interval = 5000
-
-	load_limit = 100000 //１０万件
-	child_target_wait = DEFAULT_TARGET_WAIT //子プロセス達がOSに返す時間
-
-}else{
-	noteload SETTING_FILE_NAME
-
-	noteget_ wx, LINE_WINDOW_POSITION_X
-	noteget_ wy, LINE_WINDOW_POSITION_Y
-	noteget_ sx, LINE_WINDOW_SIZE_X
-	noteget_ sy, LINE_WINDOW_SIZE_Y
-	noteget_ max_depth, LINE_MAX_DEPTH
-	noteget_ enableColorFlip, LINE_COLORFLIP
-	noteget_ view_hosi, LINE_VIEW_HOSI
-	noteget_ last_move_mark, LINE_LAST_MOVE_MARK
-	noteget_ kifu_start_num, LINE_KIFU_START_NUM
-	noteget_ auto_interval, LINE_AUTO_INTERVAL
-	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
-	noteget_ m_interval, LINE_M_INTERVAL
-	noteget_ auto_download, LINE_AUTO_DOWNLOAD_TIME
-	noteget_ 最大化, LINE_MAXIMIZED
-	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
-	noteget_ load_limit, LINE_LOAD_LIMIT
-	noteadd_ child_target_wait, LINE_TARGET_WAIT
-
-	if wx < 0{
-		wx = (ginfo(20) - x) / 2
-		wy = (ginfo(21) - y) / 2
-	}
-
-	sx = limit(sx, 460)
-	sy = limit(sy, 345)
-
-}
-
-noteunsel
-
-
-if load_limit < 3000: load_limit = 100000 //３０００件は読み込もうぜ。
+gosub*load_setting
+//---------------------------------------------------------------------------
 
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
@@ -192,7 +107,6 @@ if stat{
 }
 tmp = left_margin, 0, ginfo(12), ginfo(13)
 set_max_centering_mes limit(ginfo(12)-left_margin,,ginfo(13))
-
 color 255, 255, 255
 centering_mes "システム起動中", tmp, "メイリオ", 4
 redraw

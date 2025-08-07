@@ -24,6 +24,8 @@
 //new
 #include "config_path.hsp"
 #include "startup.hsp" //(*init_window)
+#include "load_setting.hsp"//(*load_setting)
+#include "save_info.hsp"//(*save_info)
 #include "clear_save_folder.hsp"
 
 #const MODE_KIFU_VIEW 0
@@ -33,10 +35,24 @@
 
 gosub *init_window
 
+//乱数を初期化
+randomize
+
+//検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
+dim scba_effect_stack
+scba_effect_num = 0
+
+//子プロセスからの結果を格納する
+sdim tmp_filename, 64
+sdim tmp_path, INFO_SIZE ; ヒット位置
+
+newmod search_id_manager, id_manager
+search_id = -1
+last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
+//前回起動時の情報があれば復元
 
 //初期化開始
 nocoClearCopyDataQueue HEADER_SIZE + RECORD_SIZE * 40000
-
 
 pre_send_folder = "" //子プロセスに送信した棋譜フォルダ名
 v = "" //検索対象座標セット　xxyy,xxyy... 形式
@@ -329,7 +345,7 @@ update_priority_draw_object bg_id, PRIORITY_BACK
 pretime = keyfpstime
 
 
-onexit *save_info //終了時に*save_infoにジャンプ
+onexit *save //終了時に*save_infoにジャンプ
 
 //棋譜読み込み
 gosub*load_kifu_folder
@@ -1548,27 +1564,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	clear_pattern_history
 	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 	return
-*save_info //終了処理
-	notesel setting_str
 
-	noteadd_ save_window_status.0, LINE_WINDOW_POSITION_X //ウィンドウ位置
-	noteadd_ save_window_status.1, LINE_WINDOW_POSITION_Y
-	noteadd_ save_window_status.2, LINE_WINDOW_SIZE_X //ウィンドウサイズ
-	noteadd_ save_window_status.3, LINE_WINDOW_SIZE_Y
-	noteadd_ max_depth, LINE_MAX_DEPTH //最大探索深度
-	noteadd_ enableColorFlip, LINE_COLORFLIP //色反転を有効にするか
-	noteadd_ view_hosi, LINE_VIEW_HOSI //星表示
-	noteadd_ last_move_mark, LINE_LAST_MOVE_MARK //最終手表示
-	noteadd_ kifu_start_num, LINE_KIFU_START_NUM //棋譜開始手数
-	noteadd_ auto_interval, LINE_AUTO_INTERVAL //自動再生間隔
-	noteadd_ alpha_interval, LINE_ALPHA_INTERVAL //形勢変化率による自動再生間隔の変化
-	noteadd_ m_interval, LINE_M_INTERVAL //マンハッタン距離による自動再生間隔の変化
-	noteadd_ auto_download, LINE_AUTO_DOWNLOAD_TIME //自動ダウンロード
-	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
-	noteadd_ child_target_wait, LINE_TARGET_WAIT
-	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
-	chdir SUBDIR
-	notesave SETTING_FILE_NAME
+
+*save
+
+	gosub*save_info
 	save_load_manager_save //グリッド情報保存
 	end
-

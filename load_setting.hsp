@@ -1,0 +1,70 @@
+#ifndef STARTUP_LOAD_SETTING
+#define STARTUP_LOAD_SETTING
+#include "user32.as"
+goto*@f
+*load_setting
+chdir SUBDIR
+exist SETTING_FILE_NAME
+
+notesel setting_str
+if strsize == -1{
+	repeat SETTING_MAX_LINE
+		noteadd ""
+	loop
+	sx = ginfo(20) * 3 / 4
+	sy = ginfo(21) * 3 / 4
+	wx = (ginfo(20) - sx) / 2
+	wy = (ginfo(21) - sy) / 2
+	max_depth = DEFAULT_MAX_DEPTH
+	enableColorFlip = 1
+	view_hosi = 1
+	last_move_mark = 1
+	kifu_start_num = 10
+	auto_interval = 500
+	auto_download = 19
+	alpha_interval = 10000
+	m_interval = 5000
+	load_limit = 100000
+	�ő剻 = 0
+	child_target_wait = DEFAULT_TARGET_WAIT
+	MAX_CHILDREN = get_auto_cores()
+
+}else{
+	noteload SETTING_FILE_NAME
+
+	noteget_ wx, LINE_WINDOW_POSITION_X
+	noteget_ wy, LINE_WINDOW_POSITION_Y
+	noteget_ sx, LINE_WINDOW_SIZE_X
+	noteget_ sy, LINE_WINDOW_SIZE_Y
+	noteget_ max_depth, LINE_MAX_DEPTH
+	noteget_ enableColorFlip, LINE_COLORFLIP
+	noteget_ view_hosi, LINE_VIEW_HOSI
+	noteget_ last_move_mark, LINE_LAST_MOVE_MARK
+	noteget_ kifu_start_num, LINE_KIFU_START_NUM
+	noteget_ auto_interval, LINE_AUTO_INTERVAL
+	noteget_ alpha_interval, LINE_ALPHA_INTERVAL
+	noteget_ m_interval, LINE_M_INTERVAL
+	noteget_ auto_download, LINE_AUTO_DOWNLOAD_TIME
+	noteget_ �ő剻, LINE_MAXIMIZED
+	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
+	noteget_ load_limit, LINE_LOAD_LIMIT
+	noteget_ child_target_wait, LINE_TARGET_WAIT
+
+	logmes "LOAD==>"+child_target_wait + "  :  "+LINE_TARGET_WAIT
+
+	if wx < 0{
+		wx = (ginfo(20) - x) / 2
+		wy = (ginfo(21) - y) / 2
+	}
+
+	sx = limit(sx, 460)
+	sy = limit(sy, 345)
+
+}
+
+noteunsel
+
+if load_limit < 3000: load_limit = 100000
+return
+*@
+	#endif
