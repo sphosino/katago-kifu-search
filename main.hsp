@@ -437,23 +437,16 @@ title "KataGo自己対戦棋譜-検索システム"
 			if is_changed_cursor_item(cbox){
 				
 				if get_cursor_item(cbox) == -1{ //ドロップダウンの項目から外れたら
-		
-		
 					; 記憶した碁盤を復元
 					set_board_data board.ui_mode, now_board
 					v = now_v
 					set_group now_group
 					set_tejun now_tejun
-					
-					ui_mode = now_ui_mode
+					set_g_checkbox g_chkbox.mode_chkbox,  now_ui_mode //チェックボックスに操作モード通知
 		
 				}else{
-					load_search_history stat //履歴から復元するメソッド
-					
-					ui_mode = MODE_BOARD_EDIT
-				}
-				
-				set_g_checkbox g_chkbox.mode_chkbox,  ui_mode //チェックボックスに操作モード通知
+					load_search_history stat //履歴から復元するメソッド	
+				}	
 			}
 		}
 	}
@@ -1340,7 +1333,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 #deffunc load_search_history int p1
 
-	ui_mode = MODE_BOARD_EDIT
+	set_g_checkbox g_chkbox.mode_chkbox, MODE_BOARD_EDIT
 	
 	load_history p1 //それぞれ、対象座標情報、碁盤情報、グループ情報
 	get_board user_board
