@@ -9,7 +9,7 @@ HSP3で開発されたKataGo-rating-gamesの棋譜閲覧ツール。KataGoの自
 [![GitHub license](https://img.shields.io/github/license/sphosino/katago-kifu-search)](LICENSE)
 [![HSP3](https://img.shields.io/badge/HSP-3.6+-brightgreen)](https://hsp.tv/)
 
-<img src="docs/screenshot.png" width="600" alt="スクリーンショット">
+<img src="docs/sum4.gif" width="600" alt="スクリーンショット">
 <sub>※開発中の画面です</sub>
 
 ## 🍎️ 機能一覧
