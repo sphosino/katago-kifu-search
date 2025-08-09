@@ -169,6 +169,17 @@
         make_instant_draw_object "CIRCLE_FAST",thumb_x,thumb_y,r*2,r*2, strf("$%x,0",c)
 
     loop
+
+    if dragging_number >= 0{
+	    s = ""
+	    repeat get_value_list(thismod, 区間)
+	    	if cnt{
+		    	s += "\n"
+		    }
+			s = "" + 区間(0,cnt) + "-" + 区間(1,cnt) 
+	    loop
+	    make_instant_draw_object "STR", (bar_x1+bar_x2)/2, (bar_y1 + bar_y2)/2, bar_x2 - bar_x1, bar_y2 - bar_y1, strf("%s,$224433",s)
+	}
     
     // 右クリックで切り替え
     if _getkey(2) == 1 {
@@ -219,7 +230,7 @@
             valid = 1
             repeat thumbs_count
                 if cnt != dragging_number {
-                    if 0.01 * abs(max - min) > abs(new_val - thumbs(cnt)){  // 1%以内は重複とみなす
+                    if limit(0.02 * abs(max - min),,5) > abs(new_val - thumbs(cnt)){  // 2%以内は重複とみなす
                         valid = 0
                         break
                     }
