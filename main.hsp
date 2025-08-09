@@ -919,17 +919,20 @@ title "KataGoŽ©ŒÈ‘ÎíŠû•ˆ-ŒŸõƒVƒXƒeƒ€"
 	
 *clearboard
 	if ui_mode == MODE_KIFU_VIEW{
-		clear_board board
-	}else{
-		dim user_board, 19, 19
-		set_board_data board.1, user_board
-		init_group_tejun
+		if sgf_topnode >= 0: del_sgf_node sgf_topnode, 1
+		pre_ui_mode = MODE_BOARD_EDIT
 	}
+	set_g_checkbox g_chkbox.mode_chkbox, MODE_BOARD_EDIT
+
+	dim user_board, 19, 19
+	set_board_data board.1, user_board
+	init_group_tejun
+	
 	
 	treebox_clear t
 	topnode = stat
 	title ""
-	current_kifulist = -1
+	current_kifulist = 0
 	return
 	
 *getsgf_nowpoint
