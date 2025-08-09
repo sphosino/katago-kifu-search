@@ -507,6 +507,12 @@ title "KataGo自己対戦棋譜-検索システム"
 			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
 		}
 	}
+	if is_state_changed_slider2(g_slider2){
+		if filter_on{
+			gosub*filtering_and_make_listbox
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+		}
+	}
 
 	if last_result_time != -1 && keyfpstime - last_result_time > 100000{
 		//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす

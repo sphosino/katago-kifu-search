@@ -1,6 +1,6 @@
 #ifndef grid_slider2
 #addition "keyfps.hsp"
-#module grid_slider2 area, horizontal, min, max, 長さ, 太さ, つまみサイズ, dragging_number, thumbs, thumbs_count, valid_zone_flip
+#module grid_slider2 area, horizontal, min, max, 長さ, 太さ, つまみサイズ, dragging_number, thumbs, thumbs_count, valid_zone_flip, state_changed
 
 #modinit int area_number, int _min, int _max, int _horizontal, local thismod_id
     //エリア番号
@@ -120,6 +120,8 @@
 	//スケール取得
 	scale = absf(max-min)
 
+	state_changed = 0
+
     // 有効区間の描画
     make_instant_draw_object "BOXF_FAST",bar_x1,bar_y1,bar_x2,bar_y2,"$C8C8FF"
     // 有効区間のハイライト
@@ -185,6 +187,7 @@
     if _getkey(2) == 1 {
 	   if in_rect(oya){
        	valid_zone_flip ^= 1
+       	state_changed = 1
        }
     }
     
@@ -262,11 +265,17 @@
             }
         }
     } else {
+	    if dragging_number >= 0: state_changed = 1
         // クリックを離した
         dragging_number = -1
+        
     }
     
     return
+
+#modcfunc is_state_changed_slider2
+	return state_changed
+
 
 #defcfunc local value_to_position double value, double _min, double _len, double _scale
 	//値とminを受け取り、基準点からの距離を返す
@@ -280,6 +289,7 @@
 
 #defcfunc local in_rect array a
     return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
 #global
 #endif
 /*
