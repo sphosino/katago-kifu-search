@@ -182,6 +182,7 @@ root = make_area_child(1,1)
 					chkbox_filter = make_area_child(,,goban_filter_area_header)
 				goban_filter_area_body   = make_area_child(2,,goban_filter_area)
 					combox_modelname = make_area_child(,,goban_filter_area_body)
+					slider2_match_point = make_area_child()
 			tejun_area = make_area_child(1,2,goban_tool_area)
 				tejun_sub = make_area_child(2,1,tejun_area)
 					button_tejun_clear = make_area_child(,,tejun_sub)
@@ -249,6 +250,7 @@ add_tooltip sort2_desc,"新しい棋譜順"
 add_tooltip sort1_asc, "古い棋譜順"
 add_tooltip sort1_desc, "新しい棋譜順"
 add_tooltip chkbox_colorflip, "白黒が逆でも結果に含める"
+add_tooltip slider2_match_point, "ヒットした位置でフィルタ"
 
 set_tooltip_color 0x333333, 0xFFFFFF
 
@@ -298,6 +300,9 @@ newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_ste
 newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000
 newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000
 newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000
+
+newmod g_slider2, grid_slider2, slider2_match_point, 0, 255, 1
+set_size_g_slider2 g_slider2, -1,0.8,-1
 
 model_list = "all\nb28\nb18\nb60\nb40"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
@@ -771,7 +776,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	treebox_draw t, length(f)
 
-	
+	slider_manager2 g_slider2
 	計測 "レンダラ"
 	draw_objects //レンダラ経由描画
 
@@ -806,6 +811,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
 	loop
+	
 	foreach g_combox
 		combox_manager g_combox.cnt
 	loop
@@ -1128,36 +1134,35 @@ title "KataGo自己対戦棋譜-検索システム"
 	ln = 0
 	dim new_indices
 
-	if get_value_g_combox(g_combox){
-
-		logmes "選択されたアイテム" + get_value_g_combox(g_combox)
-		notesel model_list
-			noteget modelname,get_value_g_combox(g_combox)
-		noteunsel
-		logmes modelname
-		
-
-		repeat listcount
-			dup_item_data_by_id kifulist.matchlist, newids(cnt), a
-			dupptr black_player_name, varptr(a) + 1024     , 64, 2
-			dupptr white_player_name, varptr(a) + 1024 + 64, 64, 2
+	notesel model_list
+		noteget modelname,get_value_g_combox(g_combox)
+	noteunsel
+	logmes modelname
 	
-			split black_player_name,"-",bn
-			split white_player_name,"-",wn
-			if strmid(wn(1),0,3) == modelname || strmid(bn(1),0,3) == modelname{
-				new_indices(ln) = newids(cnt)
-				ln++
-			}
-			if cnt \ 200 == 0: logmes ""+wn(1) + " : "+bn(1)
+
+	repeat listcount
+		dup_item_data_by_id kifulist.matchlist, newids(cnt), a
+		dupptr black_player_name, varptr(a) + 1024     , 64, 2
+		dupptr white_player_name, varptr(a) + 1024 + 64, 64, 2
+
+		split black_player_name,"-",bn
+		split white_player_name,"-",wn
+
+		modelname_check =  (get_value_g_combox(g_combox) == 0) || (strmid(wn(1),0,3) == modelname || strmid(bn(1),0,3) == modelname)
+		if modelname_check = 0: continue
+		match_point_check = 0
+		tesuu = lpeek(a)
+		repeat get_value_list(g_slider2,result)
+			if tesuu >= result(0,cnt) && tesuu < result(1,cnt): match_point_check = 1: break
 		loop
-	
 		
-	}else{
-		repeat listcount
+		if match_point_check{
 			new_indices(ln) = newids(cnt)
 			ln++
-		loop
-	}
+		}
+	loop
+	
+	
 
 	g_filter_on kifulist.matchlist, new_indices, ln
 

@@ -25,5 +25,6 @@
 #addition "modules/grid_system/objects/g_treebox.hsp"
 #addition "modules/grid_system/objects/g_line_graph.hsp"
 #addition "modules/grid_system/objects/g_combox.hsp"
+#addition "modules/grid_system/objects/g_slider2.hsp"
 ;*/
 

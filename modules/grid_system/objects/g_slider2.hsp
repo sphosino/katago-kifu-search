@@ -1,0 +1,340 @@
+#ifndef grid_slider2
+#addition "keyfps.hsp"
+#module grid_slider2 area, horizontal, min, max, 長さ, 太さ, つまみサイズ, dragging_number, thumbs, thumbs_count, valid_zone_flip
+
+#modinit int area_number, int _min, int _max, int _horizontal, local thismod_id
+    //エリア番号
+    area = area_number
+    //スライダーの方向
+    horizontal = _horizontal
+    //値の変化範囲
+    min = _min
+    max = _max
+    //バーのサイズ情報 【マイナス == 自動(エリアにピッタリ収まる）】
+    長さ = -1.
+    太さ = -1.
+    つまみサイズ = -1.
+    thumbs_count = 1
+    dim thumbs, 16  //つまみの数（最大16個）
+    thumbs(0) = (min + max) / 2  //初期位置を中央に
+    dragging_number = -1 //つまんでいないとき-1 : つまんでいるときその番号
+    
+    valid_zone_flip = 0 //有効区間切り替えフラグ
+    
+    mref thismod_id, 2
+    return thismod_id
+
+#modfunc set_size_g_slider2 double _sizex, double _sizey, double _sizer
+    長さ = _sizex
+    太さ = _sizey
+    つまみサイズ = _sizer
+    return
+
+#modfunc add_thumb //つまみを追加する
+    if thumbs_count < 16 {
+        thumbs(thumbs_count) = thumbs(thumbs_count - 1)
+        thumbs_count++
+    }
+    return
+
+#modcfunc get_value_list array result
+    //区間リストを返す
+    dim result, 2
+    result_count = 0
+    start_point = min
+    repeat thumbs_count + 1
+        if cnt < thumbs_count {
+            end_point = thumbs(cnt)
+        } else {
+            end_point = max
+        }
+        if cnt\2 == valid_zone_flip{
+            result(0, result_count) = start_point
+            result(1, result_count) = end_point
+            result_count++
+        }
+        start_point = end_point
+    loop
+    
+    return result_count
+
+#modfunc slider_manager2
+    get_rect area, oya　//親に矩形が取得される　x1,y1,x2,y2形式
+    //--------------------------
+	len = 長さ
+	if 長さ < 0 {
+	    if horizontal {
+	        len = oya.2 - oya.0
+	    } else {
+	        len = oya.3 - oya.1
+	    }
+	} else: if 長さ > 0 && 長さ <= 1 {
+	    ; パーセンテージ指定
+	    if horizontal {
+	        len = 長さ * (oya.2 - oya.0)
+	    } else {
+	        len = 長さ * (oya.3 - oya.1)
+	    }
+	}
+	
+	thickness = 太さ
+	if 太さ < 0 {
+	    if horizontal {
+	        thickness = oya.3 - oya.1
+	    } else {
+	        thickness = oya.2 - oya.0
+	    }
+	} else: if 太さ > 0 && 太さ <= 1 {
+	    ; パーセンテージ指定
+	    if horizontal {
+	        thickness = 太さ * (oya.3 - oya.1)
+	    } else {
+	        thickness = 太さ * (oya.2 - oya.0)
+	    }
+	}
+	
+	r = つまみサイズ
+	if つまみサイズ < 0 {
+	    r = thickness / 2
+	} else: if つまみサイズ > 0 && つまみサイズ <= 1 {
+	    ; パーセンテージ指定
+	    r = つまみサイズ * thickness
+	}
+    
+    // スライダーバーの描画位置計算
+
+	; 横スライダー
+	if horizontal {
+		offsetx = (oya.2-oya.0 - len) / 2
+		offsety = (oya.3-oya.1 - thickness) / 2
+	} else {
+		offsetx = (oya.2-oya.0 - thickness) / 2
+		offsety = (oya.3-oya.1 - len) / 2
+	}
+
+	bar_x1 = oya.0 + offsetx
+    bar_y1 = oya.1 + offsety
+    bar_x2 = oya.2 - offsetx
+    bar_y2 = oya.3 - offsety
+
+	//スケール取得
+	scale = absf(max-min)
+
+    // 有効区間の描画
+    make_instant_draw_object "BOXF_FAST",bar_x1,bar_y1,bar_x2,bar_y2,"$C8C8FF"
+    // 有効区間のハイライト
+    start_point = min
+    repeat thumbs_count + 1
+        if cnt < thumbs_count {
+            end_point = thumbs(cnt)
+        } else {
+            end_point = max
+        }
+        
+        if cnt\2 == valid_zone_flip {
+            color 100, 150, 255
+            if horizontal {
+                zone_x1 = bar_x1 + value_to_position(start_point,min,len,scale)
+                zone_x2 = bar_x1 + value_to_position(  end_point,min,len,scale)
+                make_instant_draw_object "BOXF_FAST",zone_x1, bar_y1, zone_x2, bar_y2,"$6496FF"
+            } else {
+                zone_y1 = bar_y1 + value_to_position(start_point,min,len,scale)
+                zone_y2 = bar_y1 + value_to_position(  end_point,min,len,scale)
+                make_instant_draw_object "BOXF_FAST",bar_x1, zone_y1, bar_x2, zone_y2,"$6496FF"
+            }
+        }
+        
+        start_point = end_point
+        
+    loop
+    
+    // つまみの描画
+    repeat thumbs_count
+        thumb_val = thumbs(cnt)
+        if horizontal {
+            thumb_x = bar_x1 + value_to_position(thumb_val,min,len,scale)
+            thumb_y = oya.1 + (oya.3 - oya.1) / 2
+        } else {
+            thumb_x = oya.0 + (oya.2 - oya.0) / 2
+            thumb_y = bar_y1 + value_to_position(thumb_val,min,len,scale)
+        }
+        
+        // つまみの色（ドラッグ中かどうかで変える）
+        if dragging_number = cnt {
+            c = $FF6464
+        } else {
+            c = $969696
+        }
+        make_instant_draw_object "CIRCLE_FAST",thumb_x,thumb_y,r*2,r*2, "$FFFFFF"
+        make_instant_draw_object "CIRCLE_FAST",thumb_x,thumb_y,r*2,r*2, strf("$%x,0",c)
+
+    loop
+    
+    // 右クリックで切り替え
+    if _getkey(2) == 1 {
+	   if in_rect(oya){
+       	valid_zone_flip ^= 1
+       }
+    }
+    
+    // 入力操作
+    if _getkey(1) >= 1{  // 左クリック中
+
+        if dragging_number = -1 {  // まだつまんでいない場合
+            // どのつまみがクリックされたか判定
+            repeat thumbs_count
+                thumb_val = thumbs(cnt)
+                if horizontal {
+                    thumb_x = bar_x1 + value_to_position(thumb_val, min , len, scale)
+                    thumb_y = (oya.1 + oya.3) / 2
+                    distance = (mousex - thumb_x) * (mousex - thumb_x) + (mousey - thumb_y) * (mousey - thumb_y)
+                } else {
+                    thumb_x = (oya.0 + oya.2) / 2
+                    thumb_y = bar_y1 + value_to_position(thumb_val, min , len, scale)
+                    distance = (mousex - thumb_x) * (mousex - thumb_x) + (mousey - thumb_y) * (mousey - thumb_y)
+                }
+                
+                if distance <= (r/2) * (r/2) {
+                    dragging_number = cnt
+                    break
+                }
+            loop
+        }
+        
+        // ドラッグ中の処理
+        if dragging_number >= 0 {
+            if horizontal {
+                new_val = min + position_to_value(mousex , bar_x1, len, scale) * ((min<max)*2 - 1)
+            } else {
+                new_val = min + position_to_value(mousey , bar_y1, len, scale) * ((min<max)*2 - 1)
+            }
+
+            if min < max{
+	            new_val = limit(new_val,min,max)
+	        }else{
+		        new_val = limit(new_val,max,min)
+		    }
+            
+            // 他のつまみとの重複チェック
+            valid = 1
+            repeat thumbs_count
+                if cnt != dragging_number {
+                    if 0.01 * abs(max - min) > abs(new_val - thumbs(cnt)){  // 1%以内は重複とみなす
+                        valid = 0
+                        break
+                    }
+                }
+            loop
+            
+            if valid {
+                thumbs(dragging_number) = new_val
+                
+                // つまみの順序を保持（ソート）
+                repeat thumbs_count - 1
+                    repeat thumbs_count - 1 - cnt
+                    	pos1 = value_to_position(thumbs(cnt)    ,min,len, scale)
+                    	pos2 = value_to_position(thumbs(cnt + 1),min,len, scale)
+                        if pos1 > pos2 {
+                            temp = thumbs(cnt)
+                            thumbs(cnt) = thumbs(cnt + 1)
+                            thumbs(cnt + 1) = temp
+                            
+                            // ドラッグ中のインデックスも更新
+                            if dragging_number = cnt {
+                                dragging_number = cnt + 1
+                            } else : if dragging_number = cnt + 1 {
+                                dragging_number = cnt
+                            }
+                        }
+                    loop
+                loop
+            }
+        }
+    } else {
+        // クリックを離した
+        dragging_number = -1
+    }
+    
+    return
+
+#defcfunc local value_to_position double value, double _min, double _len, double _scale
+	//値とminを受け取り、基準点からの距離を返す
+	//基準点を足すことで実際の位置になる
+	return absf(value - _min) / _scale * _len
+
+#defcfunc local position_to_value double position, double _pos, double _len, double _scale
+	//マウス位置と基準点を受け取り、スクロールされた値を返す
+	//minを足すことで実際の値になる。ただし絶対量が返るので、min > maxの時は反転させて足すこと。
+	return (position - _pos) / _len * _scale
+
+#defcfunc local in_rect array a
+    return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#global
+#endif
+/*
+// get_rect関数 のモック
+#ifndef get_rect
+#module
+#deffunc get_rect int area_id, array result
+	switch area_id
+	case 1 //horizontal  mock
+		result = 200,100,600,150
+	swbreak
+	case 0
+		result = 100,50,150,450
+	swbreak
+	swend
+    return
+#global
+#endif
+*/
+
+#if 0000
+    // ウィンドウ作成
+    screen 0, 640, 480
+
+    delkey_all //監視キーを全クリア
+    addkey 1 //左クリック
+    addkey 2 //右クリック
+    
+    // スライダー作成
+    ;newmod slider, grid_slider, 1, 500, 1000, 1  
+   ;newmod slider, grid_slider, 1, 1000, 500, 1 
+   ; newmod slider, grid_slider, 0, 500, 1000, 0  
+   ; newmod slider, grid_slider, 0, 500, 1000, 0 
+   ; newmod slider, grid_slider, 1, -500, 1000, 1
+    newmod slider, grid_slider2, 0, 100,-500, 0
+    // つまみを追加
+    add_thumb slider.stat
+    add_thumb slider.stat
+	add_thumb slider.stat
+    
+    
+    // メインループ
+    repeat
+        redraw 0
+        color 255, 255, 255
+        boxf
+		title""+mousex+","+mousey
+		//キー入力fps管理
+        manage_keyfps
+        // スライダー管理・描画
+        foreach slider
+        	slider_manager2 slider.cnt
+        loop
+        
+        // 値の表示
+        color 0, 0, 0
+        pos 10, 10
+        mes "スライダー値:"
+        repeat get_value_list(slider, thumbs)
+            pos 10, 30 + cnt * 20
+            mes "つまみ" + cnt + ": " +thumbs(0, cnt) + ","+ thumbs(1, cnt)
+        loop
+        
+        pos 10, 150
+        mes "右クリックで有効区間切り替え"
+        
+        redraw 1
+    loop
+#endif
