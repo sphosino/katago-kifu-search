@@ -28,6 +28,7 @@ if strsize == -1{
 	Å‘å‰» = 0
 	child_target_wait = DEFAULT_TARGET_WAIT
 	MAX_CHILDREN = get_auto_cores()
+	default_order = 2 // 0 = ¸‡, 1 = ~‡, 2 = ƒ‰ƒ“ƒ_ƒ€
 
 }else{
 	noteload SETTING_FILE_NAME
@@ -49,8 +50,9 @@ if strsize == -1{
 	noteget_ MAX_CHILDREN, LINE_PROCESS_COUNT
 	noteget_ load_limit, LINE_LOAD_LIMIT
 	noteget_ child_target_wait, LINE_TARGET_WAIT
+	noteget_ default_order, LINE_DEFAULT_ORDER
 
-	logmes "LOAD==>"+child_target_wait + "  :  "+LINE_TARGET_WAIT
+	logmes "LOAD==>"+default_order
 
 	if wx < 0{
 		wx = (ginfo(20) - x) / 2

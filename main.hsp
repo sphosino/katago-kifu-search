@@ -1328,13 +1328,16 @@ title "KataGo©ŒÈ‘ÎíŠû•ˆ-ŒŸõƒVƒXƒeƒ€"
 			add_item kifulist, files
 			kifulist_notepad = files
 
-			g_listbox_sort kifulist, LISTBOX_SORT_DESC, is_original_folder
+			
 
 		}
 	
 		set_g_label g_label, "Šû•ˆ(" + get_list_item_num(kifulist) + ")Œ"
 	
 	noteunsel
+
+	tmp_lab = *lab_sort1_asc,*lab_sort1_desc,*lab_sort1_shuffle
+	gosub tmp_lab(default_order)
 	
 	if kifulist_notepad != ""{
 		if vartype(b) != 2: b = "" //Œ^‡‚í‚¹

@@ -18,6 +18,7 @@ goto*@f
 	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
 	noteadd_ child_target_wait, LINE_TARGET_WAIT
 	noteadd_ load_limit, LINE_LOAD_LIMIT
+	noteadd_ default_order, LINE_DEFAULT_ORDER
 	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
 	chdir SUBDIR
 	notesave SETTING_FILE_NAME

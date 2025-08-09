@@ -35,6 +35,7 @@ pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: process_num 
 pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: tw = stat
 pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
 pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: sc_max_depth = stat
+pos left_size, objysize * 5: scbaScrollbar 0, right_size, objysize: sc_default_order = stat
 
 //スクロールバーレンジ設定
 scbaSetrange max_kifu, 1, 100000,,,1
@@ -42,13 +43,14 @@ scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, MIN_TARGET_WAIT - 1, MAX_TARGET_WAIT,,,1
 scbaSetrange tw, MIN_TARGET_WAIT, MAX_TARGET_WAIT,,,1
 scbaSetrange sc_max_depth, 10, 254,,,1
+scbaSetRange sc_default_order, 0,2,,,1
 
 
 objsize ginfo(12), objysize
-pos 0, objysize * 7: button gosub "設定保存", *save
+pos 0, objysize * 8: button gosub "設定保存", *save
 
-pos 0, objysize * 9: button gosub  "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
-pos 0, objysize * 10: button gosub "スクレイピング停止", *sqr_stop
+pos 0, objysize * 10: button gosub  "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
+pos 0, objysize * 11: button gosub "スクレイピング停止", *sqr_stop
 
 notesel setting_str
 //設定をスクロールバーに読み込み
@@ -57,6 +59,7 @@ scbaSetPos process_num       , MAX_CHILDREN
 scbaSetPos auto_download_time, auto_download
 scbaSetPos sc_max_depth      , max_depth
 scbaSetPos tw                , child_target_wait
+scbaSetPos sc_default_order  , default_order
 gosub *set_value
 
 // デバッグ用ダイアログ（削除推奨）
@@ -95,13 +98,13 @@ stop
 	adjustment_message = ""
 	
 	switch type
-	case auto_download_time(0)
+	case auto_download_time
 	swbreak
 	
-	case sc_max_depth(0)
+	case sc_max_depth
 	swbreak
 	
-	case max_kifu(0)
+	case max_kifu
 		// ゼロ除算対策を追加
 		if scbaInfo(process_num) > 0 {
 			if scbaInfo(max_kifu) / scbaInfo(process_num) > LIMIT_PER_PROCESS {
@@ -116,7 +119,7 @@ stop
 	case tw(0)
 	swbreak
 	
-	case process_num(0)
+	case process_num
 		// ゼロ除算対策を追加
 		if scbaInfo(process_num) > 0 {
 			if scbaInfo(max_kifu) / scbaInfo(process_num) > LIMIT_PER_PROCESS {
@@ -126,6 +129,9 @@ stop
 				adjustment_message = "自動調整: 棋譜数を" + scbaInfo(max_kifu) + "に制限"
 			}
 		}
+	swbreak
+
+	case sc_default_order
 	swbreak
 	
 	default 
@@ -158,8 +164,9 @@ stop
 	load_limit        = scbaInfo(max_kifu)
 	child_target_wait = scbaInfo(tw)
 	max_children      = scbaInfo(process_num)
+	default_order     = scbaInfo(sc_default_order)
 
-	logmes strf("%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait, max_children)
+	logmes strf("%d,%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait, max_children,default_order)
 
 	save_window_status.0 = wx
 	save_window_status.1 = wy
@@ -171,19 +178,23 @@ stop
 	color 255, 255, 255: boxf 0, 0, ginfo_sx, ginfo_sy: color 0, 0, 0
 	
 	// 基本設定表示
-	pos 0, objysize * 0: mes strf("最大読み込み制限 (%d棋譜)", scbaInfo(max_kifu))
-	pos 0, objysize * 1: mes strf("子プロセス数 -> %d", scbaInfo(process_num))
-	pos 0, objysize * 2: mes strf("子プロセス余裕時間(%dms)", scbaInfo(tw))
+	pos 0, objysize * 0: mes strf("最大読み込み制限 【%d棋譜】", scbaInfo(max_kifu))
+	pos 0, objysize * 1: mes strf("子プロセス数 -> 【%d】", scbaInfo(process_num))
+	pos 0, objysize * 2: mes strf("子プロセス余裕時間【%dms】", scbaInfo(tw))
 	pos 0, objysize * 3
 		if scbaInfo(auto_download_time) < 20 {
-			mes "起動時スクレイピング(なし)"
+			mes "起動時スクレイピング【なし】"
 		} else {
-			mes strf("起動時スクレイピング(%d秒)", scbaInfo(auto_download_time))
+			mes strf("起動時スクレイピング【%d秒】", scbaInfo(auto_download_time))
 		}
-	pos 0, objysize * 4: mes strf("検索の深さ (%d手)", scbaInfo(sc_max_depth))
+	pos 0, objysize * 4: mes strf("検索の深さ 【%d手】", scbaInfo(sc_max_depth))
+	
+	tmp_lab = "古い順","新しい順","ランダム"
+	pos 0, objysize * 5
+	mes strf("棋譜の初期並び順【%s】",tmp_lab(scbaInfo(sc_default_order)))
 	
 	// 新規追加：安全性表示（ゼロ除算対策）
-	pos 0, objysize * 5
+	pos 0, objysize * 6
 	if scbaInfo(process_num) > 0 {
 		kifu_per_process = scbaInfo(max_kifu) / scbaInfo(process_num)
 	} else {
