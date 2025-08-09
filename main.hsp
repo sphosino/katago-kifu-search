@@ -993,14 +993,14 @@ title "KataGo自己対戦棋譜-検索システム"
 *loadsgf
 	dim t
 	newmod t, treebox, treebox_area
-	sdim s, $FFFF
-	clipget s, varsize(s)
 	if sgf_topnode >= 0{
 		del_sgf_node sgf_topnode, 1
 	}
+	sdim s, $FFFF
+	clipget s, varsize(s)
+
 	sgf_topnode = load_sgf(s)
-	
-	if sgf_topnode < 0: return
+	if sgf_topnode < 0:logmes "棋譜読み込み失敗": return
 
 	
 	topnode = load_sgf_set_board(t, sgf_topnode, board)
@@ -1280,7 +1280,9 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	chdir kifudir
 	dirlist files,"*.sgf"
-	棋譜数 = limit(stat,,load_limit)
+	num = stat
+	棋譜数 = limit(num,,load_limit)
+
 	if 棋譜数 == 0: return
 
 	is_original_folder = ( kifudir == DEFAULT_KIFUDIR )
@@ -1298,11 +1300,9 @@ title "KataGo自己対戦棋譜-検索システム"
 		棋譜数 = limit(MAX_CHILDREN * LIMIT_PER_PROCESS,,load_limit)
 	}
 	notesel files
-	
-		;files = shuffle_notepad(files)
-			
+
 		//SGFモジュール初期化
-		init_sgf_module 10
+		init_sgf_module 100
 
 		//棋譜リスト初期化
 		dim kifulist
@@ -1310,25 +1310,23 @@ title "KataGo自己対戦棋譜-検索システム"
 		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
 		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
 
-		if 棋譜数 != notemax{
-			sdim ss
+		if 棋譜数 != num{
+			files = shuffle_notepad(files)
+			sdim kifulist_notepad
 			repeat 棋譜数
-				noteget tmp, 棋譜数-cnt-1 //最新棋譜順に読み込む
+				noteget tmp, cnt //最新棋譜順に読み込む
 				if cnt{
-					ss += "\n" + tmp
+					kifulist_notepad += "\n" + tmp
 				}else{
-					ss += tmp
+					kifulist_notepad += tmp
 				}
 			loop
-			add_item kifulist, ss
-			kifulist_notepad = ss
-			
+			add_item kifulist, kifulist_notepad
+			logmes "load_NOT_full"
 		}else{
 			add_item kifulist, files
 			kifulist_notepad = files
-
-			
-
+			logmes "load_full"
 		}
 	
 		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
