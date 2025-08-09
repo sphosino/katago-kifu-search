@@ -1159,7 +1159,7 @@ title "KataGo©ŒÈ‘ÎíŠû•ˆ-ŒŸõƒVƒXƒeƒ€"
 		match_point_check = 0
 		tesuu = lpeek(a)
 		repeat get_value_list(g_slider2,result)
-			if tesuu >= result(0,cnt) && tesuu < result(1,cnt): match_point_check = 1: break
+			if tesuu >= result(0,cnt) && tesuu <= result(1,cnt): match_point_check = 1: break
 		loop
 		
 		if match_point_check{
