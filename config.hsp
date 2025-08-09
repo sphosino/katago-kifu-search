@@ -229,7 +229,6 @@ stop
 	// 自動調整メッセージ表示
 	if adjustment_message != "" {
 		color 0, 100, 200  // 青
-		pos 0, objysize * 6
 		mes adjustment_message
 	}
 	
