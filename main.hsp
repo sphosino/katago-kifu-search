@@ -301,7 +301,7 @@ newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000
 newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000
 newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000
 
-newmod g_slider2, grid_slider2, slider2_match_point, 0, max_depth, 1
+newmod g_slider2, grid_slider2, slider2_match_point, 0, max_depth, 1, max_depth
 set_size_g_slider2 g_slider2, -1,0.8,-1
 
 model_list = "all\nb28\nb18\nb60\nb40"
@@ -348,7 +348,6 @@ bg_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF_FAST", LIFE_FOREVER, 0,0, ginfo
 update_priority_draw_object bg_id, PRIORITY_BACK
 //Å‰‚Ì
 pretime = keyfpstime
-
 
 onexit *save //I—¹‚É*save_info‚ÉƒWƒƒƒ“ƒv
 

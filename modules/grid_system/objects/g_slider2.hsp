@@ -1,8 +1,8 @@
 #ifndef grid_slider2
 #addition "keyfps.hsp"
-#module grid_slider2 area, horizontal, min, max, 長さ, 太さ, つまみサイズ, dragging_number, thumbs, thumbs_count, valid_zone_flip, state_changed
+#module grid_slider2 area, horizontal, min, max, 長さ, 太さ, つまみサイズ, dragging_number, thumbs, thumbs_count, valid_zone_flip, state_changed,last_dragged_number
 
-#modinit int area_number, int _min, int _max, int _horizontal, local thismod_id
+#modinit int area_number, int _min, int _max, int _horizontal, int value, local thismod_id
     //エリア番号
     area = area_number
     //スライダーの方向
@@ -16,8 +16,10 @@
     つまみサイズ = -1.
     thumbs_count = 1
     dim thumbs, 16  //つまみの数（最大16個）
-    thumbs(0) = (min + max) / 2  //初期位置を中央に
+    thumbs(0) = value  //初期位置
     dragging_number = -1 //つまんでいないとき-1 : つまんでいるときその番号
+
+    last_dragged_number = 0 //最後に操作したつまみ番号
     
     valid_zone_flip = 0 //有効区間切り替えフラグ
     
@@ -266,6 +268,7 @@
         }
     } else {
 	    if dragging_number >= 0: state_changed = 1
+	    last_dragged_number = dragging_number
         // クリックを離した
         dragging_number = -1
         
@@ -273,10 +276,46 @@
     
     return
 
+
+//util
 #modcfunc is_state_changed_slider2
 	return state_changed
+	
+#modcfunc get_last_dragged_thumb
+	if dragging_number >= 0: return dragging_number
+	return last_dragged_number
+	
+#modfunc set_value_thumb int p1, int value
+	thumbs(p1) = value
+	return
 
-
+#modfunc set_min_max double _min, double _max
+    min = _min
+    max = _max
+    // 必要に応じて、つまみの値を新しい範囲内に収める処理も追加
+    repeat thumbs_count
+        if min < max {
+            thumbs(cnt) = limit(thumbs(cnt), min, max)
+        } else {
+            thumbs(cnt) = limit(thumbs(cnt), max, min)
+        }
+    loop
+    return
+#modcfunc get_min_max array result
+    dim result, 2
+    result(0) = min
+    result(1) = max
+    return
+#modfunc remove_thumb int p1
+    if thumbs_count > 1 {
+        // 削除するつまみより後ろの要素を前に詰める
+        repeat thumbs_count - 1 - p1
+            thumbs(p1 + cnt) = thumbs(p1 + cnt + 1)
+        loop
+        thumbs_count--
+    }
+    return
+//local
 #defcfunc local value_to_position double value, double _min, double _len, double _scale
 	//値とminを受け取り、基準点からの距離を返す
 	//基準点を足すことで実際の位置になる
