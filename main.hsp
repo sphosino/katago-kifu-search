@@ -32,6 +32,7 @@
 #const MODE_BOARD_EDIT 1
 #const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
 #const BG_COLOR $808080 // 128,128,128
+#const MERGE_LIMIT 50 //棋譜をマージする時の最大棋譜数
 
 gosub *init_window
 
@@ -781,7 +782,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	treebox_draw t, length(f)
 
-	slider_manager2 g_slider2
+	
 	計測 "レンダラ"
 	draw_objects //レンダラ経由描画
 
@@ -816,6 +817,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	foreach g_radiobox
 		draw_g_radiobox g_radiobox.cnt
 	loop
+
+	slider_manager2 g_slider2
 	
 	foreach g_combox
 		combox_manager g_combox.cnt
@@ -942,6 +945,7 @@ title "KataGo自己対戦棋譜-検索システム"
 *getsgf
 
 	gosub*kifu_merge
+	if new_node < 0: return
 
 	//new_nodeにマージされたノードidが入っている
 
@@ -954,6 +958,7 @@ title "KataGo自己対戦棋譜-検索システム"
 *save_file
 	
 	gosub*kifu_merge
+	if new_node < 0: return
 
 	s = get_node_sgf(new_node) ; マージされたノードをSGFに変換
 	
@@ -978,7 +983,7 @@ title "KataGo自己対戦棋譜-検索システム"
 			nodelist(cnt) = get_item_name_by_id(kifulist.current_kifulist, ids(cnt)) //ファイル名を取得
 		loop
 	noteunsel
-	new_node = merge_node(nodelist, topnode_list) //選択された棋譜をマージ
+	new_node = merge_node(nodelist, topnode_list, MERGE_LIMIT) //選択された棋譜をマージ
 	return
 *kifu_merge_after
 	//削除して完了
@@ -996,12 +1001,12 @@ title "KataGo自己対戦棋譜-検索システム"
 	if sgf_topnode >= 0{
 		del_sgf_node sgf_topnode, 1
 	}
-	sdim s, $FFFF
-	clipget s, varsize(s)
-
-	sgf_topnode = load_sgf(s)
-	if sgf_topnode < 0:logmes "棋譜読み込み失敗": return
-
+	logmes "A"
+	sdim s, MERGE_LIMIT * 7500 //１棋譜当たりの大体の平均サイズ
+		clipget s, varsize(s)
+		sgf_topnode = load_sgf(s)
+		if sgf_topnode < 0:logmes "棋譜読み込み失敗": return
+	sdim s
 	
 	topnode = load_sgf_set_board(t, sgf_topnode, board)
 	
@@ -1300,7 +1305,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	notesel files
 
 		//SGFモジュール初期化
-		init_sgf_module 100
+		init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
 
 		//棋譜リスト初期化
 		dim kifulist

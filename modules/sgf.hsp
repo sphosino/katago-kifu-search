@@ -522,22 +522,28 @@
 	loop
 	return result
 
-#defcfunc merge_node array node_list, array topnode_list
+#defcfunc merge_node array node_list, array topnode_list, int _merge_limit
+	if vartype(node_list) != 2: return -1
 	new = make_new_SGFnode(-1,TOPNODE_SIZE) //新たなトップノードを作成する
 	dim topnode_list
+	if _merge_limit{
+		merge_limit = limit(_merge_limit,,length(node_list))
+	}else{
+		merge_limit = length(node_list)
+	}
 	notesel s
-		repeat length(node_list)
+		repeat merge_limit
 			noteload node_list(cnt)
 			topnode_list(cnt) = _load_sgf(s, -1)
+			logmes "loaded ->" + stat
 			merge_node_main new, topnode_list(cnt) //マージ実行
 			
 			if cnt \ 10 == 9{//１０棋譜以上であればフィードバックつける。
 				await 16
-				title "マージ実行中 " + cnt * 100 / length(node_list) + "ESCで中断"
+				title "マージ実行中 " + (cnt + 1) * 100 / merge_limit + "%完了 ESCで中断"
 	
 				getkey a, 27
 				if a: break
-			
 				
 			}
 			await 1
@@ -600,17 +606,21 @@
 #module
 #define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1, %2)
 #defcfunc _load_sgf str ss, int node
+
 	sss = ss
 	sgflen = strlen(sss)
 	if sgflen < 3{
 		//最小SGFは　(;)
+		logmes "A"
 		return -1
 	}
-	if (peek(sss) != '(') || (peek(sss, sgflen - 1) != ')'){
+	if (peek(sss) != '(') || (strmid(sss,-1,1) != ")"){
+		logmes "B->" + strmid(sss,-1,1)
 		return -1
 	}
 	start_point = instr(sss, 0 ,";")
 	if start_point == -1{
+		logmes "C"
 		return -1
 	}
 	dim stack_count
