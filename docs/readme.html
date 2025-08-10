@@ -4,233 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KataGo棋譜検索システム 操作ガイド</title>
+<link rel="stylesheet" href="style.css">
     <style>
-        /* 基本スタイル */
-        body {
-            font-family: 'Segoe UI', 'BIZ UDPGothic', 'Hiragino Sans', 'Meiryo', sans-serif;
-            line-height: 1.8;
-            color: #2d3748;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 25px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        
-        /* タイトルと見出し */
-h1 {
-    color: white;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    padding: 25px 30px;
-    border-radius: 16px;
-    margin-bottom: 40px;
-    text-align: center;
-    font-size: 2.7em;
-    font-weight: 900;
-    text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    border: 4px solid #a78bfa;
-}
-        h2 {
-            color: #1e1b4b;
-            margin-top: 40px;
-            padding-left: 20px;
-            border-left: 6px solid #f59e0b;
-            font-size: 1.7em;
-            margin-bottom: 25px;
-            background: linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(255, 255, 255, 0.9) 30%, rgba(255, 255, 255, 0.95) 100%);
-            padding: 18px 20px;
-            border-radius: 0 12px 12px 0;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            border-top: 2px solid #f59e0b;
-            border-bottom: 2px solid #f59e0b;
-        }
-        
-        /* セクション */
-        .section {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 35px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
-        }
-        
-        /* 特徴・詳細説明 */
-        .feature {
-            margin-left: 25px;
-            border-left: 4px solid #a78bfa;
-            background: linear-gradient(90deg, rgba(167, 139, 250, 0.1) 0%, transparent 30%);
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            border-radius: 0 12px 12px 0;
-        }
-        .feature p {
-            margin-bottom: 12px;
-        }
-
-        /* 右クリック強調スタイル */
-        .right-click-emphasis {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 12px;
-            font-weight: bold;
-            display: inline-block;
-            margin: 3px;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-            border: 2px solid #92400e;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-            font-size: 1.1em;
-            animation: pulse 2s infinite;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .right-click-emphasis::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
-            50% { box-shadow: 0 6px 25px rgba(245, 158, 11, 0.6); }
-            100% { box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4); }
-        }
-        
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* Tipsスタイル */
-        .tips {
-            background: linear-gradient(135deg, #ddd6fe 0%, #e0e7ff 100%);
-            border-left: 6px solid #8b5cf6;
-            padding: 20px 25px;
-            margin: 25px 0;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
-        }
-        .tips ul {
-            margin-top: 10px;
-        }
-        .tips li {
-            margin-bottom: 8px;
-        }
-
-        /* Warningスタイル */
-        .warning {
-            background: linear-gradient(135deg, #fecaca 0%, #fde68a 100%);
-            border-left: 6px solid #ef4444;
-            padding: 20px 25px;
-            margin: 25px 0;
-            border-radius: 12px;
-            color: #7f1d1d;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
-        }
-        .warning ul {
-            margin-top: 10px;
-        }
-        .warning li {
-            margin-bottom: 5px;
-        }
-        .warning p {
-            margin-bottom: 0;
-        }
-        
-        /* ハイライト */
-        .highlight {
-            font-weight: bold;
-            color: #7c2d12;
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #f59e0b;
-        }
-        
-        /* コードスタイル */
-        code {
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 0.95em;
-            color: #4c1d95;
-            border: 1px solid #cbd5e1;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        /* リスト */
-        ul, ol {
-            padding-left: 30px;
-            margin-bottom: 15px;
-        }
-        ul li, ol li {
-            margin-bottom: 8px;
-        }
-
-        /* 画像 */
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 25px auto;
-            border: 2px solid rgba(139, 92, 246, 0.3);
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        img:hover {
-            transform: scale(1.02);
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
-        }
-
-        /* フッター */
-        .footer {
-            margin-top: 60px;
-            text-align: center;
-            font-style: italic;
-            color: #64748b;
-            border-top: 2px solid rgba(139, 92, 246, 0.3);
-            padding-top: 25px;
-            font-size: 0.95em;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .footer a {
-            color: #8b5cf6;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
-        .footer a:hover {
-            color: #6366f1;
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
+<nav id="main-nav">
+  <ul>
+    <li><a href="#basic-ops">基本操作</a></li>
+    <li><a href="#search-func">検索機能</a></li>
+    <li><a href="#tejun">手順検索</a></li>
+    <li><a href="#grouping">グルーピング</a></li>
+    <li><a href="#filter">フィルタ機能</a></li>
+    <li><a href="#sgf">SGF取得</a></li>
+    <li><a href="#graph">グラフ表示</a></li>
+    <li><a href="#search-tech">検索テクニック</a></li>
+    <li><a href="#auto-play">自動再生</a></li>
+    <li><a href="#layout">レイアウト変更</a></li>
+    <li><a href="#attention">注意事項</a></li>
+    </ul>
+</nav>
     <h1>KataGo棋譜検索システム - 操作ガイド</h1>
     
     <div class="section">
@@ -248,7 +41,7 @@ h1 {
         </div>
     </div>
 
-    <h2>基本操作</h2>
+    <h2 id="basic-ops">基本操作</h2>
     <div class="section">
         <ul>
             <li>碁盤の上でドラッグすると、検索したい範囲を指定できます（ドラッグ中に右クリックすることで範囲指定を逆に取り除きます）。</li>
@@ -265,7 +58,7 @@ h1 {
         </ul>
     </div>
 
-    <h2>検索機能</h2>
+    <h2 id="search-func">検索機能</h2>
     <div class="section">
         <p><strong>「検索」ボタン</strong>をクリックすると検索が開始されます。</p>
         <ul>
@@ -299,7 +92,7 @@ h1 {
         </div>
     </div>
 
-    <h2>手順検索</h2>
+    <h2 id="tejun">手順検索</h2>
     <div class="section">
        <p>1〜9までのボタンは、石に番号を振り、その出現順を指定して検索することができます。</p>
        <div class="tips">      
@@ -319,7 +112,7 @@ h1 {
         </div>
     </div>
 
-    <h2>グルーピング機能</h2>
+    <h2 id="grouping">グルーピング機能</h2>
     <div class="section">
         <p>A〜Dまでのボタンは石をグループ化し、そのグループ内のいずれか1つの石がある局面をマッチさせることができます。</p>
         
@@ -331,10 +124,10 @@ h1 {
         </div>
     </div>
 
-    <h2>フィルタ機能</h2>
+    <h2 id="filter">フィルタ機能</h2>
     <div class="section">
         <p>マッチした手数でフィルタが可能です。</p>
-        <img src="screenshot_filter.png" alt="フィルタ機能のスクリーンショット">
+        <img src="screenshot_filter.png" alt="手数をスライダーで調整するフィルタ機能のUI">
         <div class="tips">
 	   <ul>
                 <li>つまみでスライダーを調整できます。青い部分が対象の区間になります</li>
@@ -345,7 +138,7 @@ h1 {
         </div>
     </div>
 
-    <h2>検索テクニック</h2>
+    <h2 id="search-tech">検索テクニック</h2>
     <div class="section">
         <p class="highlight">★◇★ こういう時はどうやって検索する？</p>
         
@@ -353,7 +146,7 @@ h1 {
             <p><strong>例１：【黒星、白カカリのあと、どこかにハサんだ局面を検索したい】</strong></p>
             <p>ハサミの候補位置全てに黒石を置き、それらをグループ化して検索します。</p>
             <img src="screenshot_grouping.png" alt="グルーピング機能のスクリーンショット">
-            <p class="warning" style="margin-top: 15px; font-size: 0.9em;">
+            <p class="warning">
                 ※画像は開発中の画面です。現バージョンとは異なる場合があります。
             </p>
         </div>
@@ -378,7 +171,7 @@ h1 {
         </div>
     </div>
 
-    <h2>SGF取得</h2>
+    <h2 id = "sgf">SGF取得</h2>
     <div class="section">
         <p class="highlight">★☆SGF取得機能☆★</p>
         <ul>
@@ -391,7 +184,7 @@ h1 {
         <p><strong>保存ボタン：</strong> 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したい場合にご活用ください。</p>
     </div>
 
-    <h2>自動再生</h2>
+    <h2 id="auto-play">自動再生</h2>
     <div class="section">
         <p class="highlight">★★自動再生機能★★</p>
         <p>自動再生のチェックを入れると、選択した棋譜を自動で再生します。</p>
@@ -403,7 +196,7 @@ h1 {
         </ol>
         <p>１手ごとの待ち時間は、これら全てのスライダーの値を合計した値になります。</p>
     </div>
-    <h2>グラフについて</h2>
+    <h2 id = "graph">グラフについて</h2>
     <div class="section">
         <img src="screen_shot_graph.png" alt="グラフのスクリーンショット">
         <p>棋譜の形勢判断をグラフで表示します。</p>
@@ -414,7 +207,7 @@ h1 {
             <li>グラフ上で右クリックするとグラフを黒視点白視点分離モードにすることができます。</li>
         </ul>
     </div>
-    <h2>レイアウト変更</h2>
+    <h2 id="layout">レイアウト変更</h2>
     <div class="section">
         <p class="highlight">☆☆★★　レイアウト変更機能</p>
         <ul>
@@ -428,7 +221,7 @@ h1 {
     </div>
 
 
-    <h2>注意事項</h2>
+    <h2 id="attention">注意事項</h2>
     <div class="section warning">
         <ul>
             <li>起動後、少しずつ棋譜を読み込んでいるため、起動直後の初回検索には時間がかかります。</li>
