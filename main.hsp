@@ -1170,8 +1170,6 @@ title "KataGo自己対戦棋譜-検索システム"
 		}
 	loop
 	
-	
-
 	g_filter_on kifulist.matchlist, new_indices, ln
 
 	//選択
