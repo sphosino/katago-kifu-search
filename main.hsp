@@ -1014,6 +1014,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	whiteplayer = get_property_data(topnode, "PW")
 
 	title" 黒 " + blackplayer + "   白 " + whiteplayer
+	
+	set_g_checkbox g_chkbox.mode_chkbox, MODE_KIFU_VIEW //ビューモード
 	return
 *group_clear
 	if g_group = -1{
