@@ -891,7 +891,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 *next_kifu
 	move_listbox_index kifulist(current_kifulist), 1
-	a = select_kifulist_item(stat, current_kifulist,1)
+	a = select_kifulist_item(stat, current_kifulist)
 	return
 *back_kifu
 	move_listbox_index kifulist(current_kifulist), -1
@@ -1282,8 +1282,6 @@ title "KataGo自己対戦棋譜-検索システム"
 	}
 	return
 *load_kifu_folder
-	
-	
 	chdir kifudir
 	dirlist files,"*.sgf"
 	num = stat
@@ -1334,7 +1332,6 @@ title "KataGo自己対戦棋譜-検索システム"
 		div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
 	}
 
-	
 	return
 	
 
@@ -1567,9 +1564,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 	return
 
-
 *save
-
 	gosub*save_info
 	save_load_manager_save //グリッド情報保存
 	end
