@@ -611,16 +611,16 @@
 	sgflen = strlen(sss)
 	if sgflen < 3{
 		//Å¬SGF‚Í@(;)
-		logmes "A"
+		logmes "load_sgf-A"
 		return -1
 	}
 	if (peek(sss) != '(') || (strmid(sss,-1,1) != ")"){
-		logmes "B->" + strmid(sss,-1,1)
+		logmes "load_sgf-B->" + strmid(sss,-1,1)
 		return -1
 	}
 	start_point = instr(sss, 0 ,";")
 	if start_point == -1{
-		logmes "C"
+		logmes "load_sgf-C"
 		return -1
 	}
 	dim stack_count

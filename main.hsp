@@ -826,7 +826,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 
 	
-#defcfunc select_kifulist_item int itemid, int kifulist_id, int flag_next_or_back
+#defcfunc select_kifulist_item int itemid, int kifulist_id
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
 
@@ -1001,12 +1001,13 @@ title "KataGo自己対戦棋譜-検索システム"
 	if sgf_topnode >= 0{
 		del_sgf_node sgf_topnode, 1
 	}
-	logmes "A"
+	logmes "クリップボードから読み込み開始"
 	sdim s, MERGE_LIMIT * 7500 //１棋譜当たりの大体の平均サイズ
 		clipget s, varsize(s)
 		sgf_topnode = load_sgf(s)
 		if sgf_topnode < 0:logmes "棋譜読み込み失敗": return
 	sdim s
+	logmes "クリップボード読み込み成功"
 	
 	topnode = load_sgf_set_board(t, sgf_topnode, board)
 	
@@ -1304,41 +1305,28 @@ title "KataGo自己対戦棋譜-検索システム"
 	if 棋譜数 / MAX_CHILDREN >= LIMIT_PER_PROCESS{
 		棋譜数 = limit(MAX_CHILDREN * LIMIT_PER_PROCESS,,load_limit)
 	}
-	notesel files
 
-		//SGFモジュール初期化
-		init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
+	//SGFモジュール初期化
+	init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
 
-		//棋譜リスト初期化
-		dim kifulist
-		
-		newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
-		newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
-
-		if 棋譜数 != num{
-			files = shuffle_notepad(files)
-			sdim kifulist_notepad
-			repeat 棋譜数
-				noteget tmp, cnt //最新棋譜順に読み込む
-				if cnt{
-					kifulist_notepad += "\n" + tmp
-				}else{
-					kifulist_notepad += tmp
-				}
-			loop
-			add_item kifulist, kifulist_notepad
-			logmes "load_NOT_full"
-		}else{
-			add_item kifulist, files
-			kifulist_notepad = files
-			logmes "load_full"
-		}
+	//棋譜リスト初期化
+	dim kifulist
 	
-		set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
-	
-	noteunsel
+	newmod kifulist, grid_listbox, sidebar_kifulist, 棋譜数
+	newmod kifulist, grid_listbox, sidebar_kifulist_match, 棋譜数: matchlist = stat
 
-	tmp_lab = *lab_sort1_asc,*lab_sort1_desc,*lab_sort1_shuffle
+	if 棋譜数 != num{
+		kifulist_notepad = shuffle_notepad(files, 棋譜数)
+		logmes "load_NOT_full"
+	}else{
+		kifulist_notepad = files			
+		logmes "load_full"
+	}
+	add_item kifulist, kifulist_notepad
+	
+	set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
+
+	tmp_lab = *lab_sort1_asc, *lab_sort1_desc, *lab_sort1_shuffle
 	gosub tmp_lab(default_order)
 	
 	if kifulist_notepad != ""{
