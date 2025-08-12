@@ -49,7 +49,8 @@ sdim tmp_path, INFO_SIZE ; ヒット位置
 
 newmod search_id_manager, id_manager
 search_id = -1
-last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1にセット
+last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1
+finish_time = -1 //自動再生が終了した時刻、未終了であれば-1
 //前回起動時の情報があれば復元
 
 //初期化開始
@@ -720,16 +721,29 @@ title "KataGo自己対戦棋譜-検索システム"
 				pre_jidou = 1
 			}
 
-			logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime - pretime)
+			;logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime - pretime)
 			if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
 				pretime = keyfpstime
-				logmes "moved"
 				gosub *move_next
+				if moved = 0{
+					if nownode >= 0{
+						if finish_time < 0{
+							finish_time = keyfpstime //再生終了した時刻
+							logmes "stoptime -> " + finish_time
+						}
+					}
+				}
 				
 				
 				今の形勢 = double(c_list)
 				形勢の変化率 = absf(今の形勢 - 前の形勢)
 				前の形勢 = 今の形勢
+			}
+
+			if finish_time >= 0{
+				if keyfpstime - finish_time >= 5000{
+					gosub*next_kifu
+				}
 			}
 		}else{
 			pre_jidou = 0
@@ -892,10 +906,12 @@ title "KataGo自己対戦棋譜-検索システム"
 *next_kifu
 	move_listbox_index kifulist(current_kifulist), 1
 	a = select_kifulist_item(stat, current_kifulist)
+	finish_time = -1
 	return
 *back_kifu
 	move_listbox_index kifulist(current_kifulist), -1
 	a = select_kifulist_item(stat, current_kifulist)
+	finish_time = -1
 	return
 	
 *move_next
@@ -1208,7 +1224,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 #deffunc move_next_int int p1
 	if nownode < 0: return 0
-	moved = 0
+	moved = 手数
 	if p1 > 0{
 		repeat p1
 			nownode = get_current_node(t)
@@ -1217,7 +1233,6 @@ title "KataGo自己対戦棋譜-検索システム"
 				if stat{
 					手数++
 				}
-				moved += stat
 			}
 		loop
 	}else{
@@ -1228,14 +1243,16 @@ title "KataGo自己対戦棋譜-検索システム"
 				if stat{
 					手数--
 				}
-				moved += stat
 			}
 		loop
 	}
 
 	pretime = keyfpstime
 
+	logmes strf("%d,%d",moved,手数)
+	moved != 手数
 	if moved{
+		logmes "moved->syncboard"
 		gosub*syncboard
 		redraw_buffer l_graph
 	}
