@@ -61,7 +61,7 @@ root/
   └── save/
       └── ; 一時的に棋譜を保存するフォルダ
 
-5. search_process.hsp, sub.hspをexe化して、subフォルダにいれたあと、main.hspが実行できるようになればOKです
+5. search_process.hsp, download_sgf.hspをexe化して、subフォルダにいれたあと、main.hspが実行できるようになればOKです
 　　main.hspをexe化してrootに入れた後、リリース用のフォルダを丸ごと圧縮すれば配布可能になるという仕組みです。
 
 ```
