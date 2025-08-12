@@ -53,7 +53,7 @@ root/
   ├── sub/
   │   ├── hspinet.dll
   │   ├── auto_download.exe
-  │   └── sub.exe
+  │   └── search_process.exe
   ├── title/
   │   └── ;起動画面用画像フォルダ、ランダムで表示される
   ├── 棋譜/
