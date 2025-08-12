@@ -33,6 +33,7 @@
 #const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
 #const BG_COLOR $808080 // 128,128,128
 #const MERGE_LIMIT 50 //棋譜をマージする時の最大棋譜数
+#const AUTO_NEXT_KIFU_TIME 5000//自動再生時、次の棋譜に行くときの時間
 
 gosub *init_window
 
@@ -741,7 +742,7 @@ title "KataGo自己対戦棋譜-検索システム"
 			}
 
 			if finish_time >= 0{
-				if keyfpstime - finish_time >= 5000{
+				if keyfpstime - finish_time >= AUTO_NEXT_KIFU_TIME{
 					//次の棋譜へfinish_time は-1に設定される
 					gosub*next_kifu
 				}
