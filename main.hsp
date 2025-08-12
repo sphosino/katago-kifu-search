@@ -742,15 +742,12 @@ title "KataGo©ŒÈ‘ÎíŠû•ˆ-ŒŸõƒVƒXƒeƒ€"
 
 			if finish_time >= 0{
 				if keyfpstime - finish_time >= 5000{
+					//Ÿ‚ÌŠû•ˆ‚Öfinish_time ‚Í-1‚Éİ’è‚³‚ê‚é
 					gosub*next_kifu
 				}
 			}
 		}else{
 			pre_jidou = 0
-			if ginfo_act == -1{
-				skipdraw = 1
-				skipcount++
-			}
 		}
 	}
 	
