@@ -42,7 +42,6 @@ nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
 //-----------------------------------------------------------------------------
 gosub*load_setting
 //---------------------------------------------------------------------------
-
 //ウィンドウ作成
 screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
 
@@ -54,19 +53,19 @@ save_window_status = ginfo(4), ginfo(5), ginfo(12), ginfo(13)
 if 最大化: sendmsg hwnd, $112, $F030
 
 redraw 2
+color
 boxf
+
 
 //遊び心(gemini生成画像)
 chdir TITLEDIR
-dirlist files, "*", 2
-if stat{
-	notesel files
-	noteget title_picture, rnd(stat)
-	
-	exist title_picture
-	
-	if strsize >= 0{
-		//画像読み込み
+exclude_files = "readme.txt\nreadme.html"
+dirlist files, "*", 3 //ファイルだけ取得
+files = notepad_minus_notepad(files, exclude_files)
+notesel files
+	if notemax{
+		noteget title_picture, rnd(notemax) 
+		//画像として読み込み
 		celload title_picture
 		buf = stat
 		gsel buf
@@ -99,12 +98,12 @@ if stat{
 		//メモリ縮小
 		buffer buf,1,1
 		gsel 0
+		
+		if remaining_width >= 200{
+			left_margin = display_width
+		}
 	}
-	
-	if remaining_width >= 200{
-		left_margin = display_width
-	}
-}
+noteunsel
 tmp = left_margin, 0, ginfo(12), ginfo(13)
 set_max_centering_mes limit(ginfo(12)-left_margin,,ginfo(13))
 color 255, 255, 255

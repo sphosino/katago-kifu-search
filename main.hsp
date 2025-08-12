@@ -35,10 +35,10 @@
 #const MERGE_LIMIT 50 //棋譜をマージする時の最大棋譜数
 #const AUTO_NEXT_KIFU_TIME 5000//自動再生時、次の棋譜に行くときの時間
 
-gosub *init_window
-
 //乱数を初期化
 randomize
+
+gosub *init_window
 
 //検索中時のエフェクト。推奨しない動作だが、複数回押されてもいいようにスタックに積む。(もう必要なくなったっぽいけど）
 dim scba_effect_stack
