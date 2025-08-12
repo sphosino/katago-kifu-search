@@ -46,7 +46,7 @@ root/
 　開発中もこのフォルダのパスで起動します。
   フォルダの構成は現状以下のようになっています。
   最小構成は以下
-  root/
+  release_root/
   ├── hspda.dll
   ├── hspext.dll
   ├── hspinet.dll
