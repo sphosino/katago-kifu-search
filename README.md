@@ -43,7 +43,7 @@ root/
 
 4.katago-kifu-searchフォルダを開く。
   config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
-  フォルダの構成は以下のようにしてください。
+  フォルダの構成は現状以下のようになっています。
   root/
   ├── sub/
   │   ├── auto_download.exe
