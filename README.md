@@ -41,7 +41,31 @@ root/
 3.hsp_commonの中にあるgenerate_headers.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
-4.search_process.hsp, sub.hspをexe化して、適切なフォルダにいれたあと、main.hspが実行できるようになればOKです
+4.katago-kifu-searchフォルダを開く。
+  config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
+　開発中もこのフォルダのパスで起動します。
+  フォルダの構成は現状以下のようになっています。
+  最小構成は以下
+  release_root/
+  ├── hspda.dll
+  ├── hspext.dll
+  ├── hspinet.dll
+  ├── sub/
+  │   ├── hspinet.dll
+  │   ├── auto_download.exe
+  │   └── search_process.exe
+  ├── title/
+  │   └── ;起動画面用画像フォルダ、ランダムで表示される
+  ├── 棋譜/
+  │   └── ;デフォルトでプログラムが読み込むフォルダ
+  └── save/
+      └── ; 一時的に棋譜を保存するフォルダ
+
+5. search_process.hsp, download_sgf.hspをexe化して、subフォルダにいれる
+6. dllも上記の通りに適切に入れる
+
+7. main.hspがエラーなく実行できるようになっていればOKです。
+8. main.hsp とconfig.hsp をexe化してrelease_rootに入れたら。フォルダはリリース可能な状態になっているはずです。
 
 ```
 
