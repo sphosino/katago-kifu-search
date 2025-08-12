@@ -44,14 +44,20 @@ root/
 4.katago-kifu-searchフォルダを開く。
   config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
   フォルダの構成は現状以下のようになっています。
+  最小構成は以下
   root/
-  ├── sub/
-  │   ├── auto_download.exe
-  │   └── sub.exe
+  ├── hspda.dll
+  ├── hspext.dll
+  ├── hspinet.dll
+  ├── katago棋譜検索.exe/
+  │   └── sub/
+  │       ├── hspinet.dll
+  │       ├── auto_download.exe
+  │       └── sub.exe
   ├── title/
   │   └── ;起動画面用画像フォルダ、ランダムで表示される
   ├── 棋譜/
-  │   └── ;katagoの棋譜が入っている
+  │   └── ;katagoの棋譜リストが入っている
   └── save/
       └── ; 一時的に棋譜を保存するフォルダ
 
