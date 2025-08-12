@@ -65,7 +65,7 @@ root/
 6. dllも上記の通りに適切に入れる
 
 7. main.hspがエラーなく実行できるようになっていればOKです。
-8. main.hsp とconfig.hsp をexe化してrootに入れたら。フォルダはリリース可能な状態になっているはずです。
+8. main.hsp とconfig.hsp をexe化してrelease_rootに入れたら。フォルダはリリース可能な状態になっているはずです。
 
 ```
 
