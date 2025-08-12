@@ -1070,6 +1070,17 @@ title "KataGo自己対戦棋譜-検索システム"
 	if search_id != -1: return
 	last_result_time = -1
 
+	//ui状態からベースパターンを作る
+	get_board_data board.ui_mode, m
+	set_board_pattern m
+	set_coordinate_pattern v
+	set_base
+	if get_pattern_all_groups_num(){
+		save_history //履歴に追加
+	}else{
+		return
+	}
+	
 	if pre_kl != kl{
 		pre_kl = kl
 		repeat child_count_current
@@ -1079,13 +1090,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	//以下検索
 
 	complate_count = 0
-
-	//ui状態からベースパターンを作る
-	get_board_data board.ui_mode, m
-	set_board_pattern m
-	set_coordinate_pattern v
-	set_base
-	save_history //履歴に追加
+	
 	combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 
 	del_item_all kifulist.matchlist
@@ -1408,7 +1413,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	tmp = dir_cur
     chdir SUBDIR
     repeat MAX_CHILDREN - (precount - 1) //親プロセス分の1 
-    	await 50
+    	await 30
     	waitstarttime = keyfpstime
     	exec "search_process"
     	while precount == nocoConnectInfo(0)
