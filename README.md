@@ -50,7 +50,6 @@ root/
   ├── hspda.dll
   ├── hspext.dll
   ├── hspinet.dll
-  ├── katago棋譜検索.exe
   ├── sub/
   │   ├── hspinet.dll
   │   ├── auto_download.exe
