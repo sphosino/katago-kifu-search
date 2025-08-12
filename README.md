@@ -41,8 +41,9 @@ root/
 3.hsp_commonの中にあるgenerate_headers.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
-4.config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
-フォルダの構成は以下のようにしてください。
+4.katago-kifu-searchフォルダを開く。
+  config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
+  フォルダの構成は以下のようにしてください。
   root/
   ├── sub/
   │   ├── auto_download.exe
