@@ -51,7 +51,7 @@ root/
   ├── hspinet.dll
   ├── katago棋譜検索.exe
   ├── sub/
-  │   ├── hspinet.exe
+  │   ├── hspinet.dll
   │   ├── auto_download.exe
   │   └── sub.exe
   ├── title/
