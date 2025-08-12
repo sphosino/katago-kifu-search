@@ -49,11 +49,11 @@ root/
   ├── hspda.dll
   ├── hspext.dll
   ├── hspinet.dll
-  ├── katago棋譜検索.exe/
-  │   └── sub/
-  │       ├── hspinet.dll
-  │       ├── auto_download.exe
-  │       └── sub.exe
+  ├── katago棋譜検索.exe
+  ├── sub/
+  │   ├── hspinet.exe
+  │   ├── auto_download.exe
+  │   └── sub.exe
   ├── title/
   │   └── ;起動画面用画像フォルダ、ランダムで表示される
   ├── 棋譜/
