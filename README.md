@@ -41,7 +41,20 @@ root/
 3.hsp_commonの中にあるgenerate_headers.hsp を一度実行してください。
     これでall_includeというファイルがhsp_common内の各フォルダ内に生成されます。
 
-4.search_process.hsp, sub.hspをexe化して、適切なフォルダにいれたあと、main.hspが実行できるようになればOKです
+4.config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
+フォルダの構成は以下のようにしてください。
+  root/
+  ├── sub/
+  │   ├── auto_download.exe
+  │   └── sub.exe
+  ├── title/
+  │   └── //起動画面用画像フォルダ、ランダムで表示される
+  ├── 棋譜/
+  │   └── //katagoの棋譜リストが入っている
+  └── save/
+      └── // 一時的に棋譜を保存するフォルダ
+
+5. search_process.hsp, sub.hspをexe化して、リリース用のsubフォルダにいれたあと、main.hspが実行できるようになればOKです
 
 ```
 
