@@ -73,7 +73,7 @@ if pre_ui_mode != ui_mode {
 	}else{
 		get_board_data board  , user_board
 		set_board_data board.1, user_board
-		swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット
+		swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット(入力.hspで使ってるよ)
 	}
 }
 

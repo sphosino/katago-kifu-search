@@ -115,12 +115,9 @@ set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
 set_gap_recursive root, 4,4,1
 
 //棋譜リストエリア
-;set_padding sidebar_kifulist_area, 7, 7, 7, 7 //自分自身のパディングサイズ設定
 set_padding_recursive sidebar_kifulist_area, 0,0,0,0, 1 //子要素パディング設定
 set_gap sidebar_sort1, 0,0 //リボンボタン -> マージンなし
 set_gap sidebar_sort2, 0,0 //リボンボタン -> マージンなし
-
-
 //スライダーエリア
 set_gap slider_area
 

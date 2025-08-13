@@ -66,7 +66,9 @@ if strsize == -1{
 
 noteunsel
 
-if load_limit < 3000: load_limit = 100000
+if load_limit < 3000{
+	load_limit = limit(100000,,limit(sysinfo(17)-1,1) * LIMIT_PER_PROCESS) //‚±‚Ì•”•ª‚ð‘‚«’¼‚µ‚Ü‚µ‚½B‘åä•v‚»‚¤H
+}
 return
 *@
 	#endif

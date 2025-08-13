@@ -52,7 +52,7 @@ newmod search_id_manager, id_manager
 search_id = -1
 last_result_time = -1 //最後に検索結果を受け取った時間 検索中でなければ-1
 finish_time = -1 //自動再生が終了した時刻、未終了であれば-1
-//前回起動時の情報があれば復元
+
 
 //初期化開始
 nocoClearCopyDataQueue HEADER_SIZE + RECORD_SIZE * 40000
