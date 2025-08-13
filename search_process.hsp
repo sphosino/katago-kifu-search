@@ -51,7 +51,7 @@ notesel setting_str
 
 	exist "window.txt"
 	if strsize == -1{
-		tw = 30
+		tw = DEFAULT_TARGET_WAIT //デフォルトのターゲット待ち時間
 	}else{
 		noteload "window.txt"
 		noteget tmp, LINE_TARGET_WAIT

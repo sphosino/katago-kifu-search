@@ -615,14 +615,14 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	tmp = get_property_coordinate_cash(get_tree_item_id(nownode), x, y)
 
+	//マンハッタン距離は自動再生.hspで使用
 	マンハッタン距離 = abs(x - pre_xy)   +   abs(y - pre_xy.1)
-
 	pre_xy = x, y
 
 	if get_tree_item_id(nownode) == topnode{
 		tmp = "0.50"
 	}else{
-		tmp = get_property_data(get_tree_item_id(nownode), "C")　//katago-rating-gameには、コメントに形勢判断が入ってるので取得
+		tmp = get_property_data(get_tree_item_id(nownode), "C") //katago-rating-gameには、コメントに形勢判断が入ってるので取得
 	}
 	sync_treebox_board t, board
 

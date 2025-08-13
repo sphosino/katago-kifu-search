@@ -1,36 +1,36 @@
-		//-------------------åŸºæœ¬wait +  ã‚¨ãƒ³ã‚¸ãƒ³ã®å½¢å‹¢åˆ¤æ–­ã«ã‚ˆã‚‹wait + ç›´å‰ã®æ‰‹ã¨ã®ãƒãƒ³ãƒãƒƒã‚¿ãƒ³è·é›¢ã«ã‚ˆã‚‹wait
-		if jidou & (ui_mode == MODE_KIFU_VIEW){
-			
-			if pre_jidou == 0{
-				å‰ã®å½¢å‹¢ = double(c_list)
-				pre_jidou = 1
-			}
+//-------------------Šî–{wait +  ƒGƒ“ƒWƒ“‚ÌŒ`¨”»’f‚É‚æ‚éwait + ’¼‘O‚Ìè‚Æ‚Ìƒ}ƒ“ƒnƒbƒ^ƒ“‹——£‚É‚æ‚éwait
+if jidou & (ui_mode == MODE_KIFU_VIEW){
+	
+	if pre_jidou == 0{
+		‘O‚ÌŒ`¨ = double(c_list)
+		pre_jidou = 1
+	}
 
-			;logmes strf("%d,%d", auto_interval + (å½¢å‹¢ã®å¤‰åŒ–ç‡ * alpha_interval) + (m_interval * ãƒãƒ³ãƒãƒƒã‚¿ãƒ³è·é›¢ / 36), keyfpstime - pretime)
-			if keyfpstime - pretime >= auto_interval + (å½¢å‹¢ã®å¤‰åŒ–ç‡ * alpha_interval) + (m_interval * ãƒãƒ³ãƒãƒƒã‚¿ãƒ³è·é›¢ / 36){
-				pretime = keyfpstime
-				gosub *move_next
-				if moved = 0{
-					if nownode >= 0{
-						if finish_time < 0{
-							finish_time = keyfpstime //å†ç”Ÿçµ‚äº†ã—ãŸæ™‚åˆ»
-							logmes "stoptime -> " + finish_time
-						}
-					}
-				}
-				
-				
-				ä»Šã®å½¢å‹¢ = double(c_list)
-				å½¢å‹¢ã®å¤‰åŒ–ç‡ = absf(ä»Šã®å½¢å‹¢ - å‰ã®å½¢å‹¢)
-				å‰ã®å½¢å‹¢ = ä»Šã®å½¢å‹¢
-			}
-
-			if finish_time >= 0{
-				if keyfpstime - finish_time >= AUTO_NEXT_KIFU_TIME{
-					//æ¬¡ã®æ£‹è­œã¸finish_time ã¯-1ã«è¨­å®šã•ã‚Œã‚‹
-					gosub*next_kifu
+	;logmes strf("%d,%d", auto_interval + (Œ`¨‚Ì•Ï‰»—¦ * alpha_interval) + (m_interval * ƒ}ƒ“ƒnƒbƒ^ƒ“‹——£ / 36), keyfpstime - pretime)
+	if keyfpstime - pretime >= auto_interval + (Œ`¨‚Ì•Ï‰»—¦ * alpha_interval) + (m_interval * ƒ}ƒ“ƒnƒbƒ^ƒ“‹——£ / 36){
+		pretime = keyfpstime
+		gosub *move_next
+		if moved = 0{
+			if nownode >= 0{
+				if finish_time < 0{
+					finish_time = keyfpstime //Ä¶I—¹‚µ‚½
+					logmes "stoptime -> " + finish_time
 				}
 			}
-		}else{
-			pre_jidou = 0
 		}
+		
+		
+		¡‚ÌŒ`¨ = double(c_list)
+		Œ`¨‚Ì•Ï‰»—¦ = absf(¡‚ÌŒ`¨ - ‘O‚ÌŒ`¨)
+		‘O‚ÌŒ`¨ = ¡‚ÌŒ`¨
+	}
+
+	if finish_time >= 0{
+		if keyfpstime - finish_time >= AUTO_NEXT_KIFU_TIME{
+			//Ÿ‚ÌŠû•ˆ‚Öfinish_time ‚Í-1‚Éİ’è‚³‚ê‚é
+			gosub*next_kifu
+		}
+	}
+}else{
+	pre_jidou = 0
+}
