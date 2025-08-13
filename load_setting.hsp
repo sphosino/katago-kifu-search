@@ -24,7 +24,7 @@ if strsize == -1{
 	auto_download = 19
 	alpha_interval = 10000
 	m_interval = 5000
-	load_limit = 100000
+	load_limit = limit(100000, 1, limit(sysinfo(17) - 1, 1) * LIMIT_PER_PROCESS)
 	ç≈ëÂâª = 0
 	child_target_wait = DEFAULT_TARGET_WAIT
 	MAX_CHILDREN = get_auto_cores()
@@ -66,9 +66,6 @@ if strsize == -1{
 
 noteunsel
 
-if load_limit < 3000{
-	load_limit = limit(100000,,limit(sysinfo(17)-1,1) * LIMIT_PER_PROCESS) //Ç±ÇÃïîï™ÇèëÇ´íºÇµÇ‹ÇµÇΩÅBëÂè‰ïvÇªÇ§ÅH
-}
 return
 *@
 	#endif
