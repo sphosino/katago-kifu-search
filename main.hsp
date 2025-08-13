@@ -311,7 +311,9 @@ title "KataGo自己対戦棋譜-検索システム"
 	clipset get_node_sgf(new_node) ; SGF文字列に変換し、クリップボードにセット
 
 	gosub*kifu_merge_after
-	
+
+	//開発(*´ε`*)ﾁｭｯﾁｭ
+	;spawn_toast_effect_success mousex,mousey, 200,40,"棋譜をクリップボードにコピーしました"
 	title "棋譜をクリップボードにコピーしました"
 	return
 *save_file
@@ -423,6 +425,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	if get_pattern_all_groups_num(){
 		save_history //履歴に追加
 	}else{
+		spawn_toast_effect mousex,mousey,200,40,"無効な検索パターン"
 		return
 	}
 	
