@@ -299,7 +299,7 @@ title "KataGo自己対戦棋譜-検索システム"
 *getsgf_nowpoint
 	if nownode < 0: return
 	clipset get_node_sgf_nowpoint(get_tree_item_id(nownode))
-	title "現局面をクリップボードにコピーしました"
+	spawn_toast_effect_success ginfo(12) / 2, 40, 300,40,"現局面をクリップボードにコピーしました"
 	return
 *getsgf
 
@@ -313,8 +313,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	gosub*kifu_merge_after
 
 	//開発(*´ε`*)ﾁｭｯﾁｭ
-	;spawn_toast_effect_success mousex,mousey, 200,40,"棋譜をクリップボードにコピーしました"
-	title "棋譜をクリップボードにコピーしました"
+	spawn_toast_effect_success ginfo(12) / 2, 40, 300,40,"棋譜をクリップボードにコピーしました"
+	;title "棋譜をクリップボードにコピーしました"
 	return
 *save_file
 	
@@ -425,7 +425,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	if get_pattern_all_groups_num(){
 		save_history //履歴に追加
 	}else{
-		spawn_toast_effect mousex,mousey,200,40,"無効な検索パターン"
+		spawn_toast_effect mousex, mousey,170,30,"無効な検索パターン"
 		return
 	}
 	
