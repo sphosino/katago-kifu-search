@@ -1,0 +1,194 @@
+nownode = get_current_node(t)
+getBoardCoordinates board.ui_mode, point
+
+in_board = 0
+if 0 <= point && point < 19{
+	if 0 <= point.1 && point.1 < 19{
+		in_board = 1
+	}
+}
+if debugmode == 0{
+	//マウス操作
+	if _getkey(2) == 1{ //右クリック
+
+		if dragging_flag == 1{
+			if rect >= 0{
+				modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
+			}
+			dragging_flag = 0
+		}else{
+			if treebox_onmouseid(t) >= 0{
+				set_current_node t, treebox_onmouseid(t)
+				Treebox_toggle_openflag t, treebox_onmouseid(t)
+			}
+			if ui_mode == MODE_BOARD_EDIT{//編集モード
+				if in_board{
+					user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
+					set_board_data board.1, user_board
+					if user_board(point, point.1) == 0{
+						del_all_group_tejun point, point.1
+					}
+				}
+			}
+		}
+	}
+
+	//右長押しで、指定された範囲を除外
+	if gethold_ms(2, 300, 400){
+		if rn{
+			rn--
+			modify_coordinates_by_rect v, rect_stack(0,rn), rect_stack(1,rn), rect_stack(2,rn), rect_stack(3,rn), 1
+			dragging_flag = 0
+		}
+	}
+	
+	if _getkey(1) == 1{ //左クリック
+		if in_board == 0{
+			spawn_ripple_effect mousex, mousey, PRIORITY_FRONT_EFFECT
+			if treebox_onmouseid(t) >=0{
+				set_current_node t, stat
+				sync_treebox_board t, board
+				手数 = treeview_onmouse_id_deep()
+				gosub*syncboard
+			}
+		}else{
+			dragging_flag = 1
+			if in_board{
+				get_board_data board , tmp
+				get_board_data board.1, m
+				if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
+					rect = limit(point,0,18),limit(point.1,0,18)
+					rect(2) = rect, rect.1
+				}
+			}
+
+		}
+		
+		inlistbox = 0
+		foreach kifulist
+			sel = listbox_on_id(kifulist.cnt, mousex, mousey)
+			if sel != -1: inlistbox = 1 //リストボックスのなかだ。
+			if sel >= 0{
+				if select_kifulist_item(sel, cnt): break
+			}
+		loop
+	}
+
+	//キーによるドラッグ解除処理（先）
+	if _getkey(1) == -1{//マウスが離されたとき
+			
+		dragging_flag = 0
+		if rect(0) >= 0{
+			modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
+			rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
+			rn++
+			dim rect,4
+		}
+	}
+
+	//ドラッグ中の処理(後）
+	if dragging_flag{
+		
+		rect(2) = limit(point(0),0,18)
+		rect(3) = limit(point(1),0,18)
+
+		if in_board {
+			switch g_edit
+
+			swbreak
+			case 0
+				user_board(point,point.1) = 1
+				set_board_data board.1, user_board
+			swbreak
+			case 1
+				user_board(point,point.1) = 2
+				set_board_data board.1, user_board
+			swbreak
+			case 2
+				if prex == point.0 & prey == point.1{
+				}else{
+					prex = point.0
+					prey = point.1
+					swapturn^1
+					user_board(point,point.1) = swapturn + 1
+					set_board_data board.1, user_board
+				}
+			swbreak
+			case 3
+				user_board(point,point.1) = 0
+				set_board_data board.1, user_board
+				del_all_group_tejun point, point.1
+			swbreak
+
+			swend
+
+			if g_group >= 0{
+
+				if rect == -1{
+					if ui_mode == MODE_KIFU_VIEW{
+						get_board_data board  , tmp
+						OK = tmp(point,point.1)
+					}else{
+						OK = user_board(point,point.1)
+					}
+					if OK{
+						add_group point, point.1, g_group
+					}
+				}
+			}
+						//手順
+			if _getkey(1) == 1{
+				if te >= 0{
+					get_board_data board(ui_mode), m
+					if m(point(0),point(1)){
+						repeat 9
+							del_tejun point(0),point(1), cnt
+						loop
+						add_tejun point(0),point(1), te
+						if inc_tejun{
+							te = (te + 1) \ 9
+						}
+					}
+				}
+			}
+		}
+	}else{
+		rect = -1
+	}
+
+
+	//マウスホイール
+	mw = mousew
+
+	in_kifulist = 0
+	
+	foreach kifulist
+		if listbox_on_id(kifulist.cnt,mousex, mousey) >= 0{
+			in_kifulist++
+			if mw < 0: scroll_down   kifulist.cnt
+			if mw > 0: scroll_up     kifulist.cnt
+		}
+	loop
+	
+	if (in_kifulist == 0) && (ui_mode == MODE_KIFU_VIEW){
+		if mw < 0 : gosub*move_next
+		if mw > 0 : gosub*move_back
+	}
+
+	//キー操作
+	if _getkey(17) >= 1{ //CTRL
+		if _getkey('C') == 1 { //CTRL + C
+			gosub*getsgf
+		}
+		if _getkey('V') == 1 { //CTRL + V
+			gosub*loadsgf
+		}
+	}
+
+}
+
+//CTRLダブルクリックでデバッグモード切替
+if getdbl_ms(17, DBL_INTERVAL){
+	debugmode ^ 1
+	logmes "switched debugmode ->" + debugmode
+}

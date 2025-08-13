@@ -1,5 +1,5 @@
 #packopt name "config"
-#include "ScrollbarModule.hsp"
+#include "modules/ScrollbarModule.hsp"
 #include "setting_defines.hsp"
 #include "load_setting.hsp"
 #include "save_info.hsp"

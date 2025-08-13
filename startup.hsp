@@ -1,6 +1,6 @@
 
 #include "kifu_protocol.hsp"
-#include "ProcLinkModuleQueue.hsp"
+#include "modules/ProcLinkModuleQueue.hsp"
 #include "setting_defines.hsp"
 #include "load_setting.hsp"
 #addition "../hsp_common/centering_mes.hsp"

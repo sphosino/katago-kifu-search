@@ -1,0 +1,33 @@
+	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
+	a = double(c_list) * 255
+	
+	get_rect goban_area, goban_back_rect
+	make_instant_draw_object "BOXF", (goban_back_rect + goban_back_rect.2) / 2, (goban_back_rect.1 + goban_back_rect.3) / 2, goban_back_rect.2-goban_back_rect,goban_back_rect.3-goban_back_rect.1, strf("$%02X%02X%02X",a,a,a)
+	update_priority_draw_object stat, PRIORITY_BACK
+	碁盤表示 board.ui_mode
+	
+
+	//エリア矩形表示
+	draw_all_rect root, debugmode
+
+	//グループ表示
+	get_group tmp
+	get_tejun tmp2
+	group_tejun_draw board.ui_mode, tmp, tmp2
+	
+	//検索範囲表示
+
+	draw_set_list_on_board board.ui_mode, v
+	
+	//各アイテム登録
+	#include "register_draw_objects.hsp"
+
+	新しい手数 = 手数
+	line_graph_manager l_graph, 新しい手数
+	if 新しい手数 - 手数: move_next_int 新しい手数 - 手数
+
+	if dragging_flag && rect >= 0{
+		碁盤に矩形データを表示 board.ui_mode, rect
+	}
+
+	treebox_draw t, length(f)

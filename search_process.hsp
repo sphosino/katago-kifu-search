@@ -1,5 +1,5 @@
 #packopt name "search_process"
-#include "ProcLinkModuleQueue.hsp"
+#include "modules/ProcLinkModuleQueue.hsp"
 #include "modules/rotate_coordinate.hsp"
 #include "../hsp_common/id_manager.hsp"
 #include "modules/bitboard.hsp"

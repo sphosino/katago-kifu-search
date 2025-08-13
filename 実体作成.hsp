@@ -1,0 +1,82 @@
+//実体作成
+newmod g_buttons, grid_button, "一時保存",*save_file, button_save_file
+newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
+newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
+newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
+newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
+newmod g_buttons, grid_button, "除外検索"      , *create_pattern2, button_exclude_search
+newmod g_buttons, grid_button, "絞込検索"  , *create_pattern3, button_narrow_down_search
+newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
+newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
+newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
+newmod g_buttons, grid_button, "<<", *back10, back_ten
+newmod g_buttons, grid_button, "<", *move_back, back_one
+newmod g_buttons, grid_button, ">", *move_next, go_one
+newmod g_buttons, grid_button, ">>", *go10, go_ten
+newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
+newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
+newmod g_buttons, grid_button, "手順解除",*tejun_clear, button_tejun_clear
+newmod g_buttons, grid_button, "昇",*lab_sort1_asc, sort1_asc
+newmod g_buttons, grid_button, "降",*lab_sort1_desc, sort1_desc
+newmod g_buttons, grid_button, "混",*lab_sort1_shuffle, sort1_shuffle
+newmod g_buttons, grid_button, "昇",*lab_sort2_asc, sort2_asc
+newmod g_buttons, grid_button, "降",*lab_sort2_desc, sort2_desc
+newmod g_buttons, grid_button, "混",*lab_sort2_shuffle, sort2_shuffle
+newmod g_buttons, grid_button, "フォルダ選択",*select_folder,button_select_folder
+newmod g_buttons, grid_button, "履歴クリア", *clear_history,button_clear_history
+
+newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
+newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
+newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
+newmod g_chkbox, grid_checkbox, view_hosi,"星表示", chkbox_view_hosi
+newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
+newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
+newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
+newmod g_chkbox, grid_checkbox, filter_on, "検索結果にフィルターを適用", chkbox_filter
+newmod g_chkbox, grid_checkbox, inc_tejun, "自動で次の番号へ", chkbox_inc: set_g_checkbox g_chkbox.stat, 1
+
+newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
+newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
+foreach g_label
+	set_g_label_r g_label.cnt , 5, 4 | 8
+loop
+
+newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
+newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
+
+newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000
+newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000
+newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000
+
+newmod g_slider2, grid_slider2, slider2_match_point, 0, max_depth, 1, max_depth
+set_size_g_slider2 g_slider2, -1,0.8,-1
+
+model_list = "all\nb28\nb18\nb60\nb40"
+newmod g_combox, grid_combox, modelname, model_list, combox_modelname
+newmod g_combox, grid_combox, history_num, "検索履歴", combox_history: combox_history_obj = stat
+
+newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
+add_item_radiobox g_radiobox, "●"
+add_item_radiobox g_radiobox, "〇"
+add_item_radiobox g_radiobox, "●〇"
+add_item_radiobox g_radiobox, "削除"
+
+
+newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
+add_item_radiobox g_radiobox.tmp, "A"
+add_item_radiobox g_radiobox.tmp, "B"
+add_item_radiobox g_radiobox.tmp, "C"
+add_item_radiobox g_radiobox.tmp, "D"
+
+newmod g_radiobox, grid_radiobox, te, radiobox_tejun: tmp = stat
+repeat 9
+	add_item_radiobox g_radiobox.tmp, str(cnt+1)
+loop
+
+newmod board, goban, 19,19,26,26, goban_body_area
+newmod board, goban, 19,19,26,26, goban_body_area
+
+newmod t, treebox,treebox_area
+
+newmod l_graph, line_graph, line_graph_area
+set_margin_line_graph l_graph, 27, 18, 13, 18

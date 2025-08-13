@@ -13,7 +13,7 @@
 
 #include "modules/search/pattern.hsp"
 #include "modules/search/draw_pattern.hsp"
-#include "ProcLinkModuleQueue.hsp"
+#include "modules/ProcLinkModuleQueue.hsp"
 #include "kifu_protocol.hsp"
 #include "div_notepad.hsp"
 
@@ -21,8 +21,8 @@
 
 #include "go_game_manager.hsp"
 #include "calc_cores.hsp"
-//new
 #include "config_path.hsp"
+
 #include "startup.hsp" //(*init_window)
 #include "load_setting.hsp"//(*load_setting)
 #include "save_info.hsp"//(*save_info)
@@ -110,240 +110,9 @@ repeat 4
 loop
 
 
-//エリア作成
-root = make_area_child(1,1)
-	
-	body_area = make_area_child(3,1, root)
-		sidebar_area = make_area_child(1,2,body_area)
-		sidebar_buttons = make_area_child(2,3,sidebar_area)
-		sidebar_kifu_area = make_area_child(1,2)
-			sidebar_kifulist_area = make_area_child(2,4,sidebar_kifu_area)
-				sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
-				sidebar_kifulist_label2 = make_area_child()
-				sidebar_sort1 = make_area_child(3)
-				sidebar_sort2 = make_area_child(3)
-				sidebar_kifulist = make_area_child()
-				sidebar_kifulist_match = make_area_child()
-				kifustart = make_area_child()
-				kifustart_result = make_area_child()
-					sort1_asc = make_area_child(,,sidebar_sort1)
-					sort1_desc = make_area_child()
-					sort1_shuffle = make_area_child()
-					sort2_asc = make_area_child(,,sidebar_sort2)
-					sort2_desc = make_area_child()
-					sort2_shuffle = make_area_child()
-
-			sidebar_kifulist_buttons = make_area_child(1,2, sidebar_kifu_area)
-				sidebar_kifulist_buttons_back_next = make_area_child(2,,sidebar_kifulist_buttons)
-				sidebar_kifulist_buttons_auto_play = make_area_child(2)
-					
-					sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons_back_next)
-					sidebar_kifulist_match_next = make_area_child()
-					
-					chkbox_autoplay = make_area_child(,,sidebar_kifulist_buttons_auto_play)
-					slider_area = make_area_child(,3)
-						slider_1 = make_area_child(,,slider_area)
-						slider_2 = make_area_child()
-						slider_3 = make_area_child()
-						
-			chkbox_last_move = make_area_child(,,sidebar_buttons)
-			chkbox_view_hosi = make_area_child()
-			button_getsgf = make_area_child()
-			button_getsgf_nowpoint = make_area_child()
-			button_select_folder = make_area_child()
-			button_save_file = make_area_child()
-			
-		goban_area = make_area_child(1,2,body_area)
-				goban_body_area = make_area_child(,,goban_area)
-				goban_footer = make_area_child(7,,goban_area)
-					back_top = make_area_child(,,goban_footer)
-					back_one = make_area_child()
-					back_ten = make_area_child()
-					go_ten = make_area_child()
-					go_one = make_area_child()
-					go_end = make_area_child()
-					button_clearboard = make_area_child()
-					
-		goban_tool_area = make_area_child(1,6,body_area)
-			goban_graph_area = make_area_child(1,2,goban_tool_area)
-				treebox_area = make_area_child(,,goban_graph_area)
-				line_graph_area = make_area_child()
-
-			history_area = make_area_child(2,,goban_tool_area)
-				combox_history = make_area_child(,,history_area)
-				button_clear_history = make_area_child()
-
-			goban_search_area = make_area_child(3,2,goban_tool_area)
-				button_search = make_area_child(,,goban_search_area)
-				button_exclude_search = make_area_child()
-				button_narrow_down_search = make_area_child()
-				chkbox_colorflip = make_area_child()
-				chkbox_use_bitboard = make_area_child()
-				chkbox_inverse = make_area_child()
-			goban_filter_area = make_area_child(1,2,goban_tool_area)
-				goban_filter_area_header = make_area_child(,,goban_filter_area)
-					chkbox_filter = make_area_child(,,goban_filter_area_header)
-				goban_filter_area_body   = make_area_child(2,,goban_filter_area)
-					combox_modelname = make_area_child(,,goban_filter_area_body)
-					slider2_match_point = make_area_child()
-			tejun_area = make_area_child(1,2,goban_tool_area)
-				tejun_sub = make_area_child(2,1,tejun_area)
-					button_tejun_clear = make_area_child(,,tejun_sub)
-					chkbox_inc = make_area_child()
-				radiobox_tejun = make_area_child(,,tejun_area)
-			
-			goban_edit_area = make_area_child(2,1, goban_tool_area)
-				goban_edit_stone = make_area_child(1,2,goban_edit_area)
-					chkbox_tyakusyu = make_area_child(,,goban_edit_stone)
-					radiobox_goban_edit = make_area_child()
-				goban_edit_group = make_area_child(1,2,goban_edit_area)
-					button_group_clear = make_area_child(,,goban_edit_group)
-					radiobox_grouping = make_area_child()
-
-//グリッド情報と検索履歴をロード（エリアを作成してからでないと復元できない）
-chdir SUBDIR
-exist "area.var" 
-if strsize >= 0{
-	save_load_manager_load
-}
-
-//エリア背景色
-set_grid_area_back_color sidebar_kifulist_area, $333333
-set_grid_area_back_color goban_search_area,$333333
-set_grid_area_back_color goban_edit_stone,$333333
-set_grid_area_back_color goban_edit_group,$333333
-set_grid_area_back_color goban_footer,$333333
-set_grid_area_back_color treebox_area ,$333333
-set_grid_area_back_color goban_filter_area , $333333
-set_grid_area_back_color tejun_area, $333333
-set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
-set_grid_area_back_color history_area, $333333
-
-///////////////////////////////////////////
-/////////余白設定//////////////////////////
-///////////////////////////////////////////
-//全体設定
-set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
-set_gap_recursive root, 4,4,1
-
-//棋譜リストエリア
-;set_padding sidebar_kifulist_area, 7, 7, 7, 7 //自分自身のパディングサイズ設定
-set_padding_recursive sidebar_kifulist_area, 0,0,0,0, 1 //子要素パディング設定
-set_gap sidebar_sort1, 0,0 //リボンボタン -> マージンなし
-set_gap sidebar_sort2, 0,0 //リボンボタン -> マージンなし
-
-
-//スライダーエリア
-set_gap slider_area
-
-///////////////////////////////////////////////////////////
-
-add_tooltip combox_history, "検索パターン履歴"
-add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
-add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
-add_tooltip button_save_file, "次回起動時までsaveフォルダに保存"
-add_tooltip kifustart, "何手目から表示するかを設定"
-add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
-add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
-add_tooltip slider_1, "基本待ち時間"
-add_tooltip slider_2, "形勢判断の差による待ち時間"
-add_tooltip slider_3, "直前の手との距離による待ち時間"
-add_tooltip sort2_asc, "古い棋譜順"
-add_tooltip sort2_desc,"新しい棋譜順"
-add_tooltip sort1_asc, "古い棋譜順"
-add_tooltip sort1_desc, "新しい棋譜順"
-add_tooltip chkbox_colorflip, "白黒が逆でも結果に含める"
-add_tooltip slider2_match_point, "ヒットした位置でフィルタ"
-
-set_tooltip_color 0x333333, 0xFFFFFF
-
-//実体作成
-newmod g_buttons, grid_button, "一時保存",*save_file,button_save_file
-newmod g_buttons, grid_button, "SGF取得"   , *getsgf  , button_getsgf
-newmod g_buttons, grid_button, "SGF取得\n(現局面)", *getsgf_nowpoint, button_getsgf_nowpoint
-newmod g_buttons, grid_button, "クリア"  , *clearboard, button_clearboard
-newmod g_buttons, grid_button, "検索"          , *create_pattern, button_search
-newmod g_buttons, grid_button, "除外検索"      , *create_pattern2, button_exclude_search
-newmod g_buttons, grid_button, "絞込検索"  , *create_pattern3, button_narrow_down_search
-newmod g_buttons, grid_button, "次の棋譜"  , *next_kifu, sidebar_kifulist_match_next
-newmod g_buttons, grid_button, "前の棋譜"  , *back_kifu, sidebar_kifulist_match_back
-newmod g_buttons, grid_button, "|<",*to_sgftop, back_top
-newmod g_buttons, grid_button, "<<", *back10, back_ten
-newmod g_buttons, grid_button, "<", *move_back, back_one
-newmod g_buttons, grid_button, ">", *move_next, go_one
-newmod g_buttons, grid_button, ">>", *go10, go_ten
-newmod g_buttons, grid_button, ">|",*to_sgfend,go_end
-newmod g_buttons, grid_button, "石グループ解除",*group_clear, button_group_clear
-newmod g_buttons, grid_button, "手順解除",*tejun_clear, button_tejun_clear
-newmod g_buttons, grid_button, "昇",*lab_sort1_asc, sort1_asc
-newmod g_buttons, grid_button, "降",*lab_sort1_desc, sort1_desc
-newmod g_buttons, grid_button, "混",*lab_sort1_shuffle, sort1_shuffle
-newmod g_buttons, grid_button, "昇",*lab_sort2_asc, sort2_asc
-newmod g_buttons, grid_button, "降",*lab_sort2_desc, sort2_desc
-newmod g_buttons, grid_button, "混",*lab_sort2_shuffle, sort2_shuffle
-newmod g_buttons, grid_button, "フォルダ選択",*select_folder,button_select_folder
-newmod g_buttons, grid_button, "履歴クリア", *clear_history,button_clear_history
-
-newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
-newmod g_chkbox, grid_checkbox, enableColorFlip,"色反転含む", chkbox_colorflip: colorflip_chkbox = stat
-newmod g_chkbox, grid_checkbox, jidou          ,"自動再生",chkbox_autoplay
-newmod g_chkbox, grid_checkbox, view_hosi,"星表示", chkbox_view_hosi
-newmod g_chkbox, grid_checkbox, last_move_mark,"最終手表示",chkbox_last_move
-newmod g_chkbox, grid_checkbox, use_bitboard, "厳密検索", chkbox_use_bitboard
-newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
-newmod g_chkbox, grid_checkbox, filter_on, "検索結果にフィルターを適用", chkbox_filter
-newmod g_chkbox, grid_checkbox, inc_tejun, "自動で次の番号へ", chkbox_inc: set_g_checkbox g_chkbox.stat, 1
-
-newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
-newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
-
-newmod g_stepper, grid_stepper, kifu_start_num, kifustart: set_stepper_limit g_stepper(stat), 0
-newmod g_stepper, grid_stepper, kifu_start_num_result, kifustart_result: set_stepper_limit g_stepper(stat), -50
-
-newmod g_slider, grid_slider, auto_interval , 1, slider_1, 100, 10000
-newmod g_slider, grid_slider, alpha_interval, 1, slider_2, 0  , 10000
-newmod g_slider, grid_slider, m_interval    , 1, slider_3, 0  , 10000
-
-newmod g_slider2, grid_slider2, slider2_match_point, 0, max_depth, 1, max_depth
-set_size_g_slider2 g_slider2, -1,0.8,-1
-
-model_list = "all\nb28\nb18\nb60\nb40"
-newmod g_combox, grid_combox, modelname, model_list, combox_modelname
-newmod g_combox, grid_combox, history_num, "検索履歴", combox_history: combox_history_obj = stat
-
-newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
-add_item_radiobox g_radiobox, "●"
-add_item_radiobox g_radiobox, "〇"
-add_item_radiobox g_radiobox, "●〇"
-add_item_radiobox g_radiobox, "削除"
-
-
-newmod g_radiobox, grid_radiobox, g_group, radiobox_grouping : tmp = stat
-add_item_radiobox g_radiobox.tmp, "A"
-add_item_radiobox g_radiobox.tmp, "B"
-add_item_radiobox g_radiobox.tmp, "C"
-add_item_radiobox g_radiobox.tmp, "D"
-
-newmod g_radiobox, grid_radiobox, te, radiobox_tejun: tmp = stat
-
-repeat 9
-	add_item_radiobox g_radiobox.tmp, str(cnt+1)
-loop
-
-
-newmod board, goban, 19,19,26,26, goban_body_area
-newmod board, goban, 19,19,26,26, goban_body_area
-
-newmod t, treebox,treebox_area
-
-newmod l_graph, line_graph, line_graph_area
-set_margin_line_graph l_graph, 27, 18, 13, 18
-
-
-
-foreach g_label
-	set_g_label_r g_label.cnt , 5, 4 | 8
-loop
+//ココも切り貼りしました。
+#include "make_area.hsp" //エリア作成
+#include "実体作成.hsp"  //実体を作成し、エリアに割り当てる
 
 set_max_centering_mes 33
 
@@ -367,26 +136,22 @@ loop
 gosub*loadsgf
 
 combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
-#if 01
-	//スクレイピング(棋譜収集)プロセス実行
-	tmp = dir_cur
-	chdir SUBDIR
-	exec "download_sgf"
-	chdir tmp
-	await 40
-#endif
+
+//スクレイピング(棋譜収集)プロセス実行
+tmp = dir_cur
+chdir SUBDIR
+exec "download_sgf"
+chdir tmp
+await 40
 
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
 title "KataGo自己対戦棋譜-検索システム"
 
 *main
-	;title ""+ginfo(10) + " : " + ginfo(11)
 	計測 "manage_keyfps"
-	manage_keyfps
-	notify_dt_draw_object frametime()
-
-
+	manage_keyfps //キー入力+FPS監視
+	notify_dt_draw_object frametime() //描画オブジェクトモジュールに経過時間通知
 	deficit = MAX_CHILDREN - (nocoConnectInfo(0) - 1)
     if deficit >= 1{
    		gosub*init_sub_process //内部の最後でupdate_child_listが呼ばれる
@@ -397,403 +162,16 @@ title "KataGo自己対戦棋譜-検索システム"
 	gosub*on_copydata
 	
 	計測 "前フレームからの状態変化取得"
+	#include "変化.hsp"
 
-	//マウスのエリア間移動チェック
-	if now_area != get_in_area() || _getkey(1) >= 1{
-		now_area = get_in_area()
-		set_tooltip now_area
-		count = 0.
-	}else{
-		count+= frametime()
-		if count >= 0.500: draw_tooltip now_area
-	}
-
-	//window状態変化
-	
-	if window_status != ginfo(4) || window_status.1 != ginfo(5) || window_status.2 != ginfo(12) || window_status.3 != ginfo(13){
-		window_status = ginfo(4),ginfo(5),ginfo(12),ginfo(13)
-		IsZoomed hwnd :最大化 = stat
-		IsIconic hwnd :最小化 = stat
-		if (最大化 | 最小化) == 0{
-			save_window_status = ginfo(4),ginfo(5), ginfo(12), ginfo(13)
-		}
-		if 最小化 == 0{
-			set_static_sizex get_entity_id(bg_id), ginfo(12)
-			set_static_sizey get_entity_id(bg_id), ginfo(13)
-		}
-	}
-	
-	if 最小化: goto*main
-
-	//combox状態変化
-	
-	cbox = g_combox(combox_history_obj)
-	
-	if get_dropdown_status(cbox){
-		if is_changed_dropdown(cbox){
-			;開かれた瞬間
-			;現在の碁盤の状態を保存（履歴とはまた別に特別保持
-			get_board_data board.ui_mode, now_board //碁盤の状態取得
-			now_v = v //判定対象セットリスト
-			get_group now_group //グループ状態取得
-			get_tejun now_tejun //手順状態取得
-			
-			now_ui_mode = ui_mode //操作モード
-			
-		}else{
-			if is_changed_cursor_item(cbox){
-				
-				if get_cursor_item(cbox) == -1{ //ドロップダウンの項目から外れたら
-					; 記憶した碁盤を復元
-					set_board_data board.ui_mode, now_board
-					v = now_v
-					set_group now_group
-					set_tejun now_tejun
-					set_g_checkbox g_chkbox.mode_chkbox,  now_ui_mode //チェックボックスに操作モード通知
-		
-				}else{
-					load_search_history stat //履歴から復元するメソッド	
-				}	
-			}
-		}
-	}
-
-
-
-	repeat 2
-		set_最終手表示 board.cnt, last_move_mark
-		set_星表示 board.cnt, view_hosi
-	loop
-	
-	if pre_ui_mode != ui_mode {
-		pre_ui_mode = ui_mode
-
-		if ui_mode = MODE_KIFU_VIEW{
-			init_group_tejun
-		}else{
-			get_board_data board  , user_board
-			set_board_data board.1, user_board
-			swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット
-		}
-	}
-	
-	if pre_filter_on != filter_on{
-		pre_filter_on = filter_on
-		if filter_on{
-			gosub *filtering_and_make_listbox
-		}else{
-			
-			selected_num = get_selected_item_ids(kifulist.matchlist, select_items)
-			
-			g_filter_off kifulist.matchlist
-			
-				//選択
-			repeat get_selected_item_ids(kifulist.matchlist , new_indices)
-				current_id = new_indices(cnt)
-				g_select_id kifulist.matchlist, current_id, 0 //全部クリア
-				repeat selected_num
-					if current_id == select_items(cnt){ //前のに存在してたら選択
-						g_select_id kifulist.matchlist, current_id, 1
-						break
-					}
-				loop
-			loop
-
-			
-		}
-		set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
-	}else: if pre_combox_idx != get_value_g_combox(g_combox){
-		pre_combox_idx = stat
-		if filter_on{
-			gosub *filtering_and_make_listbox
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
-		}
-	}
-	if is_state_changed_slider2(g_slider2){
-		if filter_on{
-			gosub*filtering_and_make_listbox
-			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
-		}
-	}
-
-	if last_result_time != -1 && keyfpstime - last_result_time > 100000{
-		//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす
-		gosub*search_finish
-		//ここでピンポン処理を発信すると堅牢か。
-	}
-	
 	計測 "入力処理"
+  	#include "入力.hsp"
 	
-	nownode = get_current_node(t)
-	getBoardCoordinates board.ui_mode, point
-
-	in_board = 0
-	if 0 <= point && point < 19{
-		if 0 <= point.1 && point.1 < 19{
-			in_board = 1
-		}
-	}
-	if debugmode == 0{
-		//マウス操作
-		if _getkey(2) == 1{ //右クリック
-
-			if dragging_flag == 1{
-				if rect >= 0{
-					modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3), 1
-				}
-				dragging_flag = 0
-			}else{
-				if treebox_onmouseid(t) >= 0{
-					set_current_node t, treebox_onmouseid(t)
-					Treebox_toggle_openflag t, treebox_onmouseid(t)
-				}
-				if ui_mode == MODE_BOARD_EDIT{//編集モード
-					if in_board{
-						user_board(point,point.1) = (user_board(point,point.1)  + 1) \ 6
-						set_board_data board.1, user_board
-						if user_board(point, point.1) == 0{
-							del_all_group_tejun point, point.1
-						}
-					}
-				}
-			}
-		}
-
-		//右長押しで、指定された範囲を除外
-		if gethold_ms(2, 300, 400){
-			if rn{
-				rn--
-				modify_coordinates_by_rect v, rect_stack(0,rn), rect_stack(1,rn), rect_stack(2,rn), rect_stack(3,rn), 1
-				dragging_flag = 0
-			}
-		}
-		
-		if _getkey(1) == 1{ //左クリック
-			if in_board == 0{
-				spawn_ripple_effect mousex, mousey, PRIORITY_FRONT_EFFECT
-				if treebox_onmouseid(t) >=0{
-					set_current_node t, stat
-					sync_treebox_board t, board
-					手数 = treeview_onmouse_id_deep()
-					gosub*syncboard
-				}
-			}else{
-				dragging_flag = 1
-				if in_board{
-					get_board_data board , tmp
-					get_board_data board.1, m
-					if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
-						rect = limit(point,0,18),limit(point.1,0,18)
-						rect(2) = rect, rect.1
-					}
-				}
-
-			}
-			
-			inlistbox = 0
-			foreach kifulist
-				sel = listbox_on_id(kifulist.cnt, mousex, mousey)
-				if sel != -1: inlistbox = 1 //リストボックスのなかだ。
-				if sel >= 0{
-					if select_kifulist_item(sel, cnt): break
-				}
-			loop
-		}
-
-		//キーによるドラッグ解除処理（先）
-		if _getkey(1) == -1{//マウスが離されたとき
-				
-			dragging_flag = 0
-			if rect(0) >= 0{
-				modify_coordinates_by_rect v, rect(0), rect(1), rect(2), rect(3)
-				rect_stack(0,rn) = rect(0), rect(1), rect(2), rect(3)
-				rn++
-				dim rect,4
-			}
-		}
-
-		//ドラッグ中の処理(後）
-		if dragging_flag{
-			
-			rect(2) = limit(point(0),0,18)
-			rect(3) = limit(point(1),0,18)
-
-			if in_board {
-				switch g_edit
-
-				swbreak
-				case 0
-					user_board(point,point.1) = 1
-					set_board_data board.1, user_board
-				swbreak
-				case 1
-					user_board(point,point.1) = 2
-					set_board_data board.1, user_board
-				swbreak
-				case 2
-					if prex == point.0 & prey == point.1{
-					}else{
-						prex = point.0
-						prey = point.1
-						swapturn^1
-						user_board(point,point.1) = swapturn + 1
-						set_board_data board.1, user_board
-					}
-				swbreak
-				case 3
-					user_board(point,point.1) = 0
-					set_board_data board.1, user_board
-					del_all_group_tejun point, point.1
-				swbreak
-
-				swend
-
-				if g_group >= 0{
-
-					if rect == -1{
-						if ui_mode == MODE_KIFU_VIEW{
-							get_board_data board  , tmp
-							OK = tmp(point,point.1)
-						}else{
-							OK = user_board(point,point.1)
-						}
-						if OK{
-							add_group point, point.1, g_group
-						}
-					}
-				}
-							//手順
-				if _getkey(1) == 1{
-					if te >= 0{
-						get_board_data board(ui_mode), m
-						if m(point(0),point(1)){
-							repeat 9
-								del_tejun point(0),point(1), cnt
-							loop
-							add_tejun point(0),point(1), te
-							if inc_tejun{
-								te = (te + 1) \ 9
-							}
-						}
-					}
-				}
-			}
-		}else{
-			rect = -1
-		}
-
+	計測 "自動再生"
+    #include "自動再生.hsp"
 	
-		//マウスホイール
-		mw = mousew
-	
-		in_kifulist = 0
-		
-		foreach kifulist
-			if listbox_on_id(kifulist.cnt,mousex, mousey) >= 0{
-				in_kifulist++
-				if mw < 0: scroll_down   kifulist.cnt
-				if mw > 0: scroll_up     kifulist.cnt
-			}
-		loop
-		
-		if (in_kifulist == 0) && (ui_mode == MODE_KIFU_VIEW){
-			if mw < 0 : gosub*move_next
-			if mw > 0 : gosub*move_back
-		}
-	
-		//キー操作
-		if _getkey(17) >= 1{ //CTRL
-			if _getkey('C') == 1 { //CTRL + C
-				gosub*getsgf
-			}
-			if _getkey('V') == 1 { //CTRL + V
-				gosub*loadsgf
-			}
-		}
-		
-		//自動再生
-		計測 "自動再生"
-
-		//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
-		if jidou & (ui_mode == MODE_KIFU_VIEW){
-			
-			if pre_jidou == 0{
-				前の形勢 = double(c_list)
-				pre_jidou = 1
-			}
-
-			;logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime - pretime)
-			if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
-				pretime = keyfpstime
-				gosub *move_next
-				if moved = 0{
-					if nownode >= 0{
-						if finish_time < 0{
-							finish_time = keyfpstime //再生終了した時刻
-							logmes "stoptime -> " + finish_time
-						}
-					}
-				}
-				
-				
-				今の形勢 = double(c_list)
-				形勢の変化率 = absf(今の形勢 - 前の形勢)
-				前の形勢 = 今の形勢
-			}
-
-			if finish_time >= 0{
-				if keyfpstime - finish_time >= AUTO_NEXT_KIFU_TIME{
-					//次の棋譜へfinish_time は-1に設定される
-					gosub*next_kifu
-				}
-			}
-		}else{
-			pre_jidou = 0
-		}
-	}
-	
-	//CTRLダブルクリックでデバッグモード切替
-	if getdbl_ms(17, DBL_INTERVAL){
-		debugmode ^ 1
-		logmes "switched debugmode ->" + debugmode
-	}
-
 	計測 "object_managers"
-
-	//碁盤エリアの背景に形勢を反映(局面をユーザーが進めると動的に変わる）
-	a = double(c_list) * 255
-	
-	get_rect goban_area, goban_back_rect
-	make_instant_draw_object "BOXF", (goban_back_rect + goban_back_rect.2) / 2, (goban_back_rect.1 + goban_back_rect.3) / 2, goban_back_rect.2-goban_back_rect,goban_back_rect.3-goban_back_rect.1, strf("$%02X%02X%02X",a,a,a)
-	update_priority_draw_object stat, PRIORITY_BACK
-	碁盤表示 board.ui_mode
-	
-
-	//エリア矩形表示
-	draw_all_rect root, debugmode
-
-	//グループ表示
-	get_group tmp
-	get_tejun tmp2
-	group_tejun_draw board.ui_mode, tmp, tmp2
-	
-	//検索範囲表示
-
-	draw_set_list_on_board board.ui_mode, v
-	
-	//各アイテム登録
-	all_items_draw
-
-	新しい手数 = 手数
-	line_graph_manager l_graph, 新しい手数
-	if 新しい手数 - 手数: move_next_int 新しい手数 - 手数
-
-	if dragging_flag && rect >= 0{
-		碁盤に矩形データを表示 board.ui_mode, rect
-	}
-
-	treebox_draw t, length(f)
-
+	#include "object_managers.hsp"
 	
 	計測 "レンダラ"
 	draw_objects //レンダラ経由描画
@@ -804,40 +182,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	redraw 2
 	goto*main
 	
-#deffunc all_items_draw
 
-	foreach kifulist
-		listbox_manager kifulist.cnt, current_kifulist = cnt
-	loop
-	
-	foreach g_label
-		draw_g_label g_label.cnt
-	loop
-	font "メイリオ", 29
-	foreach g_chkbox
-		draw_g_chkbox g_chkbox.cnt
-	loop
-	foreach g_buttons
-		draw_g_button g_buttons.cnt
-	loop
-	foreach g_slider
-		slider_manager g_slider.cnt
-	loop
-	foreach g_stepper
-		draw_g_stepper g_stepper.cnt
-	loop
-	foreach g_radiobox
-		draw_g_radiobox g_radiobox.cnt
-	loop
-
-	slider_manager2 g_slider2
-	
-	foreach g_combox
-		combox_manager g_combox.cnt
-	loop
-	return
-
-	
 #defcfunc select_kifulist_item int itemid, int kifulist_id
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
