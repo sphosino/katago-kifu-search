@@ -1,5 +1,7 @@
 #packopt name "search_process"
-#include "modules/ProcLinkModuleQueue.hsp"
+#bootopt notimer 1 //ツールなので高精度タイマーを利用しない
+#packopt hide 1
+
 #include "modules/rotate_coordinate.hsp"
 #include "../hsp_common/id_manager.hsp"
 #include "modules/bitboard.hsp"
@@ -12,16 +14,12 @@
 #include "modules/search/Search_pattern2.hsp"
 #include "kifu_protocol.hsp"
 #include "setting_defines.hsp"
-
 #define SUB_EXE
 #include "config_path.hsp"
-
-#bootopt notimer 1 //ツールなので高精度タイマーを利用しない
+screen 0,,,2
+#include "modules/ProcLinkModuleQueue.hsp"
 
 #const FPS_AFTER_LOADING 24
-
-gsel 0,-1
-
 
 view_window = 0 //画面を表示するかしないか
 
