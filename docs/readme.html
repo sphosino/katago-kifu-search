@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KataGo棋譜検索システム 操作ガイド</title>
-<link rel="stylesheet" href="style.css">
-    <style>
-    </style>
+ <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <nav id="main-nav">
@@ -49,14 +47,19 @@
             <li>複数の矩形を組み合わせて範囲を指定することも可能です。</li>
         </ul>
 
-        <p><strong>編集モードでの操作：</strong></p>
-	<img src = "stones.png">
-        <ul>
-            <li><span class="right-click-emphasis">右クリック</span>で碁盤に石を置くことができます。</li>
-            <li>続けて<span class="right-click-emphasis">右クリック</span>することで石の種類（黒→白→灰色→黒X→白X）を変更できます。</li>
-            <li>灰色の石は「どちらかの石があればヒットする」という条件になります。</li>
-            <li>「×」の付いた石は特殊な条件です。例えば、黒石に「×」がついている場合、その位置に黒石があるとマッチしません。</li>
-        </ul>
+        <div class="edit-mode-section">
+            🎯 編集モードでの操作 🎯
+        </div>
+        
+        <div class="edit-mode-content">
+            <img src="stones.png" alt="石の種類を示すイメージ">
+            <ul>
+                <li><span class="right-click-emphasis">右クリック</span>で碁盤に石を置くことができます。</li>
+                <li>続けて<span class="right-click-emphasis">右クリック</span>することで石の種類（黒→白→灰色→黒X→白X）を変更できます。</li>
+                <li>灰色の石は「どちらかの石があればヒットする」という条件になります。</li>
+                <li>「×」の付いた石は特殊な条件です。例えば、黒石に「×」がついている場合、その位置に黒石があるとマッチしません。</li>
+            </ul>
+        </div>
     </div>
 
     <h2 id="search-func">検索機能</h2>
@@ -66,7 +69,6 @@
             <li>もう一つのリストボックスに検索結果が表示されますので、クリックして閲覧してください。</li>
             <li>石が取られる局面を通過した局面を検索したい場合は、抜き跡に石を置いて検索してください。</li>
         </ul>
-
 
         <p><strong>「除外検索」ボタン</strong>は、現在の検索結果を除いた全ての棋譜から検索を行います。</p>
         <p><strong>「絞込検索」ボタン</strong>は、現在の検索結果の中からさらに絞り込んで検索を行います。</p>
@@ -220,7 +222,6 @@
             <p>操作中、レイアウトがおかしくなった場合は、<code>area.var</code>ファイルを削除するとリセットできます。</p>
         </div>
     </div>
-
 
     <h2 id="attention">注意事項</h2>
     <div class="section warning">
