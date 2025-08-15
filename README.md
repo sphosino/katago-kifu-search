@@ -45,7 +45,6 @@ root/
   config_path.hsp を開いてDIRNAME ="C:...."という行を編集してください。リリース用のフォルダになります。
 　開発中もこのフォルダのパスで起動します。
   フォルダの構成は現状以下のようになっています。
-  最小構成は以下
   release_root/
   ├── hspda.dll
   ├── hspext.dll
