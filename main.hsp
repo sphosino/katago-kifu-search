@@ -110,7 +110,6 @@ repeat 4
 loop
 
 
-//ココも切り貼りしました。
 #include "make_area.hsp" //エリア作成
 #include "実体作成.hsp"  //実体を作成し、エリアに割り当てる
 
@@ -428,13 +427,20 @@ title "KataGo自己対戦棋譜-検索システム"
 		spawn_toast_effect_success ginfo(12) / 2 - 170 / 2, 40, 300, 40,"無効な検索パターン"
 		return
 	}
+
+	#ifdef _debug
+	notesel kl
+	logmes "新規棋譜リストを送信" + notemax + "行 : 棋譜リスト送信 -> " + (pre_kl != kl)
+	noteunsel
+	#endif
 	
-	if pre_kl != kl{
+	if kl != pre_kl{
 		pre_kl = kl
 		repeat child_count_current
 			nocoSendCopyData child_hwnd_list(cnt), kl, 検索棋譜, strlen(kl)
 	    loop
 	}
+	
 	//以下検索
 
 	complate_count = 0
@@ -650,6 +656,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		}
 	}
 	return
+	
 *load_kifu_folder
 	chdir kifudir
 	dirlist files,"*.sgf"
@@ -696,10 +703,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	tmp_lab = *lab_sort1_asc, *lab_sort1_desc, *lab_sort1_shuffle
 	gosub tmp_lab(default_order)
 	
-	if kifulist_notepad != ""{
-		if vartype(b) != 2: b = "" //型合わせ
-		div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
-	}
+
+	if vartype(b) != 2: b = "" //型合わせ
+	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
+	
 
 	return
 	

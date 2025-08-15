@@ -100,7 +100,7 @@
     r_shift node_data //キューからノードデータを復元
 
     //ノードデータ展開
-    depth = lpeek(node_data) : if depth > max_depth: _continue
+    depth = lpeek(node_data): if depth > max_depth: _continue
     node = lpeek(node_data, 4)
     valid_pattern_count = lpeek(node_data, 8)
     memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE

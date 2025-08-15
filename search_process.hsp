@@ -63,6 +63,8 @@ set_target_wait tw //１フレーム当たりOSに返す時間(ms)
 
 chdir kifudir
 
+child_count = 1
+
 await 50
 
 担当棋譜変更による初期化 LIMIT_PER_PROCESS
@@ -319,6 +321,7 @@ loop
 
 	    case 子プロセス数
 	    	child_count = lpeek(received_data)
+	    	
 			set_target_wait limit(tw / child_count, 1, 100)
 	    swbreak
 	    
