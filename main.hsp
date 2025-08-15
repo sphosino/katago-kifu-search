@@ -558,9 +558,8 @@ title "KataGo自己対戦棋譜-検索システム"
 			}
 		loop
 	loop
-
-	
 	return
+	
 *search_finish
 	set_g_label g_label.1, "検索完了(" + get_list_item_num(kifulist.matchlist) + ")件"
 	set_g_label_bc g_label.1, $F5F5DC
@@ -571,6 +570,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_DESC, is_original_folder//新しい棋譜順
 	search_id = -1
 	last_result_time = -1
+	logmes strf("%dms", keyfpstime - time)
 	return
 
 #deffunc move_next_int int p1
@@ -633,6 +633,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	redraw_stones board
 	return
+	
 *select_folder
 	sdim tmp
 	selfolder tmp, "棋譜の入ったフォルダを選択"

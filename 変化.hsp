@@ -117,7 +117,7 @@ if is_state_changed_slider2(g_slider2){
 	}
 }
 
-if last_result_time != -1 && keyfpstime - last_result_time > 100000{
+if last_result_time != -1 && keyfpstime - last_result_time > 10000{
 	//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす
 	gosub*search_finish
 	//ここでピンポン処理を発信すると堅牢か。
