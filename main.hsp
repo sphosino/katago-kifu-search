@@ -455,6 +455,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	get_rect sidebar_kifulist_label2, eff_rect
 	
 	scba_effect_stack(scba_effect_num) = spawn_search_bar_effect(eff_rect + eff_rect.2 >> 1, eff_rect.3 + 5, 0.8 * (eff_rect.2-eff_rect.1), 8, 80,PRIORITY_FRONT)
+	;scba_effect_stack(scba_effect_num) = spawn_search_bar_effect2(eff_rect, eff_rect.1, eff_rect.2, eff_rect.3, 20,PRIORITY_FRONT)
 	scba_effect_num++
 
 	if use_bitboard{ ;厳密検索
@@ -703,11 +704,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	tmp_lab = *lab_sort1_asc, *lab_sort1_desc, *lab_sort1_shuffle
 	gosub tmp_lab(default_order)
 	
-
-	if vartype(b) != 2: b = "" //型合わせ
 	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
 	
-
 	return
 	
 

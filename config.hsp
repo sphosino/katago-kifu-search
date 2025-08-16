@@ -6,7 +6,7 @@
 #include "modules/katago_sqr.hsp"
 #include "calc_cores.hsp"
 #include "config_path.hsp"
-
+#include "../hsp_common/set.hsp"
 gosub *load_setting
 screen 0
 title "Šû•ˆŒŸõƒVƒXƒeƒ€İ’è"

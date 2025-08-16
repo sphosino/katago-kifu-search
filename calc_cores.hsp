@@ -3,8 +3,8 @@
 	c = p1
 	if p1 = 0: c = sysinfo(17)
 	tmp = c - 1 //親プロセス分-1
-	if tmp <= 1: return 1 //最低でも１確保
-	return 2 + (tmp - 1) / 3
+	if tmp <= 7: return 1 + tmp / 2 
+	return 3 + (tmp - 1) / 3
 #global
 
 

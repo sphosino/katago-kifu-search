@@ -2,6 +2,8 @@
 #include "d3m.hsp"
 netinit
 #include "beautifulsoup.hsp"
+#addition "../../hsp_common/set.hsp"
+#addition "../hsp_common/set.hsp"
 
 #module
 
@@ -9,12 +11,13 @@ netinit
 #const MIN_WAIT_TIME 1000
 
 #deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
-	stopflag = 0
-	endflag = 0
-	START_TIME = d3timer()
-	get_count = 0
-	dim result
-	now_dir = dir_cur
+	START_TIME = d3timer() ; 開始時刻
+	now_dir = dir_cur //開始時カレントディレクトリ
+	
+	endflag = 0 ;　終了するフラグ
+	get_count = 0 ; 取得した数
+	
+	sdim result //インターネットから結果を受け取る変数
 	
 	wt = waittime
 	if wt < MIN_WAIT_TIME{
@@ -30,6 +33,8 @@ netinit
 	
 	chdir dirname
 	dirlist files, "*.sgf"
+	if is_valid_set_id(fileSet): del_set fileSet
+	fileSet = notepad_to_set(files)
 
 	
 	neturl@ url
@@ -41,7 +46,8 @@ netinit
 
 	find_tags_bytag buf, "table", result
 	find_tags_bytag result, "a", r
-	
+
+	;外側のループ　ページ遷移用
 	repeat length(r) / 2
 		find_attribute_byname r(1+cnt*2), "href", f
 
@@ -60,65 +66,81 @@ netinit
 
 	
 		find_tags_bytag buf, "tr", data // テーブルの要素
-		
-		repeat limit(max,,length(data)-1)
+
+		;　内側ループ：各ゲームの処理
+		data_start = 1
+		repeat limit(max - get_count,,length(data) - data_start), data_start
 			if endflag: break
 		
-			find_tags_bytag data(cnt + 1), "td", target_infos
-	
+			find_tags_bytag data(cnt), "td", target_infos
+
 			game_id = int(get_content_tag(target_infos(0)))
+			savefilename = "" + game_id + ".sgf"
 	
 			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((d3timer() - START_TIME) * 100 / lt,,100)+"%完了"
-			if d3timer() - START_TIME >= lt: break
-			if check_exist_sgf(files, game_id){
+			if d3timer() - START_TIME >= lt{
+				endflag = 1
+				break
+			}
+			if is_inset(fileSet, savefilename){
 				await 4
 				continue
 			}
 			await wt
 	
-			find_tags_bytag data(cnt + 1), "a", result
+			find_tags_bytag data(cnt), "a", result
 			find_attribute_byname result, "href", t
-	
-			netdlname@ dirname + "/" + game_id + ".sgf"
+			
+			netdlname@ dirname + "/" + savefilename
 	
 			neturl@ url + t
 	
-			logmes "取得開始 -> " + game_id + ".sgf"
+			logmes "取得開始 -> " + savefilename
 			
 			netrequest@ ""
 			if stat : goto *bad
 			gosub *通信待ち
 
-			validate_sgf_file ""+ game_id + ".sgf"
+			validate_sgf_file savefilename
 			if stat{
-				logmes "ファイル破損 -> " + game_id + ".sgf"
+				logmes "ファイル破損 -> " + savefilename
 			}else{
-				logmes "取得完了 -> " + game_id + ".sgf"
+				logmes "取得完了 -> " + savefilename
+				push_data fileSet, "" + savefilename
 			}
 			
 			get_count++
 			await
 		loop
+		
 		if endflag:break
-		if d3timer() - STRAT_TIME >= lt: break
+
+		elapsed_time = d3timer() - START_TIME
+		if elapsed_time >= lt: break
+		
 		await wt
 
+		//次のページへの処理
 		if get_count < max{
 			find_tags_bytag buf, "div",divs
-			find_tags_bytag divs.4,"a",pp
+			find_tags_bytag divs.4,"a", pp
 			find_attribute_byname pp,"href", next_link
 	
 			if next_link == "?"{
 				if length(pp) == 2{
 					continue
 				}
-				find_attribute_byname pp.2,"href",next_link
+				find_attribute_byname pp.2, "href", next_link
 			}
 			if next_link == "https://github.com/lightvector/KataGo": continue
 			goto *next_page
 		}
 	loop
+
+	final_time = d3timer() - START_TIME
+	logmes "処理完了 - 実行時間: " + final_time + "ms / " + lt + "ms, 取得数: " + get_count + "/" + max
 	title "棋譜取得終了"
+	
 	chdir now_dir
 	return
 
@@ -139,23 +161,6 @@ netinit
 #deffunc 棋譜取得停止
 	endflag = 1
 	return 
-#defcfunc check_exist_sgf str s1, int p1
-
-	k = s1
-	notesel k
-
-	hit  = 0
-	repeat notemax
-		noteget t, cnt
-		if int(t) == p1 {
-			hit = 1
-			break
-		}
-	loop
-	
-	noteunsel
-
-	return hit
 	
 #deffunc validate_sgf_file str fname
 	sdim sgf, 0
@@ -193,7 +198,7 @@ netinit
 
 
 
-#if 00
+#if 0
 	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
 	chdir a
 
