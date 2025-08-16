@@ -271,7 +271,7 @@
 	repeat get_coordinates_set_int(set_list, sets)
 		x = r.0 + marginx + masx * sets(0, cnt)
 		y = r.1 + marginy + masy * sets(1, cnt)
-		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx + masx\2, masy + masy\2, "$eFeFFF"
+		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx + masx\2, masy + masy\2, "$e2e2FF"
 		update_priority_draw_object stat,PRIORITY_FRONT
 		set_static_alpha get_entity_id(stat), 60
 		
@@ -292,7 +292,7 @@
 		x2 = r.0 + marginx + x2 * masx
 		y2 = r.1 + marginy + y2 * masy
 
-		make_instant_draw_object "BOXF",(x2 + x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$eFeFFF"
+		make_instant_draw_object "BOXF",(x2 + x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , "$e2e2FF"
 		set_static_alpha get_entity_id(stat), 100
 
 	return
