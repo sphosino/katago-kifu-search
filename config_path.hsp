@@ -1,4 +1,5 @@
 #ifndef ___PATH___
+#define global ___PATH___
 #ifdef _debug
 	DIRNAME = "C:\\Users\\owner\\Desktop\\katago-kifu-search"
 #else
@@ -10,17 +11,21 @@
 		DIRNAME = dir_exe
 	#endif
 #endif
+
 SUBDIR = DIRNAME + "\\sub"
 DEFAULT_KIFUDIR = DIRNAME + "\\Šû•ˆ"
 SAVEDIR = DIRNAME + "\\save"
 TITLEDIR = DIRNAME + "\\title"
 
+tmp = DEFAULT_KIFUDIR, SAVEDIR, TITLEDIR
+chdir DIRNAME
+repeat length(tmp)
+	dirlist dummy, tmp(cnt), 5
+	if stat == 0{
+		mkdir tmp(cnt)
+	}
+loop
+
 kifudir = DEFAULT_KIFUDIR
 
-#module
-#deffunc ___PATH___
-	return
-#global
-
 #endif
-
