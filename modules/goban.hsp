@@ -7,10 +7,26 @@
 #const global 黒番 1
 #const global 白番 2
 
-#define global board_color $cd853f
-#define global area_hilight_color "$ebf4ff"
-#const global  area_alpha1 60
-#const global  area_alpha2 100
+#const global board_color $CD853F
+
+;$000000 (真っ黒)
+;$808080 (中間グレー)
+
+;$404040
+;$C0C0C0 (中間調)
+
+;$FF0000
+;$00FF00
+;$0000FF(RGB純色)
+
+;$DEB887 (榧)
+;$CD853F (桂)
+;$F5DEB3 (桧)
+;$3C3C3C (黒檀)
+
+#const global  area_alpha1 60  //(0-255)
+#const global  area_alpha2 95 //(0-255)
+
 
 #module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
 
@@ -27,6 +43,8 @@
 	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1100
 	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1100
 	gsel tmp
+	area_hilight_color = strf("$%x",反対色(board_color))
+	logmes area_hilight_color
 	mref thismod_ID,2
 	return thismod_ID
 #modfunc clear_board int x, int y
@@ -122,6 +140,7 @@
 			x2 = centerx + hosisizer
 			y2 = centery + hosisizer
 			circle x1,y1,x2,y2
+
 			
 		loop
 	}
@@ -214,13 +233,18 @@
 			case 白番
 				color $DC,$DC,$DC
 				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				gosub*draw_last_move_mark
 
 			swbreak
 			case 3
 				color $6E,$6E,$6E
 				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				gosub*draw_last_move_mark
+
 
 			swbreak
 			case 4
@@ -232,8 +256,10 @@
 
 			swbreak
 			case 5
-				color $DC,$DC,$DC
+				色を設定 $DCDCDC
 				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				color $00,$00,$80
 				gosub*draw_batu
 				gosub*draw_last_move_mark
@@ -246,6 +272,7 @@
 				gosub*draw_last_move_mark
 			swbreak
 			swend
+			
 		loop
 	loop
 	
@@ -408,4 +435,85 @@
 	return
 #global
 board_module_init
+
+#module
+#defcfunc 反対色 int p1
+	r = p1 >> 16 & 255
+	g = p1 >> 8  & 255
+	b = p1       & 255
+
+	r_ = (0. + r) / 255
+	g_ = (0. + g) / 255
+	b_ = (0. + b) / 255
+	if r_ > g{
+		cmax = r_ : max = 0
+		cmin = g_
+	}else{
+		cmax = g_ : max = 1
+		cmin = g_
+	}
+
+	if cmax < b_{
+		cmax = b_ : max = 2
+	}else: if cmin > b_{
+		cmin = b_
+	}
+
+	scale = cmax - cmin
+
+	if cmax == 0{
+		s = 0
+	}else{
+		s = scale / cmax
+	}
+
+	v = cmax	
+	if v < 0.4: v += 0.3 //v値底上げ
+	
+	
+
+	if scale < 0.15 {
+	    if v < 0.7 {
+	        output_h = 60   // 中間グレー → 黄色系 
+	    } else {
+	        output_h = 0     // 明るいグレー → 赤系
+	    }
+		output_s = 0.6
+	}else{
+	
+		switch max
+		case 0
+			h = 60 * (int((g_ - b_) / scale) \ 6)  
+		swbreak
+		case 1
+			h = 60 * ((b_ - r_) / scale + 2)
+		swbreak
+		case 2
+			h = 60 * ((r_ - g_) / scale + 4)
+		swbreak
+		swend
+	
+		if h < 0: h+= 360
+
+		output_h = (180 + h) \ 360
+		if s < 0.5: output_s = 1.0: else: output_s = 1.0 - s
+	}
+
+	output_v = v + 0.3
+	if output_v > 1.0{
+		output_v = v - 0.3
+	}
+
+	/*
+	HSV形式でカラーを設定する
+	hsvcolor p1,p2,p3
+	p1=0～191(0) : HSV形式 H値
+	p2=0～255(0) : HSV形式 S値
+	p3=0～255(0) : HSV形式 V値
+	*/
+	hsvcolor output_h * 191/360, output_s * 255, output_v * 255
+		
+	return ginfo_r << 16 | ginfo_g << 8 | ginfo_b
+
+#global
 #endif
