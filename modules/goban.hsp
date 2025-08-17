@@ -7,24 +7,13 @@
 #const global •”Ô 1
 #const global ”’”Ô 2
 
-#const global board_color $CD853F
+#const Ğ $DEB887
+#const Œj $CD853F
+#const •O $F5DEB3
 
-;$000000 (^‚Á•)
-;$808080 (’†ŠÔƒOƒŒ[)
+#const global board_color Œj
 
-;$404040
-;$C0C0C0 (’†ŠÔ’²)
-
-;$FF0000
-;$00FF00
-;$0000FF(RGBƒF)
-
-;$DEB887 (Ğ)
-;$CD853F (Œj)
-;$F5DEB3 (•O)
-;$3C3C3C (•’h)
-
-#const global  area_alpha1 60  //(0-255)
+#const global  area_alpha1 60 //(0-255)
 #const global  area_alpha2 95 //(0-255)
 
 
@@ -468,7 +457,7 @@ board_module_init
 	}
 
 	v = cmax	
-	if v < 0.4: v += 0.3 //v’l’êã‚°
+	if v < 0.33333: v += 0.33333 //v’l’êã‚°
 	
 	
 
@@ -478,7 +467,7 @@ board_module_init
 	    } else {
 	        output_h = 0     // –¾‚é‚¢ƒOƒŒ[ ¨ ÔŒn
 	    }
-		output_s = 0.6
+		output_s = 0.7
 	}else{
 	
 		switch max
@@ -499,9 +488,9 @@ board_module_init
 		if s < 0.5: output_s = 1.0: else: output_s = 1.0 - s
 	}
 
-	output_v = v + 0.3
+	output_v = v + 0.33333
 	if output_v > 1.0{
-		output_v = v - 0.3
+		output_v = v - 0.33333
 	}
 
 	/*
@@ -511,7 +500,7 @@ board_module_init
 	p2=0`255(0) : HSVŒ`® S’l
 	p3=0`255(0) : HSVŒ`® V’l
 	*/
-	hsvcolor output_h * 191/360, output_s * 255, output_v * 255
+	hsvcolor output_h * 191 / 360, output_s * 255, output_v * 255
 		
 	return ginfo_r << 16 | ginfo_g << 8 | ginfo_b
 
