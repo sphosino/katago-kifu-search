@@ -13,8 +13,10 @@
 
 #const global board_color 桂
 
-#const global  area_alpha1 60 //(0-255)
-#const global  area_alpha2 95 //(0-255)
+#const global  area_alpha1 42 //(0-255)
+#const global  area_alpha2 85 //(0-255)
+
+#const stone_futi_color $606060
 
 
 #module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
@@ -32,7 +34,8 @@
 	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1100
 	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1100
 	gsel tmp
-	area_hilight_color = strf("$%x",反対色(board_color))
+	get_complement_rgb board_color >> 16 , board_color >> 8 & 255, board_color & 255, 30, 0.9, ro, go, bo
+	area_hilight_color = strf("$%x", ro << 16 | go << 8 | bo)
 	logmes area_hilight_color
 	mref thismod_ID,2
 	return thismod_ID
@@ -216,6 +219,8 @@
 			case 黒番
 				color 
 				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				gosub*draw_last_move_mark
 
 			swbreak
@@ -239,6 +244,8 @@
 			case 4
 				color
 				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				color 255
 				gosub*draw_batu
 				gosub*draw_last_move_mark
@@ -256,6 +263,8 @@
 			case 6
 				color $6E,$6E,$6E
 				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
 				color $00,$00,$80
 				gosub*draw_batu
 				gosub*draw_last_move_mark
