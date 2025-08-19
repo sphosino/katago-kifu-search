@@ -157,6 +157,7 @@ loop
 
 
 		case 検索棋譜
+			
 			mes "検索棋譜受信 ->" + strmid(received_data,0,50)
 			notesel received_data
 				棋譜数 = notemax
@@ -174,8 +175,7 @@ loop
 		swbreak
 	
 	    case 検索実行
-		    search_init
-			
+		   
 			//検索条件を取り出す
 			search_id = lpeek(received_data, 0)
 			max_depth = lpeek(received_data, 4)
@@ -242,7 +242,6 @@ loop
 	    swbreak
 
 	    case 検索実行2:
-			search2_init
 			mes "厳密検索開始"
 	    	//検索条件を取り出す
 			search_id = lpeek(received_data, 0)

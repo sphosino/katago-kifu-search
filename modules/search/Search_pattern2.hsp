@@ -3,10 +3,10 @@
 #include "modules/bitboard.hsp"
 #module 厳密検索
 
+
 #deffunc search2_init
 	init_ringbuffer 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
 	sdim node_data, 1024 + 64   　   //データを纏めてキューに出し入れするための媒介変数
-	
 	return
 
 #deffunc search_main2 int t, int max_depth, int colorflip, int r_pattern_num, array pattern_mask, array rotated_color, array pattern, array path
@@ -14,6 +14,7 @@
   dim path, 256
   path(0) = -1 //先頭はヒットした深さを返す
 
+　reset_ringbuffer
   lpoke node_data,  , 0        //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
   memcpy node_data, path, 1024, 8

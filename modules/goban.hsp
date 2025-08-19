@@ -13,7 +13,7 @@
 
 #const global board_color Œj
 
-#const global  area_alpha1 42 //(0-255)
+#const global  area_alpha1 43 //(0-255)
 #const global  area_alpha2 85 //(0-255)
 
 #const stone_futi_color $606060

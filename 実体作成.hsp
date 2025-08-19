@@ -52,8 +52,10 @@ newmod g_slider2, grid_slider2, slider2_match_point, 0, max_depth, 1, max_depth
 set_size_g_slider2 g_slider2, -1,0.8,-1
 
 model_list = "all\nb28\nb18\nb60\nb40"
+komi_list = "6\n6.5\n,7"
 newmod g_combox, grid_combox, modelname, model_list, combox_modelname
 newmod g_combox, grid_combox, history_num, "ŒŸõ—š—ğ", combox_history: combox_history_obj = stat
+;newmod g_combox, grid_combox, komi, komi_list,combox_komi: komi_obj = stat
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
 add_item_radiobox g_radiobox, "œ"

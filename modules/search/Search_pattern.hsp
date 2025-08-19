@@ -85,6 +85,7 @@
   path(0) = -1 //一致した位置
   
   //初期ノード登録
+  reset_ringbuffer
   lpoke node_data,  , 0         //現在の深さ(手数)
   lpoke node_data, 4, t         //開始ノード番号
   lpoke node_data, 8, valid_pattern_count //有効なパターン数

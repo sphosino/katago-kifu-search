@@ -23,6 +23,8 @@
 #const OFFSET_PATH      (OFFSET_KIFU + 64)
 #const OFFSET_PB        (OFFSET_PATH + PATH_SIZE)
 #const OFFSET_PW        (OFFSET_PB + 64)
+;#const OFFSET_KOMI      (OFFSET_PW + 64)
+;#const OFFSET_RESULT_NUM (OFFSET_KOMI + 64)
 
 #const INFO_SIZE             (PATH_SIZE + 64 * 2) ; 棋譜名以外のサイズ
 #const RECORD_SIZE      (64 + PATH_SIZE + 64 * 2) ; 全体のサイズ1216バイト
