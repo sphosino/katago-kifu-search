@@ -27,7 +27,7 @@
     r_shift node_data //キューからノードデータを復元
 
     //ノードデータ展開
-    depth = lpeek(node_data) : if depth > max_depth: return
+    depth = lpeek(node_data) : if depth > max_depth: _continue
     node = lpeek(node_data, 4)
     memcpy path, node_data, 1024, , 8
     

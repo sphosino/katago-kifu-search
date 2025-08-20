@@ -27,6 +27,6 @@
 ;#const OFFSET_RESULT_NUM (OFFSET_KOMI + 64)
 
 #const INFO_SIZE             (PATH_SIZE + 64 * 2) ; 棋譜名以外のサイズ
-#const RECORD_SIZE      (64 + PATH_SIZE + 64 * 2) ; 全体のサイズ1216バイト
+#const RECORD_SIZE      (64 + PATH_SIZE + 64 * 2) ; 全体のサイズ
 
 #endif
