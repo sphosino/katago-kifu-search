@@ -5,7 +5,7 @@
 
 
 #deffunc search2_init
-	newmod queue, ringbuffer 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
+	newmod queue, ringbuffer, 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
 	sdim node_data, 1024 + 64   　   //データを纏めてキューに出し入れするための媒介変数
 	return
 
