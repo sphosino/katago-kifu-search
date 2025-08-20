@@ -5,26 +5,24 @@
 
 
 #deffunc search2_init
-	init_ringbuffer 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
+	newmod queue, ringbuffer 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
 	sdim node_data, 1024 + 64   　   //データを纏めてキューに出し入れするための媒介変数
 	return
 
 #deffunc search_main2 int t, int max_depth, int colorflip, int r_pattern_num, array pattern_mask, array rotated_color, array pattern, array path
 
+  reset_ringbuffer queue
+
   dim path, 256
   path(0) = -1 //先頭はヒットした深さを返す
 
-　reset_ringbuffer
+　
   lpoke node_data,  , 0        //現在の深さ(手数)
   lpoke node_data, 4, t        //ノード番号
   memcpy node_data, path, 1024, 8
-  r_push node_data
+  r_push queue, node_data
 
-
-  
-  while ringbuffer_count
-
-    r_shift node_data //キューからノードデータを復元
+  while r_shift(queue, node_data)
 
     //ノードデータ展開
     depth = lpeek(node_data) : if depth > max_depth: _continue
@@ -60,7 +58,7 @@
       lpoke node_data, 4, lpeek(child, cnt * 4)
       path(depth + 1) = cnt
       memcpy node_data, path, 1024, 8
-      r_push node_data
+      r_push queue, node_data
     loop
   wend
   

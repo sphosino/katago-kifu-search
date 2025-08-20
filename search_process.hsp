@@ -65,10 +65,9 @@ chdir kifudir
 
 child_count = 1
 
-await 50
+await 40
 
 担当棋譜変更による初期化 LIMIT_PER_PROCESS
-
 
 //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
 nocoAutoCopyData :repeat

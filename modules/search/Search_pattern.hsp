@@ -1,5 +1,5 @@
 #ifndef search_init
-#include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> ( ringbuffer_count, init_ringbuffer, reset_ringbuffer, r_push, r_shift )
+#include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> (reset_ringbuffer, r_push, r_shift )
 #include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_property_coordinate_cash)
 #include "modules/search/pattern.hsp" //パターン関連-> (PATTERN_BLACK, PATTERN_WHITE, PATTERN_ZERO)
 
@@ -33,7 +33,7 @@
 
 #deffunc search_init
 	dim vlist , VLIST_ELEMENT_NUM, VLIST_MAX //探索時ノードが持つ有効なパターンリスト（これがなくなってしまうと検索失敗となる）
-	init_ringbuffer DATA_SIZE_PATH, 128      //キュー初期化（要素数(128)に関しては自動拡張付き）
+	newmod queue, ringbuffer, DATA_SIZE_PATH, 128      //キュー初期化（要素数(128)に関しては自動拡張付き）
 	sdim node_data, DATA_SIZE_PATH　         //データを纏めてキューに出し入れするための媒介変数
 	
 	return
@@ -67,7 +67,7 @@
   path:
   - マッチした位置を返す配列。 pathの先頭要素は特別で、ヒットした深さの位置を返し、path(0) が-1ならヒットしなかったことを示す。
 */
-
+　reset_ringbuffer queue
   //パターンリスト初期化(最大１６種）
   valid_pattern_count = 0
   repeat r_pattern_num
@@ -85,20 +85,18 @@
   path(0) = -1 //一致した位置
   
   //初期ノード登録
-  reset_ringbuffer
+  
   lpoke node_data,  , 0         //現在の深さ(手数)
   lpoke node_data, 4, t         //開始ノード番号
   lpoke node_data, 8, valid_pattern_count //有効なパターン数
   memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
   memcpy node_data, path, 1024, DATA_SIZE
-  r_push node_data
+  r_push queue, node_data
 
 
   //探索開始
   *next_node
-  while ringbuffer_count
-
-    r_shift node_data //キューからノードデータを復元
+  while r_shift(queue, node_data)
 
     //ノードデータ展開
     depth = lpeek(node_data): if depth > max_depth: _continue
@@ -216,7 +214,7 @@
       memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
       path(depth + 1) = cnt
       memcpy node_data, path, 1024, DATA_SIZE
-      r_push node_data
+      r_push queue, node_data
     loop
     
   wend
