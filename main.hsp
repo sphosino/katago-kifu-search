@@ -668,11 +668,11 @@ title "KataGo自己対戦棋譜-検索システム"
 		//SGFモジュール初期化
 		init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
 		chdir SUBDIR
-		exist "file_list.txt"
+		exist KIFULIST_FILE_NAME
 		if strsize  >= 0{
 			notesel files
 	
-				noteload "file_list.txt"
+				noteload KIFULIST_FILE_NAME
 				num = notemax
 				棋譜数 = limit(num,,load_limit)
 				if 棋譜数 == 0: return
@@ -730,10 +730,9 @@ title "KataGo自己対戦棋譜-検索システム"
 	
 	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
 
-	logmes "LOADED_FOLDER" + (keyfpstime-load_start)
-
 	chdir kifudir
-	
+
+	logmes "LOADED_FOLDER -> " + (keyfpstime-load_start) + "ms"
 	return
 	
 

@@ -1,6 +1,7 @@
 #ifndef SETTING_FILE_NAME
 //保存ファイル名
 #define global SETTING_FILE_NAME "window.txt"
+#define global KIFULIST_FILE_NAME "file_list.txt"
 //設定ファイルの意味と行番号
 #enum global LINE_WINDOW_POSITION_X = 0
 #enum global LINE_WINDOW_POSITION_Y
