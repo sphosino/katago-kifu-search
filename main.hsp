@@ -28,6 +28,7 @@
 #include "save_info.hsp"//(*save_info)
 #include "clear_save_folder.hsp"
 
+
 #const MODE_KIFU_VIEW 0
 #const MODE_BOARD_EDIT 1
 #const DBL_INTERVAL 250 //ダブルクリック判定間隔(ms)
@@ -659,14 +660,34 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 	
 *load_kifu_folder
+	load_start = keyfpstime
+
+	is_original_folder = ( kifudir == DEFAULT_KIFUDIR )
+
+	if is_original_folder{
+		//SGFモジュール初期化
+		init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
+		chdir SUBDIR
+		exist "file_list.txt"
+		if strsize  >= 0{
+			notesel files
+	
+				noteload "file_list.txt"
+				num = notemax
+				棋譜数 = limit(num,,load_limit)
+				if 棋譜数 == 0: return
+						//棋譜リスト初期化
+			noteunsel
+			gosub*棋譜リスト初期化
+			return
+		}
+	}
 	chdir kifudir
 	dirlist files,"*.sgf"
 	num = stat
 	棋譜数 = limit(num,,load_limit)
 
 	if 棋譜数 == 0: return
-
-	is_original_folder = ( kifudir == DEFAULT_KIFUDIR )
 
 	if sgf_topnode >= 0{
 		logmes "cleared 【sgf_topnode】"
@@ -680,10 +701,12 @@ title "KataGo自己対戦棋譜-検索システム"
 	if 棋譜数 / MAX_CHILDREN >= LIMIT_PER_PROCESS{
 		棋譜数 = limit(MAX_CHILDREN * LIMIT_PER_PROCESS,,load_limit)
 	}
+	gosub*棋譜リスト初期化
+	
+	return
 
-	//SGFモジュール初期化
-	init_sgf_module MERGE_LIMIT + 5 //ちょっと余裕をもって確保
-
+*棋譜リスト初期化
+	chdir kifudir	
 	//棋譜リスト初期化
 	dim kifulist
 	
@@ -697,6 +720,7 @@ title "KataGo自己対戦棋譜-検索システム"
 		kifulist_notepad = files			
 		logmes "load_full"
 	}
+
 	add_item kifulist, kifulist_notepad
 	
 	set_g_label g_label, "棋譜(" + get_list_item_num(kifulist) + ")件"
@@ -705,6 +729,10 @@ title "KataGo自己対戦棋譜-検索システム"
 	gosub tmp_lab(default_order)
 	
 	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
+
+	logmes "LOADED_FOLDER" + (keyfpstime-load_start)
+
+	chdir kifudir
 	
 	return
 	
@@ -939,6 +967,20 @@ title "KataGo自己対戦棋譜-検索システム"
 	return
 
 *save
-	gosub*save_info
+	gosub *save_info //本体設定保存
 	save_load_manager_save //グリッド情報保存
-	end
+
+	//次回起動高速化の為にファイルリストを作成させるプロセスを起動
+	chdir SUBDIR
+	exec "save_file_list" 
+	/* 内部で行ってる処理はこれだけ。
+		wait 100
+		chdir DEFAULT_KIFUDIR
+		dirlist a, "*.sgf", 3
+		chdir SUBDIR
+		notesel a
+		notesave "file_list.txt"
+		end
+	*/
+
+	end //閉じる

@@ -1,6 +1,5 @@
 #module
-#deffunc div_notepad var s1, int array_count, array a
-	s = s1
+#deffunc div_notepad var s, int array_count, array a
 	a = "" //М^Т▓Ро
 	notesel s
 		max = notemax
