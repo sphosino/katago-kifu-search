@@ -52,6 +52,7 @@ root/
   ├── sub/
   │   ├── hspinet.dll
   │   ├── auto_download.exe
+　│   ├── save_file_list.exe
   │   └── search_process.exe
   ├── title/
   │   └── ; 起動画面用画像フォルダ
@@ -60,7 +61,7 @@ root/
   └── save/
       └── ; 一時的に棋譜を保存するフォルダ
 
-5. search_process.hsp, download_sgf.hspをexe化して、subフォルダにいれる
+5. search_process.hsp, download_sgf.hsp,save_file_listをexe化して、subフォルダにいれる
 6. dllも上記の通りに適切に入れる
 
 7. main.hspがエラーなく実行できるようになっていればOKです。
