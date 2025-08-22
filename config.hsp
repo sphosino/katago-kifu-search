@@ -77,12 +77,17 @@ if kifu_per_process <= LIMIT_PER_PROCESS {
 
 gosub *view
 scbaOnScroll *scc
+onexit *end_label
 stop
 
 *sqr
 	objprm sq_id, "棋譜収集中..."
+	now_sqr = 1
 	棋譜取得 DEFAULT_KIFUDIR, 10000, 3000, 1000 * 60 * 30 //３０分
+	now_sqr = 0
 	objprm sq_id, "スクレイピング（棋譜収集）　-- 最大３０分"  // 完了時に元に戻す
+	chdir SUBDIR
+	exec "save_file_list"
 	return
 
 *sqr_stop
@@ -239,3 +244,8 @@ stop
 	gosub *set_value
 	gosub *save_info
 	return
+*end_label
+	if now_sqr{
+		exec "save_file_list"
+	}
+	end
