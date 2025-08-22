@@ -1,11 +1,11 @@
 #module
 #deffunc div_notepad var s, int array_count, array a
-	a = "" //型調整
 	notesel s
 		max = notemax
-		if max <= 0 : noteunsel : return  // 空文字列の場合は何もしない
+		if max <= 0: a = "": noteunsel : return  // 空文字列の場合は何もしない
+		
 		sdim a, (strlen(s) + max) / max, array_count
-
+		
 		base_lines = max / array_count        // 基本的な行数
 		extra_lines = max \ array_count       // 余りの行数
 		
@@ -18,16 +18,12 @@
 			lines_for_this_array = base_lines + (i < extra_lines)
 
 			// この配列に割り当てる行を処理
-			repeat lines_for_this_array
-				if current_idx < max {
-					noteget tmp, current_idx
-					if cnt = 0{
-						a(i) = tmp
-					}else{
-						a(i) += "\n" + tmp
-					}
-					current_idx++
-				}
+			noteget a(i), current_idx
+			current_idx++
+			repeat lines_for_this_array - 1
+				noteget tmp, current_idx
+				a(i) += "\n" + tmp
+				current_idx++
 			loop
 		next
 	noteunsel
@@ -35,20 +31,19 @@
 #global
 
 //テストー
-#if 0
+#if 000
 #undef mes
 #define mes(%1="") mes@hsp %1:logmes %1
 
 sdim a
-repeat 30000
-a += "\n" + cnt
+repeat 1
+a += strf("%06d\n",cnt)
 loop
 
 div_notepad a,4,b
 
 
 repeat length(b)
-mes b.cnt
-mes
+	mes b.cnt
 loop
 #endif
