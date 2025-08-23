@@ -32,18 +32,14 @@
 
 //テストー
 #if 000
+#ifdef _debug
 #undef mes
 #define mes(%1="") mes@hsp %1:logmes %1
 
-sdim a
-repeat 1
-a += strf("%06d\n",cnt)
-loop
-
-div_notepad a,4,b
 
 
-repeat length(b)
-	mes b.cnt
-loop
+
+#undef mes 
+#define global mes mes@hsp
+#endif
 #endif

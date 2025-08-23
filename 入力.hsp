@@ -1,7 +1,7 @@
 nownode = get_current_node(t)
 getBoardCoordinates board.ui_mode, point
 
-now_board_size nb
+nb = get_x_board_size(board.ui_mode), get_y_board_size(board.ui_mode)
 in_board = 0
 if 0 <= point && point < nb{
 	if 0 <= point.1 && point.1 < nb.1{
@@ -57,6 +57,7 @@ if debugmode == 0{
 			if in_board{
 				get_board_data board , tmp
 				get_board_data board.1, m
+				logmes strf("座標 -> %d,%d, boardsize-> %d,%d",point,point.1, length(m), length2(m))
 				if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
 					rect = limit(point,0,nb-1),limit(point.1,0,nb.1-1)
 					rect(2) = rect, rect.1
@@ -70,7 +71,17 @@ if debugmode == 0{
 			sel = listbox_on_id(kifulist.cnt, mousex, mousey)
 			if sel != -1: inlistbox = 1 //リストボックスのなかだ。
 			if sel >= 0{
-				if select_kifulist_item(sel, cnt): break
+				if select_kifulist_item(sel, cnt){
+					nb = get_x_board_size(board.ui_mode), get_y_board_size(board.ui_mode)
+					in_board = 0
+					if 0 <= point && point < nb{
+						if 0 <= point.1 && point.1 < nb.1{
+							in_board = 1
+						}
+					}
+					break
+				}
+				
 			}
 		loop
 	}

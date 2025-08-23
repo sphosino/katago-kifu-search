@@ -72,7 +72,16 @@ if pre_ui_mode != ui_mode {
 		init_group_tejun
 	}else{
 		get_board_data board  , user_board
+
+
+		clear_board board.1, length(user_board), length2(user_board)
+		碁盤表示 board.1
+		redraw_goban board.1
+		redraw_stones board.1
 		set_board_data board.1, user_board
+
+		point = -1,-1
+
 		swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット(入力.hspで使ってるよ)
 	}
 }

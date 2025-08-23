@@ -77,6 +77,7 @@ dim user_board, 19, 19 ;　プレイヤーが操作する仮盤面
 
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
+nb = -1,-1
 
 //矩形範囲指定用
 rn = 0
@@ -372,6 +373,11 @@ title "KataGo自己対戦棋譜-検索システム"
 	logmes "クリップボード読み込み成功"
 	
 	topnode = load_sgf_set_board(t, sgf_topnode, board)
+
+	get_board_size_from_SGF topnode, tmp
+	if nb != tmp || nb.1 != tmp.1{
+		v = ""
+	}
 	
 	blackplayer = get_property_data(topnode, "PB")
 	whiteplayer = get_property_data(topnode, "PW")
