@@ -246,6 +246,7 @@ stop
 	return
 *end_label
 	if now_sqr{
+		chdir SUBDIR
 		exec "save_file_list"
 	}
 	end

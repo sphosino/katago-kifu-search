@@ -59,7 +59,7 @@
 #const global SQLITE_OPEN_READONLY    0x00000001  ; Open DB in read-only mode
 #const global SQLITE_OPEN_READWRITE   0x00000002  ; Open DB in read-write mode
 #const global SQLITE_OPEN_CREATE      0x00000004  ; Create a new DB if not exists
-#const global DEFAULT_SQL_FLAG SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
+#const global DEFAULT_SQL_OPEN_FLAG SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE
 ;============================================================
 ; Shift_JIS <--> UTF-8 / internal
 ;------------------------------------------------------------
@@ -274,7 +274,7 @@
 ;============================================================
 ; sql_open
 ;------------------------------------------------------------
-#define global sql_open(%1, %2 = DEFAULT_SQL_FLAG) _sql_open %1, %2
+#define global sql_open(%1, %2 = DEFAULT_SQL_OPEN_FLAG) _sql_open %1, %2
 #deffunc _sql_open str p1, int p2
 	if varptr(win98chk) = 0 {
 		dialog "This program requires Windows 98/2000 or later.", , "SQL ERR"

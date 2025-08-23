@@ -727,9 +727,10 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	tmp_lab = *lab_sort1_asc, *lab_sort1_desc, *lab_sort1_shuffle
 	gosub tmp_lab(default_order)
-	
-	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
 
+	divstart = keyfpstime
+	div_notepad kifulist_notepad, MAX_CHILDREN, b //棋譜リストを各プロセス用に分割
+	logmes "分割時間" + (keyfpstime - divstart)
 	chdir kifudir
 
 	logmes "LOADED_FOLDER -> " + (keyfpstime-load_start) + "ms"
@@ -968,18 +969,4 @@ title "KataGo自己対戦棋譜-検索システム"
 *save
 	gosub *save_info //本体設定保存
 	save_load_manager_save //グリッド情報保存
-
-	//次回起動高速化の為にファイルリストを作成させるプロセスを起動
-	chdir SUBDIR
-	exec "save_file_list" 
-	/* 内部で行ってる処理はこれだけ。
-		wait 100
-		chdir DEFAULT_KIFUDIR
-		dirlist a, "*.sgf", 3
-		chdir SUBDIR
-		notesel a
-		notesave "file_list.txt"
-		end
-	*/
-
 	end //閉じる
