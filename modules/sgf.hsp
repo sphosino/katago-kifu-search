@@ -598,6 +598,7 @@
 #module
 #defcfunc 対応する文字まで取得 var ss, int index, str s1, var result
 	i = instr(ss, index, s1)
+	sgf_err@ += (i < 0)
 	result = strmid(ss, index, i)
 	return index + i
 #global
@@ -606,7 +607,7 @@
 #module
 #define global ctype load_sgf(%1, %2 = -1) _load_sgf(%1, %2)
 #defcfunc _load_sgf str ss, int node
-
+	
 	sss = ss
 	sgflen = strlen(sss)
 	if sgflen < 3{
@@ -626,9 +627,15 @@
 	dim stack_count
 	nc = 0
 	MN = 0	//手数をカウントする独自プロパティ
+	sgf_err@ = 0 //実行中エラーを記録する
 
 	topnode = make_new_SGFnode(node,TOPNODE_SIZE)
 	load_sgf_main strmid(sss, start_point + 1, sgflen - start_point - 2), topnode
+	if sgf_err@{
+		logmes "sgf解析失敗"
+		del_sgf_node topnode, 1
+		return -1
+	}
 	set_property_data topnode, "MN",str(lastnode)
 	return topnode
 
@@ -638,8 +645,7 @@
 	nn = node
 	point = 0
 	//解析
-	while point < sgf_length
-		
+	while (point < sgf_length)
 		token = peek(sgfs, point)
 
 		if (token == ';'){
@@ -654,12 +660,15 @@
 			
 			point = 対応する文字まで取得(sgfs, point, "[", P)
 			point = 対応する文字まで取得(sgfs, point + 1, "]", D)
+			if sgf_err@:_break
 
 			set_property_data nn, P, D
 			
 		}else:if token == '['{
 			
 			point = 対応する文字まで取得(sgfs, point + 1, "]", D)
+			if sgf_err@:_break
+			
 			set_property_data nn, P, get_property_data(nn, P) + D
 			
 		}else:if token = '('{
@@ -679,7 +688,9 @@
 			logmes "不正なトークンが含まれています"
 			
 		}
+		
 		point++
+		
 	wend
 	return
 #global
