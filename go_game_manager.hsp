@@ -17,6 +17,7 @@
 		return
 	}
 
+
 	//トップノードまでたどってリスト化する関数
 	get_nodelist sgf_node_number, nodelist
 
@@ -42,13 +43,23 @@
 
 	clear_board board , xy, xy.1
 
+
 	okiisi = get_property_data(SGF_topnode,"AB")
+	okiisi2 = get_property_data(SGF_topnode,"AW")
 	if okiisi != ""{
 		repeat strlen(okiisi) / 2
 			置き石 board,peek(okiisi,cnt*2) - 'a', peek(okiisi,cnt*2+1) - 'a', 1
 		loop
-		toggle_turn board
+		if okiisi2 == "": toggle_turn board //白石の置き石もないならば置き碁とみなし、手番を白に
 	}
+	if okiisi2 != ""{
+		repeat strlen(okiisi2) / 2
+			置き石 board,peek(okiisi2,cnt*2) - 'a', peek(okiisi2,cnt*2+1) - 'a', 2
+		loop
+	}
+	碁盤表示 board //仮表示して、masサイズを計算させる
+	redraw_goban board
+	redraw_stones board
 	
 	return
 
@@ -76,14 +87,24 @@
 		dialog "SGF_FILE解析エラー",,__FILE__
 		end
 	}
+
+	set_board_topnode _board, new_topnode
 	
 	blackplayer = get_property_data(new_topnode, "PB")
 	whiteplayer = get_property_data(new_topnode, "PW")
 	split blackplayer,"-", bp: if stat < 3: bp.1 = "": bp.2 = bp //Katago形式でなければそのまま対局者名とみなす
 	split whiteplayer,"-", wp: if stat < 3: wp.1 = "": wp.2 = wp
 	title"コミ【" + get_property_data(new_topnode,"KM") + "】 黒 " + bp.1 + bp.2 + "   白 " + wp.1 + wp.2
-	
+
 	return new_topnode
+
+#deffunc now_board_size array a
+	a = xy,xy.1
+	return
+#deffunc init_go_game_manager
+	xy = 19,19
+	return
 #global
+init_go_game_manager
 
 

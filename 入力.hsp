@@ -1,9 +1,10 @@
 nownode = get_current_node(t)
 getBoardCoordinates board.ui_mode, point
 
+now_board_size nb
 in_board = 0
-if 0 <= point && point < 19{
-	if 0 <= point.1 && point.1 < 19{
+if 0 <= point && point < nb{
+	if 0 <= point.1 && point.1 < nb.1{
 		in_board = 1
 	}
 }
@@ -57,7 +58,7 @@ if debugmode == 0{
 				get_board_data board , tmp
 				get_board_data board.1, m
 				if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
-					rect = limit(point,0,18),limit(point.1,0,18)
+					rect = limit(point,0,nb-1),limit(point.1,0,nb.1-1)
 					rect(2) = rect, rect.1
 				}
 			}
@@ -89,8 +90,8 @@ if debugmode == 0{
 	//ドラッグ中の処理(後）
 	if dragging_flag{
 		
-		rect(2) = limit(point(0),0,18)
-		rect(3) = limit(point(1),0,18)
+		rect(2) = limit(point(0),0,nb-1)
+		rect(3) = limit(point(1),0,nb.1-1)
 
 		if in_board {
 			switch g_edit

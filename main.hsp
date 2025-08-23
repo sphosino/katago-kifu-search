@@ -92,6 +92,7 @@ sdim kifulist_notepad ; 棋譜リストボックス内にあるアイテム名をnotepad形式で保持
 pre_filter_on = -1
 pre_filter = -1
 
+
 //FPS設定
 setfps 30 //目標FPSセット(初期値)
 enable_auto_adjust //目標FPS自動調整有効化(target_wait基準)
