@@ -7,7 +7,7 @@
 	buf = ginfo_newid
 	buffer buf, 320, 240
 	gsel tmp
-	dim size,2, 100
+	dim size, 2, 100
 	
 	return
 #deffunc add_tooltip int id, str s1
@@ -23,7 +23,7 @@
 		êFÇê›íË string_color
 		pos 0,0
 		mes id_to_hint(id)
-		size = ginfo_mesx,ginfo_mesy
+		size = ginfo_mesx, ginfo_mesy
 	gsel tmp
 	return
 #deffunc set_tooltip_color int _back_color, int _string_color

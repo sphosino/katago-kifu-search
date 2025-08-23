@@ -189,7 +189,10 @@ title "KataGo自己対戦棋譜-検索システム"
 
 	if itemid >= 0 && itemid < get_list_item_num(kifulist.kifulist_id){
 
-		if topnode != -1: del_sgf_node topnode, 1
+		if topnode != -1{
+			logmes "今のトップノードを破棄" + topnode
+			del_sgf_node topnode, 1
+		}
 
 		current_kifulist = kifulist_id
 		if ui_mode != MODE_KIFU_VIEW{

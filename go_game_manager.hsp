@@ -98,13 +98,6 @@
 
 	return new_topnode
 
-#deffunc now_board_size array a
-	a = xy,xy.1
-	return
-#deffunc init_go_game_manager
-	xy = 19,19
-	return
 #global
-init_go_game_manager
 
 

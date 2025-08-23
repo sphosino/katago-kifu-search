@@ -57,7 +57,7 @@ if debugmode == 0{
 			if in_board{
 				get_board_data board , tmp
 				get_board_data board.1, m
-				logmes strf("À•W -> %d,%d, boardsize-> %d,%d",point,point.1, length(m), length2(m))
+				logmes strf("À•W -> %d,%d,  boardsize -> %d,%d  boardsize.1-> %d,%d",point,point.1,length(tmp),length2(tmp), length(m), length2(m))
 				if (ui_mode == MODE_KIFU_VIEW & (g_group == -1 || tmp(point,point.1) == 0)) || (ui_mode != MODE_KIFU_VIEW && g_edit == -1 && m(point, point.1) == 0){
 					rect = limit(point,0,nb-1),limit(point.1,0,nb.1-1)
 					rect(2) = rect, rect.1

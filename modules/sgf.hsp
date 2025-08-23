@@ -318,7 +318,7 @@
 		}	
 	}
 	
-	block_data = read_mem_str(sgf_properties_data)
+	block_data = read_mem_str(sgf_properties_data(node_id))
 	split block_data, SEP, tmp
 	
 	repeat sgf_properties_num(node_id), 1
@@ -329,6 +329,8 @@
 				i += "[" + strmid(kv.1,cnt*2,2) + "]"
 			loop
 		}else{
+			
+			logmes strf("%s,%s", kv,kv.1) 
 			i += kv + "[" + kv.1 + "]"
 		}
 	loop
@@ -338,7 +340,7 @@
 
 	size = get_property_data(SGF_topnode, "SZ")
 	if size == ""{
-		logmes "SGFにボードサイズが設定されていません"
+		logmes "SGFにボードサイズが設定されていません\n19x19として扱います"
 		xy = 19,19
 	}else{
 		split size,":", x, y
