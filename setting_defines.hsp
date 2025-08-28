@@ -29,7 +29,7 @@
 #const global MAX_TARGET_WAIT 100
 
 #const global DEFAULT_MAX_DEPTH 100
-#const global LIMIT_PER_PROCESS 18000
+#const global LIMIT_PER_PROCESS 16000
 
 #module
 #deffunc noteget_ var ngt, int line_num
