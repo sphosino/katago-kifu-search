@@ -30,7 +30,7 @@
 	return
 #global
 
-//テストー
+//テスト
 #if 000
 #ifdef _debug
 #undef mes

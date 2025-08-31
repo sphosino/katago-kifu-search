@@ -140,11 +140,13 @@ gosub*loadsgf
 combox_set_str g_combox(combox_history_obj), get_history_str_for_combox() //uiに反映
 
 //スクレイピング(棋譜収集)プロセス実行
-tmp = dir_cur
-chdir SUBDIR
-exec "download_sgf"
-chdir tmp
-await 40
+if auto_download >= 20{
+	tmp = dir_cur
+	chdir SUBDIR
+	exec "download_sgf"
+	chdir tmp
+	await 40
+}
 
 window_status = 0, 0, 0, 0 //windowの位置サイズ監視用
 
@@ -979,4 +981,8 @@ title "KataGo自己対戦棋譜-検索システム"
 *save
 	gosub *save_info //本体設定保存
 	save_load_manager_save //グリッド情報保存
+	if auto_download >= 20{
+		chdir SUBDIR
+		exec "save_file_list"
+	}
 	end //閉じる

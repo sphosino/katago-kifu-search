@@ -77,7 +77,7 @@ nocoAutoCopyData :repeat
 		temp_kifu_name = get_one_data(kifu_unloaded) ; –¢“Ç‚İ‚İƒŠƒXƒg‚©‚ç1‚Âæ‚èo‚·
 		notesel sgf_data
 			exist temp_kifu_name
-			if strsize == -1:dialog "error Šû•ˆ–¼ -> " + temp_kifu_name:end
+			if strsize == -1: dialog "error Šû•ˆ–¼ -> " + temp_kifu_name: end
 
 			noteload temp_kifu_name
 			topnode = load_sgf(sgf_data) ; Šû•ˆ“Ç‚İ‚İ
