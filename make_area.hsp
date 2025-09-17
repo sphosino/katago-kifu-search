@@ -140,5 +140,7 @@ add_tooltip sort1_asc, "古い棋譜順"
 add_tooltip sort1_desc, "新しい棋譜順"
 add_tooltip chkbox_colorflip, "白黒が逆でも結果に含める"
 add_tooltip slider2_match_point, "ヒットした位置でフィルタ"
+add_tooltip button_clearboard, "盤面をクリアして編集モードに入る"
 
 set_tooltip_color 0x333333, 0xFFFFFF
+

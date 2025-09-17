@@ -70,7 +70,7 @@ await 40
 担当棋譜変更による初期化 LIMIT_PER_PROCESS
 
 //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
-nocoAutoCopyData :repeat
+nocoAutoCopyData : repeat
 	manage_keyfps
 	gosub *on_copydata
 	if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
@@ -108,7 +108,7 @@ nocoAutoCopyData :repeat
 			break
 		}
 	loop
-	if exist_parent = 0:end
+	if exist_parent == 0: end
 	if getdbl_ms(27, 250): view_window ^= 1: gsel 0, view_window*2-1 //ESC連打で切り替え
 	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
 	
@@ -125,8 +125,7 @@ loop
 	    del_set search_target_kifus
 	    
     }
-    if 最大棋譜数 < p1: 最大棋譜数 = p1
-    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * 最大棋譜数
+    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
     if DEFAULT_KIFUDIR == kifudir{
 	    mes "デフォルトフォルダに変更"
     }else{

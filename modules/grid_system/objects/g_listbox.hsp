@@ -13,7 +13,7 @@
 	item_y = 20
 
 	size = p2
-	if p2 = 0: size = LISTBOX_DEFAULT_MAX
+	if p2 <= 0: size = LISTBOX_DEFAULT_MAX
 
 	sdim item_names,, size
 	sdim item_datas,1024 + 64 * 2, size
