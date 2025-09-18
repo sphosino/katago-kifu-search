@@ -242,7 +242,9 @@ stop
 
 *save
 	gosub *set_value
+	tmpdir = dir_cur
 	gosub *save_info
+	chdir tmpdir
 	return
 *end_label
 	if now_sqr{
