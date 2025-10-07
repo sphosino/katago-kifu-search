@@ -26,13 +26,13 @@ if strsize == -1{
 	m_interval = 5000
 	load_limit = limit(100000, 1, limit(sysinfo(17) - 1, 1) * LIMIT_PER_PROCESS)
 	Å‘å‰» = 0
+	main_target_wait = DEFAULT_MAIN_TARGET_WAIT
 	child_target_wait = DEFAULT_TARGET_WAIT
 	MAX_CHILDREN = get_auto_cores()
 	default_order = 2 // 0 = ¸‡, 1 = ~‡, 2 = ƒ‰ƒ“ƒ_ƒ€
 
 }else{
 	noteload SETTING_FILE_NAME
-
 	noteget_ wx, LINE_WINDOW_POSITION_X
 	noteget_ wy, LINE_WINDOW_POSITION_Y
 	noteget_ sx, LINE_WINDOW_SIZE_X
@@ -51,6 +51,7 @@ if strsize == -1{
 	noteget_ load_limit, LINE_LOAD_LIMIT
 	noteget_ child_target_wait, LINE_TARGET_WAIT
 	noteget_ default_order, LINE_DEFAULT_ORDER
+	noteget_ main_target_wait, LINE_MAIN_TARGET_WAIT
 
 	logmes "LOAD==>"+default_order
 

@@ -7,7 +7,9 @@
 #include "calc_cores.hsp"
 #include "config_path.hsp"
 #include "../hsp_common/set.hsp"
+chdir SUBDIR
 gosub *load_setting
+
 screen 0
 title "棋譜検索システム設定"
 left_size = ginfo_sx * 3 / 6
@@ -28,20 +30,23 @@ dim auto_download_time
 dim sc_max_depth
 dim max_kifu
 dim tw
+dim m_tw
 
 //スクロールバー展開
 pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: max_kifu = stat
 pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: process_num = stat
 pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: tw = stat
-pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
-pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: sc_max_depth = stat
-pos left_size, objysize * 5: scbaScrollbar 0, right_size, objysize: sc_default_order = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: m_tw = stat
+pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
+pos left_size, objysize * 5: scbaScrollbar 0, right_size, objysize: sc_max_depth = stat
+pos left_size, objysize * 6: scbaScrollbar 0, right_size, objysize: sc_default_order = stat
 
 //スクロールバーレンジ設定
 scbaSetrange max_kifu, 1, 100000,,,1
 scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, MIN_TARGET_WAIT - 1, MAX_TARGET_WAIT,,,1
 scbaSetrange tw, MIN_TARGET_WAIT, MAX_TARGET_WAIT,,,1
+scbaSetrange m_tw, MAIN_MIN_TARGET_WAIT, MAIN_MAX_TARGET_WAIT,,,1
 scbaSetrange sc_max_depth, 10, 254,,,1
 scbaSetRange sc_default_order, 0,2,,,1
 
@@ -59,11 +64,10 @@ scbaSetPos process_num       , MAX_CHILDREN
 scbaSetPos auto_download_time, auto_download
 scbaSetPos sc_max_depth      , max_depth
 scbaSetPos tw                , child_target_wait
+scbaSetPos m_tw              , main_target_wait
 scbaSetPos sc_default_order  , default_order
 gosub *set_value
 
-// デバッグ用ダイアログ（削除推奨）
- ;dialog "S"+ child_target_wait
 
 // 初期状態の安全性判定
 kifu_per_process = scbaInfo(max_kifu) / scbaInfo(process_num)
@@ -121,7 +125,9 @@ stop
 		}
 	swbreak
 	
-	case tw(0)
+	case tw
+	swbreak
+	case m_tw
 	swbreak
 	
 	case process_num
@@ -138,6 +144,7 @@ stop
 
 	case sc_default_order
 	swbreak
+	
 	
 	default 
 		dialog "想定外の値: " + type, , __FILE__
@@ -168,15 +175,17 @@ stop
 	max_depth         = scbaInfo(sc_max_depth)
 	load_limit        = scbaInfo(max_kifu)
 	child_target_wait = scbaInfo(tw)
+	main_target_wait = scbaInfo(m_tw)
 	max_children      = scbaInfo(process_num)
 	default_order     = scbaInfo(sc_default_order)
 
-	logmes strf("%d,%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait, max_children,default_order)
+	logmes strf("%d,%d,%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait,main_target_wait, max_children,default_order)
 
 	save_window_status.0 = wx
 	save_window_status.1 = wy
 	save_window_status.2 = sx
 	save_window_status.3 = sy
+
 	return
 
 *view
@@ -186,20 +195,21 @@ stop
 	pos 0, objysize * 0: mes strf("最大読み込み制限 【%d棋譜】", scbaInfo(max_kifu))
 	pos 0, objysize * 1: mes strf("子プロセス数 -> 【%d】", scbaInfo(process_num))
 	pos 0, objysize * 2: mes strf("子プロセス余裕時間【%dms】", scbaInfo(tw))
-	pos 0, objysize * 3
+	pos 0, objysize * 3: mes strf("親プロセス余裕時間【%dms】", scbaInfo(m_tw))
+	pos 0, objysize * 4
 		if scbaInfo(auto_download_time) < 20 {
 			mes "起動時スクレイピング【なし】"
 		} else {
 			mes strf("起動時スクレイピング【%d秒】", scbaInfo(auto_download_time))
 		}
-	pos 0, objysize * 4: mes strf("検索の深さ 【%d手】", scbaInfo(sc_max_depth))
+	pos 0, objysize * 5: mes strf("検索の深さ 【%d手】", scbaInfo(sc_max_depth))
 	
 	tmp_lab = "古い順","新しい順","ランダム"
-	pos 0, objysize * 5
+	pos 0, objysize * 6
 	mes strf("棋譜の初期並び順【%s】",tmp_lab(scbaInfo(sc_default_order)))
 	
 	// 新規追加：安全性表示（ゼロ除算対策）
-	pos 0, objysize * 6
+	pos 0, objysize * 7
 	if scbaInfo(process_num) > 0 {
 		kifu_per_process = scbaInfo(max_kifu) / scbaInfo(process_num)
 	} else {

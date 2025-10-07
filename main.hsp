@@ -95,9 +95,9 @@ pre_filter = -1
 
 
 //FPS設定
-setfps 30 //目標FPSセット(初期値)
+setfps 1000./main_target_wait //目標FPSセット(初期値)
 enable_auto_adjust //目標FPS自動調整有効化(target_wait基準)
-set_target_wait 11
+set_target_wait main_target_wait
 
 //使用キーの宣言
 delkey_all

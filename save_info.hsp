@@ -20,6 +20,7 @@ goto*@f
 	noteadd_ load_limit, LINE_LOAD_LIMIT
 	noteadd_ default_order, LINE_DEFAULT_ORDER
 	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
+	noteadd_ main_target_wait, LINE_MAIN_TARGET_WAIT
 	chdir SUBDIR
 	notesave SETTING_FILE_NAME
 	

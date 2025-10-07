@@ -21,12 +21,17 @@
 #enum global LINE_LOAD_LIMIT
 #enum global LINE_TARGET_WAIT //子プロセス用
 #enum global LINE_DEFAULT_ORDER
+#enum global LINE_MAIN_TARGET_WAIT
 
 #enum global SETTING_MAX_LINE
 
 #const global MIN_TARGET_WAIT 20
 #const global DEFAULT_TARGET_WAIT 40
 #const global MAX_TARGET_WAIT 100
+
+#const global MAIN_MIN_TARGET_WAIT 15
+#const global DEFAULT_MAIN_TARGET_WAIT 40
+#const global MAIN_MAX_TARGET_WAIT 60
 
 #const global DEFAULT_MAX_DEPTH 100
 #const global LIMIT_PER_PROCESS 16000
