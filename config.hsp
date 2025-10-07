@@ -14,7 +14,7 @@ screen 0
 title "棋譜検索システム設定"
 left_size = ginfo_sx * 3 / 6
 right_size = ginfo_sx * 3 / 6
-objysize = 40
+objysize = 37
 font "", 22
 
 max_child = limit(sysinfo(17) - 1, 1) 
@@ -52,7 +52,7 @@ scbaSetRange sc_default_order, 0,2,,,1
 
 
 objsize ginfo(12), objysize
-pos 0, objysize * 8: button gosub "設定保存", *save
+pos 0, objysize * 9: button gosub "設定保存", *save
 
 pos 0, objysize * 10: button gosub  "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
 pos 0, objysize * 11: button gosub "スクレイピング停止", *sqr_stop
