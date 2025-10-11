@@ -162,8 +162,8 @@ title "KataGo自己対戦棋譜-検索システム"
 	}else{
 		update_child_list
 	}
-    
-	gosub*on_copydata
+
+    gosub*on_copydata
 	
 	計測 "前フレームからの状態変化取得"
 	#include "変化.hsp"
@@ -590,6 +590,7 @@ title "KataGo自己対戦棋譜-検索システム"
 	g_listbox_sort kifulist.matchlist, LISTBOX_SORT_DESC, is_original_folder//新しい棋譜順
 	search_id = -1
 	last_result_time = -1
+	complate_count = -1
 	logmes strf("%dms", keyfpstime - time)
 	return
 
@@ -938,7 +939,7 @@ title "KataGo自己対戦棋譜-検索システム"
 			complate_count++
 			logmes "result_num = " + result_num + " : " + complate_count
 			last_result_time = keyfpstime
-			if complate_count == MAX_CHILDREN{
+			if complate_count >= MAX_CHILDREN{
 				complate_count = -1
 				release_id search_id_manager, lpeek(received_data)
 				logmes "検索完了"
