@@ -5,7 +5,7 @@
 
 	tmp = ginfo_sel
 	buf = ginfo_newid
-	buffer buf, 320, 240
+	buffer buf, 420, 120
 	gsel tmp
 	dim size, 2, 100
 	

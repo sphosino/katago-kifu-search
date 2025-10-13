@@ -22,7 +22,7 @@ newmod g_buttons, grid_button, "混",*lab_sort1_shuffle, sort1_shuffle
 newmod g_buttons, grid_button, "昇",*lab_sort2_asc, sort2_asc
 newmod g_buttons, grid_button, "降",*lab_sort2_desc, sort2_desc
 newmod g_buttons, grid_button, "混",*lab_sort2_shuffle, sort2_shuffle
-newmod g_buttons, grid_button, "フォルダ選択",*select_folder,button_select_folder
+newmod g_buttons, grid_button, "フォルダ変更",*select_folder,button_select_folder
 newmod g_buttons, grid_button, "履歴クリア", *clear_history,button_clear_history
 
 newmod g_chkbox, grid_checkbox, ui_mode           , "編集モード" , chkbox_tyakusyu: mode_chkbox = stat
