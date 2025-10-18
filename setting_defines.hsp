@@ -30,7 +30,7 @@
 #const global MAX_TARGET_WAIT 100
 
 #const global MAIN_MIN_TARGET_WAIT 15
-#const global DEFAULT_MAIN_TARGET_WAIT 50
+#const global DEFAULT_MAIN_TARGET_WAIT 40
 #const global MAIN_MAX_TARGET_WAIT 60
 
 #const global DEFAULT_MAX_DEPTH 100

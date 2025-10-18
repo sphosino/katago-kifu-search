@@ -58,9 +58,9 @@ newmod g_combox, grid_combox, history_num, "ŒŸõ—š—ğ", combox_history: combox_hi
 ;newmod g_combox, grid_combox, komi, komi_list,combox_komi: komi_obj = stat
 
 newmod g_radiobox, grid_radiobox, g_edit, radiobox_goban_edit
-add_item_radiobox g_radiobox, "œ"
-add_item_radiobox g_radiobox, "Z"
-add_item_radiobox g_radiobox, "œZ"
+add_item_radiobox g_radiobox, "•Î"
+add_item_radiobox g_radiobox, "”’Î"
+add_item_radiobox g_radiobox, "ŒğŒİ"
 add_item_radiobox g_radiobox, "íœ"
 
 
