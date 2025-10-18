@@ -30,13 +30,13 @@ dim auto_download_time
 dim sc_max_depth
 dim max_kifu
 dim tw
-dim m_tw
+dim m_fps
 
 //スクロールバー展開
 pos left_size, objysize * 0: scbaScrollbar 0, right_size, objysize: max_kifu = stat
 pos left_size, objysize * 1: scbaScrollbar 0, right_size, objysize: process_num = stat
 pos left_size, objysize * 2: scbaScrollbar 0, right_size, objysize: tw = stat
-pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: m_tw = stat
+pos left_size, objysize * 3: scbaScrollbar 0, right_size, objysize: m_fps = stat
 pos left_size, objysize * 4: scbaScrollbar 0, right_size, objysize: auto_download_time = stat
 pos left_size, objysize * 5: scbaScrollbar 0, right_size, objysize: sc_max_depth = stat
 pos left_size, objysize * 6: scbaScrollbar 0, right_size, objysize: sc_default_order = stat
@@ -46,7 +46,7 @@ scbaSetrange max_kifu, 1, 100000,,,1
 scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, MIN_TARGET_WAIT - 1, MAX_TARGET_WAIT,,,1
 scbaSetrange tw, MIN_TARGET_WAIT, MAX_TARGET_WAIT,,,1
-scbaSetrange m_tw, MAIN_MIN_TARGET_WAIT, MAIN_MAX_TARGET_WAIT,,,1
+scbaSetrange m_fps, MAIN_MIN_FPS, MAIN_MAX_FPS,,,1
 scbaSetrange sc_max_depth, 10, 254,,,1
 scbaSetRange sc_default_order, 0,2,,,1
 
@@ -54,7 +54,7 @@ scbaSetRange sc_default_order, 0,2,,,1
 objsize ginfo(12), objysize
 pos 0, objysize * 9: button gosub "設定保存", *save
 
-pos 0, objysize * 10: button gosub  "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
+pos 0, objysize * 10: button gosub "スクレイピング（棋譜収集）　-- 最大３０分", *sqr : sq_id = stat
 pos 0, objysize * 11: button gosub "スクレイピング停止", *sqr_stop
 
 notesel setting_str
@@ -64,7 +64,7 @@ scbaSetPos process_num       , MAX_CHILDREN
 scbaSetPos auto_download_time, auto_download
 scbaSetPos sc_max_depth      , max_depth
 scbaSetPos tw                , child_target_wait
-scbaSetPos m_tw              , main_target_wait
+scbaSetPos m_fps              , main_fps
 scbaSetPos sc_default_order  , default_order
 gosub *set_value
 
@@ -127,7 +127,7 @@ stop
 	
 	case tw
 	swbreak
-	case m_tw
+	case m_fps
 	swbreak
 	
 	case process_num
@@ -175,11 +175,11 @@ stop
 	max_depth         = scbaInfo(sc_max_depth)
 	load_limit        = scbaInfo(max_kifu)
 	child_target_wait = scbaInfo(tw)
-	main_target_wait = scbaInfo(m_tw)
+	main_fps = scbaInfo(m_fps)
 	max_children      = scbaInfo(process_num)
 	default_order     = scbaInfo(sc_default_order)
 
-	logmes strf("%d,%d,%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait,main_target_wait, max_children,default_order)
+	logmes strf("%d,%d,%d,%d,%d,%d,%d", auto_download, max_depth, load_limit, child_target_wait,main_fps, max_children,default_order)
 
 	save_window_status.0 = wx
 	save_window_status.1 = wy
@@ -195,7 +195,7 @@ stop
 	pos 0, objysize * 0: mes strf("最大読み込み制限 【%d棋譜】", scbaInfo(max_kifu))
 	pos 0, objysize * 1: mes strf("子プロセス数 -> 【%d】", scbaInfo(process_num))
 	pos 0, objysize * 2: mes strf("子プロセス余裕時間【%dms】", scbaInfo(tw))
-	pos 0, objysize * 3: mes strf("親プロセス余裕時間【%dms】", scbaInfo(m_tw))
+	pos 0, objysize * 3: mes strf("目標FPS【%d】", scbaInfo(m_fps))
 	pos 0, objysize * 4
 		if scbaInfo(auto_download_time) < 20 {
 			mes "起動時スクレイピング【なし】"

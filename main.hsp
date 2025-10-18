@@ -77,7 +77,7 @@ dim user_board, 19, 19 ;　プレイヤーが操作する仮盤面
 
 pre_window_size = -9999,-9999
 pre_ui_mode = -1
-nb = -1,-1
+nb = -1,-1 //現在のボードサイズ x , y
 
 //矩形範囲指定用
 rn = 0
@@ -95,9 +95,8 @@ pre_filter = -1
 
 
 //FPS設定
-setfps 1000./main_target_wait //目標FPSセット(初期値)
-enable_auto_adjust //目標FPS自動調整有効化(target_wait基準)
-set_target_wait main_target_wait
+setfps main_fps
+
 
 //使用キーの宣言
 delkey_all
