@@ -25,7 +25,6 @@ view_window = 0 //画面を表示するかしないか
 
 
 delkey_all //キー監視をすべてクリア
-addkey 27, 1 //ESCをバックグラウンドでも受け付ける形で登録
 addkey 'C' //長押しで画面クリア
 
 sdim result //親に結果を送る用のバッファ
@@ -109,7 +108,7 @@ nocoAutoCopyData : repeat
 		}
 	loop
 	if exist_parent == 0: end
-	if getdbl_ms(27, 250): view_window ^= 1: gsel 0, view_window*2-1 //ESC連打で切り替え
+	
 	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
 	
 loop
@@ -344,6 +343,11 @@ loop
 			kifudir = strmid(received_data,0,data_size)
 			mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
 			
+	    swbreak
+
+	    case ウィンドウ表示切替
+		    view_window ^= 1
+		    gsel 0, view_window*2-1
 	    swbreak
 	 
 	    case 終了指示:

@@ -103,6 +103,7 @@ delkey_all
 addkey 1 //左クリック
 addkey 2 //右クリック
 addkey 17 //ctrl
+addkey 27 //ESC
 addkey 'C'
 addkey 'V'
 addkey 'A'
