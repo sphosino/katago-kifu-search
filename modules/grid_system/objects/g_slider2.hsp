@@ -124,9 +124,25 @@
 
 	state_changed = 0
 
-    // 有効区間の描画
+    // つまみがはみ出さないための「有効領域」を計算
+    // 有効領域は中心位置の取りうる範囲（端でつまみの半径がはみ出さない）
+    if horizontal {
+        eff_bar_x1 = bar_x1 + r
+        eff_bar_x2 = bar_x2 - r
+        eff_len = limit(0, eff_bar_x2 - eff_bar_x1)
+        eff_bar_y1 = bar_y1
+        eff_bar_y2 = bar_y2
+    } else {
+        eff_bar_y1 = bar_y1 + r
+        eff_bar_y2 = bar_y2 - r
+        eff_len = max(0, eff_bar_y2 - eff_bar_y1)
+        eff_bar_x1 = bar_x1
+        eff_bar_x2 = bar_x2
+    }
+
+    // 有効区間の描画（バー本体）
     make_instant_draw_object "BOXF_FAST",bar_x1,bar_y1,bar_x2,bar_y2,"$C8C8FF"
-    // 有効区間のハイライト
+    // 有効区間のハイライト (eff を使ってずれを吸収)
     start_point = min
     repeat thumbs_count + 1
         if cnt < thumbs_count {
@@ -135,18 +151,23 @@
             end_point = max
         }
         
-        if cnt\2 == valid_zone_flip {
-            color 100, 150, 255
-            if horizontal {
-                zone_x1 = bar_x1 + value_to_position(start_point,min,len,scale)
-                zone_x2 = bar_x1 + value_to_position(  end_point,min,len,scale)
-                make_instant_draw_object "BOXF_FAST",zone_x1, bar_y1, zone_x2, bar_y2,"$6496FF"
-            } else {
-                zone_y1 = bar_y1 + value_to_position(start_point,min,len,scale)
-                zone_y2 = bar_y1 + value_to_position(  end_point,min,len,scale)
-                make_instant_draw_object "BOXF_FAST",bar_x1, zone_y1, bar_x2, zone_y2,"$6496FF"
-            }
-        }
+if cnt\2 == valid_zone_flip {
+    if horizontal {
+        ; zone_x1 = eff_bar_x1 + value_to_position(start_point,min,eff_len,scale)
+        ; zone_x2 = eff_bar_x1 + value_to_position(end_point,min,eff_len,scale)
+        ; → 修正版：
+        zone_x1 = bar_x1 + value_to_position(start_point,min,bar_x2-bar_x1,scale)
+        zone_x2 = bar_x1 + value_to_position(end_point,min,bar_x2-bar_x1,scale)
+        make_instant_draw_object "BOXF_FAST",zone_x1, bar_y1, zone_x2, bar_y2,"$6496FF"
+    } else {
+        ; zone_y1 = eff_bar_y1 + value_to_position(start_point,min,eff_len,scale)
+        ; zone_y2 = eff_bar_y1 + value_to_position(end_point,min,eff_len,scale)
+        ; → 修正版：
+        zone_y1 = bar_y1 + value_to_position(start_point,min,bar_y2-bar_y1,scale)
+        zone_y2 = bar_y1 + value_to_position(end_point,min,bar_y2-bar_y1,scale)
+        make_instant_draw_object "BOXF_FAST",bar_x1, zone_y1, bar_x2, zone_y2,"$6496FF"
+    }
+}
         
         start_point = end_point
         
@@ -156,11 +177,16 @@
     repeat thumbs_count
         thumb_val = thumbs(cnt)
         if horizontal {
-            thumb_x = bar_x1 + value_to_position(thumb_val,min,len,scale)
+            thumb_x = eff_bar_x1 + value_to_position(thumb_val,min,eff_len,scale)
             thumb_y = oya.1 + (oya.3 - oya.1) / 2
+            // 描画時にも念のためクランプ（丸がはみ出さない）
+            if thumb_x < eff_bar_x1: thumb_x = eff_bar_x1
+            if thumb_x > eff_bar_x1 + eff_len: thumb_x = eff_bar_x1 + eff_len
         } else {
             thumb_x = oya.0 + (oya.2 - oya.0) / 2
-            thumb_y = bar_y1 + value_to_position(thumb_val,min,len,scale)
+            thumb_y = eff_bar_y1 + value_to_position(thumb_val,min,eff_len,scale)
+            if thumb_y < eff_bar_y1: thumb_y = eff_bar_y1
+            if thumb_y > eff_bar_y1 + eff_len: thumb_y = eff_bar_y1 + eff_len
         }
         
         // つまみの色（ドラッグ中かどうかで変える）
@@ -201,16 +227,17 @@
             repeat thumbs_count
                 thumb_val = thumbs(cnt)
                 if horizontal {
-                    thumb_x = bar_x1 + value_to_position(thumb_val, min , len, scale)
+                    thumb_x = eff_bar_x1 + value_to_position(thumb_val, min , eff_len, scale)
                     thumb_y = (oya.1 + oya.3) / 2
                     distance = (mousex - thumb_x) * (mousex - thumb_x) + (mousey - thumb_y) * (mousey - thumb_y)
                 } else {
                     thumb_x = (oya.0 + oya.2) / 2
-                    thumb_y = bar_y1 + value_to_position(thumb_val, min , len, scale)
+                    thumb_y = eff_bar_y1 + value_to_position(thumb_val, min , eff_len, scale)
                     distance = (mousex - thumb_x) * (mousex - thumb_x) + (mousey - thumb_y) * (mousey - thumb_y)
                 }
                 
-                if distance <= (r/2) * (r/2) {
+                // クリック判定は半径そのものを使う（半径 r の円内）
+                if distance <= (r) * (r) {
                     dragging_number = cnt
                     break
                 }
@@ -219,10 +246,17 @@
         
         // ドラッグ中の処理
         if dragging_number >= 0 {
+            // マウス位置を有効領域にクランプしてから値に変換
             if horizontal {
-                new_val = min + position_to_value(mousex , bar_x1, len, scale) * ((min<max)*2 - 1)
+                mx = mousex
+                if mx < eff_bar_x1: mx = eff_bar_x1
+                if mx > eff_bar_x1 + eff_len: mx = eff_bar_x1 + eff_len
+                new_val = min + position_to_value(mx , eff_bar_x1, eff_len, scale) * ((min<max)*2 - 1)
             } else {
-                new_val = min + position_to_value(mousey , bar_y1, len, scale) * ((min<max)*2 - 1)
+                my = mousey
+                if my < eff_bar_y1: my = eff_bar_y1
+                if my > eff_bar_y1 + eff_len: my = eff_bar_y1 + eff_len
+                new_val = min + position_to_value(my , eff_bar_y1, eff_len, scale) * ((min<max)*2 - 1)
             }
 
             if min < max{
@@ -248,8 +282,8 @@
                 // つまみの順序を保持（ソート）
                 repeat thumbs_count - 1
                     repeat thumbs_count - 1 - cnt
-                    	pos1 = value_to_position(thumbs(cnt)    ,min,len, scale)
-                    	pos2 = value_to_position(thumbs(cnt + 1),min,len, scale)
+                    	pos1 = value_to_position(thumbs(cnt)    ,min,eff_len, scale)
+                    	pos2 = value_to_position(thumbs(cnt + 1),min,eff_len, scale)
                         if pos1 > pos2 {
                             temp = thumbs(cnt)
                             thumbs(cnt) = thumbs(cnt + 1)
@@ -319,82 +353,17 @@
 #defcfunc local value_to_position double value, double _min, double _len, double _scale
 	//値とminを受け取り、基準点からの距離を返す
 	//基準点を足すことで実際の位置になる
+	if _scale == 0 :return 0
 	return absf(value - _min) / _scale * _len
 
 #defcfunc local position_to_value double position, double _pos, double _len, double _scale
 	//マウス位置と基準点を受け取り、スクロールされた値を返す
 	//minを足すことで実際の値になる。ただし絶対量が返るので、min > maxの時は反転させて足すこと。
+	if _len == 0 :return 0
 	return (position - _pos) / _len * _scale
 
 #defcfunc local in_rect array a
     return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
 
 #global
-#endif
-/*
-// get_rect関数 のモック
-#ifndef get_rect
-#module
-#deffunc get_rect int area_id, array result
-	switch area_id
-	case 1 //horizontal  mock
-		result = 200,100,600,150
-	swbreak
-	case 0
-		result = 100,50,150,450
-	swbreak
-	swend
-    return
-#global
-#endif
-*/
-
-#if 0000
-    // ウィンドウ作成
-    screen 0, 640, 480
-
-    delkey_all //監視キーを全クリア
-    addkey 1 //左クリック
-    addkey 2 //右クリック
-    
-    // スライダー作成
-    ;newmod slider, grid_slider, 1, 500, 1000, 1  
-   ;newmod slider, grid_slider, 1, 1000, 500, 1 
-   ; newmod slider, grid_slider, 0, 500, 1000, 0  
-   ; newmod slider, grid_slider, 0, 500, 1000, 0 
-   ; newmod slider, grid_slider, 1, -500, 1000, 1
-    newmod slider, grid_slider2, 0, 100,-500, 0
-    // つまみを追加
-    add_thumb slider.stat
-    add_thumb slider.stat
-	add_thumb slider.stat
-    
-    
-    // メインループ
-    repeat
-        redraw 0
-        color 255, 255, 255
-        boxf
-		title""+mousex+","+mousey
-		//キー入力fps管理
-        manage_keyfps
-        // スライダー管理・描画
-        foreach slider
-        	slider_manager2 slider.cnt
-        loop
-        
-        // 値の表示
-        color 0, 0, 0
-        pos 10, 10
-        mes "スライダー値:"
-        repeat get_value_list(slider, thumbs)
-            pos 10, 30 + cnt * 20
-            mes "つまみ" + cnt + ": " +thumbs(0, cnt) + ","+ thumbs(1, cnt)
-        loop
-        
-        pos 10, 150
-        mes "右クリックで有効区間切り替え"
-        
-        redraw 1
-    loop
 #endif
