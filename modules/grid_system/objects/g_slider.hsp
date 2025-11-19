@@ -1,0 +1,121 @@
+#module grid_slider v, min, max, horizontal, x, y, tickness,長さ,太さ,つまみサイズ, dragging, area
+
+#modinit var a, int _horizontal, int area_number, int _min, int _max, int _x, int _y, local thismod_ID
+
+    dup v, a
+
+	//スライダーの方向
+    horizontal = _horizontal
+    //エリア番号
+    area = area_number
+
+    //値の変化範囲
+    min = _min
+    max = _max
+
+	set_position_g_slider thismod, _x, _y
+
+	//エリア番号から親レクト取得
+	get_rect area,oya
+
+	//バーのサイズ情報 -1 == 自動
+	長さ = -1
+	太さ = -1
+    つまみサイズ = -1
+    mref thismod_ID, 2
+    return thismod_ID
+
+#modfunc set_position_g_slider int _x, int _y
+	x = _x
+	y = _y
+	return
+
+#modfunc set_size_g_slider int _sizex, int _sizey, int _sizer
+	長さ = _sizex
+	tickness = _sizey
+	r = _sizer
+	return
+
+
+#modcfunc get_value_g_slider
+	return v
+
+#modfunc slider_manager
+
+	get_rect area, oya
+
+	//--------------------------
+	len = 長さ
+	if 長さ < 0{
+		if horizontal{
+			len = oya.2-oya.0
+		}else{
+			len = oya.3-oya.1
+		}
+	}
+
+	tickness = 太さ
+	if 太さ < 0{
+		if horizontal{
+			tickness = oya.3-oya.1
+		}else{
+			tickness = oya.2-oya.0
+		}
+	}
+
+	r = つまみサイズ
+	if つまみサイズ < 0{
+		r = tickness
+	}
+
+	////////////////////////////////////////
+
+	if horizontal = 1{
+		左上 = oya + x, oya.1 + (oya.3-oya.1-tickness) / 2 + y
+		bar_rect = 左上,左上.1, limit(左上 + len    ,, oya.2),  limit(左上.1 + tickness,,oya.3)
+	}else{
+		左上 = oya + (oya.2-oya-tickness) / 2 + x, oya. 1 + y
+		bar_rect = 左上,左上.1, limit(左上 + tickness,, oya.2),  limit(左上.1 + len    ,,oya.3)
+	}
+	
+	if g_getkey(1) == 1{
+		if in_rect(bar_rect){
+			dragging = 1
+		}
+	}
+
+	if g_getkey(1) == -1{
+		dragging = 0
+	}
+
+	//ドラッグで値を変更
+	if dragging{
+		if horizontal{
+			v = min + limit((max - min) * (mousex - bar_rect.0 - r ) / (bar_rect.2 - bar_rect.0 - r), 0, max-min)
+		}else{
+			v = min + limit((max - min) * (mousey - bar_rect.1 - r ) / (bar_rect.3 - bar_rect.1 - r), 0, max-min)
+		}
+	}
+
+
+	//値をもとにつまみ位置を計算
+	if max != min{
+		if horizontal{
+			tumami(0) = limit(bar_rect.0 + r/2 + (bar_rect.2 - bar_rect.0 - r) * (v - min) / (max - min), bar_rect.0, bar_rect.2)
+			tumami(1) = bar_rect.1 + bar_rect.3 >> 1
+		}else{
+			tumami(0) = bar_rect + bar_rect.2 >> 1
+			tumami(1) = limit(bar_rect.1 + r/2 + (bar_rect.3 - bar_rect.1 - r) * (v - min) / (max - min), bar_rect.1, bar_rect.3)
+		}
+	}
+
+	make_instant_draw_object "RBOXF_FAST",(bar_rect + bar_rect.2) / 2, (bar_rect.1+bar_rect.3)/2, bar_rect.2-bar_rect, bar_rect.3-bar_rect.1,"$A69B8C"
+	make_instant_draw_object "RBOXF_FAST",(bar_rect + tumami)    / 2 , (bar_rect.1+bar_rect.3)/2, tumami - bar_rect  , bar_rect.3-bar_rect.1,"$66B2FF"
+	make_instant_draw_object "CIRCLE_FAST", tumami, tumami.1 ,  r, r, "$5C4F44"
+	
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+#global

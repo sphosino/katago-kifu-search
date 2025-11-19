@@ -1,0 +1,113 @@
+
+#include "kifu_protocol.hsp"
+#include "modules/ProcLinkModuleQueue.hsp"
+#include "setting_defines.hsp"
+#include "load_setting.hsp"
+#addition "../hsp_common/centering_mes.hsp"
+goto*@f //読み込まれた時点ではスキップ
+*init_window
+; --- 簡易二重起動防止 ---
+ APP_IDENTIFIER_KEY = "MyUniqueAppKey_20250731" ; アプリケーションごとにユニークなキーを設定
+#define MM_KEY_OFFSET    0   ; アプリケーションキーを格納するオフセット (64バイト)
+#define MM_HWND_OFFSET   64  ; ウィンドウハンドルを格納するオフセット (4バイト)
+#define MM_FILE_SIZE     (MM_KEY_OFFSET + 64 + MM_HWND_OFFSET + 4) ; ファイル全体のサイズ (十分なサイズを確保)
+
+; --- 起動チェックとアクティブ化 ---
+sdim read_key, 64  ; app_keyを読み込むためのバッファ
+sdim read_hwnd, 64 ; hwndを読み込むためのバッファ
+
+; キーの読み込み
+nocoMemomapRead read_key, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+
+; 既存のキーと一致するかチェック
+if read_key == APP_IDENTIFIER_KEY {
+    ; 既に起動している
+    ; 既存のウィンドウハンドルを読み込む
+    nocoMemomapRead read_hwnd, APP_IDENTIFIER_KEY, 4, 0, MM_HWND_OFFSET
+    
+    if lpeek(read_hwnd){ ; 有効なハンドルが取得できた場合
+
+        FlashWindow lpeek(read_hwnd), 0
+		ShowWindow lpeek(read_hwnd), 1
+        SetForegroundWindow lpeek(read_hwnd)
+    }
+    
+    end ; 現在のプロセスは終了
+}
+//起動中の証を書き込む
+nocoMemoryMapping APP_IDENTIFIER_KEY, MM_FILE_SIZE
+nocoMemomapWrite APP_IDENTIFIER_KEY, APP_IDENTIFIER_KEY, 64, MM_KEY_OFFSET, 0
+this_hwnd = hwnd
+nocoMemomapWrite APP_IDENTIFIER_KEY, this_hwnd, 4, MM_HWND_OFFSET, 0
+//-----------------------------------------------------------------------------
+gosub*load_setting
+//---------------------------------------------------------------------------
+//ウィンドウ作成
+screen 0, ginfo(20), ginfo(21),, wx, wy, sx, sy
+
+GetWindowLong hwnd, -16
+SetWindowLong hwnd, -16, stat | $10000 | $40000
+
+save_window_status = ginfo(4), ginfo(5), ginfo(12), ginfo(13)
+
+if 最大化: sendmsg hwnd, $112, $F030
+
+redraw 2
+color
+boxf
+
+
+//遊び心(gemini生成画像)
+chdir TITLEDIR
+exclude_files = "readme.txt\nreadme.html"
+dirlist files, "*", 3 //ファイルだけ取得
+files = notepad_minus_notepad(files, exclude_files)
+notesel files
+	if notemax{
+		noteget title_picture, rnd(notemax) 
+		//画像として読み込み
+		celload title_picture
+		buf = stat
+		gsel buf
+		picxy = 0. + ginfo_sx, 0. + ginfo_sy //画像サイズ
+		gsel 0
+		
+		screen_width = 0. + ginfo(12)
+		screen_height = 0. + ginfo(13)
+		screen_aspect_ratio = screen_width / screen_height
+		image_aspect_ratio = picxy/picxy.1
+		//スケールの小さいほうに合わせる
+		display_width = 0
+		display_height = 0
+		remaining_width = 0
+
+		if image_aspect_ratio >= screen_aspect_ratio{
+
+       		display_width = screen_width
+        	display_height = int(screen_width / image_aspect_ratio)
+        	remaining_height = 0.
+    		remaining_height = screen_height - display_height
+	    }else{
+	        display_height = screen_height
+	        display_width = int(screen_height * image_aspect_ratio)
+			remaining_width = screen_width - display_width
+        	remaining_height = 0.
+		}
+		gzoom display_width,display_height, buf,0,0,picxy, picxy.1
+
+		//メモリ縮小
+		buffer buf,1,1
+		gsel 0
+		
+		if remaining_width >= 200{
+			left_margin = display_width
+		}
+	}
+noteunsel
+tmp = left_margin, 0, ginfo(12), ginfo(13)
+set_max_centering_mes limit(ginfo(12)-left_margin,,ginfo(13))
+color 255, 255, 255
+centering_mes "システム起動中", tmp, "メイリオ", 4
+redraw
+	return
+*@ //スキップここまで

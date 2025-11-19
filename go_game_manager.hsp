@@ -1,0 +1,103 @@
+#include "modules/goban.hsp"
+#include "modules/sgf.hsp"
+
+#module
+
+//ツリーボックスに碁盤を同期させる関数
+#deffunc sync_treebox_board var _treebox, var board
+
+	logmes "current_node = " + get_current_node(_treebox)
+
+	sgf_node_number = get_tree_item_id(get_current_node(_treebox))
+
+	logmes "sgf_node_number = " + sgf_node_number
+	
+	if sgf_node_number < 0{
+		logmes "ERROR-- 無効なノード番号です -> "+ sgf_node_number + "\n "  + __FILE__
+		return
+	}
+
+
+	//トップノードまでたどってリスト化する関数
+	get_nodelist sgf_node_number, nodelist
+
+	set_board_topnode board, nodelist(length(nodelist)-1)
+
+	//表示したいノードまでノードを着手する
+	for i, length(nodelist)-2, -1, -1
+		tmp = get_property_coordinate_cash(nodelist(i), x, y)
+		着手 board, x, y
+	next
+	
+	return
+
+//SGFトップノードを受け取り、ボードを初期化する関数
+#deffunc set_board_topnode var board, int SGF_topnode
+
+	if topnode < 0{
+		dialog "エラー\n無効なノードが入力されました" ,,__FILE__
+		end
+	}
+
+	get_board_size_from_SGF SGF_topnode, xy
+
+	clear_board board , xy, xy.1
+
+
+	okiisi = get_property_data(SGF_topnode,"AB")
+	okiisi2 = get_property_data(SGF_topnode,"AW")
+	if okiisi != ""{
+		repeat strlen(okiisi) / 2
+			置き石 board,peek(okiisi,cnt*2) - 'a', peek(okiisi,cnt*2+1) - 'a', 1
+		loop
+		if okiisi2 == "": toggle_turn board //白石の置き石もないならば置き碁とみなし、手番を白に
+	}
+	if okiisi2 != ""{
+		repeat strlen(okiisi2) / 2
+			置き石 board,peek(okiisi2,cnt*2) - 'a', peek(okiisi2,cnt*2+1) - 'a', 2
+		loop
+	}
+	碁盤表示 board //仮表示して、masサイズを計算させる
+	redraw_goban board
+	redraw_stones board
+	
+	return
+
+
+#defcfunc load_sgf_set_board var _treebox, int node, var _board
+	//SGFからツリー作成
+	load_from_SGF_topnode _treebox, node
+	set_current_node _treebox, stat
+	sgf_topnode = node
+	set_board_topnode _board, sgf_topnode
+
+	return sgf_topnode
+
+
+#defcfunc change_sgf str s1, var _treebox, var _board
+
+	s = s1
+	notesel s
+	noteload s
+	noteunsel
+	if load_sgf(s) >= 0{
+		new_topnode = load_sgf_set_board(_treebox, stat, _board)
+
+	}else{
+		dialog "SGF_FILE解析エラー",,__FILE__
+		end
+	}
+
+	set_board_topnode _board, new_topnode
+	
+	blackplayer = get_property_data(new_topnode, "PB")
+	whiteplayer = get_property_data(new_topnode, "PW")
+	split blackplayer,"-", bp: if stat < 3: bp.1 = "": bp.2 = bp //Katago形式でなければそのまま対局者名とみなす
+	split whiteplayer,"-", wp: if stat < 3: wp.1 = "": wp.2 = wp
+	title"コミ【" + get_property_data(new_topnode,"KM") + "】 黒 " + bp.1 + bp.2 + "   白 " + wp.1 + wp.2
+
+	return new_topnode
+
+#global
+
+

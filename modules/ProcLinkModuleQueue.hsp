@@ -1,0 +1,920 @@
+/*::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+; プロセス間通信、共有メモリ、なごみコネクトLITE(のどかコネクト)モジュール                  ------------【ひこけんがメッセージをキューに貯める方式を増築】
+;.........................................................................................
+; 2020/05/27 HSP3.6b2		モジュール化開始。
+;	   07/09				LastUpdate		Copyright (C) 2020 衣日和 All rights reserved.
+;.........................................................................................
+%dll
+和モジュール
+%note
+ProcLinkModule.hsp をインクルードする。
+標準・コンパクト・UTF-8・64bit・DISH(windows)版ランタイムに対応。
+コンソール版でも一部使用できます。
+%group
+プロセスリンクモジュール
+%;......................................................................................*/
+
+#ifndef ndk_proclink
+#module ndk_proclink
+
+;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#uselib "kernel32"
+#func apiCreateFileMapping		"CreateFileMappingW"	int, nullptr, int, nullptr, int, wstr	; フ。
+#func apiCreateMutex			"CreateMutexW"			nullptr, nullptr, wstr	; ミューテックス製作。
+#func apiCloseHandle			"CloseHandle"			int
+#func apiMapViewOfFile			"MapViewOfFile"			int, int, nullptr, int, int
+#func apiUnmapViewOfFile		"UnmapViewOfFile"		int
+#func apiGetLastError			"GetLastError"
+#func apiWaitForSingleObject	"WaitForSingleObject"	int, int	; 所有権取得。
+#func apiReleaseMutex			"ReleaseMutex"			int			; 所有権解放。
+
+#const INVALID_HANDLE_VALUE		-1							; CreateFileMapping
+#const PAGE_READONLY			0x00000002
+#const PAGE_READWRITE			0x00000004
+#const FILE_MAP_WRITE			0x00000002					; MapViewOfFile
+#const FILE_MAP_READ			0x00000004
+#const ERROR_ALREADY_EXISTS		183							; GetLastErrorの返値(マッピングは既製)
+#const INFINITE					0xFFFFFFFF					; Infinite timeout(無限ウェイト)
+#const WAIT_OBJECT_0			0x00000000
+#const WAIT_FAILED				0xFFFFFFFF
+
+;:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+#uselib "user32"
+#func apiRegisterWindowMessage	"RegisterWindowMessageW" wstr
+#func apiPostMessage			"PostMessageW"			int, int, int, int
+#func apiIsWindow				"IsWindow"				int	; hwndの生存判定。
+#func apiIsWindowVisible		"IsWindowVisible"		int
+#func apiGetParent				"GetParent"				int	; 親の顔が見てみたい。
+#func apiGetDesktopWindow		"GetDesktopWindow"
+#func apiGetWindow				"GetWindow"				int, int
+#func apiGetWindowTextLength	"GetWindowTextLengthW"	int
+#func apiGetWindowText			"GetWindowTextW"		int, var, int
+#func apiGetClassName			"GetClassNameW"			int, var, int
+
+#const WM_COPYDATA					0x004a
+#const HWND_BROADCAST				0xffff					; ポスメ一斉送信。
+
+
+
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+
+/*
+%index;.....................................................
+nocoRegisterId
+ウィンドウメッセージ登録(ユニーク値)
+%prm;.......................................................
+("name")
+%inst;......................................................
+ユニーク(一意)な文字列をプロセス間通信で使用するウィンドウメッセージ用のメッセージコードに変換します。
+
+▼ "name"
+登録する文字列を指定します。
+
+◆ val
+= 0xc000 ～ 0xffff (メッセージコード)
+= 0 (失敗)
+%;........................................................*/
+#defcfunc nocoRegisterId str s								; ◆一意のウィンドウメッセージコード取得。
+	return apiRegisterWindowMessage(s)
+
+/*
+%index;.....................................................
+nocoWindowTitle
+ウィンドウタイトル取得
+%prm;.......................................................
+(hwnd)
+%inst;......................................................
+指定したウィンドウの現在のタイトル文字列を取得します。
+
+▼ hwnd
+ウィンドウハンドルを指定します。これはHSPで通常使用するウィンドウIDとは違うものです。
+
+◆ val [文字列]
+= タイトル文字列
+
+コンパイラがShift_JISモードの場合、一部の文字は正しく取得することができません。
+%;........................................................*/
+#defcfunc nocoWindowTitle int w								; ◆ウィンドウタイトル取得。
+	ttivtemp = apiGetWindowTextLength(w)
+	ttsvdata = ""
+	memexpand ttsvdata, ttivtemp * 2 + 2
+	apiGetWindowText w, ttsvdata, ttivtemp + 1
+	return cnvwtos(ttsvdata)
+
+
+
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+;● プロセス一覧(ウィンドウ一覧)取得 					  ●
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+
+;#uselib "user32.dll"		; こんな方法もあった。
+;#func apiFindWindow			"FindWindowW"		wstr, wstr
+;#func apiFindWindowTitle		"FindWindowW"		nullptr, wstr
+;#func apiFindWindowClass		"FindWindowW"		wstr, nullptr
+;#defcfunc nocoFindWindow str t, str c
+;	if t == "" & c == ""  : return 0
+;	if t == ""  : return apiFindWindowClass(c)
+;	if c == ""  : return apiFindWindowTitle(t)
+;	return apiFindWindow(c, t)
+
+/*
+%index;.....................................................
+nocoGetHwndList
+プロセスのウィンドウ一覧取得
+%prm;.......................................................
+"title", type
+%inst;......................................................
+現在稼働中のプロセスが所有する親ウィンドウの一覧をモジュール内の変数に取得します。
+この命令では子ウィンドウ(トップレベルでもダイアログは子ウィンドウ)やウィンドウを持たないプロセスは取得されません。
+また、ひとつのプロセスが複数の親ウィンドウを所有していることがあります。
+
+▼ "title"
+ウィンドウタイトルによる検索条件を指定します。
+= "" (全てのウィンドウが対象)
+= 文字列 ("title"を含んでいるものに限定)
+
+▼ type [ビットフラグ]
+絞り込みの検索条件を指定します。
+= 0 (全てのウィンドウが対象)
++ 1 (HSP製ウィンドウに限定)
++ 2 (表示しているウィンドウに限定)
+クラス名が"hspwnd0"のウィンドウをHSP製ウィンドウとして認識します。
+最小化ウィンドウも表示しているウィンドウとして認識されます。このフラグはgselなどで非表示にしたウィンドウを除外するときに指定します。
+
+◆ stat
+= 0～ (発見したウィンドウの数)
+
+nocoHwndListInfoを使用してモジュール内の変数から情報を取り出せます。
+%sample;....................................................
+#include "(このモジュール)"
+nocoGetHwndList "", 0
+winli = "Num.       Hwnd    Title\n------------------------------\n"
+repeat nocoHwndListInfo(-1)
+	winli += strf("%03d %11d -> ", cnt, nocoHwndListInfo(cnt))
+	winli += nocoWindowTitle(nocoHwndListInfo(cnt)) + "\n"
+loop
+font msgothic, 14  : objmode 2  : mesbox winli, 640, 480  ; 出力(通常ランタイム用)
+ ; mes winli  ; 出力(コマンドライン版用)
+ ; font "", 12  : redraw 0  : mes winli  : redraw 1  ; 出力(HSP3DISH_WIN用)
+stop
+%;........................................................*/
+#deffunc nocoGetHwndList str s, int t
+	nocohwndlist = 0
+	nosvdata = ""
+	noivtemp = apiGetWindow(apiGetDesktopWindow(), 5)
+	repeat
+		if noivtemp == 0  : break
+		nocohwndlist ++
+		nocohwndlist(nocohwndlist) = noivtemp				; 追加してから検索オプション判定。
+		noivtemp = apiGetWindow(noivtemp, 2)				; NGだったらcount--でなかったことに。
+		if apiGetParent(nocohwndlist(nocohwndlist)) {		; トップレベルウィンドウであっても、
+			nocohwndlist --  : continue						; ダイアログなどは親ウィンドウではない。
+		}
+		if t & 1 {											; HSP製ウィンドウに限定する。
+			apiGetClassName nocohwndlist(nocohwndlist), nosvdata, 10	; この際文字数固定で十分。
+			if cnvwtos(nosvdata) != "hspwnd0"  : nocohwndlist --  : continue
+		}
+		if t & 2 {											; 見えてるウィンドウに限定する。
+			if apiIsWindowVisible(nocohwndlist(nocohwndlist)) == 0  : nocohwndlist --  : continue
+		}
+		if s == ""  : continue								; タイトル一致。
+		nosvdata = nocoWindowTitle(nocohwndlist(nocohwndlist))
+		if instr(nosvdata, 0, s) == -1  : nocohwndlist --
+	loop
+	return nocohwndlist
+
+/*
+%index;.....................................................
+nocoHwndListInfo
+プロセスのウィンドウ一覧取得(結果参照)
+%prm;.......................................................
+(index)
+%inst;......................................................
+nocoGetHwndList命令で取得したウィンドウの一覧をモジュール内の変数から取り出します。
+
+▼ index
+= 0 ～ ウィンドウの数-1 (一覧の参照番号)
+= -1 (発見したウィンドウの数)
+
+◆ val
+= ウィンドウハンドル (index = 0～ の場合)
+%;........................................................*/
+#defcfunc nocoHwndListInfo int i
+	return nocohwndlist(i + 1)
+
+
+
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+;● なごみコネクト改 									  ●
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+
+;☆---- なごみコネクト・ライト 改め のどかコネクト ----☆
+;・ 私のペンネから一字取って「なごみ」、また一字取って「のどか」……って同じ字かよ!!
+;・ ぶっちゃけ使いにくかったなごコネを再設計。私的には結構利用していたのでより使いやすくする。
+;・ Lite表記はもともとカロリー過多な場面でしか使われない。通常はLight
+;・ わたしは改になりたい... 大規模改装というより只のダイエット...
+
+#define NocoCone_Serve		"NodokaConnect_Serve"
+#define NocoCone_Receive	"NodokaConnect_Receive"
+
+
+/*
+%index;.....................................................
+nocoConnectAccept
+なごコネライト開始
+%prm;.......................................................
+"app_name"
+%inst;......................................................
+なごみコネクトライトに参加します。なごコネに参加すると、同様に参加中の別プロセス(同じPC上で動作中のアプリ)を簡単に見つけることができるようになります。
+このなごコネから離脱(終了)するには「nocoConnectRefuse」と記述します(引数なし命令形式)。離脱すると他のアプリから発見されなくなります。
+
+▼ "app_name"
+アプリの識別名を指定します。先頭から4byteまでを識別コードとして登録します。識別コードは多数の参加アプリから、目的のアプリを見分けるための目印となります。
+
+なごみコネクトは衣日和が設計した簡易プロセスリンク規約です。
+内部でウィンドウメッセージを使用しているためコンソール版ランタイムでは使用できません。また実データの送受信は別途実装してください(nocoAutoCopyDataなど用意しました)。
+%sample;....................................................
+#include "(このモジュール)"
+	screen 0, 320, 180
+
+	entryname = "TEST"
+	input entryname
+	button gosub "ACCEPT", *push_accept  ; 参加しよう。
+	button gosub "REFUSE", *push_refuse  ; 離脱しよう。
+
+	repeat  ; 無限ループ。
+		redraw 0
+		color 255, 255, 255  : boxf  : color
+		pos 0, 100
+		mes "WindowHandle\n " + hwnd + "\nNowCount " + nocoConnectInfo()
+		pos 120, 0
+		repeat nocoConnectInfo(0)  ; 識別子とウィンドウハンドル表示。
+			mes nocoConnectInfo(2, cnt) + " : " + nocoConnectInfo(1, cnt)
+		loop
+		redraw 1
+		wait 1000  ; メッセージを受けると残り時間が0になる(即応)
+	loop
+
+*push_accept
+	nocoConnectAccept entryname
+	return
+*push_refuse
+	nocoConnectRefuse
+	return
+%;........................................................*/
+#deffunc nocoConnectAccept str s
+	nosvdata = ""  : lpoke nosvdata, 0, 0  : nosvdata = s	; 4byte分はゼロクリしておく。
+	noivtemp = ginfo_sel
+	gsel 0
+	nococoneinfo = 1										; 参加数。
+	nococonehwnd = hwnd										; ウィンドウハンドル(配列0番を自身に)
+	nococonename = lpeek(nosvdata, 0)						; アプリコード(配列0番を自身に)
+	oncmd gosub *noco_getmessage_coneserve,   apiRegisterWindowMessage(NocoCone_Serve)
+	oncmd gosub *noco_getmessage_conereceive, apiRegisterWindowMessage(NocoCone_Receive)
+	gsel noivtemp
+	apiPostMessage HWND_BROADCAST, apiRegisterWindowMessage(NocoCone_Serve), nococonehwnd, nococonename
+	return
+
+#deffunc nocoConnectRefuse									;□ なごコネ終了。
+	if nococoneinfo == 0  : return
+	noivtemp = nococoneinfo
+	nococoneinfo = 0
+	repeat noivtemp - 1, 1
+		apiPostMessage nococonehwnd(cnt), apiRegisterWindowMessage(NocoCone_Receive), nococonehwnd, 0
+	loop
+	nococonehwnd = 0
+	nococonename = 0
+	return
+
+*noco_getmessage_coneserve
+	if nococoneinfo == 0       : return						; 不参加中は処理をしない。
+	if nococonehwnd == wparam  : return						; 自分への送信は不要。
+	apiPostMessage wparam, apiRegisterWindowMessage(NocoCone_Receive), nococonehwnd, nococonename
+
+*noco_getmessage_conereceive
+	if nococoneinfo == 0  : return							; 不参加中は処理をしない。
+	noivtemp = nococoneinfo
+	repeat nococoneinfo
+		if nococonehwnd(cnt) == wparam  : noivtemp = cnt  : break
+	loop
+	if lparam {												; 参加、更新のお知らせ。
+		if noivtemp == nococoneinfo {						; 新規参加。
+			nococonehwnd(noivtemp) = wparam
+			nococonename(noivtemp) = lparam
+			nococoneinfo ++
+		} else {											; アプリコード更新。
+			nococonename(noivtemp) = lparam
+		}
+	} else {												; 撤退のお知らせ。
+		if noivtemp == nococoneinfo  : return
+		repeat nococoneinfo - noivtemp - 1, noivtemp
+			nococonehwnd(cnt) = nococonehwnd(cnt + 1)
+			nococonename(cnt) = nococonename(cnt + 1)
+		loop
+		nococoneinfo--
+	}
+	return
+
+/*
+%index;.....................................................
+nocoConnectInfo
+なごコネライト情報取得
+%prm;.......................................................
+(type, index)
+%inst;......................................................
+なごみコネクトライトに参加しているアプリの情報を取得します。
+
+▼ type [定数]
+取得する情報の種類を指定します。
+= 0 (現在の参加アプリ数)
+= 1 (指定アプリのウィンドウハンドル)
+= 2 (指定アプリのアプリ識別名)
+
+▼ index
+情報を取得するアプリを指定します。
+= 0 (自アプリの情報を取得する)
+= 1 ～ 参加アプリ数-1 (参加アプリ指定)
+
+◆ val : type = 0 の場合
+現在、なごコネに参加してるアプリ数が返ります。
+= 0 (失敗、自アプリがなごコネに参加していない)
+= 1 (自アプリのみがなごコネに参加している)
+= 2～ (自アプリを含むなごコネ参加中のアプリ数)
+
+◆ val : type = 1 の場合
+indexで指定したアプリのウィンドウハンドルが返ります。このハンドルをsendmsgなどのアクセス先として使うことが可能です。
+
+◆ val : type = 2 の場合
+indexで指定したアプリのアプリ識別名[文字列](4byte分)が返ります。
+%;........................................................*/
+#defcfunc nocoConnectInfo int t, int i
+	if t == 0 {
+		noivtemp = 0
+		repeat nococoneinfo									; ウィンドウの生存判定。
+			if apiIsWindow(nococonehwnd(cnt)) {				; ウィンドウが無い(アプリが終了している)
+				if noivtemp != cnt {
+					nococonehwnd(noivtemp) = nococonehwnd(cnt)
+					nococonename(noivtemp) = nococonename(cnt)
+				}
+				noivtemp ++  : continue
+			}
+		loop
+		nococoneinfo = noivtemp
+		return noivtemp
+	}
+	if t == 1  : return nococonehwnd(i)
+	if t == 2  : nosvdata = "    "  : lpoke nosvdata, 0, nococonename(i)  : return nosvdata
+	return 0
+
+
+
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+;● WM_COPYDATA 										  ●
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+
+;☆---- WM_COPYDATA 送信 ----☆
+
+/*
+%index;.....................................................
+nocoSendCopyData
+WM_COPYDATAを送信(整数とバイナリデータ)
+%prm;.......................................................
+hwnd, data, param, size, offset
+%inst;......................................................
+指定のウィンドウに対してウィンドウメッセージWM_COPYDATAを送信します。この命令は整数値とバイナリデータを送信します。
+
+▼ hwnd
+送信先ウィンドウのハンドルを指定します。
+
+▼ data [変数]
+送信するバイナリデータが入った変数を指定します。
+
+▼ param [整数]
+送信する整数値を指定します。
+
+▼ size [byte]
+送信するバイナリデータの大きさを指定します。
+サイズを指定した場合、この命令はdata[変数]の確保メモリ以上の意図しないデータを送信する可能性があります。
+= 0 (自動設定、data[変数]の確保サイズからoffset[byte]を引いた値)
+= 1～ (指定サイズ)
+
+▼ offset [byte]
+送信するバイナリデータのdata[変数]上の開始位置を指定します。これによりメモリの一部を送信することが可能です。
+
+◆ stat
+受信したアプリが返した戻り値がそのままstatに代入されます。
+アプリがメッセージを処理した場合、1を返すことが望ましいとされていますが0を含む自由な値が返される可能性があります。
+= 戻り値 (送信先の処理結果)
+= 0 (失敗、送信先がなかった場合など)
+
+nocoSendCopyDataIntを使用して整数値のみを送信することができます。
+nocoSendCopyDataStrを使用して文字列データを送信することも可能です。
+nocoAutoCopyDataでメッセージ受信時に自動応答することができます。
+
+WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)に任意のデータを渡すためのウィンドウズの機能です。
+%index;.....................................................
+nocoSendCopyDataInt
+WM_COPYDATAを送信(整数のみ)
+%prm;.......................................................
+hwnd, param
+%inst;......................................................
+指定のウィンドウに対してウィンドウメッセージWM_COPYDATAを送信します。この命令は整数値のみを送信したいときに使用します。
+
+▼ hwnd
+送信先ウィンドウのハンドルを指定します。
+
+▼ param [整数]
+送信する整数値を指定します。
+
+◆ stat
+受信したアプリが返した戻り値がそのままstatに代入されます。
+アプリがメッセージを処理した場合、1を返すことが望ましいとされていますが0を含む自由な値が返される可能性があります。
+= 戻り値 (送信先の処理結果)
+= 0 (失敗、送信先がなかった場合など)
+
+nocoSendCopyDataを使用してバイナリデータを送信することも可能です。
+nocoSendCopyDataStrを使用して文字列データを送信することも可能です。
+nocoAutoCopyDataでメッセージ受信時に自動応答することができます。
+
+WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)に任意のデータを渡すためのウィンドウズの機能です。
+%index;.....................................................
+nocoSendCopyDataStr
+WM_COPYDATAを送信(整数と文字列)
+%prm;.......................................................
+hwnd, "text", param
+%inst;......................................................
+指定のウィンドウに対してウィンドウメッセージWM_COPYDATAを送信します。この命令は文字列をUTF-16LEに変換したものをバイナリデータとして送信します。
+
+▼ hwnd
+送信先ウィンドウのハンドルを指定します。
+
+▼ "text"
+送信する文字列を指定します。
+
+▼ param [整数]
+送信する整数値を指定します。
+
+◆ stat
+受信したアプリが返した戻り値がそのままstatに代入されます。
+アプリがメッセージを処理した場合、1を返すことが望ましいとされていますが0を含む自由な値が返される可能性があります。
+= 戻り値 (送信先の処理結果)
+= 0 (失敗、送信先がなかった場合など)
+
+nocoSendCopyDataを使用してバイナリデータとして送信することも可能です。
+nocoSendCopyDataIntを使用して整数値のみを送信することができます。
+nocoAutoCopyDataでメッセージ受信時に自動応答することができます。
+
+WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)に任意のデータを渡すためのウィンドウズの機能です。
+%;........................................................*/
+#deffunc nocoSendCopyData int w, var v, int p, int s, int o
+	if s  : noivtemp = s  : else  : noivtemp = varsize(v) - o
+	if (hspstat & $40000) == 0  : noiapara = p,    noivtemp,    varptr(v) + o
+	if (hspstat & $40000)       : noiapara = p, 0, noivtemp, 0, varptr(v) + o, 0
+	sendmsg w, WM_COPYDATA, hwnd, varptr(noiapara)
+	return stat
+
+#deffunc nocoSendCopyDataInt int w, int p
+	if (hspstat & $40000) == 0  : noiapara = p,    0,    0
+	if (hspstat & $40000)       : noiapara = p, 0, 0, 0, 0, 0
+	sendmsg w, WM_COPYDATA, hwnd, varptr(noiapara)
+	return stat
+
+#deffunc nocoSendCopyDataStr int w, str s, int p
+	nosvdata = ""
+	memexpand nosvdata, strlen(s) * 2 + 2
+	cnvstow   nosvdata, s
+	repeat
+		if wpeek(nosvdata, cnt * 2) == 0  : noivtemp = cnt + 1  : break
+	loop
+	if (hspstat & $40000) == 0  : noiapara = p,    noivtemp * 2,    varptr(nosvdata)
+	if (hspstat & $40000)       : noiapara = p, 0, noivtemp * 2, 0, varptr(nosvdata), 0
+	sendmsg w, WM_COPYDATA, hwnd, varptr(noiapara)
+	return stat
+
+
+;☆---- WM_COPYDATA 受信 ----☆
+
+;...........................................................
+#deffunc nocoCopyCopyData									;□ WM_COPYDATAをモ内変数にコピーする。
+	if iparam != WM_COPYDATA  : return
+	nococodainfo ++											; シーケンスナンバー。
+	if nococodainfo == 1  : nococodadata = ""				; 初期化。
+	nococodainfo(1) = ginfo_intid							; 受信したウィンドウID
+	nococodainfo(2) = wparam								; 送信元ウィンドウハンドル。
+	if hspstat & 0x40000 {
+		dupptr nocpmemo, lparam, 24, vartype("int")
+		nococodainfo(3) = nocpmemo(0), nocpmemo(2)			; 整数値、データサイズ。
+		noivtemp        = nocpmemo(4)						; データポインタ。
+	} else {
+		dupptr nocpmemo, lparam, 12, vartype("int")
+		nococodainfo(3) = nocpmemo(0), nocpmemo(1)
+		noivtemp        = nocpmemo(2)
+	}
+	if nococodainfo(4) {									; データにサイズがあった。
+		dupptr nocpmemo, noivtemp, nococodainfo(4), vartype("str")
+		memexpand nococodadata, nococodainfo(4) + 4
+		memcpy    nococodadata, nocpmemo, nococodainfo(4)
+		lpoke     nococodadata, nococodainfo(4), 0
+	} else  : lpoke nococodadata, 0, 0						; データが無くても4byteほど0クリ。
+	return
+/////////////////////////////////////////////////////////////////
+;-----------------------------------
+; WM_COPYDATA キュークリア
+#deffunc nocoClearCopyDataQueue int slot_size
+	dim nococodainfoQ, 4, 1
+	sdim nococodadataQ, slot_size, 32
+	data_num = 0
+	return
+
+#deffunc nocoClearQueue
+	data_num = 0
+	return
+
+;-----------------------------------
+; 受信時：キューに追加
+#deffunc nocoCopyCopyDataQueue
+	if iparam != WM_COPYDATA : return
+
+	; データ部準備
+	if hspstat & $40000 {
+		dupptr nocpmemo, lparam, 24, vartype("int")
+		tmp_id = ginfo_intid
+		tmp_hwnd = wparam
+		tmp_param = nocpmemo(0)
+		tmp_size = nocpmemo(2)
+		tmp_ptr = nocpmemo(4)
+	} else {
+		dupptr nocpmemo, lparam, 12, vartype("int")
+		tmp_id = ginfo_intid
+		tmp_hwnd = wparam
+		tmp_param = nocpmemo(0)
+		tmp_size = nocpmemo(1)
+		tmp_ptr = nocpmemo(2)
+	}
+
+	; データコピー
+	tmp_data = ""
+	if tmp_size > 0 {
+		dupptr tmp_dptr, tmp_ptr, tmp_size, vartype("str")
+		memexpand tmp_data, tmp_size + 4
+		memcpy tmp_data, tmp_dptr, tmp_size
+		lpoke tmp_data, tmp_size, 0
+	}
+
+	; 配列に追加
+	nococodainfoQ(0, data_num) = tmp_id, tmp_hwnd, tmp_param, tmp_size
+	memcpy nococodadataQ(data_num), tmp_data, tmp_size
+	data_num++
+
+	return
+
+;-----------------------------------
+; キューから情報を取得
+; idx = キューインデックス(0～)
+; t = 情報種別 (1=ID, 2=hwnd, 3=param, 4=size)
+#defcfunc nocoCopyDataQueueInfo int t, int idx
+	return nococodainfoQ(t-1,idx)
+
+;-----------------------------------
+; キューからデータ取得(使いません）　文字コード云々で苦しみたくない
+;#defcfunc nocoCopyDataQueueStr int idx
+;	return cnvwtos(nococodadataQ(idx))
+
+#deffunc nocoGetCopyDataQueue var v, int idx
+    v = ""
+    memexpand v, nococodainfoQ(3, idx) + 1
+    memcpy v, nococodadataQ(idx), nococodainfoQ(3, idx)
+    poke v, nococodainfoQ(3,idx) //追加
+    return nococodainfoQ(3, idx)
+
+#defcfunc nocoCopyDataQueueCount
+	return data_num
+	
+/*
+%index;.....................................................
+nocoCopyDataInfo
+WM_COPYDATAの受信情報取得
+%prm;.......................................................
+(type)
+%inst;......................................................
+nocoAutoCopyDataでWM_COPYDATA自動応答を設定した後、実際に受信したときの結果を取得します。
+
+▼ type [定数]
+取得する情報の種類を指定します。
+= 0 (受信回数、更新確認用)
+= 1 (受信ウィンドウID)
+= 2 (送信元ウィンドウハンドル)
+= 3 (受信した整数値)
+= 4 (受信したデータサイズ)
+
+◆ val
+それぞれの結果を返します。
+
+nocoGetCopyData、nocoCopyDataStrを使用して任意データを取得します。
+%;........................................................*/
+#defcfunc nocoCopyDataInfo int t							;◆ WM_COPYDATA受信情報。
+	return nococodainfo(t)									; 1回以上受信していること。
+
+/*
+%index;.....................................................
+nocoCopyDataStr
+WM_COPYDATAの受信文字列取得
+%prm;.......................................................
+()
+%inst;......................................................
+nocoAutoCopyDataでWM_COPYDATA自動応答を設定した後、実際に受信したときのバイナリデータを文字列(UTF-16LE)と仮定して取得します。
+
+◆ val [文字列]
+= 文字列 (取得結果)
+
+コンパイラがShift_JISモードの場合、一部の文字は正しく取得することができません。
+%;........................................................*/
+#defcfunc nocoCopyDataStr									;◆ WM_COPYDATA文字列取得。
+	return cnvwtos(nococodadata)
+
+/*
+%index;.....................................................
+nocoGetCopyData
+WM_COPYDATAの受信バイナリ取得
+%prm;.......................................................
+res_data
+%inst;......................................................
+nocoAutoCopyDataでWM_COPYDATA自動応答を設定した後、実際に受信したときのバイナリデータを取得します。
+
+▼ res_data [変数]
+取得したデータが格納される変数を指定します。この変数はモジュール内で文字列型に変換し必要なサイズを確保します。
+
+◆ stat [byte]
+= データサイズ
+%;........................................................*/
+#deffunc nocoGetCopyData var v								;■ WM_COPYDATAバイナリ取得。
+	v = ""  : memexpand v, nococodainfo(4)  : memcpy v, nococodadata, nococodainfo(4)
+	return nococodainfo(4)
+
+
+;☆---- WM_COPYDATA の自動応答とイベリコドングリ ----☆
+
+/*
+%index;.....................................................
+nocoOnCopyData
+WM_COPYDATAの自動応答(割り込み指定)
+%prm;.......................................................
+*label
+%inst;......................................................
+nocoAutoCopyDataで設定した自動応答が発生したとき、自動的にジャンプする場所を指定します。
+一度この命令を実行すれば自動応答設定したすべてのウィンドウで*labelにジャンプするようになります。
+この割り込み指定を解除するには「nocoOffCopyData」と記述します(引数なし命令形式)。
+
+▼ *label
+ジャンプ先のラベルを指定します。サブルーチンですので必ずreturnで終了するようにしてください。
+
+◆ stat
+実行後のstatにはウィンドウメッセージIDが代入されています。
+
+この割り込みの前に元の受信処理は完了する仕組みになっているため、statを再定義しても安全に実行できます。
+	nocoOnCopyData *dummy
+	gsel 0  ; メインウィンドウで再定義してください。
+	oncmd goto *getcopydata, stat
+%;........................................................*/
+#deffunc nocoOnCopyData label l
+	noivtemp = ginfo_sel
+	gsel 0
+	nococodajump = hwnd, apiRegisterWindowMessage("NodokaModules_ProclinkCopydata")
+	oncmd gosub l, nococodajump(1)
+	gsel noivtemp
+	return nococodajump(1)
+
+#deffunc nocoOffCopyData
+	nococodajump = 0
+	return
+
+/*
+%index;.....................................................
+nocoAutoCopyData
+WM_COPYDATAの自動応答設定
+%inst;......................................................
+カレントウィンドウがWM_COPYDATAを受信したときに自動応答するように設定します。
+この命令実行後は、受信したデータをモジュール内の変数に保存しすぐに制御を戻すようになります。
+
+nocoCopyDataInfo、nocoCopyDataStr、nocoGetCopyDataを使用してモジュール内の変数からデータを取り出します。
+nocoOnCopyDataで自動応答した後に割り込みを発生させることも可能です。
+oncmdでWM_COPYDATAを再指定することで自動応答は解除できます。
+
+ウィンドウメッセージWM_COPYDATA(=74、0x004a)は、ウィンドウを介したプロセス間通信を行うためのウィンドウズ機能です。
+WM_COPYDATAを使用すると別プロセス(同じPC上で動作しているアプリケーション)に整数値と任意データを簡単に渡すことができます。
+%;........................................................*/
+#deffunc nocoAutoCopyData
+	oncmd gosub *noco_getmessage_copydataupdate, WM_COPYDATA
+	return
+
+*noco_getmessage_copydataupdate
+	nocoCopyCopyDataQueue
+	if nococodajump  : apiPostMessage nococodajump, nococodajump(1)
+	return 1
+
+
+
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+;● ファイルマッピング(共有メモリ)　					  ●
+;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
+
+/*
+%index;.....................................................
+nocoMemoryMapping
+名前付き共有メモリ製作
+%prm;.......................................................
+"name", size
+%inst;......................................................
+指定した名前を持つメモリを確保します。同じ名前を持つメモリは複数のプロセス(アプリ)で内容を共有します。
+
+▼ "name"
+共有メモリにつける名前を指定します。
+
+▼ size [byte]
+確保するメモリサイズを指定します。
+= 1～ (メモリサイズ)
+
+◆ stat
+statには共有メモリの管理番号が返ります。
+= 1～ (共有メモリ管理番号)
+= 0 (失敗)
+
+共有メモリは1回目のメモリ製作時にメモリを確保し2回目以降はそのメモリにリンクします。全てのリンクが解除されるとメモリは解放されます。なお、HSPのようなメモリの自動拡張はありませんので最初の確保サイズを超えると誤作動の原因になります。
+このモジュールではメモリのオーナーとなるプロセスが一度この命令を実行すれば、後のプロセスはこの命令を使わなくてもメモリアクセスできるように設計しています。
+その場合オーナープロセスの終了とともにメモリも解放されます。複数のプロセスがこの命令を実行していれば、そのすべてが終了したときメモリも解放されることになります。
+
+nocoMemomapWriteを使用して共有メモリにデータを書き込みます。
+nocoMemomapReadを使用して共有メモリからデータを読み込みます。
+nocoCloseHandleで共有メモリを解放します(アプリ終了時には自動で解放します)。
+%sample;....................................................
+// 共有メモリのサンプル - 格納編 -
+ ;#include "hsp3cl.as"    ; 通常・コンパクト・UTF-8・64bit版ランタイムのほか、
+ ;#include "hsp3dish.as"  ; コンソール・ディッシュ(windows)版も使用できます。
+#include "(このモジュール)"
+	filename = dir_tv + "pronama.bmp"
+	exist filename  : filesize = strsize
+	sdim  filedata, filesize  : bload filename, filedata, filesize
+
+	nocoMemoryMapping "memorymapping_moduletest", filesize + 4
+	nocoMemomapWrite  "memorymapping_moduletest", filesize, 4
+	nocoMemomapWrite  "memorymapping_moduletest", filedata, filesize, 4, 0
+
+// 共有メモリのサンプル - 取得編 -
+ ;#include "hsp3_64.as"  ; 通常・コンパクト・UTF-8・64bit版ランタイムであれば、
+ ;#include "hsp3utf.as"  ; メモリ上のビットマップを描画できます。
+ ;#runtime "hsp3c"       ; コンソール・ディッシュ(windows)版でも取得はできます。
+#include "(このモジュール)"
+	nocoMemomapRead stemp, "memorymapping_moduletest", 4  : if stat == 0  : stop
+	nocoMemomapRead sdata, "memorymapping_moduletest", lpeek(stemp, 0), 0, 4
+	memfile sdata, 0, stat  : picload "mem:dummy.bmp"
+%;........................................................*/
+#deffunc nocoMemoryMapping str n, int s
+	nocokrnlhndl ++											; 製作カウント(1オリジンにしたいだけ)
+	noivtemp = length(nocokrnlhndl)
+	repeat length(nocokrnlhndl) - 1, 1
+		if nocokrnlhndl(cnt) == 0  : noivtemp = cnt  : break
+	loop
+	apiCreateFileMapping INVALID_HANDLE_VALUE, PAGE_READWRITE, s, n
+	if stat == 0  : return 0
+	nocokrnlhndl(noivtemp) = stat
+	return noivtemp
+
+/*
+%index;.....................................................
+nocoCloseHandle
+名前付き共有メモリ解放
+%prm;.......................................................
+number
+%inst;......................................................
+nocoMemoryMappingで確保した共有メモリを解放します。なおアプリ終了時には自動で解放されます。
+
+▼ number
+解放する共有メモリの管理番号を指定します。
+= 1～ (共有メモリ管理番号)
+= 0 (このモジュールで確保したメモリ全部)
+%;........................................................*/
+#deffunc nocoCloseHandle int i								;■ カーネル系ハンドル解放ルーチン。
+	if i {													; onexitを吹っかけたいがiが未初期化変数、
+		apiCloseHandle nocokrnlhndl(i)						; 扱いになってしまうのでプロセス終了時、
+		nocokrnlhndl(i) = 0									; 自動破棄されるはずの機能にゆだねる。
+	} else {												; いずれはミューテックスなども?
+		repeat length(nocokrnlhndl) - 1, 1
+			if nocokrnlhndl(cnt)  : apiCloseHandle nocokrnlhndl(cnt)  : nocokrnlhndl(cnt) = 0
+		loop
+	}
+	return
+
+/*
+%index;.....................................................
+nocoMemomapWrite
+名前付き共有メモリ書き込み
+%prm;.......................................................
+"name", data, size, position, offset
+%inst;......................................................
+名前付き共有メモリにデータを書き込みます。書き込み先共有メモリが存在しない場合は何もしません。
+
+▼ "name"
+書き込み先共有メモリの名前を指定します。
+
+▼ data [変数]
+書き込むデータが入った変数を指定します。
+
+▼ size [byte]
+共有メモリに書き込むデータ量を指定します。
+= 1～ (データサイズ)
+
+▼ position [byte]
+書き込み先の開始位置を指定します。これにより共有メモリの一部だけを更新することが可能です。
+
+▼ offset [byte]
+書き込み元の開始位置を指定します。これによりdata[変数]の一部だけを共有メモリに書き込むことが可能です。
+
+◆ stat [byte]
+= size (完了)
+= 0 (失敗)
+
+nocoMemomapReadを使用して共有メモリからデータを読み込みます。
+nocoMemoryMappingを使用して共有メモリを製作できます。
+
+nocoMemomapWriteとnocoMemomapReadは、一意(全アプリ/全共有メモリ共通)のミューテックスによる順番待ちをします。衝突によるデータ破損はありませんが速度低下する可能性があります。
+%;........................................................*/
+#deffunc nocoMemomapWrite str n, var v, int s, int p, int o
+	noivflag = 0
+	apiCreateMutex "NodokaModules_ProclinkMemmapMutex"  : noivdata = stat	; ミューテックス。
+	if noivdata == 0  : return 0							; ミューテの時点で失敗。
+
+	apiWaitForSingleObject noivdata, INFINITE				; 権利者堕没やタイムアウトの場合もあるが、
+	if stat == WAIT_OBJECT_0 {								; 正当な手続きで権利獲得の場合に限る。
+		apiCreateFileMapping INVALID_HANDLE_VALUE, PAGE_READWRITE, p + s, n  : noivtemp = stat	; メモ。
+		if apiGetLastError() == ERROR_ALREADY_EXISTS {		; 実体がなければ無意味なので。
+			apiMapViewOfFile noivtemp, FILE_MAP_WRITE
+			dupptr nocpmemo, stat, p + s, vartype("str")
+			memcpy nocpmemo, v, s, p, o
+			apiUnmapViewOfFile varptr(nocpmemo)
+			noivflag = s
+		}
+		apiCloseHandle  noivtemp
+	}
+	apiReleaseMutex noivdata
+	apiCloseHandle  noivdata
+	return noivflag
+
+/*
+%index;.....................................................
+nocoMemomapRead
+名前付き共有メモリ読み取り
+%prm;.......................................................
+res_data, "name", size, position, offset
+%inst;......................................................
+名前付き共有メモリからデータを読み込みます。
+
+▼ res_data [変数]
+取得したデータが格納される変数を指定します。この変数はモジュール内で文字列型に変換し必要なサイズを確保します。
+
+▼ "name"
+取得元の共有メモリの名前を指定します。
+
+▼ size [byte]
+取得するデータのサイズを指定します。
+= 1～ (データサイズ)
+
+▼ position [byte]
+res_data[変数]への書き込みを開始する位置を指定します。これによりres_data[変数]の一部を更新することが可能です。
+
+▼ offset [byte]
+取得元の取得開始位置を指定します。これにより共有メモリの一部を切り出して取得することが可能です。
+
+◆ stat [byte]
+= size (完了)
+= 0 (失敗)
+
+nocoMemomapWriteを使用して共有メモリにデータを書き込みます。
+nocoMemoryMappingを使用して共有メモリを製作できます。
+
+nocoMemomapWriteとnocoMemomapReadは、一意(全アプリ/全共有メモリ共通)のミューテックスによる順番待ちをします。衝突によるデータ破損はありませんが速度低下する可能性があります。
+%;........................................................*/
+#deffunc nocoMemomapRead var v, str n, int s, int p, int o
+	noivflag = 0
+	apiCreateMutex "NodokaModules_ProclinkMemmapMutex"  : noivdata = stat	; ミューテックス。
+	if noivdata == 0  : return 0							; ミューテの時点で失敗。
+
+	apiWaitForSingleObject noivdata, INFINITE				; 権利者堕没やタイムアウトの場合もあるが、
+	if stat == WAIT_OBJECT_0 {								; 正当な手続きで権利獲得の場合に限る。
+		apiCreateFileMapping INVALID_HANDLE_VALUE, PAGE_READWRITE, o + s, n  : noivtemp = stat
+		if apiGetLastError() == ERROR_ALREADY_EXISTS {
+			apiMapViewOfFile noivtemp, FILE_MAP_WRITE
+			dupptr nocpmemo, stat, o + s, vartype("str")
+			v = ""  : memexpand v, s + p
+			memcpy v, nocpmemo, s, p, o
+			apiUnmapViewOfFile varptr(nocpmemo)
+			noivflag = s
+		}
+		apiCloseHandle  noivtemp
+	}
+	apiReleaseMutex noivdata
+	apiCloseHandle  noivdata
+	return noivflag
+
+#global
+#endif
+

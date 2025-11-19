@@ -1,0 +1,40 @@
+
+#packopt name "download_sgf"
+#include "modules/katago_sqr.hsp"
+#include "../hsp_common/log_to_file.hsp"
+#include "setting_defines.hsp"
+
+#const AUTO_SQR_MAX_TIME 90 //‚X‚O•b‚ğÅ‘å‚Éİ’è
+
+screen 0,,,2
+
+#define SUB_EXE
+#include "config_path.hsp"
+log_init SUBDIR
+
+onkey gosub *input_key
+onerror *end_label
+
+chdir SUBDIR
+
+exist SETTING_FILE_NAME
+
+if strsize >= 0{
+	
+	notesel s
+	noteload SETTING_FILE_NAME
+	noteget tmp, LINE_AUTO_DOWNLOAD_TIME
+	time = int(tmp)
+	logmes "A" + time
+}
+if time >= 20{
+	logmes "B" + time
+	Šû•ˆæ“¾ DEFAULT_KIFUDIR  , 10000     , 3000            , 1000 * limit(time, 0, AUTO_SQR_MAX_TIME) 
+}
+end
+*input_key
+	if iparam == 27: Šû•ˆæ“¾’â~
+	return
+*end_label
+	add_log "yƒGƒ‰[ƒR[ƒhz ->" + err
+	end

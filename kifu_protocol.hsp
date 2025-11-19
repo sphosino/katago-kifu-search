@@ -1,0 +1,34 @@
+#ifndef kifu_protocol
+#define kifu_protocol
+//プロセス間メッセージ定数定義
+
+#enum 接続拒否  = 1
+#enum 担当棋譜
+#enum 検索結果
+#enum 検索実行
+#enum 検索実行2
+#enum 子プロセス数
+#enum 終了指示
+#enum 棋譜フォルダ変更
+#enum ウィンドウ表示切替
+#enum バックグラウンド読み込み
+
+
+
+//検索結果データの構造定義
+
+#const HEADER_SIZE 4
+
+#const PATH_SIZE 1024
+
+#const OFFSET_KIFU      0
+#const OFFSET_PATH      (OFFSET_KIFU + 64)
+#const OFFSET_PB        (OFFSET_PATH + PATH_SIZE)
+#const OFFSET_PW        (OFFSET_PB + 64)
+;#const OFFSET_KOMI      (OFFSET_PW + 64)
+;#const OFFSET_RESULT_NUM (OFFSET_KOMI + 64)
+
+#const INFO_SIZE             (PATH_SIZE + 64 * 2) ; 棋譜名以外のサイズ
+#const RECORD_SIZE      (64 + PATH_SIZE + 64 * 2) ; 全体のサイズ
+
+#endif

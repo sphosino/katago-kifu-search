@@ -1,0 +1,11 @@
+#include "config_path.hsp"
+//saveƒtƒHƒ‹ƒ_‚ð‹ó‚É‚·‚é
+
+chdir SAVEDIR
+dirlist filelist, "*.sgf"
+notesel filelist
+repeat notemax
+	noteget tmp, cnt
+	delete tmp
+loop
+noteunsel

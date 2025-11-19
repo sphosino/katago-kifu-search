@@ -1,0 +1,175 @@
+;#define global MODULE_DEBUG
+#module line_graph data,dn, position_x, position_y, size_x, size_y, start_x, start_y, end_x, end_y, x_ticks, y_ticks, area_number, current_position,prerect
+
+#modinit int _area, local thismod_ID
+
+    //エリア番号
+    area_number = _area
+
+	margin_left = -1  // マイナスの時は、エリアいっぱいに表示
+	margin_top = -1
+	margin_right = margin_left
+	margin_bottom = margin_bottom
+
+	start_x = 0    //０手目
+	start_y = 0.0  //0%(白勝ち）
+
+	end_x = -1   //最終手まで
+	end_y = 100  //100%(黒勝ち)
+
+	//目盛りの分割数を設定
+	x_ticks = 15
+	y_ticks = 10
+
+	dim prerect , 4
+	colset = $CCCCCC,$FFFFFF
+
+	now_sel = ginfo_sel
+	line_graph_buf = ginfo_newid
+	buffer line_graph_buf
+	gsel nowsel
+	
+    mref thismod_ID, 2
+    return thismod_ID
+
+#modfunc set_margin_line_graph int p1, int p2, int p3, int p4
+	margin_left = p1
+	margin_top = p2
+	margin_right = p3
+	margin_bottom = p4
+	return
+
+#modfunc set_end_xy int _x, int _y
+	end_x = _x
+	end_y = _y
+	return
+
+#modfunc set_current_position int p1
+	current_position = p1
+	return
+#modcfunc get_current_position
+	return current_position
+
+#modfunc add_graph_data double a
+	data(dn) = a
+	dn++
+	return
+
+
+
+#modfunc clear_graph
+	dim data
+	dn = 0
+	return
+
+#modfunc redraw_buffer
+	now_sel = ginfo_sel
+
+	gsel line_graph_buf
+	color 128,128,128
+	boxf 0,0,rect.2-rect,rect.3-rect.1
+
+	graphboxf = margin_left, margin_top, rect.2 - rect.0 - margin_right, rect.3 - rect.1 - margin_bottom
+	色を設定 $76310
+	aboxfl graphboxf
+
+	
+	//y中心線表示
+	color 0,0,0
+	graph_y_center =  (graphboxf.1 + graphboxf.3) / 2
+	line graphboxf, graph_y_center, graphboxf.2, graph_y_center
+
+	//目盛り表示
+	color 255,255,255
+	font "", (graphboxf.2 - graphboxf) / (x_ticks + 20)
+	repeat x_ticks
+		pos (graphboxf.2 - graphboxf) * cnt / x_ticks + margin_left, rect.3 - rect.1 - margin_bottom
+		mes start_x + (end_x - start_x) * cnt / x_ticks
+	loop
+	font "", (graphboxf.3 - graphboxf.1) / (y_ticks + 1)
+	repeat y_ticks
+		pos 0, (graphboxf.3 - graphboxf.1) * cnt / y_ticks + margin_top
+		mes end_y - (start_y + (end_y - start_y) * cnt / y_ticks)
+	loop
+
+;/*/
+	//折れ線描画
+	line_col = $B4FAA0
+	
+	thick = 2
+	half = thick / 2
+	
+	repeat div_line + 1
+		nowpos = margin_left, (graphboxf.1 + graphboxf.3) / 2
+
+		
+		if div_line{
+			line_col = colset(cnt)
+		}
+		for i, 1 + cnt, limit(dn - 1, 0), 1 + div_line
+			endpos = margin_left + i * (graphboxf.2 - graphboxf) / dn,  margin_top + (graphboxf.3 - graphboxf.1) * data(i) / 100
+			repeat thick
+				offset = cnt - half
+				色を設定 line_col
+				line  nowpos, nowpos.1 + offset, endpos, endpos.1 + offset
+			loop
+			nowpos = endpos, endpos.1 //次の開始点を設定
+		next
+	loop
+;*/
+	gsel now_sel
+	return
+#modfunc line_graph_manager var 手数
+
+	get_rect area_number, oya //oya に矩形情報取得
+	
+	rect   = oya.0
+	rect.1 = oya.1
+	rect.2 = oya.2
+	rect.3 = oya.3
+	realboxf = rect + margin_left, rect.1 + margin_top, rect.2 - margin_right, rect.3 - margin_bottom
+	msize = 18
+
+	centerx = (rect   + rect.2) / 2
+	centery = (rect.1 + rect.3) / 2
+	sizex = rect.2 - rect
+	sizey = rect.3 - rect.1
+	make_instant_draw_object "SPRITE",centerx,centery,sizex,sizey,strf("%d,%d,%d",line_graph_buf,0,0)
+;*/
+
+
+	//マウス位置表示
+	mx = limit(mousex, rect.0,rect.2)
+	my = limit(mousey, rect.1,rect.3)
+
+	if in_rect(realboxf){
+		if g_getkey(1) == 1{
+			手数 = (mx - realboxf) * (end_x - start_x) / (realboxf.2 - realboxf)
+		}
+		make_instant_draw_object "LINE_FAST", mx, realboxf.1 , mx, realboxf.3 , "$FFFFFF"
+		make_instant_draw_object "LINE_FAST", realboxf, my   , realboxf.2, my , "$FFFFFF"
+		make_instant_draw_object "STR", mx, realboxf.1, msize,msize, strf("%d,%d", (mx - realboxf) * end_x / (realboxf.2 - realboxf),$FFFFFF)
+		make_instant_draw_object "STR", realboxf.2, my, msize,msize, strf("%d,%d", end_y - (my - realboxf.1) * end_y / (realboxf.3 - realboxf.1), $FFFFFF)
+
+		if g_getkey(2) = 1{
+			//評価値グラフを、黒番と白番で分けるかの01トグル
+			div_line ^ 1
+			redraw_buffer thismod
+		}
+		
+	}
+
+	if oya != prerect || oya.1 != prerect.1 || oya.2 != prerect.2 || oya.3 != prerect.3{
+		redraw_buffer thismod
+	}
+
+		//現在手数の線表示
+	xx = realboxf + 手数  * (realboxf.2 - realboxf) / (end_x - start_x)
+	make_instant_draw_object "LINE_FAST", xx, realboxf.1, xx, realboxf.3,"$000000"
+	
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+#global

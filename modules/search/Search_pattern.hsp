@@ -1,0 +1,225 @@
+#ifndef search_init
+#include "basic.hsp" //タイマー -> ( keyfpstime )キュー関連-> (reset_ringbuffer, r_push, r_shift )
+#include "modules/sgf.hsp" //sgf関連-> ( load_sgf, get_SGF_childs, get_property_coordinate_cash)
+#include "modules/search/pattern.hsp" //パターン関連-> (PATTERN_BLACK, PATTERN_WHITE, PATTERN_ZERO)
+
+#module 通常検索
+
+//探索時、キューに入れるノードの情報を定義
+//ノード固有情報
+#const NODE_INFO_NUM 3
+#const NODE_INFO_SIZE NODE_INFO_NUM * 4
+
+//ノードが持つ有効なパターンリストの各要素の意味を定義
+#enum FLIP_INFO = 0　　     //色反転
+#enum ROTATE_INFO           //回転
+#enum MATCH_GROUP_COUNT     //マッチしたグループの数
+#enum NOT_YET_MATCHED_FLAGS //まだマッチしていないグループフラグ
+#enum TEJUN                 //通過済みの手数
+
+#enum VLIST_ELEMENT_NUM //要素の数
+
+#const VLIST_ELEMENT_SIZE VLIST_ELEMENT_NUM * 4 //パターンが持つサイズ
+#const VLIST_MAX 8 * 2 //回転、色反転で１６種類
+
+#const VLIST_SIZE VLIST_ELEMENT_SIZE * VLIST_MAX //全体のパターンサイズ
+
+//最終的なノードサイズ
+#const DATA_SIZE NODE_INFO_SIZE + VLIST_SIZE
+
+//パス(結果）を含めたサイズ
+#const DATA_SIZE_PATH DATA_SIZE + 1024
+
+
+#deffunc search_init
+	dim vlist , VLIST_ELEMENT_NUM, VLIST_MAX //探索時ノードが持つ有効なパターンリスト（これがなくなってしまうと検索失敗となる）
+	newmod queue, ringbuffer, DATA_SIZE_PATH, 128      //キュー初期化（要素数(128)に関しては自動拡張付き）
+	sdim node_data, DATA_SIZE_PATH　         //データを纏めてキューに出し入れするための媒介変数
+	
+	return
+
+#deffunc search_main int t, int max_depth, int colorflip, array rotated_color, array rotated_group, array rotated_tejun, array r_pattern_num, int group_num, array path
+/*
+  t:
+  - 検索開始のノード番号
+
+  max_depth:
+  - 検索の深さ（何手まで検索するか）
+
+  colorflip:
+  - 黒白逆転も含めるかのフラグ
+
+  rotated_color:
+  - 回転を含む石の色に関するパターンデータ
+
+  rotated_group:
+  - 回転を含む石グループのパターンデータ
+
+  rotated_tejun:
+  - 回転を含む手順のパターンデータ
+
+  r_pattern_num:
+  - 回転の数（４または８)
+
+  group_num:
+  - ヒットと判定するために必要な数
+
+  path:
+  - マッチした位置を返す配列。 pathの先頭要素は特別で、ヒットした深さの位置を返し、path(0) が-1ならヒットしなかったことを示す。
+*/
+　reset_ringbuffer queue
+  //パターンリスト初期化(最大１６種）
+  valid_pattern_count = 0
+  repeat r_pattern_num
+    for i,, colorflip + 1
+      vlist(FLIP_INFO, valid_pattern_count) = i + 1 // 1-2（黒、白）に変換
+      vlist(ROTATE_INFO, valid_pattern_count) = cnt
+      vlist(MATCH_GROUP_COUNT, valid_pattern_count) = 0
+      vlist(NOT_YET_MATCHED_FLAGS, valid_pattern_count) = (8 | 4 | 2 | 1)
+      vlist(TEJUN, valid_pattern_count) = 0 
+      valid_pattern_count++
+    next
+  loop
+
+  dim path, 256 //パス初期化
+  path(0) = -1 //一致した位置
+  
+  //初期ノード登録
+  
+  lpoke node_data,  , 0         //現在の深さ(手数)
+  lpoke node_data, 4, t         //開始ノード番号
+  lpoke node_data, 8, valid_pattern_count //有効なパターン数
+  memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+  memcpy node_data, path, 1024, DATA_SIZE
+  r_push queue, node_data
+
+
+  //探索開始
+  *next_node
+  while r_shift(queue, node_data)
+
+    //ノードデータ展開
+    depth = lpeek(node_data): if depth > max_depth: _continue
+    node = lpeek(node_data, 4)
+    valid_pattern_count = lpeek(node_data, 8)
+    memcpy vlist  , node_data, VLIST_SIZE, , NODE_INFO_SIZE
+
+    memcpy path, node_data, 1024,,DATA_SIZE
+
+    turn = get_property_coordinate_cash(node, x, y) //ノードの手番、座標を取得
+
+    //turn == 1 -> 黒番
+    //turn == 2 -> 白番
+
+    if x >= 0{
+
+      for i,, valid_pattern_count
+
+        *check_pattern_list
+
+        pt = rotated_color(x, y, vlist(ROTATE_INFO, i))
+        
+        if pt == PATTERN_ZERO: _continue
+
+        assert pt >= 1 && pt <= 6
+        //pt = 0 範囲外
+        //pt = 1 石なし
+        //pt = 2 黒
+        //pt = 4 白
+        //pt = 3 黒以外
+        //pt = 5 白以外
+        //pt = 6 黒か白
+        
+        //色判定
+        hit = 0
+       	if turn == vlist(FLIP_INFO, i){
+			if pt & PATTERN_BLACK: hit = 1
+	    }else: if pt & PATTERN_WHITE: hit = 1
+		
+        if hit{ //色が一致
+	        //グループチェック
+            rg = rotated_group(x, y, vlist(ROTATE_INFO, i))
+            if (vlist(NOT_YET_MATCHED_FLAGS, i) & rg) == rg{ //全てグループがヒットしていないチェック
+		        
+				if rg{
+					repeat 4 ; // グループA-D（最大4つ）を順にチェックする
+					    bit = 1 << cnt ; // 今回チェックするグループのビット（1, 2, 4, 8）
+					    if (rg & bit){
+					        vlist(NOT_YET_MATCHED_FLAGS, i) -= bit ; // そのグループはもうヒット済みにする（ビットOFF）
+					        vlist(MATCH_GROUP_COUNT, i)++
+					    }
+					loop
+				}else{
+					// グループ指定なし
+					if (pt & PATTERN_NONE) == 0{
+						vlist(MATCH_GROUP_COUNT, i)++ 
+					}
+				}
+
+
+	            if vlist(MATCH_GROUP_COUNT, i) <= group_num{
+		            
+		        	//最終チェック（手順）
+		            rt = rotated_tejun(x, y, vlist(ROTATE_INFO, i))
+		            if rt{
+			            //手順が指定されている
+			            if rt < vlist(TEJUN, i){
+				            //手順が逆流したのでアウト
+				            goto *out
+				        }
+			            vlist(TEJUN, i) = rt
+			        }
+
+		           	if vlist(MATCH_GROUP_COUNT, i) == group_num{
+			           path(0) = depth
+			           
+	           		   return 1 //検索成功
+				    }else{
+		            	_continue //検索続行（着手自体はマッチしたが、必要なhit数に届いていない)
+		            }
+		            
+		       	}else{
+			       	//オーバーカウントしたのでアウト
+			    }
+        	}else{
+	        	//なんらかのグループに二回目のヒットなのでアウト
+	        }
+        }else{
+	        //色が違うのでアウト
+	    }
+	    
+		*out //このパターンを削除します
+
+        valid_pattern_count--
+        
+        if i == valid_pattern_count{
+        	  //有効パターンリストを全て探索した。
+        	if valid_pattern_count{
+            	//まだ有効リストが残っているので、子ノードを積みに行く
+				_break
+          	}
+         	 //有効なパターンがなくなった。  ＝  このノードは可能性がなくなった。
+          	goto *next_node
+        }
+        //今の位置をパターンリストの末尾要素で置き換えて再探索
+        memcpy vlist(0, i), vlist(0, valid_pattern_count), VLIST_ELEMENT_SIZE
+        goto *check_pattern_list
+
+      next
+    }
+    repeat get_SGF_childs(node, child)
+      lpoke node_data,  , depth + 1
+      lpoke node_data, 4, lpeek(child, cnt * 4)
+      lpoke node_data, 8, valid_pattern_count
+      memcpy node_data, vlist, VLIST_SIZE, NODE_INFO_SIZE
+      path(depth + 1) = cnt
+      memcpy node_data, path, 1024, DATA_SIZE
+      r_push queue, node_data
+    loop
+    
+  wend
+  return 0
+
+#global
+search_init
+#endif

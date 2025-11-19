@@ -1,0 +1,148 @@
+#include "find_empty_index.hsp"
+#module grid_radiobox string, area, v,items, colors, bc, fc, w, h, w_max, h_max, dir, item_indices, item_indices_num
+
+#const DIR_HORIZONTAL 1
+#const DIR_VERTICAL 2
+
+#modinit var a, int area_number, local thismod_ID
+	a = -1
+	dup v, a
+	area = area_number
+	colors = 0,1,2,3
+	w = 1
+	h = 1
+	w_max = -1
+	h_max = -1
+	dim item_indices
+	dim item_indices_num
+	sdim string
+	colors = 5,6,7,8
+	dir = DIR_HORIZONTAL
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modfunc add_item_radiobox str s1
+
+	if dir == DIR_HORIZONTAL{
+		index =  find_empty_index(item_indices,item_indices_num, w, h)
+	}else{
+		index = find_empty_index_vertical(item_indices,item_indices_num, w, h)
+	}
+	if index >= 0{
+		item_indices(item_indices_num) = index
+		string(item_indices_num) = s1
+		item_indices_num++
+		return
+	}
+	// ãÛÇ´Ç™Ç»Ç¢èÍçáÇÃägí£
+	if dir == DIR_HORIZONTAL {
+		if (w_max < 0) || (w < w_max){
+			trans_grid item_indices, item_indices_num, w, w + 1
+			w++
+			add_item_radiobox thismod, s1
+		}else: if (h_max < 0) || (h < h_max){
+			h++
+			add_item_radiobox thismod, s1
+		}
+	} else {
+		if (h_max < 0) || (h < h_max){
+			h++
+			add_item_radiobox thismod, s1
+		}else: if (w_max < 0) || (w < w_max){
+			trans_grid item_indices, item_indices_num, w, w + 1
+			w++
+			add_item_radiobox thismod, s1
+		}
+	}
+	
+	return
+#modfunc set_radio_grid_max int _w_max, int _h_max
+	if _w_max > 0{
+		w_max = _w_max
+	}
+	w = limit(_w_max,1)
+	if _h_max > 0{
+		h_max = _h_max
+	}
+	h = limit(limit(_h_max,(item_indices_num  + _w_max - 1) / _w_max),1)
+	repeat item_indices_num
+		x = item_indices(cnt) \ w
+		y = item_indices(cnt) / w
+		item_indices(cnt) = y * _w_max + x
+	loop
+	return
+#modfunc draw_g_radiobox
+
+	get_rect area, rect
+
+	item_size_x = (rect.2-rect.0) / w
+	item_size_y = (rect.3-rect.1) / h
+	now_cx = ginfo_cx, ginfo_cy
+	
+	repeat item_indices_num
+		x = item_indices(cnt) \ w
+		y = item_indices(cnt) / w
+
+		this_rect_x = rect.0 + x * item_size_x
+		this_rect_y = rect.1 + y * item_size_y
+		this_rect_endx = this_rect_x + item_size_x
+		this_rect_endy = this_rect_y + item_size_y
+
+		this_rect = this_rect_x,this_rect_y,this_rect_endx,this_rect_endy
+		
+		backcolor = colors(0)
+		if in_rect(this_rect){
+			if g_getkey(1) == 1{
+				if cnt == v{
+					v = -1
+				}else{
+					v = cnt
+				}
+			}
+			backcolor = colors(1)
+		}
+		if v == cnt{
+			backcolor = colors(2)
+		}
+		make_instant_draw_object "RBOXF_FAST",(this_rect+this_rect.2) / 2,(this_rect.1+this_rect.3) / 2, this_rect.2-this_rect,this_rect.3 - this_rect.1, strf("%d",backcolors(backcolor))
+		m = 5, 5, 5, 5
+		get_rect_margin this_rect, m, nrec
+		make_instant_draw_object "STR",(nrec + nrec.2) / 2, (nrec.1 + nrec.3 ) / 2, nrec.2-nrec,nrec.3-nrec.1,strf("%s,%d",string(cnt),$FFFFFF)
+		
+	loop
+	pos now_cx,now_cx.1
+	return
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+
+#deffunc init_g_radio_button_colorlist
+	backcolors = $00d49d,$fedf03,$e39ecf,$da85af,$f1eef7,$ae8fb1,$262626, $285cc9,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6
+	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9
+	return
+
+#global
+init_g_radio_button_colorlist
+
+#if 0
+mock_flag@global = 1
+
+set_rect_mock 30,   60,60, 260,100
+
+newmod a,grid_radiobox, z, 30
+
+add_item_radiobox a, "A"
+add_item_radiobox a, "B"
+add_item_radiobox a, "C"
+add_item_radiobox a, "D"
+
+*main
+	manage_keyfps
+	color 255,255,255:boxf
+	draw_g_radiobox a
+	redraw:redraw 2
+	title "" + z
+	await 16
+	goto*main
+#endif

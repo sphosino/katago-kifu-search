@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KataGo棋譜検索システム 操作ガイド</title>
+ <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav id="main-nav">
+  <ul>
+    <li><a href="#basic-ops">基本操作</a></li>
+    <li><a href="#search-func">検索機能</a></li>
+    <li><a href="#tejun">手順検索</a></li>
+    <li><a href="#grouping">グルーピング</a></li>
+    <li><a href="#filter">フィルタ機能</a></li>
+    <li><a href="#sgf">SGF取得</a></li>
+    <li><a href="#graph">グラフ表示</a></li>
+    <li><a href="#search-tech">検索テクニック</a></li>
+    <li><a href="#auto-play">自動再生</a></li>
+    <li><a href="#layout">レイアウト変更</a></li>
+    <li><a href="#attention">注意事項</a></li>
+    </ul>
+</nav>
+    <h1>KataGo棋譜検索システム - 操作ガイド</h1>
+    
+    <div class="section">
+        <p>棋譜フォルダに入っている <code>katago-rating-games</code> の中から棋譜を検索するためのツールです。</p>
+        
+        <div class="feature">
+            <p>碁盤の左側にある棋譜リストから棋譜を選択すると閲覧できます。ホイール操作で前後に手順を進めることが可能です。</p>
+	<div class="tips">
+	<img src="screenshot_spinbox.png" alt="スピンボックス">
+        <p><strong>棋譜リストボックスの下のスピンボックス</strong>は、棋譜を選択した際に何手目から表示を開始するかを設定します。</p>
+        <p><strong>検索結果の下のスピンボックス</strong>は、検索結果の棋譜を選択した際に、マッチした局面の前後何手目を表示するかを設定します。</p>
+</div>
+            <p>KataGo形式の形勢判断が棋譜に含まれていれば、背景の色で表示されます（グレーは互角を示します）。<br>
+            これは最後に着手した側の判断です。例えば、最終手マークが白石についている場合、背景の色は白側の判断を示しています。</p>
+        </div>
+    </div>
+
+    <h2 id="basic-ops">基本操作</h2>
+    <div class="section">
+        <ul>
+            <li>碁盤の上でドラッグすると、検索したい範囲を指定できます（ドラッグ中に<span class="right-click-emphasis">右クリック</span>することで範囲指定を逆に取り除きます）。</li>
+            <li><span class="right-click-emphasis">右クリック</span>を長押しすることで、直前に指定した範囲を取り除くことができます。</li>
+            <li>複数の矩形を組み合わせて範囲を指定することも可能です。</li>
+        </ul>
+
+        <div class="edit-mode-section">
+            🎯 編集モードでの操作 🎯
+        </div>
+        
+        <div class="edit-mode-content">
+            <img src="stones.png" alt="石の種類を示すイメージ">
+            <ul>
+                <li><span class="right-click-emphasis">右クリック</span>で碁盤に石を置くことができます。</li>
+                <li>続けて<span class="right-click-emphasis">右クリック</span>することで石の種類（黒→白→灰色→黒X→白X）を変更できます。</li>
+                <li>灰色の石は「どちらかの石があればヒットする」という条件になります。</li>
+                <li>「×」の付いた石は特殊な条件です。例えば、黒石に「×」がついている場合、その位置に黒石があるとマッチしません。</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="search-func">検索機能</h2>
+    <div class="section">
+        <p><strong>「検索」ボタン</strong>をクリックすると検索が開始されます。</p>
+        <ul>
+            <li>もう一つのリストボックスに検索結果が表示されますので、クリックして閲覧してください。</li>
+            <li>石が取られる局面を通過した局面を検索したい場合は、抜き跡に石を置いて検索してください。</li>
+        </ul>
+
+        <p><strong>「除外検索」ボタン</strong>は、現在の検索結果を除いた全ての棋譜から検索を行います。</p>
+        <p><strong>「絞込検索」ボタン</strong>は、現在の検索結果の中からさらに絞り込んで検索を行います。</p>
+        
+        <div class="tips">
+            <p><strong>「厳密検索」について</strong></p>
+            <p>純粋にその局面が登場したかを判定するモードになります。</p>
+            <ul>
+                <li>抜き跡にさらに着手があった局面も検索可能です。</li>
+                <li class="highlight">この検索方法は処理が遅いため、<span class="highlight">非推奨</span>です！</li>
+                <li>※「×石」の使用には対応していません。</li>
+                <li>※ グルーピングに対応していません。</li>
+                <li>※ 手順検索に対応していません。</li>
+            </ul>
+        </div>
+
+        <div class="tips">
+            <p><strong>「反転検索」について</strong></p>
+            <ul>
+                <li>マッチしなかった棋譜が結果に追加されるようになります。</li>
+                <li>全ての検索方式に対応しています。</li>
+                <li>※検索結果に、位置ジャンプ情報が含まれません。主にフィルター用途としてご活用ください。</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="tejun">手順検索</h2>
+    <div class="section">
+       <p>1〜9までのボタンは、石に番号を振り、その出現順を指定して検索することができます。</p>
+       <div class="tips">      
+            <ul>
+            <li>石に1〜9までの番号を振ることで、着手順序を指定した検索が可能です。</li>
+            <li class="highlight">番号の小さい手が大きい手より後に出現した場合（逆順）はマッチしません。</li>
+         </ul>
+        </div>
+       <div class="tips">
+            <p><strong>手順検索の注意点：</strong></p>
+        <ul>
+            <li>例：「1」「2」「3」と番号を振った場合、実際の手順で「3」→「1」→「2」の順で打たれた局面は検索にヒットしません。</li>
+            <li>番号は必ずしも連番である必要はありません。例えば、「2」→「4」→「6」といった順序でもヒットします。</li>
+            <li>複数の石に同じ番号を振ることも可能です。「1」→[番号なし]→「2」→「2」→「番号なし」→「2」→「3」などもヒット対象です。</li>
+            <li>「×石」にも手順を指定できます。「×石」はその地点に石がない状態もヒット対象ですが、石がない時は番号に関係なく、マッチ対象に含まれます。</li>
+        </ul>
+        </div>
+    </div>
+
+    <h2 id="grouping">グルーピング機能</h2>
+    <div class="section">
+        <p>A〜Dまでのボタンは石をグループ化し、そのグループ内のいずれか1つの石がある局面をマッチさせることができます。</p>
+        
+        <div class="tips">
+            <ul>
+                <li> 「×石」をグルーピングすることも可能です。</li>
+		<li> 「×石グループ」（そのグループが×石だけで構成されている場合）のみ、グループ内に石が存在しない状態もヒット対象になります。</li>
+                <li>手順検索とも組み合わせることが可能です。</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="filter">フィルタ機能</h2>
+    <div class="section">
+        <p>マッチした手数でフィルタが可能です。</p>
+        <img src="screenshot_filter.png" alt="手数をスライダーで調整するフィルタ機能のUI">
+        <div class="tips">
+	   <ul>
+                <li>つまみでスライダーを調整できます。青い部分が対象の区間になります</li>
+                <li><span class="right-click-emphasis">右クリック</span>で区間を切り替えることができます。例
+			（画像では0手-50手ぐらい)ですが、50手-100手（右側を青くします)
+		</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2 id="search-tech">検索テクニック</h2>
+    <div class="section">
+        <p class="highlight">★◇★ こういう時はどうやって検索する？</p>
+        
+        <div class="tips">
+            <p><strong>例１：【黒星、白カカリのあと、どこかにハサんだ局面を検索したい】</strong></p>
+            <p>ハサミの候補位置全てに黒石を置き、それらをグループ化して検索します。</p>
+            <img src="screenshot_grouping.png" alt="グルーピング機能">
+            <p class="warning">
+                ※画像は開発中の画面です。現バージョンとは異なる場合があります。
+            </p>
+        </div>
+
+        <div class="tips">
+            <p><strong>例２：【ある局面で、次の一手が打たれなかった局面を検索したい】</strong></p>
+            <ol>
+                <li>まず、次の一手を打った局面を検索します。</li>
+                <li>そのあと一手戻して、「除外検索」を実行します。</li>
+            </ol>
+            <p>このようにすれば、ある局面で、次にその手を打たなかった棋譜だけを効率的に抽出できます。</p>
+        </div>
+
+        <div class="tips">
+            <p><strong>例３：【抜き跡を含む局面が検索できない・・・】</strong></p>
+            <p>例えば以下のような局面ですが、手順中、黒石が１個白に取られています。</p>
+            <img src="screenshot_nukiato.png" alt="抜き跡のある局面">
+            <p>その場合は編集モードで以下のように取られた場所の黒石を追加した状態で検索してください。</p>
+            <img src="screenshot_nukiato2.png" alt="抜き跡に石を追加した状態">
+            
+            <p>抜き跡にさらに着手したような局面の検索は「厳密検索」をご利用ください。</p>
+        </div>
+    </div>
+
+    <h2 id="sgf">SGF取得</h2>
+    <div class="section">
+        <p class="highlight">★☆SGF取得機能☆★</p>
+        <ul>
+            <li>選択中の棋譜をクリップボードにコピーします。</li>
+            <li><code>Ctrl + 左クリック</code>で複数の棋譜を選択できます。</li>
+            <li><code>Ctrl + A</code>で全ての棋譜を選択します。</li>
+        </ul>
+
+        <p>複数選択されている場合、それらを全て（最大５０件)マージしたSGFがクリップボードにコピーされます。</p>
+        <p><strong>保存ボタン：</strong> 次回起動時まで【save】フォルダ内に、sgfファイルとして保存します。ファイルとして利用したい場合にご活用ください。</p>
+    </div>
+
+    <h2 id="auto-play">自動再生</h2>
+    <div class="section">
+        <p class="highlight">★★自動再生機能★★</p>
+        <p>自動再生のチェックを入れると、選択した棋譜を自動で再生します。</p>
+        <p>スライダーで一手ごとの待ち時間を設定します：</p>
+        <ol>
+            <li>１番目のスライダーで、基本待ち時間を設定します（100ms 〜 10000ms）。</li>
+            <li>２番目のスライダーで、各エンジンの形勢判断の差が大きいほど待ち時間を延ばします（0ms 〜 10000ms）。</li>
+            <li>３番目のスライダーで、直前の手との距離が遠いほど、待ち時間を延ばします（0ms 〜 10000ms）。</li>
+        </ol>
+        <p>１手ごとの待ち時間は、これら全てのスライダーの値を合計した値になります。</p>
+	<p>棋譜の再生が終わると５秒後に自動的に次の棋譜へ移動します</p>
+    </div>
+    <h2 id="graph">グラフについて</h2>
+    <div class="section">
+        <img src="screen_shot_graph.png" alt="選択中の棋譜の形勢判断を表示したグラフ">
+        <p>棋譜に含まれている形勢判断をグラフで表示します。</p>
+        <p>グラフは、選択した棋譜の形勢判断を時間軸に沿って表示します。</p>
+        <p>縦軸は勝率です</p>
+        <ul>
+            <li>グラフ上でクリックすると、グラフの位置をジャンプできます。</li>
+            <li>グラフ上で<span class="right-click-emphasis">右クリック</span>するとグラフを黒視点白視点分離モードにすることができます。</li>
+        </ul>
+    </div>
+    <h2 id="layout">レイアウト変更</h2>
+    <div class="section">
+        <p class="highlight">☆☆★★　レイアウト変更機能</p>
+        <ul>
+            <li><code>CTRL</code>を連打するとデバッグモードに入ります。もう一度連打すると元のモードに戻ります。</li>
+            <li>デバッグモード中にはグリッドが表示され、グリッドをつまんで移動できます。</li>
+            <li>各エリアのパディング部分をクリックするとエリアを選択状態になります。他のエリアのパディング部分をクリックすると場所を交換します。</li>
+        </ul>
+        <div class="warning">
+            <p>操作中、レイアウトがおかしくなった場合は、<code>subフォルダ内のarea.var </code>ファイルを削除するとリセットできます。</p>
+        </div>
+    </div>
+
+    <h2 id="attention">注意事項</h2>
+    <div class="section warning">
+        <ul>
+            <li>起動後、少しずつ棋譜を読み込んでいるため、起動直後の初回検索には時間がかかります。</li>
+            <li class="highlight">「厳密検索」はさらにノードに碁盤を作成するため、<span class="highlight">非常に遅い</span>です。ご注意ください。</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>このツールについてご要望がございましたら、お気軽にご連絡ください。<br>
+        作者メールアドレス → <a href="mailto:sphosino@gmail.com">sphosino@gmail.com</a></p>
+        <p>最新版はこちらから：<a href="https://github.com/sphosino/katago-kifu-search" target="_blank" rel="noopener noreferrer">https://github.com/sphosino/katago-kifu-search</a></p>
+    </div>
+</body>
+</html>

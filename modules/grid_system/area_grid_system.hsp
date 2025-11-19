@@ -1,0 +1,409 @@
+#ifndef area
+#include "transform_grid.hsp"
+#include "gridpos.hsp"
+#include "area_save_load_manager.hsp"
+#include "get_rect_margin.hsp"
+#include "g_objects.hsp"
+
+; from hsp_common
+#addition "../../../hsp_common/rboxf.hsp" 
+#addition "../../../hsp_common/color_manager.hsp"
+
+dimtype areagrid@global, 5, 400
+
+#module area grid, 列数, 行数, grid_x, grid_y, padding_left, padding_right, padding_top, padding_bottom, gap_x, gap_y, parentid, draginfo, childlist,cn, back_color
+
+#defcfunc make_area int x, int y
+	newmod areagrid@global, area, x, y
+	return stat
+#modinit int x, int y, local thismod_ID
+	mref thismod_ID, 2
+	
+	列数 = limit(x,1) ;(x)
+	行数 = limit(y,1) ;(y)
+
+	parentid = -1
+	padding_left = 0
+	padding_right = 0
+	padding_top = 0
+	padding_bottom = 0
+	gap_x = 6
+	gap_y = 6
+	back_color = -1
+	
+	
+	set_grid_shape thismod_ID, 列数, 行数
+
+	dim draginfo, 8
+	
+	
+	return thismod_ID
+#modfunc get_padding array a
+	a = padding_left,padding_top,padding_right,padding_bottom
+	return
+
+//グリッドに子を追加する
+#deffunc add_grid_child int id, int child_id, int x, int y
+	_add_grid_child areagrid@global(id), child_id, x, y
+	return
+#modfunc _add_grid_child int child_id, int x, int y, local thismod_ID
+	grid(x, y) = child_id
+	mref thismod_ID,2
+	set_grid_parent child_id, thismod_ID
+	
+	return
+
+#modcfunc get_open_grid array open_number, local i
+	open_number = -1, -1
+	repeat 行数
+		for i,, 列数
+			if grid(i, cnt) == -1{
+				open_number = i, cnt
+				break
+			}
+		next
+	loop
+	return open_number != -1
+
+#deffunc push_grid_child int id, int child_id
+	_push_grid_child areagrid@global(id), id, child_id
+	return
+#modfunc _push_grid_child int id, int child_id
+	if get_open_grid(thismod, xy){
+		add_grid_child id, child_id, xy, xy.1
+	}else{
+		logmes "グリッドが空いていません"
+	}
+	return
+
+///////////////////////////////////////////////
+///////////////////セッター////////////////////
+///////////////////////////////////////////////
+
+#define global set_padding(%1,%2 = -1,%3 = -1,%4 = -1,%5 = -1) _set_padding areagrid@global(%1), %2, %3, %4, %5
+#modfunc _set_padding int p1, int p2, int p3, int p4
+	if p1 = -1{ padding_left = padding_right	}else{	padding_left = p1 	}
+	if p2 = -1{ padding_top = padding_bottom	}else{	padding_top = p2  	}
+	if p3 = -1{	padding_right = padding_left 	}else{	padding_right = p3	}
+	if p4 = -1{	padding_bottom = padding_top	}else{	padding_bottom = p4	}
+	return
+#define global set_padding_recursive(%1, %2 = -1,%3 = -1,%4 = -1,%5 = -1, %6 = 0) __set_padding_recursive %1,%2,%3,%4,%5,%6
+#deffunc __set_padding_recursive int parent_id, int pl , int pt, int pr , int pb, int recursive
+	_set_padding_recursive_children areagrid@global(parent_id), pl, pt, pr, pb, recursive
+	return
+#modfunc _set_padding_recursive_children int pl, int pt, int pr, int pb, int recursive, local i
+
+	// 子要素に対してのみ再帰的にパディング適用
+	repeat 行数
+		for i,, 列数
+			cid = grid(i, cnt)
+			if cid != -1 {
+				_set_padding areagrid@global(cid), pl, pt, pr, pb
+				if recursive{
+					__set_padding_recursive cid, pl, pt, pr, pb, 1
+				}
+			}
+		next
+	loop
+	return
+
+#deffunc set_gap int p1, int p2, int p3
+	_set_gap areagrid@global(p1), p2, p3
+	return
+#modfunc _set_gap int x, int y
+	gap_x = x
+	gap_y = y
+	return
+
+#define global set_gap_recursive(%1, %2 = -1,%3 = -1, %4 = 0) __set_gap_recursive %1,%2,%3,%4
+#deffunc __set_gap_recursive int parent_id, int px, int py, int recursive
+	_set_gap_recursive_children areagrid@global(parent_id), px, py, recursive
+	return
+#modfunc _set_gap_recursive_children int px, int py, int recursive, local i
+
+	// 子要素に対してのみ再帰的にパディング適用
+	repeat 行数
+		for i,, 列数
+			cid = grid(i, cnt)
+			if cid != -1 {
+				_set_gap areagrid@global(cid), px, py 
+				if recursive{
+					__set_gap_recursive cid, px, py, 1
+				}
+			}
+		next
+	loop
+	return
+//グリッド形状変更
+#deffunc set_grid_shape int p1, int p2, int p3
+	_set_grid_shape areagrid@global(p1), p2, p3
+	return
+#modfunc _set_grid_shape int x, int y
+	transform grid, x, y
+	列数 = x
+	行数 = y
+	grid_dim grid_x, 列数
+	grid_dim grid_y, 行数
+	//グリッドサイズを等幅で初期化
+	repeat 列数: grid_x(cnt) = (ginfo_sx - gap_x *( 列数 - 1)) / 列数: loop
+	repeat 行数: grid_y(cnt) = (ginfo_sy - gap_y *( 行数 - 1)) / 行数: loop
+	return
+
+//親を設定する。親に子を設定する時の内部利用
+#deffunc local set_grid_parent int id, int pid
+	if id == -1: return
+	_set_grid_parent areagrid@global(id), pid
+	return
+#modfunc local _set_grid_parent int p1
+	parentid = p1
+	return
+#deffunc set_grid_area_back_color int p1, int p2
+	_set_grid_area_back_color areagrid@global(p1), p2
+	return 
+#modfunc _set_grid_area_back_color int p1
+	back_color = p1
+	return
+
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+//自身のレクトを取得
+#deffunc get_rect int p1, array rect
+	_get_rect areagrid@global(p1), -1, rect
+	return
+#modfunc _get_rect int child_id, array rect, local thismod_ID, local i
+
+	//親レクト取得
+	if parentid == -1{
+		//親がなければルートエリアということで、親は画面全体とする。
+		rect = padding_left,　padding_top,　ginfo(12) - padding_right,　ginfo(13) - padding_bottom
+		;logmes "ルートウィンドウサイズ -> " + ginfo(12) + "," + ginfo(13)
+	}else{
+		//親がいれば、親のエリアを取得
+		mref thismod_ID, 2
+		_get_rect areagrid@global(parentid), thismod_ID, rect
+	}
+
+	//親レクトに合わせてグリッドをスケーリング
+	scale_grid grid_x , gap_x, rect(2) - rect(0)
+	scale_grid grid_y , gap_y, rect(3) - rect(1)
+
+	//子IDが指定されてれば探して、そのレクトに変更
+	if child_id >= 0{
+		find = 0
+		repeat 行数
+			for i,, 列数
+				if grid(i, cnt) == child_id{
+					get_grid_rect grid_x, grid_y, gap_x, gap_y, i, cnt, g_rect
+					find++
+					break
+				}
+			next
+		loop
+		if find{
+			rp = rect(0),rect(1)
+			get_padding areagrid@global(child_id), p
+			rect(0) = g_rect(0) + rp(0) + p
+			rect(1) = g_rect(1) + rp(1) + p.1
+			rect(2) = g_rect(2) + rp(0) - p.2
+			rect(3) = g_rect(3) + rp(1) - p.3
+		}
+	}
+	return
+	
+//自身以下のレクトを処理 + (デバッグ用の可視化)
+#deffunc draw_all_rect int p1, int debug_mode
+	aid = -1
+	g_area = -1 //つかまれたエリア
+	
+	
+	_draw_all_rect areagrid@global(p1), 0 , debug_mode
+		if debug_mode {
+		if g_area != -1{
+			if f_area != -1{//すでに一つ目選択済み
+				logmes "スワップ要求が来ています->" + grid_value + "," + first_value 
+				if grid_value == -1 && first_value == -1: goto*swapend
+				if grid_value == -1 || first_value == -1{
+					if grid_value == -1{
+						empty_slot = g_area
+						target_slot = first_value
+					}else{
+						empty_slot = f_area
+						target_slot = grid_value
+					}
+					//エｍプティスロットの親系列にターゲットスロットがあったら無効
+					if is_valid_swap(empty_slot, Target_slot){
+
+						add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
+						add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
+						logmes "(empty <-> area ) swaped!!" + grid_value + "," + first_value
+					}else{
+						logmes "空スロットとその系列のスワップは不可能です\n" + empty_slot + "(-1) <--> " + Target_slot
+					}
+					goto*swapend
+				}
+				
+				if is_valid_swap(first_value, grid_value) && is_valid_swap(grid_value, first_value){
+					add_grid_child f_area, grid_value, first_gx, first_gy //元のエリアグリッドに現在のエリアグリッドの値を設定
+					add_grid_child g_area, first_value, grid_gx, grid_gy //自身のエリアに元のエリアグリッドの値を設定
+					logmes "(area <-> area) swaped!!" + grid_value + "," + first_value
+				}else{
+					//子情報も入れ替えたうえでスワップ（未実装）
+					logmes "親系列スワップ"
+				}
+				
+				*swapend
+				f_area = -1
+			}else{
+				f_area = g_area
+				first_value = grid_value
+				first_gx = grid_gx
+				first_gy = grid_gy
+				logmes strf("一つ目の情報 -> %d,%d,%d,%d",f_area,first_value,first_gx,first_gy)
+			}
+		}
+		if f_area >= 0{
+			if first_value == -1{
+				dim selected_rect
+				get_rect f_area, selected_rect
+				get_grid_area areagrid@global(f_area), first_gx, first_gy, selected_rect
+			}else{
+				get_rect first_value, selected_rect
+			}
+
+			make_instant_draw_object "BOXF", (selected_rect + selected_rect.2) / 2, (selected_rect.1 + selected_rect.3 ) / 2, selected_rect.2 - selected_rect, selected_rect.3-selected_rect.1, "$FFFFFF"
+			id = stat
+			update_priority_draw_object id, PRIORITY_FRONT
+			set_static_alpha get_entity_id(id), 128
+		}
+	}
+	return
+
+#modfunc get_grid_area int x, int y, array rect
+	get_grid_rect grid_x, grid_y, gap_x, gap_y, x, y, _rect
+	rect(2) = rect(0) + _rect(2)
+	rect(3) = rect(1) + _rect(3)
+	rect(0) = rect(0) + _rect(0) + padding_left
+	rect(1) = rect(1) + _rect(1) + padding_top
+	return
+	
+#defcfunc is_valid_swap int empty, int target
+	return _is_valid_swap(areagrid@global(empty), target)
+#modcfunc _is_valid_swap int target, local thismod_ID
+	mref thismod_ID, 2
+	if thismod_ID == target: return 0
+	if parentid == -1: return 1
+	return is_valid_swap(parentid, target)
+	
+#modfunc _draw_all_rect int depth, int debug_mode, local thismod_ID, local i, local result
+
+	mref thismod_ID, 2	
+	get_rect thismod_ID, result
+	if in_rect(result){
+		aid = thismod_ID
+	}
+	if back_color >= 0{
+		r = result - padding_left,result.1 - padding_top,result.2 + padding_right, result.3 + padding_bottom
+		make_instant_draw_object "RBOXF_FAST",(r+r.2)/2,(r.1+r.3) / 2, r.2-r,r.3-r.1,strf("%d",back_color)
+		update_priority_draw_object stat, PRIORITY_BACK
+	}
+	if debug_mode{ 
+		gap = gap_x, gap_y
+		//グリッド移動処理
+		grid_manager grid_x, grid_y, result, gap, draginfo
+		
+		/*draginfoに処理した情報が入る
+		draginfo(0) -> 最後につかんだ場所x
+		draginfo(1) -> 最後につかんだ場所y
+		draginfo(2) -> マウス位置x
+		draginfo(3) -> マウス位置y
+		draginfo(4) -> xグリッドつかんでいるかflag
+		draginfo(5) -> yグリッドつかんでいるかflag
+		draginfo(6) -> つかんだ場所情報x （マイナスならグリッド、そうでなければエリア
+		draginfo(7) -> つかんだ場所情報y （マイナスならグリッド、そうでなければエリア
+		*/
+
+	}
+	repeat 行数
+		for i,, 列数
+			if grid(i, cnt) != -1{
+				_draw_all_rect areagrid@global(grid(i,cnt)), depth + 1, debug_mode
+			}
+		next
+	loop
+	
+	if _getkey(1) == 1{
+		if aid = thismod_ID{
+			gx = draginfo(6)
+			gy = draginfo(7)
+			if gx >= 0 & gy >= 0{ //グリッドではなくエリア上にある
+				g_area = aid
+				grid_gx = gx
+				grid_gy = gy
+				grid_value = grid(gx,gy)
+				logmes strf("クリック情報 -> %d,%d,%d,%d",g_area,grid_value,grid_gx,grid_gy)
+			}
+		}
+	}
+	if debug_mode{
+		//グリッド描画
+		ex = 0
+		xsize =  get_gridSize(grid_x,gap_x)
+		ysize =  get_gridSize(grid_y,gap_y)
+		repeat length(grid_x) - 1
+			ex += grid_x(cnt)
+			make_instant_draw_object "BOXF_FAST",result + ex ,result.1     , result + ex + gap_x, result.1  + ysize,"$00EB00"
+			
+			ex += gap_x
+		loop
+		ey = 0
+		repeat length(grid_y) - 1
+			ey += grid_y(cnt)
+			make_instant_draw_object "BOXF_FAST",result      ,result.1 + ey, result + xsize , result.1 + ey + gap_y,"$00EB00"
+			ey += gap_y
+		loop
+	}
+	
+	return
+	
+#deffunc init_grid_system
+	f_area = -1
+	selected_rect = -1,-1,-1,-1
+	return
+#defcfunc get_in_area
+	return aid
+#deffunc get_in_grid array a
+	a = gx, gy
+	return
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+#global
+init_grid_system
+
+
+#module
+
+#define global ctype make_area_child(%1 = 1, %2 = 1, %3 = -1) _make_area_child(%1,%2,%3)
+#defcfunc _make_area_child  int x, int y, int _parent
+	if _parent != -1{
+		//親が指定されていれば、
+		parent = _parent
+
+		//これ以降省略されていた時はこれを使う。
+		default_parent = parent
+	}else{
+		//親が省略されている
+		parent = default_parent
+	}
+	a = make_area(x,y)
+	if parent != -1: push_grid_child parent, a
+	return a
+#deffunc init_grid_system_manager
+	default_parent = -1
+	return
+#global
+init_grid_system_manager
+
+#endif

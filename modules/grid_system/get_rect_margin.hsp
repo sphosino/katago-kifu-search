@@ -1,0 +1,36 @@
+#ifndef get_rect_margin
+#module
+#deffunc get_rect_margin array a, array b, array c
+
+	if length(b) == 1{
+		b.1 = b
+	}
+	repeat 2,2
+		if cnt >= length(b){
+			b(cnt) = -1
+		}
+	loop
+	
+	if b.0 < 0{
+		if b.2 < 0{
+			b.2 = 0
+		}
+		b.0 = b.2
+	}else: if b.2 < 0{
+		b.2 = b.0
+	}
+	
+	if b.1 < 0{
+		if b.3 < 0{
+			b.3 = 0
+		}
+		b.1 = b.3
+	}else: if b.3 < 0{
+		b.3 = b.1
+	}
+
+	c = a+b,a.1+b.1,a.2-b.2,a.3-b.3
+	
+	return
+#global
+#endif

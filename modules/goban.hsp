@@ -1,0 +1,437 @@
+#ifndef goban
+#include "bitboard.hsp"
+#addition "grid_system/area_grid_system.hsp"
+#addition "grid_system/rboxf.hsp"
+
+#const global 空点 0
+#const global 黒番 1
+#const global 白番 2
+
+#const 榧 $DEB887
+#const 桂 $CD853F
+#const 桧 $F5DEB3
+
+#const global board_color 桂
+
+#const global  area_alpha1 45 //(0-255)
+#const global  area_alpha2 85 //(0-255)
+
+#const stone_futi_color $585858
+
+
+#module goban board, 手番, 黒が取った数, 白が取った数, コウ禁止点, 最後の着手,手数, area_number, masx, masy,sizex,sizey, px, py,goban_buffer,stones_buffer, margin,最終手表示,prerect,pre最終手表示,stone_circle,r,marginx,marginy,星表示,pre星表示
+
+#modinit int x, int y, int p1, int p2, int _area, local thismod_ID
+	dim board, x, y
+	clear_board thismod
+	masx = p1
+	masy = p2
+	stone_circle = 1 //石を楕円にしない
+	area_number = _area
+	dim prerect, 4
+	dim r, 4
+	tmp = ginfo_sel
+	 goban_buffer = ginfo_newid: buffer goban_buffer , 1100, 1100
+	stones_buffer = ginfo_newid: buffer stones_buffer, 1100, 1100
+	gsel tmp
+	area_hilight_color = strf("$%x", get_complement_by_lch(board_color, 30, 0.9))  //LCH
+	;area_hilight_color = strf("$%x", get_complement_by_hsv(board_color))          //HSV
+	logmes area_hilight_color
+	mref thismod_ID,2
+	return thismod_ID
+#modfunc clear_board int x, int y
+	if x == 0{
+		dim board, length(board), length2(board)
+	}else: if y == 0{
+		dim board, x, x
+	}else{
+		dim board, x, y
+	}
+	黒が取った数 = 0
+	白が取った数 = 0
+	コウ禁止点 = -1,-1
+	最後の着手 = -1,-1
+	手番 = 黒番
+	手数 = 0
+	return
+	
+#modcfunc get_turn
+	return 手番
+	
+#defcfunc get_turn_SGFstr int p1
+	if p1 == 黒番: return "B"
+	if p1 == 白番: return "W"
+	return ;error
+	
+#modfunc toggle_turn
+	if 手番 == 黒番: 手番 = 白番: return
+	if 手番 == 白番: 手番 = 黒番
+	return
+
+#modcfunc get_x_board_size
+	return length(board)
+#modcfunc get_y_board_size
+	return length2(board)
+	
+#modcfunc get_手数
+	return 手数
+	
+#modfunc set_goban_margin int p1; エリアに対してのマージン
+	margin = p1
+	return
+	
+#modfunc 着手 int x, int y
+
+	res = play_move_on_array(board, x, y, 手番, 黒が取った数,白が取った数, コウ禁止点,コウ禁止点.1)
+	if res >= 0 | x < -1: toggle_turn thismod
+
+	最後の着手 = x, y
+
+	return res
+	
+#modfunc goban_getcapture array a
+	a = 黒が取った数,白が取った数
+	return
+
+#modfunc redraw_goban
+	nowsel = ginfo_sel
+	gsel goban_buffer
+	
+	
+	//背景描画
+	色を設定　board_color
+	boxf 0,0, masx * length(board), masy * length2(board)
+
+	//線描画
+	color 0,0,0
+	
+		// 縦線
+	repeat length(board)
+		x = masx/2 + masx * cnt
+	    line x, masy/2, x, sizey - masy/2 - 1
+	loop
+// 横線
+	repeat length2(board)
+		y = masy/2 + masy * cnt
+	    line masx/2, y, sizex - masx/2 - 1, y
+	loop
+
+	//星描画
+	if 星表示{
+		
+		get_hosi length(board), length2(board), hosilist
+
+		hosisizer = limit(masx / 8,3)
+		color
+		repeat stat
+	
+			centerx = masx / 2 + masx * hosilist(0, cnt)
+			centery = masy / 2 + masy * hosilist(1, cnt)
+			x1 = centerx - hosisizer
+			y1 = centery - hosisizer
+			x2 = centerx + hosisizer
+			y2 = centery + hosisizer
+			circle x1,y1,x2,y2
+
+			
+		loop
+	}
+
+	gsel nowsel
+	return
+	
+
+
+#modfunc 碁盤表示
+	get_rect area_number, r
+	gosub *get_goban_info
+	
+	if (prerect != r.0) || (prerect.1!=r.1) || (prerect.2!=r.2) || (prerect.3!=r.3){
+		prerect = r.0,r.1,r.2,r.3
+		redraw_goban thismod
+		redraw_stones thismod
+	}else{
+		if pre最終手表示 != 最終手表示 {
+			pre最終手表示 = 最終手表示
+			redraw_stones thismod
+		}
+		if pre星表示 != 星表示{
+			pre星表示 = 星表示
+			redraw_goban thismod
+		}
+	}
+
+	sizexx = 1.0074 * sizex //これぐらいでちょうどいい（コピー元サイズに謎補正）AIに全体のコードを聞きまくってもわからない
+
+
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,   , ,%d,%d,0", goban_buffer, sizexx, sizey )
+	make_instant_draw_object "SPRITE", px, py, sizex, sizey, strf("%d,0,0,255,0,%d,%d,4,$00FF00", stones_buffer, sizexx, sizey)
+	
+	return
+*get_goban_info
+	areasizex = r.2-r.0+1
+	areasizey = r.3-r.1+1
+	
+	masx = limit((areasizex - margin * 2) / length(board),1)
+	masy = limit((areasizey - margin * 2) / length2(board),1)
+	
+	if stone_circle == 1{
+		if masy > masx{
+			masy = masx
+		}else: if masx > masy{
+			masx = masy
+		}
+	}
+	
+	// 実際の碁盤描画サイズ
+	sizex = length(board)  * masx
+	sizey = length2(board) * masy 
+	marginx = (areasizex - sizex) / 2
+	marginy = (areasizey - sizey) / 2
+
+	//碁盤の中心を求める。marginx や marginy は両側に適用するのでエリアの中央と同じ。
+	px = (r.0 + r.2 - 1) / 2
+	py = (r.1 + r.3 - 1) / 2 
+	return
+	
+#modfunc redraw_stones
+	nowsel = ginfo_sel
+	gsel stones_buffer
+
+	//透過色＝（完全緑）
+	color 0,255,0
+	boxf 0,0,sizex,sizey
+	//石描画
+
+	repeat length(board): m = cnt
+		repeat length2(board)
+			posx = m   * masx
+			posy = cnt * masy
+
+			//ボード描画
+			switch board(m,cnt)
+			case 空点
+				if (コウ禁止点 == m) : if (コウ禁止点.1 ==cnt): if 最終手表示{
+					color $D4, $15, $15
+					circle posx + masx / 3, posy + masy / 3, posx + masx - masx / 3, posy + masy - masy / 3
+				}
+			swbreak
+			case 黒番
+				color 
+				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				gosub*draw_last_move_mark
+
+			swbreak
+			case 白番
+				color $DC,$DC,$DC
+				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				gosub*draw_last_move_mark
+
+			swbreak
+			case 3
+				color $6E,$6E,$6E
+				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				gosub*draw_last_move_mark
+
+
+			swbreak
+			case 4
+				color
+				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				color 255
+				gosub*draw_batu
+				gosub*draw_last_move_mark
+
+			swbreak
+			case 5
+				色を設定 $DCDCDC
+				circle posx , posy, posx + masx, posy + masy
+				色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				color $00,$00,$80
+				gosub*draw_batu
+				gosub*draw_last_move_mark
+			swbreak
+			case 6
+				color $6E,$6E,$6E
+				circle posx , posy, posx + masx, posy + masy
+								色を設定 $666666
+				circle posx , posy, posx + masx, posy + masy, 0
+				color $00,$00,$80
+				gosub*draw_batu
+				gosub*draw_last_move_mark
+			swbreak
+			swend
+			
+		loop
+	loop
+	
+	gsel nowsel
+	return
+*draw_batu
+	centerx = posx + masx/2
+	centery = posy + masy/2
+	mv = double(masx)/2/sqrt(2)
+	x1 = centerx - mv
+	y1 = centery - mv
+	x2 = centerx + mv
+	y2 = centery + mv
+	line x1,y1,x2,y2
+	y1 = centery + mv 
+	y2 = centery - mv
+	line x1,y1,x2,y2
+	return
+*draw_last_move_mark
+	if (最終手表示 == 1) && m == 最後の着手 && cnt == 最後の着手.1{
+		color 0,254,0
+		circle posx + masx / 3, posy + masy / 3, posx + masx - masx / 3, posy + masy - masy / 3
+	}
+	return
+
+
+	
+#modfunc Draw_set_list_on_board var set_list
+
+	repeat get_coordinates_set_int(set_list, sets)
+		x = r.0 + marginx + masx * sets(0, cnt)
+		y = r.1 + marginy + masy * sets(1, cnt)
+		make_instant_draw_object "BOXF", x + masx/2, y + masy/2, masx + masx\2, masy + masy\2, area_hilight_color
+		update_priority_draw_object stat,PRIORITY_FRONT
+		set_static_alpha get_entity_id(stat), area_alpha1
+		
+	loop
+	
+	return
+	
+#modfunc 碁盤に矩形データを表示 array rects
+		x1 = rects(0)
+		y1 = rects(1)
+		x2 = rects(2)
+		y2 = rects(3)
+		if x1 > x2: tmp = x1: x1 = x2: x2 = tmp
+		if y1 > y2: tmp = y1: y1 = y2: y2 = tmp
+		
+		x1 = r.0 + marginx + x1 * masx
+		y1 = r.1 + marginy + y1 * masy
+		x2 = r.0 + marginx + x2 * masx
+		y2 = r.1 + marginy + y2 * masy
+
+		make_instant_draw_object "BOXF",(x2 + x1 + masx)/2,(y1+y2)/2 + masy/2,x2-x1+masx ,y2-y1+masy , area_hilight_color
+		set_static_alpha get_entity_id(stat), area_alpha2
+
+	return
+
+#modfunc getBoardCoordinates array result
+	get_rect area_number, r
+	result = -1, -1
+	if mousex > (r.0 + marginx): result   = (mousex - (r.0 + marginx)) / masx
+	if mousey > (r.1 + marginy): result.1 = (mousey - (r.1 + marginy)) / masy
+	return
+
+#modfunc get_board_data array a
+	dim a,length(board),length2(board)
+	repeat length(board): m = cnt
+		repeat length2(board)
+			a(m,cnt) = board(m,cnt)
+		loop
+	loop
+	return
+	
+#modfunc set_board_data array a
+	repeat length(a)
+		m = cnt
+		repeat length2(a)
+			board(m,cnt) = a(m,cnt)
+		loop
+	loop
+	get_rect area_number, r
+	redraw_stones thismod
+	return
+	
+#modcfunc get_goban_position_color int _x, int _y
+	return board(_x,_y)
+	
+#deffunc board_module_init int p1
+	sx = 1,0,-1,0
+	sy = 0,-1,0,1
+
+	hosisizer = p1
+	
+	if hosisizer == 0: hosisizer = 3
+	return
+
+//盤の大きさを受け取り、星の位置のリストを返す
+#deffunc get_hosi int boardsizex, int boardsizey, array a , local n
+	
+	dim a, 2
+
+	if boardsizex == 9 && boardsizey == 9{
+		
+		a(0,n) = 4,4
+		n++
+
+	}
+
+	if boardsizex == 13 && boardsizey == 13{
+		
+		a(0,n) = 3,3 : n++
+		a(0,n) = 9,3 : n++
+		a(0,n) = 6,6 : n++
+		a(0,n) = 3,9 : n++
+		a(0,n) = 9,9 : n++
+
+	
+	}
+
+	if boardsizex == 19 && boardsizey == 19{
+
+		a(0,n) = 3,3 : n++
+		a(0,n) = 9,3 : n++
+		a(0,n) = 15,3 : n++
+		a(0,n) = 3,9 : n++
+		a(0,n) = 9,9 : n++
+		a(0,n) = 15,9 : n++
+		a(0,n) = 3,15 : n++
+		a(0,n) = 9,15 : n++
+		a(0,n) = 15,15 : n++
+
+	}
+
+	return n
+
+#modfunc get_goban_mas_size array a
+	a = masx,masy
+	return 
+	
+#modfunc get_goban_position array a
+	a = r.0 + marginx, r.1 + marginy
+	return
+
+#modfunc 置き石 int _x, int _y, int col
+	if _x < 0 || _x >= length(board) || _y < 0 || _y >= length2(board) {
+		return 0 // 範囲外
+	}
+	if board(_x, _y) != 空点 {
+		return 0 // 既に石がある
+	}
+	board(_x, _y) = col
+	return 1 // 成功
+
+#modfunc set_最終手表示  int p1
+	最終手表示 = p1
+	return
+#modfunc set_星表示 int p1
+	星表示 = p1
+	return
+#global
+board_module_init
+
+#endif

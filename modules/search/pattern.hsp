@@ -1,0 +1,469 @@
+#ifndef PATTERN_MODULE
+#addition "modules/coordinate_set.hsp"
+#addition "modules/rotate_coordinate.hsp"
+
+#module PATTERN_MODULE
+
+#const BOARD_X_MAX 26
+#const BOARD_Y_MAX 26
+
+#const BOARD_SIZE (BOARD_X_MAX * BOARD_Y_MAX * 4)
+#const MAX_PATTERN_SIZE (BOARD_SIZE + (BOARD_X_MAX * BOARD_Y_MAX * 5) + (64 * 4) + (64 * 9)) //ボード + ３種類の要素
+
+#const HISTORY_MAX 6
+
+#const global PATTERN_ZERO 0 //検索範囲外
+#const global PATTERN_NONE 1
+#const global PATTERN_ANY_COLOR 0xFFFFFFFF & (PATTERN_NONE ^-1)
+#const global PATTERN_BLACK 1 << 1
+#const global PATTERN_WHITE 1 << 2
+#const global PATTERN_RED   1 << 3
+#const global PATTERN_GREEN 1 << 4
+
+#deffunc init_pattern
+
+	init_edit_pattern
+
+	//-----------------------------------------------------
+	
+	//回転前の二次元配列
+	dim base_board, BOARD_X_MAX, BOARD_Y_MAX
+	dim base_group, BOARD_X_MAX, BOARD_Y_MAX
+	dim base_tejun, BOARD_X_MAX, BOARD_Y_MAX
+
+	//------------------------------------------------------
+
+	//最終出力用
+	dim rotated_board, BOARD_X_MAX, BOARD_Y_MAX, 8 //碁盤
+	dim rotated_group, BOARD_X_MAX, BOARD_Y_MAX, 8 //グループ
+	dim rotated_tejun, BOARD_X_MAX, BOARD_Y_MAX, 8 //手順
+
+	//-------------------------------------------------------
+	//履歴ハッシュ計算用の一時変数
+	sdim hash_tmp_data, MAX_PATTERN_SIZE
+
+	clear_pattern_history
+	return
+#deffunc clear_pattern_history
+	//パターンの履歴用
+	dim board_history, BOARD_X_MAX, BOARD_Y_MAX, HISTORY_MAX
+	sdim v_history,, HISTORY_MAX
+	sdim group_history,, 4, HISTORY_MAX
+	sdim tejun_history,, 9, HISTORY_MAX
+	dim hash_value, HISTORY_MAX //保存時、ハッシュを計算して保存
+
+	history_num = -1 //最新履歴の番号
+	_history_max = 0 //保存されている履歴の数
+
+	return
+
+/* memo
+history_num@pattern_module
+_history_max@pattern_module
+board_history@pattern_module
+v_history@pattern_module
+group_history@pattern_module
+tejun_history@pattern_module
+*/
+
+#deffunc init_edit_pattern
+
+	init_board
+	init_group
+	init_tejun
+
+	return
+	
+#deffunc init_board
+	dim board, BOARD_X_MAX, BOARD_Y_MAX
+	sdim v //対象の座標リスト
+	return
+#deffunc init_group
+	//グループ
+	sdim group,, 4 //グループの最大数
+	return
+#deffunc init_tejun
+	//手順
+	sdim tejun,, 9 //手順の最大数
+	return
+#deffunc init_group_tejun
+	init_group
+	init_tejun
+	return
+
+#deffunc clear_group int p1
+	group(p1) = ""
+	return
+#deffunc clear_tejun int p1
+	tejun(p1) = ""
+	return
+	
+//------------------------------------------------------------------------
+
+//外部から直接読み込み
+#deffunc set_board_pattern array a
+	for i,, length(a)
+	for j,, length2(a)	
+		board(i,j) = a(i,j)
+	next
+	next
+	return
+#deffunc set_coordinate_pattern str s1
+	v = s1
+	logmes v
+	return
+#deffunc set_group array a
+	repeat 4
+		group(cnt) = a(cnt)
+	loop
+	return
+#deffunc set_tejun array a
+	repeat 9
+		tejun(cnt) = a(cnt)
+	loop
+	return
+
+//外部に出力
+#deffunc get_board array a
+	for i,, length(a)
+	for j,, length2(a)	
+		a(i,j) = board(i,j)
+	next
+	next
+	return
+#deffunc get_base_board array a
+	for i,, length(a)
+	for j,, length2(a)	
+		a(i,j) = base_board(i,j)
+	next
+	next
+	return
+#deffunc get_coordinate_set var a
+	a = v
+	return
+
+#deffunc get_group array a
+	repeat 4
+		a(cnt) = group(cnt)
+	loop
+	return
+
+#deffunc get_tejun array a
+	repeat 9
+		a(cnt) = tejun(cnt)
+	loop
+	return
+
+#deffunc get_base_binary var a, int offset
+	if vartype(a) != 2: sdim a
+	memexpand a, offset + BOARD_SIZE * 3
+	memcpy a, base_board, BOARD_SIZE, offset
+	memcpy a, base_group, BOARD_SIZE, offset + BOARD_SIZE * 1
+	memcpy a, base_tejun, BOARD_SIZE, offset + BOARD_SIZE * 2
+
+	return offset + BOARD_SIZE * 3 //実サイズを返す
+
+#deffunc set_base_from_binary var a, int offset
+	memcpy base_board, a, BOARD_SIZE,, offset
+	memcpy base_group, a, BOARD_SIZE,, offset + BOARD_SIZE * 1
+	memcpy base_tejun, a, BOARD_SIZE,, offset + BOARD_SIZE * 2
+
+	return offset + BOARD_SIZE * 3
+
+//-----------------------------------------------------------------------
+
+//碁盤操作は外部でやって直接読み込みにしているけどどうしよう。
+
+
+//グループ操作
+#deffunc add_group int x, int y, int group_num
+	add_coordinate_set group(group_num), x, y
+	return
+#deffunc del_group int x, int y, int group_num
+	del_coordinate_set group(group_num), x, y
+	return
+
+//手順操作
+#deffunc add_tejun int x, int y, int tejun_num
+	add_coordinate_set tejun(tejun_num), x, y
+	return
+#deffunc del_tejun int x, int y, int tejun_num
+	del_coordinate_set tejun(tejun_num), x, y
+	return
+
+
+//特定の地点の手順とグループを全て解除
+#deffunc del_all_group_tejun int x, int y
+	repeat 4
+		del_group x, y, cnt
+	loop
+	repeat 9
+		del_tejun x, y, cnt
+	loop
+	return
+
+//////////////////////////////
+///////基本パターン作成///////
+//////////////////////////////
+#deffunc set_base
+	set_base_board
+	set_base_group
+	set_base_tejun
+	return
+
+//基本石パターン作成
+#deffunc set_base_board
+	dim base_board, BOARD_X_MAX, BOARD_Y_MAX
+	repeat get_coordinates_set_int(v, t)
+		x = t(0,cnt)
+		y = t(1,cnt)
+		switch board(x,y)
+		case 0
+			base_board(x, y) = PATTERN_NONE ; 1
+		swbreak
+		case 1
+			base_board(x, y) = PATTERN_BLACK ;2
+		swbreak
+		case 2 
+			base_board(x, y) = PATTERN_WHITE ;4
+		swbreak
+		case 3
+			base_board(x, y) = PATTERN_BLACK | PATTERN_WHITE; 6
+		swbreak
+		case 4
+			base_board(x, y) = PATTERN_NONE | PATTERN_WHITE; 5 黒石＋（×）
+		swbreak
+		case 5
+			base_board(x, y) = PATTERN_NONE | PATTERN_BLACK; 3 白石＋（×）
+		swbreak
+		default
+			dialog "想定外の値 -> set_base_board"
+			stop
+		swbreak
+		swend
+	loop
+	return
+	
+//基本グループ作成
+#deffunc set_base_group
+	dim base_group, BOARD_X_MAX, BOARD_Y_MAX
+	repeat length(group)
+		group_flag = 1 << cnt
+		split group(cnt),",", coordinate_list
+		
+		repeat stat
+			coord_str = coordinate_list(cnt)
+			if strlen(coord_str) < 4: continue
+			x = int(strmid(coord_str,0,2))
+			y = int(strmid(coord_str,2,2))
+			base_group(x,y) |= group_flag
+		loop
+	loop
+	return
+	
+//基本手順作成
+#deffunc set_base_tejun
+	dim base_tejun, BOARD_X_MAX, BOARD_Y_MAX
+	for i,, length(tejun)
+		split tejun(i),",", coordinate_list
+		
+		repeat stat
+			coord_str = coordinate_list(cnt)
+			if strlen(coord_str) < 4: continue
+			x = int(strmid(coord_str,0,2))
+			y = int(strmid(coord_str,2,2))
+			base_tejun(x,y) = i + 1
+		loop
+	next
+	return
+
+//---------------------------------------------------------------------
+
+//基本パターンから回転のパターンを作成
+#deffunc make_rotate_patterns int board_sizex, int board_sizey
+	num_rotations = 4 << (board_sizex == board_sizey)
+	for i,, board_sizex
+	for j,, board_sizey
+	for k,, num_rotations
+	
+		rotate_coordinate result, i, j, k, board_sizex, board_sizey // (i,j)をkによる回転を加えて resultに格納
+		
+		rotated_board(result, result.1, k) = base_board(i, j)
+		rotated_group(result, result.1, k) = base_group(i, j)
+		rotated_tejun(result, result.1, k) = base_tejun(i, j)
+
+	next
+	next
+	next
+
+	return
+	
+//回転を含めたパターンを利用。
+#deffunc get_pattern array 色, array グループ, array 手順
+
+	//最終出力用
+	dim 色, BOARD_X_MAX, BOARD_Y_MAX, 8 //碁盤
+	dim グループ, BOARD_X_MAX,BOARD_Y_MAX, 8 //グループ
+	dim 手順, BOARD_X_MAX,BOARD_Y_MAX, 8　//手順
+
+	memcpy 色, rotated_board, varsize(rotated_board)
+	memcpy グループ, rotated_group, varsize(rotated_group)
+	memcpy 手順, rotated_tejun, varsize(rotated_tejun)
+
+	return
+
+//---------履歴関連------------------------------------------------
+#deffunc make_hash_tmp_data
+	memcpy hash_tmp_data, board, BOARD_SIZE, 0
+	c = 0
+	repeat 4
+		memcpy hash_tmp_data, group(cnt), 64, BOARD_SIZE + 64 * c
+		c++
+	loop
+	repeat 9
+		memcpy hash_tmp_data, tejun(cnt), 64, BOARD_SIZE + 64 * c
+		c++
+	loop
+	
+	memcpy hash_tmp_data, v    , limit(strlen(v),64) , BOARD_SIZE + 64 * c
+	
+	return
+
+#defcfunc get_pattern_size
+	return BOARD_SIZE + (64 * 4) + (64 * 9) + limit(strlen(v),64)
+
+#deffunc get_pattern_data var a, int offset
+	if vartype(a) != 2: sdim a
+	p_size = get_pattern_size()
+	memexpand a, p_size + offset
+	memcpy a, hash_tmp_data, p_size, offset
+	return p_size
+
+#defcfunc local get_history_hash
+	hash = 0
+	repeat get_pattern_size()
+		hash = (hash * 137 + peek(hash_tmp_data, cnt))
+	loop
+	return hash & $7FFFFFFF
+    
+#deffunc save_history
+	//現在のパターン((board-v),group,tejun)を履歴として登録
+	make_hash_tmp_data
+	now_hash = get_history_hash()
+
+	exist_hash = 0
+	repeat _history_max
+		if hash_value(cnt) == now_hash{
+			exist_hash = 1
+			break
+		}
+	loop
+	if exist_hash: return
+	
+	history_num = (history_num + 1) \ HISTORY_MAX //最初は -1 + 1 となり0番に登録されるはず。
+	if _history_max == history_num{
+		_history_max = history_num + 1 //ヒストリーの個数は最大の番号＋１
+	}
+
+	hash_value(history_num) = now_hash
+	
+	
+	for i,,BOARD_X_MAX
+	for j,,BOARD_Y_MAX
+		board_history(i,j,history_num) = board(i,j)
+	next
+	next
+	v_history(history_num) = v
+
+	for i,,4
+		group_history(i, history_num) = group(i)
+	next
+
+	for i,,9
+		tejun_history(i, history_num) = tejun(i)
+	next
+
+	
+	return
+
+#deffunc load_history int p1
+	if p1 < 0 || p1 >= HISTORY_MAX{
+		logmes "存在しない履歴番号 -> load_history"
+		return
+	}
+	//履歴から復元
+	
+	for i,,BOARD_X_MAX
+	for j,,BOARD_Y_MAX
+		board(i,j) = board_history(i,j, p1)
+	next
+	next
+	v = v_history(p1)
+
+	for i,,4
+		group(i) = group_history(i, p1)
+	next
+
+	for i,,9
+		tejun(i) = tejun_history(i, p1)
+	next
+
+	return
+
+//ヒットと判定するために必要なヒット数を計算
+
+#defcfunc get_pattern_all_groups_num
+	count = 0
+	mask = 0
+	dim group_has_real_stone, 4  ; A-Dグループのうち、少なくとも1つが「実石をふくむ（×指定以外）」かどうか
+
+	for i,,BOARD_X_MAX
+	for j,,BOARD_Y_MAX
+		if base_board(i,j) == 0: _continue
+
+		
+		group_mask = base_group(i, j)
+		stone_color = base_board(i, j)
+		
+		if group_mask == 0 {
+			; グループ外の石 → ×でなければカウント
+			count += ((stone_color & PATTERN_NONE) == 0)
+		} else {
+			mask |= group_mask
+			if ((stone_color & PATTERN_NONE) == 0) {
+				; 実石がある → グループ内フラグON
+				repeat 4
+					if group_mask & (1 << cnt) {
+						group_has_real_stone(cnt) = 1
+					}
+				loop
+			}
+		}
+	next
+	next
+
+	; ×以外の石を含むグループをカウント
+	groups = 0
+	repeat 4
+		if  group_has_real_stone(cnt){
+			groups++
+		}
+	loop
+
+	logmes ""+count + "::" + groups
+
+	return count + groups
+
+//--util
+#defcfunc get_history_str_for_combox
+	s = ""
+	repeat _history_max
+		if cnt: s += "\n"
+		s += str(cnt)
+	loop
+	return s
+
+#global
+init_pattern
+
+#endif

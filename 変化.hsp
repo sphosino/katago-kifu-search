@@ -1,0 +1,140 @@
+//マウスのエリア間移動チェック
+if now_area != get_in_area() || _getkey(1) >= 1{
+	now_area = get_in_area()
+	set_tooltip now_area
+	count = 0.
+}else{
+	count+= frametime()
+	if count >= 0.500: draw_tooltip now_area
+}
+
+//window状態変化
+
+if window_status != ginfo(4) || window_status.1 != ginfo(5) || window_status.2 != ginfo(12) || window_status.3 != ginfo(13){
+	window_status = ginfo(4),ginfo(5),ginfo(12),ginfo(13)
+	IsZoomed hwnd :最大化 = stat
+	IsIconic hwnd :最小化 = stat
+	if (最大化 | 最小化) == 0{
+		save_window_status = ginfo(4),ginfo(5), ginfo(12), ginfo(13)
+	}
+	if 最小化 == 0{
+		set_static_sizex get_entity_id(bg_id), ginfo(12)
+		set_static_sizey get_entity_id(bg_id), ginfo(13)
+	}
+}
+
+if 最小化: goto*main
+
+//combox状態変化
+
+cbox = g_combox(combox_history_obj)
+
+if get_dropdown_status(cbox){
+	if is_changed_dropdown(cbox){
+		;開かれた瞬間
+		;現在の碁盤の状態を保存（履歴とはまた別に特別保持
+		get_board_data board.ui_mode, now_board //碁盤の状態取得
+		now_v = v //判定対象セットリスト
+		get_group now_group //グループ状態取得
+		get_tejun now_tejun //手順状態取得
+		
+		now_ui_mode = ui_mode //操作モード
+		
+	}else{
+		if is_changed_cursor_item(cbox){
+			
+			if get_cursor_item(cbox) == -1{ //ドロップダウンの項目から外れたら
+				; 記憶した碁盤を復元
+				set_board_data board.ui_mode, now_board
+				v = now_v
+				set_group now_group
+				set_tejun now_tejun
+				set_g_checkbox g_chkbox.mode_chkbox,  now_ui_mode //チェックボックスに操作モード通知
+	
+			}else{
+				load_search_history stat //履歴から復元するメソッド	
+			}	
+		}
+	}
+}
+
+
+
+repeat 2
+	set_最終手表示 board.cnt, last_move_mark
+	set_星表示 board.cnt, view_hosi
+loop
+
+if pre_ui_mode != ui_mode {
+	pre_ui_mode = ui_mode
+
+	if ui_mode = MODE_KIFU_VIEW{
+		init_group_tejun
+	}else{
+		get_board_data board  , user_board
+
+
+		clear_board board.1, length(user_board), length2(user_board)
+		碁盤表示 board.1
+		redraw_goban board.1
+		redraw_stones board.1
+		set_board_data board.1, user_board
+
+		point = -1,-1
+
+		swapturn = 手数 + 1 & 1 //編集手番を現局面の次の手番にセット(入力.hspで使ってるよ)
+	}
+}
+
+if pre_filter_on != filter_on{
+	pre_filter_on = filter_on
+	if filter_on{
+		gosub *filtering_and_make_listbox
+	}else{
+		
+		selected_num = get_selected_item_ids(kifulist.matchlist, select_items)
+		
+		g_filter_off kifulist.matchlist
+		
+			//選択
+		repeat get_selected_item_ids(kifulist.matchlist , new_indices)
+			current_id = new_indices(cnt)
+			g_select_id kifulist.matchlist, current_id, 0 //全部クリア
+			repeat selected_num
+				if current_id == select_items(cnt){ //前のに存在してたら選択
+					g_select_id kifulist.matchlist, current_id, 1
+					break
+				}
+			loop
+		loop
+		
+	}
+	set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+}else{
+	if pre_combox_idx != get_value_g_combox(g_combox){
+		pre_combox_idx = stat
+		if filter_on{
+			gosub *filtering_and_make_listbox
+			set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+		}
+	}
+}
+if is_state_changed_slider2(g_slider2){
+	if filter_on{
+		gosub*filtering_and_make_listbox
+		set_g_label g_label.1, "検索結果(" + get_list_item_num(kifulist.matchlist) + ")件"
+	}
+}
+
+if pre_background_load != background_load{
+	pre_background_load = background_load
+	repeat child_count_current
+		nocoSendCopyData child_hwnd_list(cnt), background_load, バックグラウンド読み込み, 4
+    loop
+}
+
+if last_result_time != -1 && keyfpstime - last_result_time > 10000{
+	//検索中且つ最後の検索結果を受け取った時間から１０秒以上の開きがあれば検索を終わったものとみなす
+	gosub*search_finish
+	//ここでピンポン処理を発信すると堅牢か。
+}

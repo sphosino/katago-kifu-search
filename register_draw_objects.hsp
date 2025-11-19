@@ -1,0 +1,29 @@
+	foreach kifulist
+		listbox_manager kifulist.cnt, current_kifulist = cnt
+	loop
+	
+	foreach g_label
+		draw_g_label g_label.cnt
+	loop
+	font "ÉÅÉCÉäÉI", 29
+	foreach g_chkbox
+		draw_g_chkbox g_chkbox.cnt
+	loop
+	foreach g_buttons
+		draw_g_button g_buttons.cnt
+	loop
+	foreach g_slider
+		slider_manager g_slider.cnt
+	loop
+	foreach g_stepper
+		draw_g_stepper g_stepper.cnt
+	loop
+	foreach g_radiobox
+		draw_g_radiobox g_radiobox.cnt
+	loop
+
+	slider_manager2 g_slider2
+	
+	foreach g_combox
+		combox_manager g_combox.cnt
+	loop

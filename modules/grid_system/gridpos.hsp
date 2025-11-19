@@ -1,0 +1,265 @@
+#ifndef get_grid_rect
+#addition "modules/keyfps.hsp"
+#addition "../keyfps.hsp"
+#module 
+#deffunc get_grid_rect array x, array y, int margin_x, int margin_y, int idx, int idy, array c
+	dim c,4
+	if idx < 0 || idy < 0: return
+	if idx >= length(x) || idy >= length(y): return
+
+	x2 = 0
+	y2 = 0
+	repeat idx
+		x2 += x(cnt) + margin_x
+	loop
+
+	repeat idy
+		y2 += y(cnt) + margin_y
+	loop
+
+	c = x2,y2,x2+x(idx),y2+y(idy)
+	
+	return
+
+
+#deffunc move array a, int index, int move_value
+	if index <= 0 || index >= length(a): return
+	
+	if move_value > 0{
+		tmp = move_right(a, index,  move_value)
+	}else{
+		tmp = move_left (a, index, -move_value)
+	}
+
+	return
+#defcfunc move_left array a, int index, int move_value, local moved_value
+	if index <= 0: return 0
+	moved_value = 0
+	t =  a(index - 1) - move_value
+	if t < 0{
+		moved_value = a(index - 1) + move_left(a, index - 1, abs(t))	
+		a(index - 1) = 0
+	}else{
+		a(index - 1) = t
+		moved_value = move_value
+	}
+	a(index) += moved_value
+	
+	return moved_value
+
+#defcfunc move_right array a, int index, int move_value, local moved_value
+	if index >= length(a): return 0
+	moved_value = 0
+	t =  a(index) - move_value
+	if t < 0{
+		moved_value = a(index) + move_right(a, index + 1, abs(t))
+		a(index) = 0
+	}else{
+		a(index) = t
+		moved_value = move_value
+	}
+	a(index - 1) += moved_value
+	return moved_value
+
+#defcfunc grid_id array a, int _margin, int position
+	start = 0
+	index = -99999
+	if position >= 0{
+		repeat length(a)
+			start += a(cnt)
+			if position <= start: index = cnt: break
+			if cnt == length(a) - 1: break
+			start += _margin
+			if position <= start: index = -1 - cnt: break
+		loop
+	}
+	return index
+	
+#deffunc grid_manager array x, array y, array grid_position, array margin, array draginfo
+
+	dup catchx, draginfo(0)
+	dup catchy, draginfo(1)
+	dup prepos_x, draginfo(2)
+	dup prepos_y, draginfo(3)
+	dup dragging_x, draginfo(4)
+	dup dragging_y, draginfo(5)
+	dup gidx, draginfo(6)
+	dup gidy, draginfo(7)
+	
+	gidx = grid_id(x, margin  , mousex - grid_position  )
+	gidy = grid_id(y, margin.1, mousey - grid_position.1)
+	
+	if _getkey(1) == 1{
+		if gidx < 0 && gidx != -99999 && grid_position(1) <= mousey && grid_position(3)  >= mousey{
+			catchx = abs(gidx)
+			prepos_x = mousex
+			dragging_x = 1
+		}
+		if gidy < 0 && gidy != -99999 && grid_position(0) <= mousex && grid_position(2)  >= mousex{
+			catchy = abs(gidy)
+			prepos_y = mousey
+			dragging_y = 1
+		}
+	}
+	if dragging_x{
+		move x, catchx, mousex - prepos_x
+		prepos_x = mousex
+	}
+	if dragging_y{
+		move y, catchy, mousey - prepos_y
+		prepos_y = mousey
+	}
+
+	if _getkey(1) == -1{
+		dragging_x = 0
+		dragging_y = 0
+	}
+	
+
+	return
+
+#deffunc grid_draw_manager array x, array y, array grid_position, array margin
+
+	//全てのエリア描画
+	color :boxf:color 200,200,200
+	pos grid_position, grid_position.1	
+	grid_draw x,y, margin,margin.1
+
+	//オンエリア描画
+	gidx = grid_id(x,margin  ,mousex - grid_position  )
+	gidy = grid_id(y,margin.1,mousey - grid_position.1)
+	color 255,0,0
+	get_grid_rect x,y,margin,margin.1,gidx,gidy, n
+	if gidx >= 0 && gidy >= 0{
+		boxf grid_position + n, grid_position.1 + n.1, grid_position + n.2, grid_position.1 + n.3
+	}
+
+	//グリッド描画
+	color 0,235,0
+	ex = 0
+	ysize =  get_gridSize(y,margin.1)
+	xsize =  get_gridSize(x,margin)
+	repeat length(x) - 1
+		ex += x(cnt)
+		boxf grid_position + ex , grid_position.1, grid_position + ex + margin, grid_position.1  + ysize
+		ex += margin
+	loop
+	ey = 0
+	repeat length(y) - 1
+		ey += y(cnt)
+		boxf grid_position      ,grid_position.1 + ey, grid_position + xsize , grid_position.1 + ey + margin.1
+		ey += margin
+	loop
+	
+	return
+
+#deffunc grid_draw array x, array y, int margin_x, int margin_y
+
+	sx = ginfo_cx
+	sy = ginfo_cy
+	p = 0,0
+	repeat length(y)
+		m = cnt
+		p.0 = 0
+		repeat length(x)
+			boxf sx + p, sy + p.1, sx + p + x(cnt), sy + p.1 + y(m)
+			p += x(cnt) + margin_x
+		loop
+
+		p(1) += y(cnt) + margin_y
+	loop
+	return
+#defcfunc get_gridSize array a, int margin
+	e = 0
+	repeat length(a)
+		e += a(cnt)
+	loop
+	return e + length(a) * margin - margin
+
+#deffunc scale_grid array 適用するグリッド, int グリッドのマージンサイズ, int 新しい全体サイズ
+
+	元のグリッド領域のサイズ = get_gridSize(適用するグリッド)
+
+	//小さくなりすぎたときはスケール維持をあきらめて各エリアが０にならないようにする。
+	if abs(元のグリッド領域のサイズ) >= 0 && abs(元のグリッド領域のサイズ) < length(適用するグリッド){
+		repeat length(適用するグリッド)
+			適用するグリッド(cnt) = (元のグリッド領域のサイズ > 0) * 2 - 1
+		loop
+		元のグリッド領域のサイズ = length(適用するグリッド) * (元のグリッド領域のサイズ > 0) * 2 - 1
+	}
+	
+	新しいグリッド領域のサイズ = 新しい全体サイズ - ((length(適用するグリッド) - 1) * グリッドのマージンサイズ) //マージンを除いたサイズ
+
+
+	repeat length(適用するグリッド)
+		適用するグリッド(cnt) = 適用するグリッド(cnt) * 新しいグリッド領域のサイズ / 元のグリッド領域のサイズ
+	loop
+	
+	誤差 =  新しいグリッド領域のサイズ - get_gridSize(適用するグリッド)
+
+
+	割り当てる誤差 = 誤差 / length(適用するグリッド)
+
+
+	//誤差の割り当てとインデックス作成
+	repeat length(適用するグリッド)
+		適用するグリッド(cnt) += 割り当てる誤差
+		index(cnt) = cnt
+		svalue(cnt) = abs(適用するグリッド(cnt))
+	loop
+	
+	//インデックス順にあまり誤差割り当て
+	if 割り当てる誤差 == 0{
+		あまり誤差 = 誤差
+	}else{ 
+		あまり誤差 = 誤差 \ 割り当てる誤差
+	}
+
+	//インデックスソート
+	repeat length(適用するグリッド) -1
+		repeat length(適用するグリッド) - cnt - 1
+			if svalue(index(cnt)) > svalue(index(cnt + 1)){ //小さい領域から割り当てることで、消滅防止。(次第に均一化されていきます)
+				tmp = index(cnt)
+				index(cnt) = index(cnt +1)
+				index(cnt + 1) = tmp
+			}
+		loop
+	loop
+
+	//あまり誤差の割り当て
+	repeat abs(あまり誤差)
+		適用するグリッド(index(cnt)) += あまり誤差 / abs(あまり誤差)
+	loop
+	
+	return
+	
+#global
+#endif
+
+#if 0
+x = 200,20,20,20,20,200
+y = 20,20,0,20,20,20
+margin = 5,5
+
+scale_grid x, margin  , 400
+scale_grid y, margin.1, 300
+
+grid_rect = 100, 30, 100 + get_gridSize(x,margin), 30 + get_gridSize(y,margin.1)
+
+randomize
+*main
+	manage_keyfps
+	
+	grid_manager x, y, grid_rect, margin,draginfo
+	grid_draw_manager x, y, grid_rect, margin
+
+	color 255,255,255:pos 0,0:mes get_gridSize(x,margin)
+
+	if _getkey(2) > 0: scale_grid x, margin  , mousex - grid_rect
+	if _getkey(2) > 0: scale_grid y, margin.1, mousey - grid_rect.1
+
+	get_grid_rect x, y, margin, margin.1, 2, 2, rect
+	title""+mousex +"," + mousey + "  :  "
+	redraw:redraw 2
+goto*main
+#endif

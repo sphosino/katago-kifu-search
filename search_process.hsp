@@ -1,0 +1,477 @@
+#packopt name "search_process"
+#bootopt notimer 1 //ツールなので高精度タイマーを利用しない
+#packopt hide 1
+#include "modules/rotate_coordinate.hsp"
+#include "../hsp_common/id_manager.hsp"
+#include "modules/bitboard.hsp"
+#include "basic.hsp"
+#include "modules/sgf.hsp"
+#include "../hsp_common/hash.hsp"
+#include "../hsp_common/set.hsp"
+#include "modules/search/pattern.hsp"
+#include "modules/search/Search_pattern.hsp"
+#include "modules/search/Search_pattern2.hsp"
+#include "kifu_protocol.hsp"
+#include "setting_defines.hsp"
+#define SUB_EXE
+#include "config_path.hsp"
+screen 0,,,2
+#include "modules/ProcLinkModuleQueue.hsp"
+
+#const FPS_AFTER_LOADING 24
+
+view_window = 0 //画面を表示するかしないか
+
+// ★★★ デバッグログ機能追加 ★★★
+#module
+#deffunc debug_log str msg
+	#ifdef _debug
+		notesel log_buf
+		noteadd "[" + gettime(5) + ":" + gettime(6) + ":" + gettime(7) + "] " + msg
+		noteunsel
+	#endif
+	return
+	
+#deffunc save_debug_log
+	#ifdef _debug
+		notesel log_buf
+		notesave "debug_log.txt"
+		noteunsel
+	#endif
+	return
+#global
+
+
+
+sdim log_buf, 100000
+debug_log "プログラム開始"
+// ★★★★★★★★★★★★★★★★★★
+
+delkey_all //キー監視をすべてクリア
+addkey 'C' //長押しで画面クリア
+
+sdim result //親に結果を送る用のバッファ
+background_load = 0
+
+///////////////////////通信設定
+// 設定読み込み
+chdir subdir
+await 10
+notesel setting_str
+	exist "app_name.txt"
+	if strsize == -1{
+		dialog "app_nameファイル見つかりません"
+		end
+	}else{
+		noteload "app_name.txt"
+	}
+	noteget app_name, 0
+	nocoConnectAccept app_name  // グローバルアクセス空間に
+	noteget h, 1
+	parent_hwnd = int(h)
+
+	exist "window.txt"
+	if strsize == -1{
+		tw = DEFAULT_TARGET_WAIT //デフォルトのターゲット待ち時間
+	}else{
+		noteload "window.txt"
+		noteget tmp, LINE_TARGET_WAIT
+		tw = limit(int(tmp), MIN_TARGET_WAIT, MAX_TARGET_WAIT)
+	}
+
+noteunsel
+
+enable_auto_adjust //target_wait基準でFPSを自動調整
+set_target_wait tw //１フレーム当たりOSに返す時間(ms)
+
+chdir kifudir
+
+child_count = 1
+
+await 40
+
+担当棋譜変更による初期化 LIMIT_PER_PROCESS
+
+onerror *err_lab
+
+//自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
+nocoAutoCopyData : repeat
+	manage_keyfps
+	gosub *on_copydata
+
+	if background_load{
+		if get_cardinality(kifu_unloaded) > 0 { ; 未読み込みリストが空でないことを確認
+			temp_kifu_name = get_one_data(kifu_unloaded) ; 未読み込みリストから1つ取り出す
+			notesel sgf_data
+				exist temp_kifu_name
+				if strsize == -1: dialog "error 棋譜名 -> " + temp_kifu_name: end
+	
+				noteload temp_kifu_name
+				topnode = load_sgf(sgf_data) ; 棋譜読み込み
+				new_value filename_to_topnode, temp_kifu_name, str(topnode) ; ハッシュ登録
+			noteunsel
+			; 読み込みが完了したら、未読み込みリストから削除
+			del_data kifu_unloaded, temp_kifu_name
+			if get_cardinality(kifu_unloaded) == 0{
+				enable_auto_adjust 0 //自動FPS調整OFF
+				setfps FPS_AFTER_LOADING
+			}
+		}
+		
+		if ginfo_act >= 0{
+			if (cnt \ 100 == 99){
+				if get_cardinality(kifu_unloaded){
+					title "棋譜読み込み中 ... (残り " + stat + "件)"
+				}else{
+					title "読み込み完了"
+				}
+			}
+		}
+	}
+	
+	exist_parent = 0
+	repeat nocoConnectInfo(0)
+		if nocoConnectInfo(1, cnt) == parent_hwnd{
+			exist_parent = 1
+			break
+		}
+	loop
+	if exist_parent == 0: end
+	
+	if getHold_ms('C',1000, 1000): cls //長押しでクリア（押している間一秒後から一秒おきに検出）
+	
+loop
+
+#deffunc 担当棋譜変更による初期化 int p1
+
+	if vartype(filename_to_topnode) != 5{
+		//モジュール型変数になっていなければ初回
+	}else{
+		delmod filename_to_topnode
+		del_set kifu_all_assigned
+	    del_set kifu_unloaded
+	    del_set search_target_kifus
+	    
+    }
+    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
+    if DEFAULT_KIFUDIR == kifudir{
+	    mes "デフォルトフォルダに変更"
+    }else{
+	    mes "カスタムフォルダに変更"
+	}
+	init_sgf_module p1 //初期値(３８）
+	newmod filename_to_topnode, hash_manager, p1 //棋譜ファイル名に、ノード展開を行った後のトップノード番号を紐づける
+	kifu_all_assigned = make_new_set(p1) //担当棋譜を扱うセット
+	kifu_unloaded = make_new_set(p1)//担当棋譜の中でまだ読み込み済みでない棋譜のセット
+	search_target_kifus = make_new_set(p1) //　検索対象棋譜を扱うセット
+	mes "担当棋譜数 -> " + p1
+	return
+
+*on_copydata
+	debug_log "on_copydata開始: キュー数=" + nocoCopyDataQueueCount()
+	
+	// 担当棋譜の初期化を後で行うためのフラグとデータ保存用
+	need_kifu_init = 0
+	sdim kifu_init_data
+	
+    repeat nocoCopyDataQueueCount()
+
+		sender_hwnd = nocoCopyDataQueueInfo(2, cnt)
+		param = nocoCopyDataQueueInfo(3, cnt)
+		data_size = nocoCopyDataQueueInfo(4, cnt)
+
+		// ★ メッセージ種類を文字列化
+		msg_type = "不明(" + param + ")"
+		if param == 検索棋譜: msg_type = "検索棋譜"
+		if param == 検索実行: msg_type = "検索実行"
+		if param == 検索実行2: msg_type = "検索実行2"
+		if param == 子プロセス数: msg_type = "子プロセス数"
+		if param == 担当棋譜: msg_type = "担当棋譜"
+		if param == 棋譜フォルダ変更: msg_type = "棋譜フォルダ変更"
+		if param == ウィンドウ表示切替: msg_type = "ウィンドウ表示切替"
+		if param == バックグラウンド読み込み: msg_type = "バックグラウンド読み込み"
+		if param == 終了指示: msg_type = "終了指示"
+		if param == 接続拒否: msg_type = "接続拒否"
+		
+		debug_log "受信[" + msg_type + "]: param=" + param + ", size=" + data_size
+
+		sdim received_data, data_size
+		nocoGetCopyDataQueue received_data, cnt
+
+	    // パラメータで処理を分岐
+	    switch param
+	
+		case 検索棋譜
+			
+			mes "検索棋譜受信 ->" + strmid(received_data,0,50)
+			notesel received_data
+				棋譜数 = notemax
+				del_set search_target_kifus //既存setを破棄
+				search_target_kifus = make_new_set(棋譜数)
+				repeat 棋譜数
+					noteget a, cnt
+					if is_inset(kifu_all_assigned, a){
+						push_data search_target_kifus, a// 検索対象setに格納
+					}
+				loop
+				mes "検索棋譜 = " + 棋譜数 + " : " + get_cardinality(search_target_kifus)
+			noteunsel
+			
+		swbreak
+	
+	    case 検索実行
+		   
+			//検索条件を取り出す
+			search_id = lpeek(received_data, 0)
+			max_depth = lpeek(received_data, 4)
+			colorflip = lpeek(received_data, 8)
+			inverse   = lpeek(received_data, 12) 
+			set_base_from_binary received_data, 16
+		
+			mes strf("通常検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
+			
+			
+			prexy = -1, -1
+		
+			result_num = 0
+			nowpointer = 0
+		
+			notesel sgf_data
+		    repeat set_to_array(search_target_kifus, kifu)
+				if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
+					noteload kifu(cnt)
+					topnode = load_sgf(sgf_data) //棋譜読み込み
+					new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+							; 読み込みが完了したら、未読み込みリストから削除
+					del_data kifu_unloaded, kifu(cnt)
+				}else{
+					topnode = int(refstr)
+				}
+		
+				get_board_size_from_SGF topnode, xy
+		
+		
+				//前回検索した棋譜とボードサイズが違う場合
+				if prexy != xy || prexy.1 != xy.1{
+					prexy = xy,xy.1
+					//新たなパターンを生成
+					make_rotate_patterns xy, xy.1
+					get_pattern rotated_color, rotated_group, rotated_tejun
+				
+					//回転パターン数
+					r_pattern_num = 4 << (xy == xy.1)
+		
+					//ヒットと判定するために必要な数
+					group_num = get_pattern_all_groups_num()
+					
+				}
+				
+				//検索実行
+				search_main topnode, max_depth, colorflip, rotated_color, rotated_group, rotated_tejun, r_pattern_num, group_num, path //(pathにヒットしたノードを格納
+				
+				if (path(0) >= 0) ^ inverse{
+					gosub*add_result
+				}
+			loop
+			noteunsel
+		    
+	
+			lpoke result, 0, search_id
+			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
+	
+			mes "検索結果の数 -> " + result_num
+	
+			enable_auto_adjust 0 //自動FPS調整OFF
+			setfps FPS_AFTER_LOADING
+	    
+	    swbreak
+
+	    case 検索実行2:
+			mes "厳密検索開始"
+	    	//検索条件を取り出す
+			search_id = lpeek(received_data, 0)
+			max_depth = lpeek(received_data, 4)
+			colorflip = lpeek(received_data, 8)
+			inverse   = lpeek(received_data, 12) 
+			set_base_from_binary received_data, 16
+			mes strf("厳密検索→　max_depth -> %d, colorflip -> %d, inverse -> %d", max_depth, colorflip, inverse)
+
+			prexy = -1, -1
+			result_num = 0
+			
+			notesel sgf_data
+	     	repeat set_to_array(search_target_kifus, kifu)
+				if get_value(filename_to_topnode, kifu(cnt)) == NOT_DEFINED_HASH{
+					noteload kifu(cnt)
+					topnode = load_sgf(sgf_data) //棋譜読み込み
+					new_value filename_to_topnode, kifu(cnt), str(topnode) //ハッシュ登録
+					del_data kifu_unloaded, kifu(cnt)
+				}else{
+					topnode = int(refstr)
+				}
+		
+				get_board_size_from_SGF topnode, xy
+		
+		
+				//前回検索した棋譜とボードサイズが違う場合
+				if prexy != xy || prexy.1 != xy.1{
+					prexy = xy,xy.1
+
+					//新たなパターンを生成
+					get_pattern rotated_color, rotated_group, rotated_tejun
+					dim tmp_board, xy, xy.1
+					get_base_board tmp_board
+					make_pattern tmp_board, pt //回転も含めたビットボード作成
+					//回転パターン数
+					r_pattern_num = 4 << (xy == xy.1)
+
+					dim mask, 23, 8
+					for i,, xy //ボードx方向
+					for j,, xy.1 //ボードy方向
+						if tmp_board(i,j) != PATTERN_ZERO{
+							for k,, r_pattern_num
+								rotate_coordinate coord, i, j, k, xy, xy.1 //i,jをkによる回転を加え配列coordに格納 (coord.0 = x, coord.1 = y)
+								index = (coord.1 * xy + coord.0) * 2
+							    int_index = index / 32
+							    bit_offset = index \ 32
+							    mask(int_index, k) |= 3 << bit_offset
+							next
+						}
+					next
+					next
+
+				}
+				
+
+				search_main2 topnode, max_depth, colorflip, r_pattern_num, mask, rotated_color, pt , path
+
+				if (path(0) >= 0) ^ inverse{
+					gosub*add_result
+				}
+			loop
+			noteunsel
+
+			
+
+			lpoke result, 0, search_id
+			nocoSendCopyData parent_hwnd, result, 検索結果, HEADER_SIZE + RECORD_SIZE * result_num //親プロセスに結果を送信
+
+			mes "検索結果の数 -> " + result_num
+
+			enable_auto_adjust 0 //自動FPS調整OFF
+			setfps FPS_AFTER_LOADING
+
+	    swbreak
+
+	    case 子プロセス数
+	    	child_count = lpeek(received_data)
+	    	
+			set_target_wait limit(tw / child_count, 1, 100)
+	    swbreak
+	    
+		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
+			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
+			debug_log "担当棋譜処理開始（データ保存）"
+			
+			// ★ データを保存して、後で処理する
+			kifu_init_data = received_data
+			need_kifu_init = 1
+			
+			debug_log "担当棋譜データ保存完了"
+		swbreak
+		
+	    case 棋譜フォルダ変更
+	    	
+	    	
+			kifudir = strmid(received_data,0,data_size)
+			mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
+			debug_log "フォルダ変更: " + kifudir
+			
+	    swbreak
+
+	    case ウィンドウ表示切替
+		    view_window ^= 1
+		    gsel 0, view_window*2-1
+	    swbreak
+
+	    case バックグラウンド読み込み
+			background_load = lpeek(received_data)
+			mes "バックグラウンド読み込み: " + background_load
+			debug_log "バックグラウンド読み込み: " + background_load
+	    swbreak
+	 
+	    case 終了指示:
+	        // 親プロセスからの終了指示
+	        mes "親プロセスから終了指示を受信しました"
+	        debug_log "終了指示受信"
+	        save_debug_log
+	        wait 1000
+	        end // プロセス終了
+	    swbreak
+	
+	    case 接続拒否:
+			dialog "親プロセスに接続できませんでした"
+			debug_log "接続拒否"
+			save_debug_log
+			end
+	    swbreak
+
+	    
+	        
+	    default:
+	        dialog "未知のデータタイプ: " + param
+	        debug_log "未知のデータタイプ: " + param
+	        save_debug_log
+	        end
+	        swbreak
+	    swend
+	loop
+
+	nocoClearQueue
+	debug_log "キュークリア完了"
+	
+	// ★ キュー処理完了後に担当棋譜の初期化を実行
+	if need_kifu_init {
+		debug_log "担当棋譜初期化開始"
+		notesel kifu_init_data
+			棋譜数 = notemax
+			debug_log "棋譜数: " + 棋譜数
+			担当棋譜変更による初期化 棋譜数
+			debug_log "初期化完了、登録開始"
+			repeat 棋譜数
+				noteget a, cnt
+				push_data kifu_all_assigned, a
+				push_data kifu_unloaded, a
+			loop
+			debug_log "登録完了"
+		noteunsel
+		enable_auto_adjust
+		set_target_wait limit(tw / child_count, 1, 100)
+		chdir kifudir
+		debug_log "担当棋譜処理完了"
+	}
+	
+    return
+
+*add_result
+	対局者名黒 = get_property_data(topnode, "PB")
+	対局者名白 = get_property_data(topnode, "PW")
+	
+	nowpointer = HEADER_SIZE + RECORD_SIZE * result_num
+	result_num++
+	memexpand result, nowpointer + RECORD_SIZE
+	
+	memcpy result, kifu(cnt),   64, nowpointer + OFFSET_KIFU
+	memcpy result, path     , PATH_SIZE, nowpointer + OFFSET_PATH
+	
+	memcpy result, 対局者名黒, 64, nowpointer + OFFSET_PB
+	memcpy result, 対局者名白, 64, nowpointer + OFFSET_PW
+	return
+
+*err_lab
+	gsel 0,1
+	debug_log "エラー発生: " + wparam + " at line " + lparam
+	save_debug_log
+	dialog "ERROR: エラーログをdebug_log.txtに保存しました"
+	end
+	return

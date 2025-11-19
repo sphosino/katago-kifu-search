@@ -1,0 +1,70 @@
+#ifndef search_main2
+#include "basic.hsp"
+#include "modules/bitboard.hsp"
+#module 厳密検索
+
+
+#deffunc search2_init
+	newmod queue, ringbuffer, 1024 + 64, 128   //キュー初期化（要素数(128)に関しては自動拡張付き）
+	sdim node_data, 1024 + 64   　   //データを纏めてキューに出し入れするための媒介変数
+	return
+
+#deffunc search_main2 int t, int max_depth, int colorflip, int r_pattern_num, array pattern_mask, array rotated_color, array pattern, array path
+
+  reset_ringbuffer queue
+
+  dim path, 256
+  path(0) = -1 //先頭はヒットした深さを返す
+
+　
+  lpoke node_data,  , 0        //現在の深さ(手数)
+  lpoke node_data, 4, t        //ノード番号
+  memcpy node_data, path, 1024, 8
+  r_push queue, node_data
+
+  while r_shift(queue, node_data)
+
+    //ノードデータ展開
+    depth = lpeek(node_data) : if depth > max_depth: _continue
+    node = lpeek(node_data, 4)
+    memcpy path, node_data, 1024, , 8
+    
+    turn = get_property_coordinate_cash(node, x, y)　//ノードの手番と着手座標を取得
+
+    if x >= 0{
+	    copy_bitboard_data get_bitboard(node), board
+	   	for j,,r_pattern_num //回転
+	   		if rotated_color(x, y, j) > PATTERN_NONE{ //ノードの着手がmaskにない場合、このノードでは一致しない。
+	   			dup mk, pattern_mask(0, j)
+		   		for i,,colorflip + 1 //色反転
+		   			dup pt, pattern(0, j + i * 8)
+		    		OK = 1
+		    		repeat 23
+		    			if ((board(cnt) ^ pt(cnt)) & mk(cnt)) != 0{
+		    				OK = 0
+			    			break
+			    		}
+		    		loop
+		    		if OK{ //盤面が一致した
+		    			path(0) = depth
+			    		return
+			    	}
+		    	next
+		    }
+	    next
+	}
+    repeat get_SGF_childs(node, child)
+      lpoke node_data,  , depth + 1
+      lpoke node_data, 4, lpeek(child, cnt * 4)
+      path(depth + 1) = cnt
+      memcpy node_data, path, 1024, 8
+      r_push queue, node_data
+    loop
+  wend
+  
+  return
+
+#global
+#endif
+
+search2_init

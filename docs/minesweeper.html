@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>マインスイーパ（旗つき）</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
+    #board {
+      display: inline-grid;
+      grid-template-columns: repeat(10, 30px);
+      gap: 2px;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      background-color: #ccc;
+      border: 1px solid #999;
+      cursor: pointer;
+      line-height: 30px;
+      font-size: 16px;
+      user-select: none;
+    }
+    .revealed {
+      background-color: #eee;
+      cursor: default;
+    }
+    .mine {
+      background-color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>マインスイーパ（旗つき）</h1>
+  <button onclick="init()">リセット</button>
+  <div id="board"></div>
+
+  <script>
+    const size = 10;
+    const mineCount = 10;
+    let board = [];
+    let mineSet = new Set();
+    let revealed = new Set();
+    let flagged = new Set();
+    let firstClick = true;
+    let questionSet = new Set();  // ← ？マスの座標リスト
+let questionCount = 10;       // ← ？にするマスの数（自由に変更OK）
+  
+  // ？マスをランダムに選択
+  function generateQuestionMarks(sx, sy) {
+    let attempts = 0;
+    questionSet.clear();
+    while (questionSet.size < questionCount && attempts < 100) {
+      // ランダムな座標を生成
+      // 地雷の位置を避ける
+      const x = Math.floor(Math.random() * size);
+      const y = Math.floor(Math.random() * size);
+      const key = `${x},${y}`;
+      attempts++;
+      // すでに？マスまたは地雷の位置を避ける
+      if (mineSet.has(key)) continue;  // 地雷の位置を避ける
+      if (Math.abs(x - sx) <= 1 && Math.abs(y - sy) <= 1) continue; // 初手の周囲を避ける
+      if (countMines(x, y) === 0) continue;
+      questionSet.add(key);
+      
+    }
+  }
+  // ？マスを表示
+  function showQuestionMarks() {
+    questionSet.forEach(key => {
+      const [x, y] = key.split(",").map(Number);
+      const cell = board[y][x];
+      cell.textContent = "?";
+    });
+  }
+  function init() {
+    firstClick = true;
+    board = [];
+    mineSet.clear();
+    revealed.clear();
+    flagged.clear();
+    questionSet.clear();  // ← ？マスの座標リストをクリア
+    const boardDiv = document.getElementById("board");
+    boardDiv.innerHTML = "";
+    boardDiv.style.gridTemplateColumns = `repeat(${size}, 30px)`;
+
+    for (let y = 0; y < size; y++) {
+      board[y] = [];
+      for (let x = 0; x < size; x++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.dataset.x = x;
+        cell.dataset.y = y;
+        cell.onclick = onLeftClick;
+        cell.oncontextmenu = onRightClick;
+        cell.onmousedown = onMiddleClick;  // ← 中クリックイベント追加
+        board[y][x] = cell;
+        boardDiv.appendChild(cell);
+      }
+    }
+  }
+
+  // 中クリックによる自動開封処理
+  function onMiddleClick(e) {
+    if (e.button !== 1) return; // 中クリック（ホイール押し込み）限定
+
+    const x = parseInt(e.target.dataset.x);
+    const y = parseInt(e.target.dataset.y);
+    const key = `${x},${y}`;
+    const cell = board[y][x];
+
+    if (!revealed.has(key)) return;
+
+    const num = parseInt(cell.textContent);
+    if (isNaN(num) || num === 0) return;
+
+    let flagCount = 0;
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < size && ny < size) {
+          if (flagged.has(`${nx},${ny}`)) flagCount++;
+        }
+      }
+    }
+
+    if (flagCount === num) {
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const nx = x + dx;
+          const ny = y + dy;
+          if (nx >= 0 && ny >= 0 && nx < size && ny < size) {
+            const neighborKey = `${nx},${ny}`;
+            if (!flagged.has(neighborKey)) {
+              onLeftClick({ target: board[ny][nx] });
+            }
+          }
+        }
+      }
+    }
+  }
+
+function onLeftClick(e) {
+  const x = parseInt(e.target.dataset.x);
+  const y = parseInt(e.target.dataset.y);
+  const key = `${x},${y}`;
+
+  if (flagged.has(key) || revealed.has(key)) return;
+
+  // 最初のクリック時に地雷を配置
+  if (firstClick) {
+    generateMines(x, y);
+    firstClick = false;
+    generateQuestionMarks(x, y);  // ？マスを生成
+  }
+  if (mineSet.has(key)) {
+    revealAllMines();
+    alert("ゲームオーバー！");
+    return;
+  }
+  reveal(x, y)
+    // 🎉 ここが追加ポイント！
+    if (revealed.size === size * size - mineCount) {
+    alert("クリア！おめでとう🎉");
+  }
+}
+// 初手を避けて地雷を配置
+function generateMines(sx, sy) {
+  mineSet.clear();
+  while (mineSet.size < mineCount) {
+    const x = Math.floor(Math.random() * size);
+    const y = Math.floor(Math.random() * size);
+
+    // 初手（sx, sy）とその周囲を避ける
+    if (Math.abs(x - sx) <= 1 && Math.abs(y - sy) <= 1) continue;
+
+    mineSet.add(`${x},${y}`);
+  }
+}
+
+function onRightClick(e) {
+  e.preventDefault();
+  const x = parseInt(e.target.dataset.x);
+  const y = parseInt(e.target.dataset.y);
+  const key = `${x},${y}`;
+  const cell = board[y][x];
+
+  if (revealed.has(key)) return;
+
+  if (flagged.has(key)) {
+    flagged.delete(key);
+    cell.textContent = "";
+  } else {
+    flagged.add(key);
+    cell.textContent = "🚩";
+  }
+}
+
+function reveal(x, y) {
+  const key = `${x},${y}`;
+  if (revealed.has(key) || x < 0 || y < 0 || x >= size || y >= size || flagged.has(key)) return;
+  const cell = board[y][x];
+  revealed.add(key);
+  cell.classList.add("revealed");
+
+  let count = countMines(x, y);
+  if (questionSet.has(key)) {
+    cell.textContent = "?";  // ？マスを表示
+  }else if (count > 0) {
+    cell.textContent = count;
+  } else {
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dy = -1; dy <= 1; dy++) {
+        if (dx !== 0 || dy !== 0) {
+          reveal(x + dx, y + dy);
+        }
+      }
+    }
+  }
+}
+
+function countMines(x, y) {
+  let count = 0;
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      if (dx !== 0 || dy !== 0) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < size && ny < size) {
+          if (mineSet.has(`${nx},${ny}`)) count++;
+        }
+      }
+    }
+  }
+  return count;
+}
+
+function revealAllMines() {
+  mineSet.forEach(key => {
+    const [x, y] = key.split(",").map(Number);
+    const cell = board[y][x];
+    cell.classList.add("mine");
+    cell.textContent = "💣";
+  });
+}
+
+init();
+
+    // 🔒 右クリックメニューを完全に抑制
+    document.addEventListener("contextmenu", e => e.preventDefault());
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+goto*@f
+*save_info //終了処理
+	notesel setting_str
+
+	noteadd_ save_window_status.0, LINE_WINDOW_POSITION_X //ウィンドウ位置
+	noteadd_ save_window_status.1, LINE_WINDOW_POSITION_Y
+	noteadd_ save_window_status.2, LINE_WINDOW_SIZE_X //ウィンドウサイズ
+	noteadd_ save_window_status.3, LINE_WINDOW_SIZE_Y
+	noteadd_ max_depth, LINE_MAX_DEPTH //最大探索深度
+	noteadd_ enableColorFlip, LINE_COLORFLIP //色反転を有効にするか
+	noteadd_ view_hosi, LINE_VIEW_HOSI //星表示
+	noteadd_ last_move_mark, LINE_LAST_MOVE_MARK //最終手表示
+	noteadd_ kifu_start_num, LINE_KIFU_START_NUM //棋譜開始手数
+	noteadd_ auto_interval, LINE_AUTO_INTERVAL //自動再生間隔
+	noteadd_ alpha_interval, LINE_ALPHA_INTERVAL //形勢変化率による自動再生間隔の変化
+	noteadd_ m_interval, LINE_M_INTERVAL //マンハッタン距離による自動再生間隔の変化
+	noteadd_ auto_download, LINE_AUTO_DOWNLOAD_TIME //自動ダウンロード
+	noteadd_ MAX_CHILDREN, LINE_PROCESS_COUNT //子プロセス数
+	noteadd_ child_target_wait, LINE_TARGET_WAIT
+	noteadd_ load_limit, LINE_LOAD_LIMIT
+	noteadd_ default_order, LINE_DEFAULT_ORDER
+	IsZoomed hwnd: noteadd_ stat, LINE_MAXIMIZED //ウィンドウ最大化状態
+	noteadd_ main_fps, LINE_MAIN_FPS //動作速度
+	noteadd_ background_load, LINE_BACKGROUNT_LOAD
+	chdir SUBDIR
+	notesave SETTING_FILE_NAME
+	
+	return
+*@

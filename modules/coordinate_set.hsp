@@ -1,0 +1,78 @@
+#ifndef del_coordinate_set
+#module coordinate_set_manager
+#define ctype coordinate_range_validation(%1,%2,%3,%4) ((%1) < 0 || (%3) > 99 || (%2) < 0 || (%4) > 99)
+	
+#deffunc del_coordinate_set var a, int x, int y
+	if is_coordinate_in_set(a, x, y) >= 0{
+		a = strmid(a, 0, stat) + strmid(a, stat + 5 , $FFFF)
+	}
+	return
+	
+#deffunc add_coordinate_set var a, int x, int y
+	if is_coordinate_in_set(a, x, y) < 0{
+		a += strf("%02d%02d,", x, y)
+		return
+	}
+	return
+
+#defcfunc is_coordinate_in_set var a, int x, int y
+	if coordinate_range_validation(x,y,x,y){
+		dialog "指定位置が範囲外です -> (" + x + ":" + y + ")" ,, __FILE__
+		end
+	}
+	return instr(a,,strf("%02d%02d,", x, y))
+
+#defcfunc get_coordinates_set str a, array result, local tmp
+	sdim result
+	if a == "": return 0
+	_a = a
+	tmp = strtrim(_a, 2, ',')
+	split tmp, ",", result
+	return stat
+
+#defcfunc get_coordinates_set_int str a, array result, local tmp
+
+	dim result, 2
+	num = get_coordinates_set(a, tmp)
+	repeat num
+		result(0, cnt) = 0 + strmid(tmp.cnt, 0, 2)
+		result(1, cnt) = 0 + strmid(tmp.cnt, 2, 2)
+	loop
+	return num
+
+#deffunc modify_coordinates_by_rect var a, int _x, int _y, int _end_x, int _end_y, int del_flag
+	x = _x
+	y = _y
+	end_x = _end_x
+	end_y = _end_y
+
+	if x > end_x{
+		tmp = x
+		x = end_x
+		end_x = tmp
+	}
+	if y > end_y{
+		tmp = y
+		y = end_y
+		end_y = tmp
+	}
+
+	if coordinate_range_validation(x, y, end_x, end_y){
+		dialog "矩形が許容範囲外です -> (" + _x + ":" + _y + ")(" + _end_x + ":" + _end_y+ ")",, __FILE__
+		end
+	}
+
+	repeat end_x - x + 1, x
+		for i, y, end_y + 1
+			if del_flag{
+				del_coordinate_set a, cnt, i
+			}else{	
+				add_coordinate_set a, cnt, i
+			}
+		next
+	loop
+	
+	return
+#global
+
+#endif

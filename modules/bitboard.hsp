@@ -1,0 +1,397 @@
+#ifndef init_bitboard
+#include "coordinate_set.hsp"
+#include "modules/search/pattern.hsp"
+#module
+
+#deffunc init_bitboard int 棋譜数
+	dim bitboard, 23, 棋譜数 //(23*32bit) / 2 = 368マスを最大とする
+	dim sizex, 棋譜数 //ビットボードの形状を表現
+	dim sizey, 棋譜数
+	dim capture_black, 棋譜数 //取石
+	dim capture_white, 棋譜数
+	dim コウ禁止点,2,棋譜数
+
+	dimtype bitboard_id_manager, 5
+	newmod bitboard_id_manager, id_manager, 棋譜数
+
+	//上下左右の定義
+	sx = 1,0,-1,0
+	sy = 0,-1,0,1
+
+	//アゲハマ一時記録用
+	dim r,2
+	return
+
+#defcfunc make_new_bitboard int x, int y
+	new_id = get_new_id(bitboard_id_manager)
+
+	memset bitboard(0, new_id), 0, 23 * 4
+	sizex(new_id) = x
+	sizey(new_id) = y
+	capture_black(new_id) = 0
+	capture_white(new_id) = 0
+	コウ禁止点(0, new_id) = -1, -1
+
+	return new_id
+
+#defcfunc copy_bitboard int src_node
+    // 新しいビットボードを作成
+    new_id = make_new_bitboard(sizex(src_node), sizey(src_node))
+
+    // 元のビットボードデータをコピー
+    memcpy bitboard(0, new_id), bitboard(0, src_node), 23 * 4
+
+    // 付随情報をコピー
+    sizex(new_id) = sizex(src_node)
+    sizey(new_id) = sizey(src_node)
+    capture_black(new_id) = capture_black(src_node)
+    capture_white(new_id) = capture_white(src_node)
+    コウ禁止点(0, new_id) = コウ禁止点(0, src_node)
+    コウ禁止点(1, new_id) = コウ禁止点(1, src_node)
+
+    return new_id
+
+//実データ取得
+#deffunc copy_bitboard_data int src_node, var a
+	dup a, bitboard(0,src_node)
+	return
+//実データ複製
+#deffunc copy_bitboard_data_deep int src_node, array a
+	dim a, 23
+	memcpy a, bitboard(0, src_node), 23 * 4
+	return
+
+#deffunc del_bitboard int _id
+	release_id bitboard_id_manager, _id
+	return
+	
+#defcfunc get_bitboard_status_xy int node, int x, int y
+    index = (y * sizex(node) + x) * 2  // ビット位置を計算
+    int_index = index / 32    // 使用する整数のインデックス
+    bit_offset = index \ 32    // 整数内のビットオフセット
+    return bitboard(int_index, node) >> bit_offset & 0b11
+    
+#deffunc bitboard_to_array int node, array a
+	dim a, sizex(node), sizey(node)
+	repeat sizex(node): m = cnt
+		repeat sizey(node)
+			a(m,cnt) = get_bitboard_status_xy(node, m, cnt)
+		loop
+	loop
+	return
+	
+// 2次元配列をビットボードに変換
+#defcfunc array_to_bitboard array a, int node
+	if node == -1{
+		new_id = make_new_bitboard(length(a), length2(a))
+	}else{
+		new_id = node
+	}
+	memset bitboard(0, new_id), 0, 23 * 4
+    repeat length(a): m = cnt
+        repeat length2(a)
+            index = (cnt * length(a) + m) * 2
+            int_index = index / 32
+            bit_offset = index \ 32
+            bitboard(int_index, new_id) |= (a(m, cnt) & 0b11) << bit_offset
+        loop
+    loop
+    return new_id
+
+//盤上のある点を変化させる
+#deffunc play_stone int node, int x, int y, int turn
+
+	index = (y * sizex(node) + x) * 2
+    int_index = index / 32
+    bit_offset = index \ 32
+    bitboard(int_index, node) = (bitboard(int_index,node) & (0b11 << bit_offset ^ 0xFFFFFFFF)) | (turn & 0b11) << bit_offset
+
+	return
+
+//盤上のある点に着手する（囲碁のルール適用）
+#defcfunc play_move int node, int x, int y, int turn
+
+	bitboard_to_array node, array_board
+
+	move_capture = play_move_on_array(array_board,x,y,turn, capture_black(node), capture_white(node),コウ禁止点(0, node),コウ禁止点(1, node))
+
+	if move_capture >= 0{
+		play_stone node, x, y, turn
+		repeat move_capture 
+			play_stone node, mcap(0,cnt), mcap(1,cnt)
+		loop
+	}
+
+	return move_capture
+
+#defcfunc play_move_on_array array board, int x, int y, int t, var cap_b, var cap_w, var ko_x, var ko_y
+	if (ko_x == x && ko_y == y){
+		return -2
+	}
+	move_capture = 打てるかチェック(board, x, y, t, mcap) //打てないとき-1 打てるなら取れる数とcapにその情報
+	if  move_capture == -1{
+		return -1
+	}
+
+	board(x,y) = t
+	
+	repeat move_capture
+		board(mcap(0,cnt), mcap(1,cnt)) = 0
+	loop
+
+	if t == 1{
+		cap_b += move_capture
+	}else: if t == 2{
+		cap_w += move_capture
+	}
+
+	ko_x = -1
+	ko_y = -1
+	if move_capture == 1{ //1個とったとき
+		if 打てるかチェック(board, mcap(0,0), mcap(1,0), 3 - t, r) == 1{ //そこに打って1個とれるならその地点はコウ
+			ko_x = mcap(0,0)
+			ko_y = mcap(1,0)
+		}
+	}
+	return move_capture
+
+#defcfunc 打てるかチェック array a, int x, int y,int t, array c
+
+	if x < 0 || x >= length(a): return -1
+	if y < 0 || y >= length2(a): return -1
+	if a(x,y) != 0: return -1
+	
+	num_n = 0
+
+	dim c,2 ;　アゲハマ記録用の配列初期化
+	dim kk, length(a),length2(a) //検索用のボード初期化
+
+	//盤面を取得して
+	memcpy kk, a, length(a) * length2(a) * 4
+
+	kk(x,y) = t //石を置いてスタート
+
+	repeat 4
+		nnx = x + sx(cnt)
+		nny = y + sy(cnt)
+		if nnx < 0 || nnx >= length(a): continue
+		if nny < 0 || nny >= length2(a): continue
+		if kk(nnx,nny) == (3 - t){
+			repeat ある地点が取られ状態か？(kk, nnx, nny , r)
+				c(0,num_n) = r(0,cnt), r(1,cnt)
+				kk(r(0,cnt),r(1,cnt)) = t //取った場所を全て着手側に置き換えて重複して抜くことを避ける。
+				num_n++
+			loop
+		}
+	loop
+	
+	if num_n == 0 {
+		//一つも取れずにうとうとしている地点が取られているなら、打てない
+		if ある地点が取られ状態か？(kk,x,y, r): return -1
+	}
+	
+	return num_n
+	
+#defcfunc ある地点が取られ状態か？ array a, int x, int y, array agehama
+	
+	if a(x,y) == 0: return 0
+	
+	//対象地点の色取得
+	turn = a(x,y)
+
+	//碁盤コピー
+	dim b,length(a),length2(a)
+	memcpy b,a,length(a)*length2(a)*4
+
+	
+	num = 0 //アゲハマの数
+
+	//スタック初期化
+	sn = 0
+	stackx(sn) = x
+	stacky(sn) = y
+	sn++
+
+	//スタックに積んだタイミングでその地点を相手の石に置き換えるのが重要。
+	//取り出したタイミングで置き換えるのでは、スタックに積まれている地点を他のノードからもカウントしてしまうことがある。
+	b(x,y) = 3 - turn
+	
+	while sn
+		sn--
+		nx = stackx(sn)
+		ny = stacky(sn)
+		agehama(0, num) = nx, ny
+		num++
+		for i,,4
+			nnx = nx + sx(i)
+			nny = ny + sy(i)
+			if nnx < 0 || nnx >= length(b): _continue
+			if nny < 0 || nny >= length2(b): _continue
+
+			switch b(nnx, nny)
+			case 0: return 0
+			case turn
+				stackx(sn) = nnx
+				stacky(sn) = nny
+				sn++
+				b(nnx, nny) = 3 - turn
+			swbreak
+			swend
+		next
+	wend
+	return num
+
+#global
+
+#module
+// テスト用の碁盤を表示
+#deffunc print_board array a, int MAS_X, int MAS_Y
+    repeat length(a): x = cnt
+        repeat length2(a): y = cnt
+        	pos x * MAS_X, y * MAS_Y
+            switch a(x, y)
+            case 0: mes "・":swbreak // 空点
+            case 1: mes "●":swbreak // 黒石
+            case 2: mes "○":swbreak // 白石
+            case 3: mes "M":swbreak
+            swend
+        loop
+    loop
+    return
+#deffunc log_bitboard array a
+	repeat 19: m = cnt
+		s = ""
+		repeat 19
+			index = (m * 19 + cnt) * 2  // ビット位置を計算
+		    int_index = index / 32    // 使用する整数のインデックス
+		    bit_offset = index \ 32    // 整数内のビットオフセット
+		    s+= str(a(int_index) >> bit_offset & 0b11)
+		loop
+		logmes s
+		
+	loop
+	return
+#global
+
+
+#module
+#deffunc make_new_mask str v, array new_bitboard, int board_size_x, int board_size_y
+
+	bx = 19
+	by = 19
+	if board_size_x: bx = board_size_x
+	if board_size_y: by = board_size_y
+	
+	dim new_bitboard, 23,8
+	num = get_coordinates_set_int(v,r)
+	repeat 4 << (board_size_x == board_size_y)
+		m = cnt
+		repeat num
+			rotate_coordinate xy,r(0,cnt),r(1,cnt), m, bx, by
+			index = (xy.1 * bx + xy) * 2
+		    int_index = index / 32
+		    bit_offset = index \ 32
+		    new_bitboard(int_index, m) |= 3 << bit_offset	    
+		loop
+	loop
+	return
+
+//二次元配列ボードから bitboardを作成
+#deffunc make_pattern array a, array new_pattern
+	dim new_pattern, 23,16 //１局面を２３intで表現、１６種用意、
+	for i,,2 //色反転
+		for j,,4 << (length(a) == length2(a)) //回転
+			repeat length(a): x = cnt
+				repeat length2(a): y = cnt
+					col = 0
+					if a(x,y) & PATTERN_BLACK: col |= 1
+					if a(x,y) & PATTERN_WHITE: col |= 2
+					if i{
+						if (col == 1) || (col == 2){
+							col = 3 - col
+						}
+					}
+
+					//xyに結果を受け取る, x座標,y座標, 回転パターン, 盤サイズx, 盤サイズy
+					rotate_coordinate xy, x    ,y    , j           , length(a), length2(a)
+					
+					bit = (xy.1 * length(a) + xy.0 ) * 2
+					int_index = bit / 32
+					bitoffset = bit \ 32
+					new_pattern(int_index, j + i * 8) |= col << bitoffset
+					
+				loop
+			loop
+		next
+	next
+	
+	return
+
+	
+#deffunc create_mask array a, str mask, array pattern, array pattern_mask, int board_size_x, int board_size_y
+	make_pattern a, pattern
+	make_new_mask mask, pattern_mask, board_size_x, board_size_y
+	return
+#defcfunc calc_int_count int board_size_x, int board_size_y
+    bit_count = (board_size_x * board_size_y) * 2
+    return (bit_count + 31) / 32   // 切り上げ計算
+#global
+#endif
+//--------------------------------------
+#if 0
+
+#const global MAS_X  20
+#const global MAS_Y  20
+
+node = make_new_bitboard(19, 19)
+mask = make_new_bitboard(19, 19)
+
+v = ""
+
+*main
+	mx = limit(mousex / MAS_X, 0, 18)
+	my = limit(mousey / MAS_Y, 0, 18)
+	stick key
+	title strf("%d,%d",get_bitboard_status_xy(node,mx,my),get_bitboard_status_xy(mask,mx,my))
+	if key&256{
+		if get_bitboard_status_xy(node,mx,my) == 1{
+			play_stone node, mx, my, 2
+		}else{
+			play_stone node, mx, my, 1
+		}
+	}
+	if key&512{
+		if get_bitboard_status_xy(mask,mx,my) == 0{
+			play_stone mask, mx, my, 3
+		}else{
+			play_stone mask, mx, my
+		}
+	}
+	if key&32{
+		add_coordinate_set v, mx, my
+		
+	}
+	if key&16{
+		make_new_mask v, tmp_bitboard
+		copy_bitboard_data mask, a
+		copy_bitboard_data tmp_bitboard(1), b
+		memcpy a,b,23 * 4
+		log_bitboard a		
+	}
+	color 255,255,255:boxf:color
+	bitboard_to_array node, board
+	bitboard_to_array mask, maskboard
+	print_board board, MAS_X, MAS_Y
+	print_board maskboard, MAS_X, MAS_Y
+
+	repeat get_coordinates_set(v, r)
+			x = 0+strmid(r.cnt,0,2)
+			y = 0+strmid(r.cnt,2,2)
+		pos MAS_X * x, MAS_Y * y
+		mes "×"
+	loop
+	redraw:redraw 2
+	await 16
+	goto*main
+
+#endif

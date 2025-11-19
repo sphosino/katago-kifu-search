@@ -1,0 +1,83 @@
+#ifndef grid_stepper
+#addition "../keyfps.hsp"
+#module grid_stepper area_number, v, under_limit, top_limit, gap, backcolor,spincolor
+
+
+#modinit array value, int _area
+	dup v, value
+	area_number = _area
+	under_limit = -99999
+	top_limit = 99999
+	gap = 1
+	backcolor = $F5F5DC
+	spincolor = $4A37A8
+	mref thismod_ID, 2
+	return thismod_ID
+
+#define global set_stepper_limit(%1, %2 = "", %3 = "", %4 = "") :\
+a@stepper = %2: if vartype(a@stepper) != 2{ a@stepper = str(a@stepper)}\
+b@stepper = %3: if vartype(b@stepper) != 2{ b@stepper = str(b@stepper)}\
+c@stepper = %4: if vartype(c@stepper) != 2{ c@stepper = str(c@stepper)}\
+_set_stepper_limit %1, a@stepper,b@stepper,c@stepper
+
+#modfunc _set_stepper_limit  str s1, str s2, str s3
+	if s1 != "": under_limit = int(s1)
+	if s2 != "": top_limit = int(s2)
+	if s3 != "": gap = int(s3)
+	return
+
+#modfunc draw_g_stepper
+
+	get_rect area_number, rect
+	sx = rect.2-rect.0
+	sy = rect.3-rect.1
+	cx = rect.0 + sx / 2
+	cy = rect.1 + sy / 2
+	
+	half_y = (rect.3 - rect.1) / 2
+	
+	sx -= half_y
+	cx -= half_y / 2
+	make_instant_draw_object "STR",cx,cy,sx,sy, strf("%s,%d,,,,%d",v,$4A3728,backcolor)
+
+	spincolor = $4A37A8
+	make_instant_draw_object "BOXF",rect.2-half_y/2,rect.1+half_y, half_y, half_y*2,str(spincolor)
+
+
+	margin_under_limit = 2 ;px
+	margin = 3 ; %
+	msize = limit(0.01 * margin * (rect.3-rect.1), margin_under_limit)
+
+	uprect   = rect.2 - half_y, rect.1         , rect.2 , rect.3 - half_y
+	downrect = rect.2 - half_y, rect.3 - half_y, rect.2 , rect.3
+
+	tmpcolor = spincolor
+	if in_rect(uprect){
+		tmpcolor = F‚ğ‰ÁZ‚·‚é(spincolor, 50)
+		if getPhold_ms(1, 400 , 100){
+			v += gap
+			v = limit(v, under_limit, top_limit)
+		}
+	}
+	make_instant_draw_object "STR",rect.2 - half_y /2, rect.1 + half_y/2,half_y - msize*2, half_y - msize*2,strf("ª,%d,,,,%d",backcolor,tmpcolor)
+
+	tmpcolor = spincolor
+	if in_rect(downrect){
+		tmpcolor = F‚ğ‰ÁZ‚·‚é(spincolor, 50)
+		if getPhold_ms(1, 400 , 100){
+			v -= gap
+			v = limit(v, under_limit, top_limit)
+		}
+	}
+	make_instant_draw_object "STR",rect.2 - half_y/2, rect.3 - half_y/2, half_y-msize*2,half_y - msize*2,strf("«,%d,,,,%d",backcolor,tmpcolor)
+
+
+
+
+	return
+
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#global
+#endif

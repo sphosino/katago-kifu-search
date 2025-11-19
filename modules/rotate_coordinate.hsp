@@ -1,0 +1,54 @@
+#ifndef rotate_coordinate
+#module
+
+#const DEFAULT_BOARD_SIZE 19
+
+#deffunc rotate_coordinate array result, int x, int y, int pattern, int board_x, int board_y
+
+	bx = board_x
+	by = board_y
+	if bx <= 0: bx = DEFAULT_BOARD_SIZE
+	if by <= 0: by = bx
+
+	if x < 0 || x >= bx || y < 0 || y >= by{
+		dialog "ERROR- 範囲外の値が入力されました -> (" + x + "," + y + ")", 1, __FILE__
+		end
+	}
+
+	if (bx != by) && ((pattern & 7) >= 4){
+		dialog "無効な変換パターンです -> (" + board_x + "," + board_y + ") - " + pattern, 1, __FILE__
+		end
+	}
+	
+    ; パターンによる変換
+    switch pattern & 7
+        case 0 : result = x         , y          : swbreak ; そのまま
+        case 1 : result = bx - 1 - x, y          : swbreak ; 左右反転
+        case 2 : result = bx - 1 - x, by - 1 - y : swbreak ; 180度回転(上下左右反転)
+        case 3 : result = x         , by - 1 - y : swbreak ; 上下反転
+        //正方形用
+        case 4 : result = y         , x          : swbreak ; x,yスワップ
+        case 5 : result = by - 1 - y, x          : swbreak ; 90度右回転
+        case 6 : result = by - 1 - y, bx - 1 - x : swbreak ; 左右反転後、90度右回転
+        case 7 : result = y         , bx - 1 - x : swbreak ; 270度右回転
+    swend
+
+    return
+
+#deffunc rotate_rectangle array result, int x1, int y1, int x2, int y2, int pattern, int board_x, int board_y
+
+    ; 左上の座標を変換
+    rotate_coordinate tmp1, x1, y1, pattern, board_x, board_y
+
+    ; 右下の座標を変換
+    rotate_coordinate tmp2, x2, y2, pattern, board_x, board_y
+
+    ; 左上と右下が逆転する可能性があるため並べ替え
+    result(0) = limit(tmp1(0),, tmp2(0)) ; 小さいx座標
+    result(1) = limit(tmp1(1),, tmp2(1)) ; 小さいy座標
+    result(2) = limit(tmp1(0), tmp2(0)) ; 大きいx座標
+    result(3) = limit(tmp1(1), tmp2(1)) ; 大きいy座標
+
+    return
+#global
+#endif

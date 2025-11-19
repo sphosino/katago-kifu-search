@@ -1,0 +1,36 @@
+//-------------------基本wait +  エンジンの形勢判断によるwait + 直前の手とのマンハッタン距離によるwait
+if jidou & (ui_mode == MODE_KIFU_VIEW){
+	
+	if pre_jidou == 0{
+		前の形勢 = double(c_list)
+		pre_jidou = 1
+	}
+
+	;logmes strf("%d,%d", auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36), keyfpstime - pretime)
+	if keyfpstime - pretime >= auto_interval + (形勢の変化率 * alpha_interval) + (m_interval * マンハッタン距離 / 36){
+		pretime = keyfpstime
+		gosub *move_next
+		if moved = 0{
+			if nownode >= 0{
+				if finish_time < 0{
+					finish_time = keyfpstime //再生終了した時刻
+					logmes "stoptime -> " + finish_time
+				}
+			}
+		}
+		
+		
+		今の形勢 = double(c_list)
+		形勢の変化率 = absf(今の形勢 - 前の形勢)
+		前の形勢 = 今の形勢
+	}
+
+	if finish_time >= 0{
+		if keyfpstime - finish_time >= AUTO_NEXT_KIFU_TIME{
+			//次の棋譜へfinish_time は-1に設定される
+			gosub*next_kifu
+		}
+	}
+}else{
+	pre_jidou = 0
+}

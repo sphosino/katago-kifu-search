@@ -1,0 +1,12 @@
+#packopt hide 1
+#packopt name "save_file_list"
+#include "setting_defines.hsp"
+#define SUB_EXE
+#include "config_path.hsp"
+wait 100
+chdir DEFAULT_KIFUDIR
+dirlist a, "*.sgf", 3
+chdir SUBDIR
+notesel a
+notesave KIFULIST_FILE_NAME
+end

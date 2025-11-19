@@ -1,0 +1,73 @@
+
+#module grid_checkbox flag, string, area_number, check_size, margin, bg_id, bg_eid, label_id, label_eid, check_id, check_eid,rect
+#modinit var v, str s, int _area
+	string = s
+	flag = v
+	dup v,flag
+	area_number = _area
+	check_size = 20
+	margin = 3
+	get_rect area_number, rect
+	bg_id = make_forever_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", rect,",5")
+	bg_eid = get_entity_id(bg_id)
+	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0,string)
+	label_eid = get_entity_id(label_id)
+	check_id = make_draw_object(MOVE_TYPE_STATIC, "BOXF", LIFE_FOREVER, 0,0,0,0,"")
+	check_eid = get_entity_id(check_id)
+	gosub*“¯Šú
+	mref thismod_ID, 2
+	return thismod_ID
+
+#modfunc toggle_g_checkbox
+	flag ^ 1
+	gosub*“¯Šú
+
+	return
+*“¯Šú
+	if flag{
+		set_extra_param check_id, 0, "$5E8B7E"
+	}else{
+		set_extra_param check_id, 0, "$333333"
+	}
+	return
+
+#modfunc set_g_checkbox int p1
+	flag = p1
+	gosub*“¯Šú
+	return
+
+#modfunc draw_g_chkbox
+
+	get_rect area_number,rect
+
+	update_static_rect bg_eid, rect
+	update_static_rect label_eid, rect
+
+	real_check_size = limit((rect.3-rect.1)*2/3,,check_size)
+
+	cx1 = rect.2 - margin - real_check_size
+	cy1 = (rect.1 + rect.3) / 2 - real_check_size / 2
+	cx2 = rect.2 - margin
+	cy2 = cy1 + real_check_size
+	crect = cx1, cy1, cx2, cy2
+	update_static_rect check_eid, crect
+
+	labelrect = rect.0, rect.1, rect.2 - check_size - margin * 2, rect.3
+	update_static_rect label_eid, labelrect
+		
+	backcolor = $F5F5DC
+	if in_rect(rect){
+		if g_getkey(1) == 1{
+			toggle_g_checkbox thismod
+		}
+		backcolor = $fedf03
+	}
+
+	// ”wŒiFXV
+	set_extra_param bg_id, 0, strf("$%06X", backcolor)
+	
+	return
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+#global

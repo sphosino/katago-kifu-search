@@ -1,0 +1,112 @@
+#ifndef find_empty_index
+#module
+#define global ctype find_empty_index(%1,%2,%3,%4=-1) _find_empty_index(%1,%2,%3,%4) 
+#defcfunc _find_empty_index array item_indices, int item_indices_num, int w, int h, int row
+    /*
+        空きが見つかったらその番号を返す。
+        row == -1 の場合は全体をチェック。
+        row >= 0 の場合は、その行のみをチェック。
+    */
+
+	result = -1, -1
+
+	dim checklist, w * h
+	
+	if row <= -1{
+		dim 
+		repeat w * h
+			checklist(cnt) = cnt
+		loop
+	}else{
+		if row >= h{
+			logmes "存在しない行をチェックしようとしました"
+			return -2
+		}
+		repeat w
+			checklist(cnt) = row * w + cnt
+		loop
+	}
+
+	repeat length(checklist)
+ 
+		p = checklist(cnt)
+		x = p \  w
+		y = p / w
+		is_empty = 1
+		repeat item_indices_num
+			if x == item_indices(cnt) \ w && y == item_indices(cnt) / w{
+				is_empty = 0
+				break
+			}
+		loop
+		if is_empty{
+			result = p
+			break
+		}
+	loop
+
+	return result
+
+#define global ctype find_empty_index_vertical(%1,%2,%3,%4=-1) _find_empty_index_vertical(%1,%2,%3,%4) 
+
+#defcfunc _find_empty_index_vertical array item_indices, int item_indices_num, int w, int h, int col
+    /*
+        空きが見つかったらその番号を返す。
+        col == -1 の場合は全体をチェック。
+        col >= 0 の場合は、その列のみをチェック。
+    */
+
+    result = -1
+
+    // 配列の確保
+    dim checklist, w * h
+
+    if col <= -1 {
+        // 全体をチェックする場合
+        repeat w * h
+            checklist(cnt) = cnt * w + cnt \ h
+        loop
+    } else {
+        // 範囲チェック
+        if col >= w {
+            logmes "存在しない列をチェックしようとしました"
+            return -2
+        }
+        // 指定列だけチェックリストに追加
+        repeat h
+            checklist(cnt) = cnt * w + col
+        loop
+    }
+
+    // 空きを探す
+    repeat length(checklist)
+        p = checklist(cnt)
+        x = p \ w
+        y = p / w
+        is_empty = 1
+        repeat item_indices_num
+            if x == item_indices(cnt) \ w && y == item_indices(cnt) / w {
+                is_empty = 0
+                break
+            }
+        loop
+        if is_empty {
+            result = p
+            break
+        }
+    loop
+
+    return result
+
+#deffunc trans_grid array item_indces,int item_indces_num, int w1, int w2
+
+	repeat item_indces_num
+		x = item_indces(cnt) \ w1
+		y = item_indces(cnt) / w1
+		item_inces(cnt) = y * w2 + x
+	loop
+	return
+
+
+#global
+#endif

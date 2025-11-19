@@ -1,0 +1,49 @@
+#ifndef SETTING_FILE_NAME
+//保存ファイル名
+#define global SETTING_FILE_NAME "window.txt"
+#define global KIFULIST_FILE_NAME "file_list.txt"
+//設定ファイルの意味と行番号
+#enum global LINE_WINDOW_POSITION_X = 0
+#enum global LINE_WINDOW_POSITION_Y
+#enum global LINE_WINDOW_SIZE_X
+#enum global LINE_WINDOW_SIZE_Y
+#enum global LINE_MAX_DEPTH
+#enum global LINE_COLORFLIP
+#enum global LINE_VIEW_HOSI
+#enum global LINE_LAST_MOVE_MARK
+#enum global LINE_KIFU_START_NUM
+#enum global LINE_AUTO_INTERVAL
+#enum global LINE_ALPHA_INTERVAL
+#enum global LINE_M_INTERVAL
+#enum global LINE_AUTO_DOWNLOAD_TIME
+#enum global LINE_PROCESS_COUNT
+#enum global LINE_MAXIMIZED
+#enum global LINE_LOAD_LIMIT
+#enum global LINE_TARGET_WAIT //子プロセス用
+#enum global LINE_DEFAULT_ORDER
+#enum global LINE_MAIN_FPS
+#enum global LINE_BACKGROUNT_LOAD
+
+#enum global SETTING_MAX_LINE
+
+#const global MIN_TARGET_WAIT 20
+#const global DEFAULT_TARGET_WAIT 50
+#const global MAX_TARGET_WAIT 100
+
+#const global MAIN_MIN_FPS 15
+#const global DEFAULT_MAIN_FPS 20
+#const global MAIN_MAX_FPS 60
+
+#const global DEFAULT_MAX_DEPTH 100
+#const global LIMIT_PER_PROCESS 16000
+
+#module
+#deffunc noteget_ var ngt, int line_num
+	noteget tmp, line_num
+	ngt = int(tmp)
+	return
+#deffunc noteadd_ int p1, int line_num
+	noteadd str(p1), line_num, 1
+	return
+#global
+#endif

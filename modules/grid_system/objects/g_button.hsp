@@ -1,0 +1,55 @@
+
+#module grid_button string, area_number, label, colors, bg_id,bg_eid, label_id,label_eid
+
+#modinit str s1, label l, int _area_number, local thismod_ID
+	string = s1
+	label = l
+	area_number = _area_number
+	colors = 14,1,2,3
+	get_rect area_number,rect
+	bg_id = make_draw_object(MOVE_TYPE_STATIC, "RBOXF_FAST", LIFE_FOREVER, 0,0,0,0, ",5")
+	label_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0, string)
+	mref thismod_ID, 2
+	return thismod_ID
+	
+	
+#modfunc draw_g_button
+
+	get_rect area_number, rect
+
+	update_static_rect get_entity_id(bg_id), rect
+	update_static_rect get_entity_id(label_id), rect
+
+	if in_rect(rect){ //イベント１
+		bc = backcolors(colors(1))
+		fc = fontcolors(colors(1))
+		if g_getkey(1) >= 1{　//イベント２
+			bc = backcolors(colors(2))
+			fc = fontcolors(colors(2))
+			if g_getkey(1) == 1{
+				logmes "g_button clicked!!"
+				gosub label
+			}
+		}
+	}else{
+		//イベント３
+		bc = backcolors(colors(0))
+		fc = fontcolors(colors(0))
+	}
+
+	set_extra_param bg_id, 0, strf("$%06X", bc) 
+	set_extra_param label_id, 1, strf("$%06X", fc)
+
+	return
+
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+
+#deffunc init_g_button_colorlist
+	backcolors = $00d49d,$fedf03,$e08e9f,$da85af,$f1eef7,$ae8fb1,$262626, $183883,$c83a3f,$561220,$94516a,$93ab79,$6bd3e0,$e0f7e6,$F5F5DC
+	fontcolors = $fedf03,$ff005d,$0eb5b9,$eab8e3,$a6b8e1,$bedfff,$b7c2ce, $f1d033,$272d68,$e5bcd9,$e7d8d2,$d2d1d6,$f0f0f0,$0184a9,$4A3728
+	return
+	
+#global
+init_g_button_colorlist

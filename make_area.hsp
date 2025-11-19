@@ -1,0 +1,148 @@
+//エリア作成
+root = make_area_child(1,1)
+	
+	body_area = make_area_child(3,1, root)
+		sidebar_area = make_area_child(1,2,body_area)
+		sidebar_buttons = make_area_child(2,4,sidebar_area)
+		sidebar_kifu_area = make_area_child(1,2)
+			sidebar_kifulist_area = make_area_child(2,4,sidebar_kifu_area)
+				sidebar_kifulist_label1 = make_area_child(,,sidebar_kifulist_area)
+				sidebar_kifulist_label2 = make_area_child()
+				sidebar_sort1 = make_area_child(3)
+				sidebar_sort2 = make_area_child(3)
+				sidebar_kifulist = make_area_child()
+				sidebar_kifulist_match = make_area_child()
+				kifustart = make_area_child()
+				kifustart_result = make_area_child()
+					sort1_asc = make_area_child(,,sidebar_sort1)
+					sort1_desc = make_area_child()
+					sort1_shuffle = make_area_child()
+					sort2_asc = make_area_child(,,sidebar_sort2)
+					sort2_desc = make_area_child()
+					sort2_shuffle = make_area_child()
+
+			sidebar_kifulist_buttons = make_area_child(1,2, sidebar_kifu_area)
+				sidebar_kifulist_buttons_back_next = make_area_child(2,,sidebar_kifulist_buttons)
+				sidebar_kifulist_buttons_auto_play = make_area_child(2)
+					
+					sidebar_kifulist_match_back = make_area_child(,,sidebar_kifulist_buttons_back_next)
+					sidebar_kifulist_match_next = make_area_child()
+					
+					chkbox_autoplay = make_area_child(,,sidebar_kifulist_buttons_auto_play)
+					slider_area = make_area_child(,3)
+						slider_1 = make_area_child(,,slider_area)
+						slider_2 = make_area_child()
+						slider_3 = make_area_child()
+						
+			chkbox_last_move = make_area_child(,,sidebar_buttons)
+			chkbox_view_hosi = make_area_child()
+			button_getsgf = make_area_child()
+			button_getsgf_nowpoint = make_area_child()
+			button_select_folder = make_area_child()
+			button_save_file = make_area_child()
+			chkbox_background_load = make_area_child()
+			
+		goban_area = make_area_child(1,2,body_area)
+				goban_body_area = make_area_child(,,goban_area)
+				goban_footer = make_area_child(7,,goban_area)
+					back_top = make_area_child(,,goban_footer)
+					back_one = make_area_child()
+					back_ten = make_area_child()
+					go_ten = make_area_child()
+					go_one = make_area_child()
+					go_end = make_area_child()
+					button_clearboard = make_area_child()
+					
+		goban_tool_area = make_area_child(1,6,body_area)
+			goban_graph_area = make_area_child(1,2,goban_tool_area)
+				treebox_area = make_area_child(,,goban_graph_area)
+				line_graph_area = make_area_child()
+
+			history_area = make_area_child(2,,goban_tool_area)
+				combox_history = make_area_child(,,history_area)
+				button_clear_history = make_area_child()
+
+			goban_search_area = make_area_child(3,2,goban_tool_area)
+				button_search = make_area_child(,,goban_search_area)
+				button_exclude_search = make_area_child()
+				button_narrow_down_search = make_area_child()
+				chkbox_colorflip = make_area_child()
+				chkbox_use_bitboard = make_area_child()
+				chkbox_inverse = make_area_child()
+			goban_filter_area = make_area_child(1,2,goban_tool_area)
+				goban_filter_area_header = make_area_child(,,goban_filter_area)
+					chkbox_filter = make_area_child(,,goban_filter_area_header)
+				goban_filter_area_body   = make_area_child(2,,goban_filter_area);
+					combox_modelname = make_area_child(,,goban_filter_area_body)
+					slider2_match_point = make_area_child()
+					;combox_komi = make_area_child()
+			tejun_area = make_area_child(1,2,goban_tool_area)
+				tejun_sub = make_area_child(2,1,tejun_area)
+					button_tejun_clear = make_area_child(,,tejun_sub)
+					chkbox_inc = make_area_child()
+				radiobox_tejun = make_area_child(,,tejun_area)
+			
+			goban_edit_area = make_area_child(2,1, goban_tool_area)
+				goban_edit_stone = make_area_child(1,2,goban_edit_area)
+					chkbox_tyakusyu = make_area_child(,,goban_edit_stone)
+					radiobox_goban_edit = make_area_child()
+				goban_edit_group = make_area_child(1,2,goban_edit_area)
+					button_group_clear = make_area_child(,,goban_edit_group)
+					radiobox_grouping = make_area_child()
+
+//グリッド情報と検索履歴をロード（エリアを作成してからでないと復元できない）
+chdir SUBDIR
+exist "area.var" 
+if strsize >= 0{
+	save_load_manager_load
+}
+
+//エリア背景色
+set_grid_area_back_color sidebar_kifulist_area, $333333
+set_grid_area_back_color goban_search_area,$333333
+set_grid_area_back_color goban_edit_stone,$333333
+set_grid_area_back_color goban_edit_group,$333333
+set_grid_area_back_color goban_footer,$333333
+set_grid_area_back_color treebox_area ,$333333
+set_grid_area_back_color goban_filter_area , $333333
+set_grid_area_back_color tejun_area, $333333
+set_grid_area_back_color sidebar_kifulist_buttons_auto_play, $333333
+set_grid_area_back_color history_area, $333333
+
+///////////////////////////////////////////
+/////////余白設定//////////////////////////
+///////////////////////////////////////////
+//全体設定
+set_padding_recursive root, 3,3,3,3, 1　//再帰的に呼び出して全体を設定
+set_gap_recursive root, 4,4,1
+
+//棋譜リストエリア
+set_padding_recursive sidebar_kifulist_area, 0,0,0,0, 1 //子要素パディング設定
+set_gap sidebar_sort1, 0,0 //リボンボタン -> マージンなし
+set_gap sidebar_sort2, 0,0 //リボンボタン -> マージンなし
+//スライダーエリア
+set_gap slider_area
+
+///////////////////////////////////////////////////////////
+
+add_tooltip combox_history, "検索パターン履歴"
+add_tooltip button_getsgf, "選択中の棋譜をSGF形式でクリップボードにコピー"
+add_tooltip button_getsgf_nowpoint, "現局面をSGF形式でクリップボードにコピー"
+add_tooltip button_save_file, "次回起動時までsaveフォルダに保存"
+add_tooltip kifustart, "何手目から表示するかを設定"
+add_tooltip kifustart_result, "マッチした局面から前後何手目を表示するかを設定"
+add_tooltip combox_modelname, "対局者名（モデル名）でフィルタ"
+add_tooltip slider_1, "基本待ち時間"
+add_tooltip slider_2, "形勢判断の差による待ち時間"
+add_tooltip slider_3, "直前の手との距離による待ち時間"
+add_tooltip sort2_asc, "古い棋譜順"
+add_tooltip sort2_desc,"新しい棋譜順"
+add_tooltip sort1_asc, "古い棋譜順"
+add_tooltip sort1_desc, "新しい棋譜順"
+add_tooltip chkbox_colorflip, "白黒が逆でも結果に含める"
+add_tooltip slider2_match_point, "ヒットした位置でフィルタ"
+add_tooltip button_clearboard, "盤面をクリアして編集モードに入る"
+add_tooltip button_select_folder, "検索対象とする棋譜"
+
+set_tooltip_color 0x333333, 0xFFFFFF
+

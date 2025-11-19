@@ -1,0 +1,171 @@
+#ifndef grid_combox
+
+#addition "renderer.hsp"
+#addition "color_manager.hsp"
+#addition "area_grid_system.hsp"
+#addition "id_manager.hsp"
+
+#module grid_combox s, v, item_ysize, item_num, area, pre_dropdown, dropdown, dropdown_result, closing, drop_id, combox_id, selected_flag, cursor_item, pre_cursor_item,pre_in_rect
+
+#modinit var a, str s1, int area_number, local thismod_ID
+
+    dup a, dropdown_result //　選択アイテムを示す変数
+
+	area = area_number　//エリア番号
+	s = s1 //表示文字列
+
+	item_ysize = 30
+
+	dim drop_id, 100
+
+	notesel s
+	noteget t, 0
+	noteunsel
+
+	get_rect area,oya
+	centerx = (oya.2 + oya.0) / 2
+	centery = (oya.3 + oya.1) / 2
+	sizex = (oya.2 - oya.0)
+	sizey = (oya.3 - oya.1)
+	
+	combox_id = make_draw_object(MOVE_TYPE_STATIC, "STR", LIFE_FOREVER, 0,0,0,0, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+
+	tmpcol = $C8C8C8,$808080
+	open_time = 0.2
+	close_time = 0.3
+
+    mref thismod_ID, 2
+    return thismod_ID
+
+#modcfunc get_value_g_combox
+	return dropdown_result
+
+
+
+#modcfunc combox_selected_flag
+	return selected_flag
+
+#modfunc combox_set_str str s1
+	s = s1
+	logmes "combox " + s
+	return 
+
+#modfunc combox_manager
+	get_rect area,oya
+
+	update_static_rect get_entity_id(combox_id), oya
+
+	selected_flag = 0
+	
+	notesel s
+	pre_cursor_item = cursor_item
+	pre_dropdown = dropdown
+	if dropdown {
+		cursor_item = -1
+		repeat notemax
+			noteget t, cnt
+
+			rect_x1 = oya
+			rect_y1 = oya.3 + cnt * item_ysize
+			rect_x2 = oya.2
+			rect_y2 = oya.3 + (cnt + 1) * item_ysize
+			
+			tmprect = rect_x1,rect_y1,rect_x2, rect_y2
+			
+			if in_rect(tmprect){
+				cursor_item = cnt
+			}
+			update_params_draw_object drop_id(cnt),strf("%s,$000000,メイリオ,0,0,%d", t, tmpcol(stat))
+		loop
+
+		if _getkey(1) == 1{
+			dropdown = 0
+			closing = 1 //閉じ処理中フラグ
+			set_topmost_status 0
+			
+			repeat notemax
+				noteget t, cnt
+				
+				if cnt == cursor_item{ //選択中のアイテムがあれば本体に結果をセット
+					dropdown_result = cnt
+					update_params_draw_object combox_id, strf("%s,$000000,メイリオ,0,0,%d",t,$C8C8C8)
+					selected_flag = 1
+					
+				}
+
+				destroy_draw_object_immediately drop_id(cnt)
+				centerx = (oya.2 + oya.0)  / 2
+				centery = oya.3 + item_ysize/ 2 + cnt * item_ysize
+				sizex = (oya.2 - oya.0)
+				sizey = item_ysize
+				id = make_draw_object(MOVE_TYPE_EASE, "STR", close_time, centerx, centery, sizex, sizey, strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+				set_ease_posy get_entity_id(id), centery, oya.3, ease_quartic_inout
+				set_ease_sizey get_entity_id(id), sizey, 0, ease_quartic_inout
+				update_priority_draw_object id, PRIORITY_FRONT
+			loop
+
+		}
+	}else{
+		ir = in_rect(oya)
+		if ir{
+			if g_getkey(1) == 1{
+				if closing == 0{
+					if notemax{
+						repeat notemax //各アイテムを生成
+							noteget t, cnt
+							centerx = (oya.2 + oya.0)  / 2
+							centery = oya.3 + item_ysize / 2 + cnt * item_ysize
+							sizex = (oya.2 - oya.0)
+							sizey = item_ysize
+							drop_id(cnt) = make_draw_object(MOVE_TYPE_EASE, "STR", LIFE_FOREVER, centerx,centery,sizex,sizey,strf("%s,$000000,メイリオ,0,0,$AAAAAA",t))
+							set_ease_posy get_entity_id(drop_id(cnt)), oya.3,  centery, ease_quartic_out
+							set_ease_sizey get_entity_id(drop_id(cnt)), 0, sizey,ease_quartic_out
+							set_easetime_all get_entity_id(drop_id(cnt)), open_time
+							update_priority_draw_object drop_id(cnt), PRIORITY_FRONT
+						loop
+						dropdown = 1
+						set_topmost_status 1
+					}
+				}
+			}
+			if pre_in_rect == 0{
+				set_extra_param combox_id,5, "$CCCCCC"
+			}
+		}else{
+			if pre_in_rect{
+				set_extra_param combox_id,5, "$AAAAAA"
+			}
+		}
+		pre_in_rect = ir
+	}
+	
+	if closing {
+	    alive = 0
+	    repeat notemax
+	        if is_entity_id_alive(drop_id(cnt)) : alive = 1 : break
+	    loop
+	    if alive == 0 {
+	        dropdown = 0
+	        closing = 0
+	        
+	    }
+	}
+
+	noteunsel
+
+	return
+	
+#modcfunc get_cursor_item
+	return cursor_item
+#modcfunc is_changed_cursor_item
+	return pre_cursor_item != cursor_item
+#modcfunc get_dropdown_status
+	return dropdown
+#modcfunc is_changed_dropdown
+	return pre_dropdown != dropdown
+	
+#defcfunc local in_rect array a
+	return a(0) <= mousex && a(1) <= mousey && a(2) >= mousex && a(3) >= mousey
+
+#global
+#endif

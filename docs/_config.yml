@@ -1,0 +1,32 @@
+source: docs  # ソースを docs フォルダに設定
+destination: _site  # ビルド結果の保存先
+baseurl: "/katago-kifu-search"  # 必要に応じて設定
+
+title: "Katago棋譜検索システムー開発記録"
+description: "「KataGo棋譜検索システムー開発記録」のページです。"
+theme: minima
+
+permalink: "/:year/:month/:day/:title.html"
+url: "https://sphosino.github.io/katago-kifu-search"  # GitHub PagesのURLを指定
+collections:
+  posts:
+    output: true
+    permalink: /:year/:month/:day/:title.html
+    dir: docs/_posts 
+
+defaults:
+  - scope:
+      path: "" 
+    values:
+      layout: "default"  # トップページ用のレイアウト
+      title: "勉強ログ"
+
+plugins:
+  - jekyll-sitemap
+  
+header_pages:
+  - about.md
+  - pages.md
+
+author: けんじ ひこまる
+email: sphosino@gmail.com

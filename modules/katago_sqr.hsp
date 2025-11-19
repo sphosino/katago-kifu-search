@@ -1,0 +1,208 @@
+#include "hspinet.as"
+#include "d3m.hsp"
+netinit
+#include "beautifulsoup.hsp"
+#addition "../../hsp_common/set.hsp"
+#addition "../hsp_common/set.hsp"
+
+#module
+
+#const DEFAULT_LOADTIME 30000
+#const MIN_WAIT_TIME 1000
+
+#deffunc 棋譜取得 str dirname, int max, int waittime, int loadtime
+	START_TIME = d3timer() ; 開始時刻
+	now_dir = dir_cur //開始時カレントディレクトリ
+	
+	endflag = 0 ;　終了するフラグ
+	get_count = 0 ; 取得した数
+	
+	sdim result //インターネットから結果を受け取る変数
+	
+	wt = waittime
+	if wt < MIN_WAIT_TIME{
+		wt = MIN_WAIT_TIME
+	}
+	lt = loadtime
+	if lt == 0{
+		lt = DEFAULT_LOADTIME
+	}
+	
+	url = "https://katagotraining.org"
+	url2 = "games"
+	
+	chdir dirname
+	dirlist files, "*.sgf"
+	if is_valid_set_id(fileSet): del_set fileSet
+	fileSet = notepad_to_set(files)
+
+	
+	neturl@ url
+	netrequest_get@ url2
+	if stat : goto *bad	; 正しくリクエストができなかった
+	gosub *通信待ち
+
+	netgetv@ buf
+
+	find_tags_bytag buf, "table", result
+	find_tags_bytag result, "a", r
+
+	;外側のループ　ページ遷移用
+	repeat length(r) / 2
+		find_attribute_byname r(1+cnt*2), "href", f
+
+
+		next_link = ""
+
+
+		*next_page
+		logmes next_link
+		neturl@ url + f
+		netrequest_get@ next_link
+		if stat : goto *bad
+		gosub *通信待ち
+		
+		netgetv@ buf
+
+	
+		find_tags_bytag buf, "tr", data // テーブルの要素
+
+		;　内側ループ：各ゲームの処理
+		data_start = 1
+		repeat limit(max - get_count,,length(data) - data_start), data_start
+			if endflag: break
+		
+			find_tags_bytag data(cnt), "td", target_infos
+
+			game_id = int(get_content_tag(target_infos(0)))
+			savefilename = "" + game_id + ".sgf"
+	
+			title "最新棋譜チェック中"+ game_id + "::" +next_link+　"   " + limit((d3timer() - START_TIME) * 100 / lt,,100)+"%完了"
+			if d3timer() - START_TIME >= lt{
+				endflag = 1
+				break
+			}
+			if is_inset(fileSet, savefilename){
+				await 4
+				continue
+			}
+			await wt
+	
+			find_tags_bytag data(cnt), "a", result
+			find_attribute_byname result, "href", t
+			
+			netdlname@ dirname + "/" + savefilename
+	
+			neturl@ url + t
+	
+			logmes "取得開始 -> " + savefilename
+			
+			netrequest@ ""
+			if stat : goto *bad
+			gosub *通信待ち
+
+			validate_sgf_file savefilename
+			if stat{
+				logmes "ファイル破損 -> " + savefilename
+			}else{
+				logmes "取得完了 -> " + savefilename
+				push_data fileSet, "" + savefilename
+			}
+			
+			get_count++
+			await
+		loop
+		
+		if endflag:break
+
+		elapsed_time = d3timer() - START_TIME
+		if elapsed_time >= lt: break
+		
+		await wt
+
+		//次のページへの処理
+		if get_count < max{
+			find_tags_bytag buf, "div",divs
+			find_tags_bytag divs.4,"a", pp
+			find_attribute_byname pp,"href", next_link
+	
+			if next_link == "?"{
+				if length(pp) == 2{
+					continue
+				}
+				find_attribute_byname pp.2, "href", next_link
+			}
+			if next_link == "https://github.com/lightvector/KataGo": continue
+			goto *next_page
+		}
+	loop
+
+	final_time = d3timer() - START_TIME
+	logmes "処理完了 - 実行時間: " + final_time + "ms / " + lt + "ms, 取得数: " + get_count + "/" + max
+	title "棋譜取得終了"
+	
+	chdir now_dir
+	return
+
+*通信待ち
+	; 結果待ちのためのループ
+	netexec@ res
+	if res > 0 : return
+	if res < 0 : goto *bad
+	await 40
+	goto *通信待ち
+
+
+*bad
+	; エラー処理
+	dialog "ERROR -> " +res,,__FILE__
+
+	end
+#deffunc 棋譜取得停止
+	endflag = 1
+	return 
+	
+#deffunc validate_sgf_file str fname
+	sdim sgf, 0
+	
+	notesel sgf
+	noteload fname
+	
+	; サイズチェック（小さすぎるファイル）
+	if strlen(sgf) < 50 {
+		goto *delete_file
+	}
+
+	; HTML混入チェック（よくあるエラー出力）
+	if instr(sgf,0, "<html>") >= 0 or instr(sgf,0, "<!DOCTYPE") >= 0 {
+		goto *delete_file
+	}
+
+	; SGFの終端 ')' が存在するか
+	if instr(sgf,0, ")") < 0 {
+		goto *delete_file
+	}
+
+	; 最低限のプロパティがあるか（PB[]など）
+	if instr(sgf,0, "PB[") < 0 or instr(sgf,0, "PW[") < 0 {
+		goto *delete_file
+	}
+
+	return 0 ; ←正常
+
+*delete_file
+	logmes "SGFファイル破棄: " + fname
+	delete fname
+	return 1 ; ←破棄したよ
+#global
+
+
+
+#if 0
+	a = "C:\\Users\\owner\\Desktop\\katago-kifu-search\\棋譜"
+	chdir a
+
+	//保存先フォルダ名, 最大取得数, アクセス頻度(ms), 最大実行時間(ms)  
+	棋譜取得 a        , 10000     , 3000            , 1000 * 60 * 1
+
+#endif 
