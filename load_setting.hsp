@@ -30,7 +30,7 @@ if strsize == -1{
 	child_target_wait = DEFAULT_TARGET_WAIT
 	MAX_CHILDREN = get_auto_cores()
 	default_order = 2 // 0 = ¸‡, 1 = ~‡, 2 = ƒ‰ƒ“ƒ_ƒ€
-	background_load = 1
+	background_load = 0
 
 }else{
 	noteload SETTING_FILE_NAME
