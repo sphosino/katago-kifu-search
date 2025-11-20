@@ -35,7 +35,7 @@ newmod g_chkbox, grid_checkbox, inverse, "反転検索",chkbox_inverse
 newmod g_chkbox, grid_checkbox, filter_on, "検索結果にフィルターを適用", chkbox_filter
 newmod g_chkbox, grid_checkbox, inc_tejun, "自動で次の番号へ", chkbox_inc: set_g_checkbox g_chkbox.stat, 1
 
-newmod g_chkbox, grid_checkbox, background_load, "自動読込", chkbox_background_load
+newmod g_chkbox, grid_checkbox, background_load, "事前読込", chkbox_background_load
 
 newmod g_label, grid_label,"棋譜リスト",sidebar_kifulist_label1, $F5F5DC,$333333
 newmod g_label, grid_label,"検索結果(0)件",sidebar_kifulist_label2,$F5F5DC,$333333
