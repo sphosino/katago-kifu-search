@@ -35,8 +35,8 @@
 	if id < 0: return
 	if id_to_hint(id) == "": return
 
-	x = limit(mousex, size  /2, ginfo_sx - size  /2)
-	y = limit(mousey, 0, ginfo_sy)
+	x = limit(mousex, size  /2, ginfo(12) - size  /2)
+	y = limit(mousey - size.1/2, 0, ginfo(13))
 
 	
 	
