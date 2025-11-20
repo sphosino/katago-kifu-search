@@ -34,7 +34,13 @@
 #deffunc draw_tooltip int id
 	if id < 0: return
 	if id_to_hint(id) == "": return
-	make_instant_draw_object "SPRITE", mousex, mousey - size.1/2, size, size.1, strf("%d", buf)
+
+	x = limit(mousex, size  /2, ginfo_sx - size  /2)
+	y = limit(mousey, 0, ginfo_sy)
+
+	
+	
+	make_instant_draw_object "SPRITE", x, y - size.1/2, size, size.1, strf("%d", buf)
 	update_priority_draw_object stat, PRIORITY_FRONT
 	return
 #global

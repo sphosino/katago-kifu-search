@@ -549,8 +549,8 @@ WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)
 ; 受信時：キューに追加
 #deffunc nocoCopyCopyDataQueue
 	if iparam != WM_COPYDATA : return
-    ; 上限チェック（32件固定）
-    if data_num >= 32 {
+	
+    if data_num >= length(nococodadataQ) {
         ; この通知は無視する
         return
     }
