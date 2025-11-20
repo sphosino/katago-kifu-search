@@ -15,43 +15,24 @@
 #include "setting_defines.hsp"
 #define SUB_EXE
 #include "config_path.hsp"
+
 screen 0,,,2
 #include "modules/ProcLinkModuleQueue.hsp"
+
+
+bgmsg = init_bgmsg()
+oncmd gosub *on_bgload, bgmsg
+
 
 #const FPS_AFTER_LOADING 24
 
 view_window = 0 //画面を表示するかしないか
 
-// ★★★ デバッグログ機能追加 ★★★
-#module
-#deffunc debug_log str msg
-	#ifdef _debug
-		notesel log_buf
-		noteadd "[" + gettime(5) + ":" + gettime(6) + ":" + gettime(7) + "] " + msg
-		noteunsel
-	#endif
-	return
-	
-#deffunc save_debug_log
-	#ifdef _debug
-		notesel log_buf
-		notesave "debug_log.txt"
-		noteunsel
-	#endif
-	return
-#global
-
-
-
-sdim log_buf, 100000
-debug_log "プログラム開始"
-// ★★★★★★★★★★★★★★★★★★
 
 delkey_all //キー監視をすべてクリア
 addkey 'C' //長押しで画面クリア
 
 sdim result //親に結果を送る用のバッファ
-background_load = 0
 
 ///////////////////////通信設定
 // 設定読み込み
@@ -92,7 +73,7 @@ await 40
 
 担当棋譜変更による初期化 LIMIT_PER_PROCESS
 
-onerror *err_lab
+
 
 //自動ジャンプを設定（ジャンプのタイミングでモジュール内のキューに保存される && loop開始　（セットで扱う）
 nocoAutoCopyData : repeat
@@ -168,11 +149,7 @@ loop
 	return
 
 *on_copydata
-	debug_log "on_copydata開始: キュー数=" + nocoCopyDataQueueCount()
 	
-	// 担当棋譜の初期化を後で行うためのフラグとデータ保存用
-	need_kifu_init = 0
-	sdim kifu_init_data
 	
     repeat nocoCopyDataQueueCount()
 
@@ -180,20 +157,6 @@ loop
 		param = nocoCopyDataQueueInfo(3, cnt)
 		data_size = nocoCopyDataQueueInfo(4, cnt)
 
-		// ★ メッセージ種類を文字列化
-		msg_type = "不明(" + param + ")"
-		if param == 検索棋譜: msg_type = "検索棋譜"
-		if param == 検索実行: msg_type = "検索実行"
-		if param == 検索実行2: msg_type = "検索実行2"
-		if param == 子プロセス数: msg_type = "子プロセス数"
-		if param == 担当棋譜: msg_type = "担当棋譜"
-		if param == 棋譜フォルダ変更: msg_type = "棋譜フォルダ変更"
-		if param == ウィンドウ表示切替: msg_type = "ウィンドウ表示切替"
-		if param == バックグラウンド読み込み: msg_type = "バックグラウンド読み込み"
-		if param == 終了指示: msg_type = "終了指示"
-		if param == 接続拒否: msg_type = "接続拒否"
-		
-		debug_log "受信[" + msg_type + "]: param=" + param + ", size=" + data_size
 
 		sdim received_data, data_size
 		nocoGetCopyDataQueue received_data, cnt
@@ -371,13 +334,11 @@ loop
 	    
 		case 担当棋譜　//担当すべき棋譜のリストが送られてきた
 			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
-			debug_log "担当棋譜処理開始（データ保存）"
 			
 			// ★ データを保存して、後で処理する
 			kifu_init_data = received_data
 			need_kifu_init = 1
 			
-			debug_log "担当棋譜データ保存完了"
 		swbreak
 		
 	    case 棋譜フォルダ変更
@@ -385,7 +346,6 @@ loop
 	    	
 			kifudir = strmid(received_data,0,data_size)
 			mes "フォルダ変更 -> " + kifudir　+ ":  に変更"
-			debug_log "フォルダ変更: " + kifudir
 			
 	    swbreak
 
@@ -394,25 +354,17 @@ loop
 		    gsel 0, view_window*2-1
 	    swbreak
 
-	    case バックグラウンド読み込み
-			background_load = lpeek(received_data)
-			mes "バックグラウンド読み込み: " + background_load
-			debug_log "バックグラウンド読み込み: " + background_load
-	    swbreak
 	 
 	    case 終了指示:
 	        // 親プロセスからの終了指示
 	        mes "親プロセスから終了指示を受信しました"
-	        debug_log "終了指示受信"
-	        save_debug_log
 	        wait 1000
 	        end // プロセス終了
 	    swbreak
 	
 	    case 接続拒否:
 			dialog "親プロセスに接続できませんでした"
-			debug_log "接続拒否"
-			save_debug_log
+
 			end
 	    swbreak
 
@@ -420,35 +372,29 @@ loop
 	        
 	    default:
 	        dialog "未知のデータタイプ: " + param
-	        debug_log "未知のデータタイプ: " + param
-	        save_debug_log
 	        end
 	        swbreak
 	    swend
 	loop
 
 	nocoClearQueue
-	debug_log "キュークリア完了"
 	
 	// ★ キュー処理完了後に担当棋譜の初期化を実行
 	if need_kifu_init {
-		debug_log "担当棋譜初期化開始"
+		need_kifu_init = 0
 		notesel kifu_init_data
 			棋譜数 = notemax
-			debug_log "棋譜数: " + 棋譜数
 			担当棋譜変更による初期化 棋譜数
-			debug_log "初期化完了、登録開始"
 			repeat 棋譜数
 				noteget a, cnt
 				push_data kifu_all_assigned, a
 				push_data kifu_unloaded, a
 			loop
-			debug_log "登録完了"
 		noteunsel
 		enable_auto_adjust
 		set_target_wait limit(tw / child_count, 1, 100)
-		chdir kifudir
-		debug_log "担当棋譜処理完了"
+		chdir KIFUDIR
+		sdim kifu_init_data
 	}
 	
     return
@@ -468,10 +414,9 @@ loop
 	memcpy result, 対局者名白, 64, nowpointer + OFFSET_PW
 	return
 
-*err_lab
-	gsel 0,1
-	debug_log "エラー発生: " + wparam + " at line " + lparam
-	save_debug_log
-	dialog "ERROR: エラーログをdebug_log.txtに保存しました"
-	end
-	return
+
+*on_bgload
+	
+    background_load = wparam
+    
+    return

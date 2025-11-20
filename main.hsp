@@ -921,6 +921,7 @@ title "KataGo自己対戦棋譜-検索システム"
 
 		switch param
 		case 検索結果
+			if complate_count < 0: swbreak //タイムアウト後に結果を受け取った。
 		
 			result_num = (data_size - HEADER_SIZE) / RECORD_SIZE
 			nowpointer = HEADER_SIZE

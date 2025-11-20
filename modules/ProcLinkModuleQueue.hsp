@@ -55,7 +55,18 @@ ProcLinkModule.hsp をインクルードする。
 #const HWND_BROADCAST				0xffff					; ポスメ一斉送信。
 
 
-
+#deffunc send_child_flag int _hwnd, int msg, int value
+    apiPostMessage _hwnd, msg, value, 0
+    if (stat == 0) {
+        logmes "PostMessage failed: hwnd=" + _hwnd + " msg=" + msg
+    } else {
+        logmes "PostMessage OK: hwnd=" + _hwnd + " msg=" + msg
+    }
+    return
+#defcfunc init_bgmsg
+    bgmsg = apiRegisterWindowMessage("KataGo_BGLOAD_FLAG")
+    return bgmsg
+    
 ;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●
 
 /*
@@ -520,9 +531,13 @@ WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)
 /////////////////////////////////////////////////////////////////
 ;-----------------------------------
 ; WM_COPYDATA キュークリア
-#deffunc nocoClearCopyDataQueue int slot_size
+#deffunc nocoClearCopyDataQueue int slot_size, int slot_num
 	dim nococodainfoQ, 4, 1
-	sdim nococodadataQ, slot_size, 32
+	if slot_num = 0{
+		sdim nococodadataQ, slot_size, 16
+	}else{
+		sdim nococodadataQ, slot_size, slot_num
+	}
 	data_num = 0
 	return
 
@@ -534,7 +549,11 @@ WM_COPYDATA(=74、0x004a)はウィンドウを介して別プロセス(同じPC上で動作中のアプリ)
 ; 受信時：キューに追加
 #deffunc nocoCopyCopyDataQueue
 	if iparam != WM_COPYDATA : return
-
+    ; 上限チェック（32件固定）
+    if data_num >= 32 {
+        ; この通知は無視する
+        return
+    }
 	; データ部準備
 	if hspstat & $40000 {
 		dupptr nocpmemo, lparam, 24, vartype("int")

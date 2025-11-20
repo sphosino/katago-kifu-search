@@ -11,8 +11,10 @@
 #enum 終了指示
 #enum 棋譜フォルダ変更
 #enum ウィンドウ表示切替
-#enum バックグラウンド読み込み
 
+
+bgmsg = init_bgmsg()
+logmes "bg_load_message -> " + bgmsg
 
 
 //検索結果データの構造定義

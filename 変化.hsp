@@ -129,8 +129,9 @@ if is_state_changed_slider2(g_slider2){
 if pre_background_load != background_load{
 	pre_background_load = background_load
 	repeat child_count_current
-		nocoSendCopyData child_hwnd_list(cnt), background_load, バックグラウンド読み込み, 4
+		send_child_flag child_hwnd_list(cnt), bgmsg, background_load
     loop
+    logmes "send_child_flag" + background_load
 }
 
 if last_result_time != -1 && keyfpstime - last_result_time > 10000{
