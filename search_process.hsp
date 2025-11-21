@@ -20,9 +20,8 @@ screen 0,,,2
 #include "modules/ProcLinkModuleQueue.hsp"
 
 
-bgmsg = init_bgmsg()
 oncmd gosub *on_bgload, bgmsg
-
+oncmd gosub *change_window, ウィンドウ表示切替
 
 #const FPS_AFTER_LOADING 24
 
@@ -349,10 +348,7 @@ loop
 			
 	    swbreak
 
-	    case ウィンドウ表示切替
-		    view_window ^= 1
-		    gsel 0, view_window*2-1
-	    swbreak
+
 
 	 
 	    case 終了指示:
@@ -420,3 +416,8 @@ loop
     background_load = wparam
     
     return
+
+*change_window
+    view_window ^= 1
+	gsel 0, view_window*2-1
+	return

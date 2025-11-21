@@ -57,14 +57,9 @@ ProcLinkModule.hsp をインクルードする。
 
 #deffunc send_child_flag int _hwnd, int msg, int value
     apiPostMessage _hwnd, msg, value, 0
-    if (stat == 0) {
-        logmes "PostMessage failed: hwnd=" + _hwnd + " msg=" + msg
-    } else {
-        logmes "PostMessage OK: hwnd=" + _hwnd + " msg=" + msg
-    }
     return
-#defcfunc init_bgmsg
-    bgmsg = apiRegisterWindowMessage("KataGo_BGLOAD_FLAG")
+#defcfunc init_bgmsg str msg
+    bgmsg = apiRegisterWindowMessage(msg)
     return bgmsg
     
 ;●:::::::::::::::::::::::::::::::::::::::::::::::::::::::●

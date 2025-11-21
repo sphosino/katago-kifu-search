@@ -10,11 +10,9 @@
 #enum 子プロセス数
 #enum 終了指示
 #enum 棋譜フォルダ変更
-#enum ウィンドウ表示切替
 
-
-bgmsg = init_bgmsg()
-logmes "bg_load_message -> " + bgmsg
+ウィンドウ表示切替 = init_bgmsg("KataGo_SUB_WINDOW")
+bgmsg = init_bgmsg("KataGo_BGLOAD_FLAG")
 
 
 //検索結果データの構造定義

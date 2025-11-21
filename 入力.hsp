@@ -207,6 +207,6 @@ if getdbl_ms(17, DBL_INTERVAL){
 //ESCダブルクリックで子プロセスのウィンドウ表示切り替え
 if getdbl_ms(27, 250){
 	repeat child_count_current
-		nocoSendCopyDataInt child_hwnd_list(cnt), ウィンドウ表示切替
+		send_child_flag child_hwnd_list(cnt), ウィンドウ表示切替,0
 	loop
 }
