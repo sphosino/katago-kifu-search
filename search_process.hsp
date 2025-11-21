@@ -133,7 +133,7 @@ loop
 	    del_set search_target_kifus
 	    
     }
-    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * p1
+    nocoClearCopyDataQueue 4 + (PATH_SIZE + 64) * limit(p1,100)
     if DEFAULT_KIFUDIR == kifudir{
 	    mes "デフォルトフォルダに変更"
     }else{
@@ -335,6 +335,7 @@ loop
 			mes "担当棋譜受信 ->" + strmid(received_data,0,50)
 			
 			// ★ データを保存して、後で処理する
+			sdim kifu_init_data, data_size
 			kifu_init_data = received_data
 			need_kifu_init = 1
 			
@@ -391,6 +392,7 @@ loop
 		set_target_wait limit(tw / child_count, 1, 100)
 		chdir KIFUDIR
 		sdim kifu_init_data
+		
 	}
 	
     return
