@@ -94,7 +94,7 @@ nocoAutoCopyData : repeat
 			del_data kifu_unloaded, temp_kifu_name
 			if get_cardinality(kifu_unloaded) == 0{
 				enable_auto_adjust 0 //é©ìÆFPSí≤êÆOFF
-				setfps FPS_AFTER_LOADING
+				setfps FPS_AFTER_LOADING //å≈íËFPSê›íË
 			}
 		}
 		

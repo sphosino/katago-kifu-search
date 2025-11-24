@@ -69,6 +69,7 @@ ScrollbarModule.hsp ‚ğƒCƒ“ƒNƒ‹[ƒh‚·‚éB
 	scba_handle = 0											; ƒnƒ“ƒhƒ‹”z—ñB
 	scba_arrow  = 0											; –îˆó•”‚Ì•Ï—Ê”z—ñB
 	scba_blank  = 0											; ‹ó”’•”‚Ì•Ï—Ê”z—ñB
+	scba_thumb  = 0											; ƒhƒ‰ƒbƒO•”(THUMBTRACK)‚Ì•Ï—Ê”z—ñB
 	scba_cur	= 0											; ƒJƒŒƒ“ƒgindex
 
 #deffunc scbaSearchCur array a, int t, int f				;  ŠÇ—ƒT[ƒ`(ƒIƒuƒWƒFIDËŠÇ—ID•ÏŠ·•t‚«)
@@ -127,10 +128,10 @@ clrobj  ŠÇ—”Ô† \ 65536, ŠÇ—”Ô† \ 65536  ; Á‹
 	screen 0, 320, 240
 	pos 0, ginfo_winy - bars  ; ‚æ‚±ƒXƒN‚ğİ’uB
 	scbaScrollbar 0, ginfo_winx - bars, bars  : yokoid = stat
-	scbaSetRange  stat, 0, picw - ginfo_winx + bars, ginfo_winx - bars, ginfo_winx - bars, 30
+	scbaSetRange  stat, 0, picw - ginfo_winx + bars, ginfo_winx - bars, ginfo_winx - bars, 30, 0
 	pos ginfo_winx - bars, 0  ; ‚½‚ÄƒXƒN‚ğİ’uB
 	scbaScrollbar 1, bars, ginfo_winy - bars  : tateid = stat
-	scbaSetRange  stat, 0, pich - ginfo_winy + bars, ginfo_winy - bars, ginfo_winy - bars, 30
+	scbaSetRange  stat, 0, pich - ginfo_winy + bars, ginfo_winy - bars, ginfo_winy - bars, 30, 0
 
 	pos 0, 0  : gosub *getroll  ; ˆê“x•`‰æ‚·‚éB
 	stop
@@ -155,6 +156,7 @@ clrobj  ŠÇ—”Ô† \ 65536, ŠÇ—”Ô† \ 65536  ; Á‹
 	scba_winobj(scba_cur) = (ginfo_sel + 1) * 65536 + ttivobid					; ŠÇ—ID
 	scba_arrow(scba_cur)  = 0													; –îˆó•”‚Ì•Ï—ÊB
 	scba_blank(scba_cur)  = 0													; ‹ó”’•”‚Ì•Ï—ÊB
+	scba_thumb(scba_cur)  = 0													; ƒhƒ‰ƒbƒO•”‚Ì•Ï—ÊB
 	ttiaapip = 28, cnsSIF_ALL | cnsSIF_DISABLENOSCROLL, 0, 0, 0, 0, 0			; ‚Â‚Ü‚İÁ‹ƒtƒ‰ƒO{B
 	apiSetScrollInfo scba_handle(scba_cur), cnsSB_CTL, ttiaapip, 1				; ‰Šú’l‚ğ—^‚¦‚éB
 	oncmd gosub *scba_getmessage_scroll, cnsWM_HSCROLL
@@ -166,7 +168,7 @@ clrobj  ŠÇ—”Ô† \ 65536, ŠÇ—”Ô† \ 65536  ; Á‹
 scbaSetRange
 ƒXƒNƒ[ƒ‹ƒo[‚ğİ’è‚·‚é
 %prm;.....................................................~
-id, min, max, size, blank, arrow
+id, min, max, size, blank, arrow, thumb
 %inst;....................................................~
 scbaScrollbar‚Åİ’u‚µ‚½ƒXƒNƒ[ƒ‹ƒo[‚É”ÍˆÍ‚ğİ’è‚µ‚Ü‚·B
 
@@ -185,21 +187,32 @@ scbaScrollbar‚Åİ’u‚µ‚½ƒXƒNƒ[ƒ‹ƒo[‚É”ÍˆÍ‚ğİ’è‚µ‚Ü‚·B
 ¥ arrow
 ƒo[’[‚Ì–îˆó•”•ª‚ğƒNƒŠƒbƒN‚µ‚½‚Æ‚«‚Ì•Ï—Ê‚ğw’è‚µ‚Ü‚·B
 
+¥ thumb
+‚Â‚Ü‚İ‚ğƒhƒ‰ƒbƒO‚µ‚½‚Æ‚«‚Ì•Ï—Ê(ƒXƒeƒbƒv)‚ğw’è‚µ‚Ü‚·B
+= 0 ‚Ü‚½‚Í 1 ‚ğw’è‚·‚é‚ÆA]—ˆ‚Ç‚¨‚èƒhƒ‰ƒbƒOˆÊ’u‚ğ‚»‚Ì‚Ü‚Ü’l‚Æ‚µ‚Äg—p‚µ‚Ü‚·B
+= 2 ˆÈã‚ğw’è‚·‚é‚ÆA‚»‚Ì’l’PˆÊ‚Å‚Ì‚İ’l‚ª•Ï‰»‚µ‚Ü‚·B
+
 Ÿ stat
 = id (Š®—¹AŠÇ—”Ô†)
 = 0 (¸”s)
 %;........................................................*/
-#deffunc scbaSetRange int i, int n, int m, int s, int b, int a	; ¡ƒXƒNƒ[ƒ‹ƒo[(İ’è)
-	if scba_winobj(scba_cur) != i  : scbaSearchCur scba_winobj, i  : if stat  : return 0	; curset
-	ttiaapip = 28, cnsSIF_ALL | cnsSIF_DISABLENOSCROLL, 0, 0, 0, 0, 0	; ˆê‰Œ»İ’l‚ğ”½‰f‚·‚éB
+#deffunc scbaSetRange int i, int n, int m, int s, int b, int a, int th    ; ¡ƒXƒNƒ[ƒ‹ƒo[(İ’è)
+	if scba_winobj(scba_cur) != i  : scbaSearchCur scba_winobj, i  : if stat  : return 0 ; curset
+	ttiaapip = 28, cnsSIF_ALL | cnsSIF_DISABLENOSCROLL, 0, 0, 0, 0, 0    ; ‚Ü‚¸‘S•”æ“¾
 	apiGetScrollInfo scba_handle(scba_cur), cnsSB_CTL, ttiaapip
+
 	ttiaapip(2) = n, n, 0
-	; ƒo[‚ÌƒŒƒ“ƒWİ’èFÅ‘å‚æ‚è‚¨‚¨‚«‚ÈÅ¬‚ğİ’è‚·‚é‚±‚Æ‚ª‚Å‚«‚È‚¢B
-	if n < m  : ttiaapip(2) = n, m + s + (s == 0) - 1, s + (s == 0)	; Å¬<Å‘å‚ğ‡‚í‚¹‚é(ƒo[•s–¾“®ì)
-	if m < n  : ttiaapip(2) = m, n + s + (s == 0) - 1, s + (s == 0)	; s‚ª0‚È‚ç1‚É’u‚«Š·‚¦‚é(—¼•û•K—v)
+
+	; ƒŒƒ“ƒW’²®iŠù‘¶‚Æ“¯‚¶j
+	if n < m : ttiaapip(2) = n, m + s + (s == 0) - 1, s + (s == 0)
+	if m < n : ttiaapip(2) = m, n + s + (s == 0) - 1, s + (s == 0)
+
 	apiSetScrollInfo scba_handle(scba_cur), cnsSB_CTL, ttiaapip, 1
+
 	scba_arrow(scba_cur) = a
 	scba_blank(scba_cur) = b
+	scba_thumb(scba_cur) = th        ; ƒhƒ‰ƒbƒO’PˆÊ
+
 	return scba_winobj(scba_cur)
 
 /*
@@ -301,7 +314,25 @@ scbaScrollbar‚Åİ’u‚µ‚½ƒXƒNƒ[ƒ‹ƒo[‚ğƒ†[ƒU[‚ª‘€ì‚µ‚½‚Æ‚«A©“®“I‚ÉƒWƒƒƒ“ƒv‚
 		if (wparam & 0xffff) == cnsSB_LINEDOWN    : ttiaapip(5) += scba_arrow(scba_cur)
 		if (wparam & 0xffff) == cnsSB_PAGEUP      : ttiaapip(5) -= scba_blank(scba_cur)
 		if (wparam & 0xffff) == cnsSB_PAGEDOWN    : ttiaapip(5) += scba_blank(scba_cur)
-		if (wparam & 0xffff) == cnsSB_THUMBTRACK  : ttiaapip(5) = ttiaapip(6)
+
+		; THUMBTRACK (ƒhƒ‰ƒbƒO) ‚Ìˆ—
+		;if (wparam & 0xffff) == cnsSB_THUMBTRACK  : ttiaapip(5) = ttiaapip(6)
+		if (wparam & 0xffff) == cnsSB_THUMBTRACK {
+			step = scba_thumb(scba_cur)
+			if step <= 1 {
+				; ’Êí‚Ì“®ìiŠÛ‚ß‚¸‚»‚Ì‚Ü‚Üj
+				ttiaapip(5) = ttiaapip(6)
+			} else {
+				; ‘O‰ñ’l‚Æ‚Ì·•ª‚©‚ç step ’PˆÊ‚É—Êq‰»
+				newpos = ttiaapip(6)
+				oldpos = ttivtemp
+
+				diff = newpos - oldpos
+				adj = (diff / step) * step
+
+				ttiaapip(5) = oldpos + adj
+			}
+		}
 		apiSetScrollInfo lparam, cnsSB_CTL, ttiaapip, 1
 		if scba_realmode {									; ƒŠƒAƒ‹ƒ^ƒCƒ€On
 			apiGetScrollInfo lparam, cnsSB_CTL, ttiaapip	; Œ‹‰Ê‚ğ¸¸‚µ‚Äƒo[‚Ì¦‚·ˆÊ’u‚ª•Ï‚í‚Á‚ÄA
@@ -314,4 +345,3 @@ scbaScrollbar‚Åİ’u‚µ‚½ƒXƒNƒ[ƒ‹ƒo[‚ğƒ†[ƒU[‚ª‘€ì‚µ‚½‚Æ‚«A©“®“I‚ÉƒWƒƒƒ“ƒv‚
 
 #global
 #endif
-
