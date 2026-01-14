@@ -42,7 +42,7 @@ pos left_size, objysize * 5: scbaScrollbar 0, right_size, objysize: sc_max_depth
 pos left_size, objysize * 6: scbaScrollbar 0, right_size, objysize: sc_default_order = stat
 
 //スクロールバーレンジ設定
-scbaSetrange max_kifu, 1, 100000,,,1,1000
+scbaSetrange max_kifu, 1, 100000,,,1000,1000
 scbaSetrange process_num, 1, max_child,,,1
 scbaSetrange auto_download_time, MIN_TARGET_WAIT - 1, MAX_TARGET_WAIT,,,1
 scbaSetrange tw, MIN_TARGET_WAIT, MAX_TARGET_WAIT,,,1
